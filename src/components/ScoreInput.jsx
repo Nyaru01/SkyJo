@@ -87,8 +87,16 @@ export default function ScoreInput({ players, onSave, onCancel, isEmbedded = fal
                                         {isFinisher && <Check className="h-4 w-4" strokeWidth={3} />}
                                     </div>
 
-                                    {/* Player Name & Current Total */}
-                                    <div className="flex flex-col min-w-0">
+                                    {/* Player Avatar with Initials - Always visible */}
+                                    <div className={cn(
+                                        "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 shadow-sm",
+                                        isFinisher ? "bg-emerald-500 text-white" : "bg-gradient-to-br from-slate-100 to-slate-200 text-slate-700"
+                                    )}>
+                                        {p.name.slice(0, 2).toUpperCase()}
+                                    </div>
+
+                                    {/* Player Name & Current Total - Hidden on small screens */}
+                                    <div className="hidden sm:flex flex-col min-w-0">
                                         <span className={cn("font-bold truncate text-base leading-tight", isFinisher ? "text-emerald-900" : "text-slate-900")}>
                                             {p.name}
                                         </span>
