@@ -51,12 +51,10 @@ export default function ScoreInput({ players, onSave, onCancel, isEmbedded = fal
                     </div>
                 )}
 
-                <div className="space-y-1">
+                <div className="space-y-3">
                     <div className="flex items-center justify-between text-xs font-bold text-slate-600 px-4 uppercase tracking-wide">
                         <span>Joueur</span>
-                        {/* Headers aligned for mobile */}
-                        <div className="flex items-center gap-2 text-right">
-                            <span className="w-24 text-center text-slate-500">Historique</span>
+                        <div className="flex items-center gap-4 text-right">
                             <span className="w-20 text-center text-slate-600">Manche</span>
                             <span className="w-14 text-center text-slate-600">Total</span>
                         </div>
@@ -106,24 +104,7 @@ export default function ScoreInput({ players, onSave, onCancel, isEmbedded = fal
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-3 shrink-0">
-                                    {/* Scrollable History */}
-                                    {rounds.length > 0 && (
-                                        <div className="w-24 overflow-x-auto flex items-center justify-end gap-1 px-1 no-scrollbar mask-linear-fade">
-                                            {rounds.map((r, rIdx) => {
-                                                const s = r.scores[p.id];
-                                                return (
-                                                    <div key={rIdx} className={cn(
-                                                        "shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded border min-w-[24px] text-center shadow-sm",
-                                                        s > 0 ? "bg-red-50 text-red-700 border-red-200" : s < 0 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-white text-slate-500 border-slate-200"
-                                                    )}>
-                                                        {s}
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    )}
-
+                                <div className="flex items-center gap-4 shrink-0">
                                     {/* Score Input */}
                                     <div onClick={(e) => e.stopPropagation()}>
                                         <Input
