@@ -11,12 +11,15 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'bg-skyjo.png'],
       manifest: {
         name: 'Skyjo Score',
         short_name: 'SkyjoScore',
         description: 'Calculateur de score pour Skyjo',
-        theme_color: '#ffffff',
+        theme_color: '#10b981',
+        background_color: '#0f172a',
+        display: 'standalone',
+        orientation: 'portrait',
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -33,3 +36,4 @@ export default defineConfig({
     })
   ],
 })
+

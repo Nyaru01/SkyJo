@@ -1,23 +1,29 @@
-import { Home, Gamepad2, History } from 'lucide-react';
+import { Home, Gamepad2, History, Archive, BarChart3, Volume2, VolumeX, Dices } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useGameStore } from '../store/gameStore';
 
 export default function BottomNav({ activeTab, onTabChange }) {
     const gameStatus = useGameStore(state => state.gameStatus);
 
+    const soundEnabled = useGameStore(state => state.soundEnabled);
+    const toggleSound = useGameStore(state => state.toggleSound);
+
     const tabs = [
         { id: 'home', label: 'Accueil', icon: Home, alwaysEnabled: true },
-        { id: 'game', label: 'Partie', icon: Gamepad2, alwaysEnabled: false },
-        { id: 'history', label: 'Historique', icon: History, alwaysEnabled: true },
+        { id: 'virtual', label: 'Jouer', icon: Dices, alwaysEnabled: true },
+        { id: 'game', label: 'Scores', icon: Gamepad2, alwaysEnabled: false },
+        { id: 'rounds', label: 'Manches', icon: History, alwaysEnabled: false },
+        { id: 'pastGames', label: 'Parties', icon: Archive, alwaysEnabled: true },
+        { id: 'stats', label: 'Stats', icon: BarChart3, alwaysEnabled: true },
     ];
 
     return (
         <nav
-            className="fixed bottom-0 left-0 right-0 glass-premium safe-area-bottom z-40 shadow-xl"
+            className="fixed bottom-0 left-0 right-0 glass-premium dark:glass-dark safe-area-bottom z-40 shadow-xl"
             role="tablist"
             aria-label="Navigation principale"
         >
-            <div className="flex justify-around items-center h-16 pb-1">
+            <div className="flex items-center h-16 pb-1">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -32,35 +38,54 @@ export default function BottomNav({ activeTab, onTabChange }) {
                             disabled={isDisabled}
                             onClick={() => !isDisabled && onTabChange(tab.id)}
                             className={cn(
-                                "relative flex flex-col items-center justify-center w-full h-full space-y-1 transition-all duration-300 active:scale-95",
-                                isActive ? "text-emerald-600" : "text-slate-400 hover:text-slate-600",
+                                "relative flex-1 flex flex-col items-center justify-center h-full space-y-0.5 transition-all duration-300 active:scale-95",
+                                isActive ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300",
                                 isDisabled && "opacity-40 cursor-not-allowed"
                             )}
                         >
-                            {/* Effet glow derrière l'icône active */}
-                            {isActive && (
-                                <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-emerald-500/15 rounded-full blur-lg animate-pulse" />
-                            )}
                             {/* Indicateur supérieur */}
                             {isActive && (
-                                <span className="absolute top-0 w-10 h-1 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-b-lg shadow-glow-emerald animate-scale-in" />
+                                <span className="absolute top-0 w-8 h-1 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-b-lg shadow-glow-emerald" />
                             )}
                             <Icon
                                 className={cn(
                                     "h-5 w-5 transition-all duration-300 relative z-10",
-                                    isActive && "fill-emerald-100 stroke-emerald-600 drop-shadow-sm"
+                                    isActive && "stroke-emerald-600 dark:stroke-emerald-400 drop-shadow-sm"
                                 )}
                                 strokeWidth={isActive ? 2.5 : 2}
                             />
                             <span className={cn(
-                                "text-[9px] font-bold tracking-wide transition-colors pt-0.5 relative z-10",
-                                isActive ? "text-emerald-700" : "text-slate-400"
+                                "text-[9px] font-bold tracking-wide transition-colors relative z-10",
+                                isActive ? "text-emerald-700 dark:text-emerald-400" : "text-slate-400 dark:text-slate-500"
                             )}>
                                 {tab.label.toUpperCase()}
                             </span>
                         </button>
                     );
                 })}
+
+                {/* Sound Toggle */}
+                <button
+                    onClick={toggleSound}
+                    aria-label={soundEnabled ? 'Couper le son' : 'Activer le son'}
+                    className={cn(
+                        "flex-1 flex flex-col items-center justify-center h-full space-y-0.5 transition-all duration-300 active:scale-95",
+                        soundEnabled
+                            ? "text-slate-400 dark:text-slate-500 hover:text-emerald-500 dark:hover:text-emerald-400"
+                            : "text-red-400 dark:text-red-500 hover:text-red-500 dark:hover:text-red-400"
+                    )}
+                >
+                    {soundEnabled ? (
+                        <Volume2 className="h-5 w-5 transition-all duration-300" strokeWidth={2} />
+                    ) : (
+                        <VolumeX className="h-5 w-5 transition-all duration-300" strokeWidth={2} />
+                    )}
+                    <span className="text-[9px] font-bold tracking-wide">
+                        {soundEnabled ? 'SON' : 'MUET'}
+                    </span>
+                </button>
+
+
             </div>
         </nav>
     );

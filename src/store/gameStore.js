@@ -34,11 +34,23 @@ export const useGameStore = create(
             threshold: 100,
             rounds: [],
             gameStatus: 'SETUP',
+            gameHistory: [], // Array of archived finished games
+            darkMode: false,
+            soundEnabled: true,
 
-            setConfiguration: (names, threshold) => {
-                const players = names.map((name, index) => ({
+            toggleDarkMode: () => {
+                const newMode = !get().darkMode;
+                document.documentElement.classList.toggle('dark', newMode);
+                set({ darkMode: newMode });
+            },
+
+            toggleSound: () => set({ soundEnabled: !get().soundEnabled }),
+
+            setConfiguration: (playerData, threshold) => {
+                const players = playerData.map((p, index) => ({
                     id: `p${Date.now()}-${index}`,
-                    name: name || `Player ${index + 1}`
+                    name: p.name || `Player ${index + 1}`,
+                    emoji: p.emoji || '👤'
                 }));
                 set({
                     players,
@@ -90,6 +102,58 @@ export const useGameStore = create(
                 });
             },
 
+            undoLastRound: () => {
+                const { rounds, threshold, players } = get();
+                if (rounds.length === 0) return;
+
+                const nextRounds = rounds.slice(0, -1);
+                const totals = calculateTotals(players, nextRounds);
+                const isGameOver = checkGameOver(totals, threshold);
+
+                set({
+                    rounds: nextRounds,
+                    gameStatus: isGameOver ? 'FINISHED' : 'PLAYING'
+                });
+            },
+
+            /**
+             * Archive the current finished game to history
+             */
+            archiveGame: () => {
+                const { players, rounds, threshold, gameHistory } = get();
+                if (players.length === 0 || rounds.length === 0) return;
+
+                // Calculate final scores
+                const totals = calculateTotals(players, rounds);
+                const playersWithScores = players.map(p => ({
+                    ...p,
+                    finalScore: totals[p.id]
+                })).sort((a, b) => a.finalScore - b.finalScore);
+
+                const winner = playersWithScores[0];
+
+                const archivedGame = {
+                    id: `game-${Date.now()}`,
+                    date: new Date().toISOString(),
+                    players: playersWithScores,
+                    rounds: [...rounds],
+                    threshold,
+                    winner: { id: winner.id, name: winner.name, score: winner.finalScore }
+                };
+
+                // Add to history (newest first), keep max 50 games
+                const updatedHistory = [archivedGame, ...gameHistory].slice(0, 50);
+                set({ gameHistory: updatedHistory });
+            },
+
+            /**
+             * Delete a game from history
+             */
+            deleteArchivedGame: (gameId) => {
+                const { gameHistory } = get();
+                set({ gameHistory: gameHistory.filter(g => g.id !== gameId) });
+            },
+
             resetGame: () => {
                 set({
                     gameStatus: 'SETUP',
@@ -116,6 +180,7 @@ export const selectPlayers = (state) => state.players;
 export const selectRounds = (state) => state.rounds;
 export const selectThreshold = (state) => state.threshold;
 export const selectGameStatus = (state) => state.gameStatus;
+export const selectGameHistory = (state) => state.gameHistory;
 
 /**
  * Selector for player totals - use with shallow comparison

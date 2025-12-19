@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Trophy, Sparkles } from 'lucide-react';
+import { Settings, Trophy, Sparkles, History, Undo2, BarChart3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore, selectPlayers, selectRounds, selectThreshold, selectGameStatus } from '../store/gameStore';
 import { Button } from './ui/Button';
@@ -8,6 +8,9 @@ import ScoreInput from './ScoreInput';
 import RoundHistory from './RoundHistory';
 import GameOver from './GameOver';
 import GameSetup from './GameSetup';
+import GameHistory from './GameHistory';
+import Stats from './Stats';
+import VirtualGame from './VirtualGame';
 import BottomNav from './BottomNav';
 
 // Variants d'animation pour les transitions de pages
@@ -30,6 +33,7 @@ export default function Dashboard() {
     const gameStatus = useGameStore(selectGameStatus);
     const addRound = useGameStore(state => state.addRound);
     const resetGame = useGameStore(state => state.resetGame);
+    const undoLastRound = useGameStore(state => state.undoLastRound);
     const [activeTab, setActiveTab] = useState('home');
 
     // Auto-switch to 'game' tab when the game starts
@@ -77,12 +81,12 @@ export default function Dashboard() {
                     >
                         <Card className="glass-premium shadow-xl card-hover-lift">
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-emerald-900 drop-shadow-sm">
-                                    <Settings className="h-5 w-5" /> Menu Principal
+                                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
+                                    <Settings className="h-5 w-5 text-emerald-600 dark:text-emerald-400" /> Menu Principal
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="text-sm text-slate-700 font-medium">
+                                <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">
                                     <p>Partie en cours avec <strong>{players.length} joueurs</strong>.</p>
                                     <p>Seuil de fin : <strong>{threshold} points</strong>.</p>
                                 </div>
@@ -112,25 +116,68 @@ export default function Dashboard() {
                     </motion.div>
                 );
 
-            case 'history':
+            case 'rounds':
                 return (
                     <motion.div
-                        key="history"
+                        key="rounds"
                         variants={pageVariants}
                         initial="initial"
                         animate="animate"
                         exit="exit"
                         transition={pageTransition}
                     >
-                        <h2 className="text-xl font-bold mb-4 text-slate-800 flex items-center gap-2">
-                            <Trophy className="h-5 w-5 text-yellow-500" /> Historique complet
+                        <h2 className="text-xl font-bold mb-4 text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            <History className="h-5 w-5 text-teal-600 dark:text-teal-400" /> Manches de la partie
                         </h2>
                         <RoundHistory rounds={rounds} players={players} isFullPage={true} />
                         {rounds.length === 0 && (
-                            <div className="text-center py-10 text-slate-400 font-medium">
+                            <div className="text-center py-10 text-slate-500 dark:text-slate-400 font-medium">
                                 Aucune manche jouée.
                             </div>
                         )}
+                    </motion.div>
+                );
+
+
+            case 'virtual':
+                return (
+                    <motion.div
+                        key="virtual"
+                        variants={pageVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        transition={pageTransition}
+                    >
+                        <VirtualGame />
+                    </motion.div>
+                );
+
+            case 'pastGames':
+                return (
+                    <motion.div
+                        key="pastGames"
+                        variants={pageVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        transition={pageTransition}
+                    >
+                        <GameHistory />
+                    </motion.div>
+                );
+
+            case 'stats':
+                return (
+                    <motion.div
+                        key="stats"
+                        variants={pageVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        transition={pageTransition}
+                    >
+                        <Stats />
                     </motion.div>
                 );
 
@@ -147,36 +194,50 @@ export default function Dashboard() {
                         className="space-y-6 pb-20"
                     >
                         {/* Main Game Container with glassmorphism */}
-                        <Card className="glass-premium shadow-2xl overflow-hidden">
+                        <Card className="glass-premium dark:glass-dark shadow-2xl overflow-hidden">
                             {/* Header with Stop Game */}
-                            <div className="flex items-center justify-between p-4 border-b border-white/20 bg-white/30">
-                                <h2 className="font-bold text-emerald-900 text-lg flex items-center gap-2">
-                                    <Sparkles className="h-5 w-5 text-teal-600" />
+                            <div className="flex items-center justify-between p-4 border-b border-white/20 dark:border-white/10 bg-white/30 dark:bg-white/5">
+                                <h2 className="font-bold text-slate-900 dark:text-slate-100 text-lg flex items-center gap-2">
+                                    <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                                     Partie en cours
                                 </h2>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50/80 border-red-300 bg-white/50"
-                                    onClick={() => { if (confirm('Arrêter et réinitialiser la partie ?')) resetGame(); }}
-                                >
-                                    Arrêter
-                                </Button>
+                                <div className="flex gap-2">
+                                    {rounds.length > 0 && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="text-amber-600 hover:text-amber-700 hover:bg-amber-50/80 border-amber-300 bg-white/50 dark:bg-white/10 dark:text-amber-400 dark:border-amber-600"
+                                            onClick={() => { if (confirm('Annuler la dernière manche ?')) undoLastRound(); }}
+                                        >
+                                            <Undo2 className="h-4 w-4 mr-1" />
+                                            Annuler
+                                        </Button>
+                                    )}
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-50/80 border-red-300 bg-white/50 dark:bg-white/10 dark:text-red-400 dark:border-red-600"
+                                        onClick={() => { if (confirm('Arrêter et réinitialiser la partie ?')) resetGame(); }}
+                                    >
+                                        Arrêter
+                                    </Button>
+                                </div>
                             </div>
 
                             {/* History List */}
                             {rounds.length > 0 && (
-                                <div className="p-4 border-b border-white/20">
-                                    <h3 className="text-sm font-semibold text-slate-600 mb-3">Manches précédentes</h3>
+                                <div className="p-4 border-b border-white/20 dark:border-white/10">
+                                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Manches précédentes</h3>
                                     <RoundHistory rounds={rounds} players={players} isFullPage={false} showHeader={false} />
                                 </div>
                             )}
+
 
                             {/* Embedded Score Input - Always visible for continuous entry */}
                             <div className="p-4">
                                 <div className="flex items-center gap-4 mb-4">
                                     <div className="h-px bg-gradient-to-r from-transparent via-emerald-300 to-transparent flex-1"></div>
-                                    <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider bg-emerald-50/80 px-3 py-1 rounded-full">
+                                    <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider bg-emerald-100 dark:bg-emerald-900/50 px-3 py-1 rounded-full">
                                         Nouvelle Manche {rounds.length + 1}
                                     </span>
                                     <div className="h-px bg-gradient-to-r from-transparent via-emerald-300 to-transparent flex-1"></div>

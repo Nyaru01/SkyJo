@@ -4,8 +4,10 @@ import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { cn } from '../lib/utils';
+import { useFeedback } from '../hooks/useFeedback';
 
 export default function ScoreInput({ players, onSave, onCancel, isEmbedded = false, rounds = [] }) {
+    const { playSuccess, playError, playClick } = useFeedback();
     const [scores, setScores] = useState(
         players.reduce((acc, p) => ({ ...acc, [p.id]: '' }), {})
     );
@@ -19,6 +21,7 @@ export default function ScoreInput({ players, onSave, onCancel, isEmbedded = fal
     const handleSubmit = () => {
         if (!finisher) {
             setError('Veuillez sélectionner le joueur qui a fini la manche.');
+            playError();
             return;
         }
         const rawScores = {};
@@ -26,37 +29,39 @@ export default function ScoreInput({ players, onSave, onCancel, isEmbedded = fal
             const val = scores[p.id];
             if (val === '' || val === undefined || isNaN(parseInt(val))) {
                 setError(`Veuillez entrer le score pour ${p.name}.`);
+                playError();
                 return;
             }
             rawScores[p.id] = parseInt(val);
         }
         setError('');
+        playSuccess();
         onSave(rawScores, finisher);
     };
 
     const content = (
-        <Card className={cn("w-full transition-all border-white/20 bg-white/30 backdrop-blur-xl shadow-2xl", !isEmbedded && "max-w-lg")}>
-            <CardHeader className="border-b border-white/20 pb-4">
-                <CardTitle className="text-center text-emerald-900 drop-shadow-sm">
+        <Card className={cn("w-full transition-all border-white/20 dark:border-white/10 bg-white/30 dark:bg-slate-800/80 backdrop-blur-xl shadow-2xl", !isEmbedded && "max-w-lg")}>
+            <CardHeader className="border-b border-white/20 dark:border-white/10 pb-4">
+                <CardTitle className="text-center text-slate-900 dark:text-slate-100">
                     {isEmbedded ? "Nouvelle Manche" : "Fin de manche"}
                 </CardTitle>
-                <p className="text-center text-slate-600 font-medium text-sm">Entrez les scores des cartes restantes</p>
+                <p className="text-center text-slate-600 dark:text-slate-300 font-medium text-sm">Entrez les scores des cartes restantes</p>
             </CardHeader>
 
             <CardContent className="space-y-6 pt-6">
                 {error && (
-                    <div className="bg-red-50 text-red-600 p-3 rounded-lg flex items-center gap-2 text-sm font-medium animate-in slide-in-from-top-1 border border-red-100">
+                    <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg flex items-center gap-2 text-sm font-medium animate-in slide-in-from-top-1 border border-red-100 dark:border-red-800">
                         <AlertCircle className="h-4 w-4" />
                         {error}
                     </div>
                 )}
 
                 <div className="space-y-3">
-                    <div className="flex items-center justify-between text-xs font-bold text-slate-600 px-4 uppercase tracking-wide">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-400 px-4 uppercase tracking-wide">
                         <span>Joueur</span>
                         <div className="flex items-center gap-4 text-right">
-                            <span className="w-20 text-center text-slate-600">Manche</span>
-                            <span className="w-14 text-center text-slate-600">Total</span>
+                            <span className="w-20 text-center">Manche</span>
+                            <span className="w-14 text-center">Total</span>
                         </div>
                     </div>
 
@@ -71,7 +76,9 @@ export default function ScoreInput({ players, onSave, onCancel, isEmbedded = fal
                                 key={p.id}
                                 className={cn(
                                     "relative flex items-center justify-between p-3 rounded-xl border-2 transition-all cursor-pointer duration-500 animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards shadow-sm",
-                                    isFinisher ? "border-emerald-500 bg-emerald-50/90" : "border-white/20 bg-white/40 hover:bg-white/60 hover:border-white/40"
+                                    isFinisher
+                                        ? "border-emerald-500 bg-emerald-50/90 dark:bg-emerald-900/40"
+                                        : "border-white/20 dark:border-white/10 bg-white/40 dark:bg-slate-700/50 hover:bg-white/60 dark:hover:bg-slate-600/50 hover:border-white/40"
                                 )}
                                 style={{ animationDelay: `${index * 100}ms` }}
                                 onClick={() => setFinisher(p.id)}
@@ -80,25 +87,31 @@ export default function ScoreInput({ players, onSave, onCancel, isEmbedded = fal
                                     {/* Finisher Selection */}
                                     <div className={cn(
                                         "w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
-                                        isFinisher ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-400 bg-white/50"
+                                        isFinisher ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-400 dark:border-slate-500 bg-white/50 dark:bg-slate-600/50"
                                     )}>
                                         {isFinisher && <Check className="h-4 w-4" strokeWidth={3} />}
                                     </div>
 
-                                    {/* Player Avatar with Initials - Always visible */}
+                                    {/* Player Avatar with Emoji + Initials */}
                                     <div className={cn(
-                                        "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 shadow-sm",
-                                        isFinisher ? "bg-emerald-500 text-white" : "bg-gradient-to-br from-slate-100 to-slate-200 text-slate-700"
+                                        "w-10 h-10 rounded-full flex flex-col items-center justify-center shrink-0 shadow-sm relative",
+                                        isFinisher ? "bg-emerald-500" : "bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-600 dark:to-slate-700"
                                     )}>
-                                        {p.name.slice(0, 2).toUpperCase()}
+                                        <span className="text-lg leading-none">{p.emoji || '👤'}</span>
+                                        <span className={cn(
+                                            "text-[8px] font-bold leading-none",
+                                            isFinisher ? "text-emerald-100" : "text-slate-500 dark:text-slate-300"
+                                        )}>
+                                            {p.name.slice(0, 2).toUpperCase()}
+                                        </span>
                                     </div>
 
                                     {/* Player Name & Current Total - Hidden on small screens */}
                                     <div className="hidden sm:flex flex-col min-w-0">
-                                        <span className={cn("font-bold truncate text-base leading-tight", isFinisher ? "text-emerald-900" : "text-slate-900")}>
+                                        <span className={cn("font-bold truncate text-base leading-tight", isFinisher ? "text-emerald-900 dark:text-emerald-300" : "text-slate-900 dark:text-slate-100")}>
                                             {p.name}
                                         </span>
-                                        <span className={cn("text-xs font-semibold", isFinisher ? "text-emerald-700" : "text-slate-500")}>
+                                        <span className={cn("text-xs font-semibold", isFinisher ? "text-emerald-700 dark:text-emerald-400" : "text-slate-500 dark:text-slate-400")}>
                                             Actuel: {previousTotal}
                                         </span>
                                     </div>
@@ -115,7 +128,9 @@ export default function ScoreInput({ players, onSave, onCancel, isEmbedded = fal
                                             onChange={(e) => handleScoreChange(p.id, e.target.value)}
                                             className={cn(
                                                 "w-20 text-center font-mono text-xl h-12 shadow-sm transition-colors",
-                                                scores[p.id] !== '' ? "font-bold text-slate-900 border-emerald-500 ring-2 ring-emerald-100 bg-white/80" : "bg-white/50 border-white/30 focus:bg-white/80"
+                                                scores[p.id] !== ''
+                                                    ? "font-bold text-slate-900 dark:text-white border-emerald-500 ring-2 ring-emerald-100 dark:ring-emerald-900 bg-white/80 dark:bg-slate-700"
+                                                    : "bg-white/50 dark:bg-slate-600/50 border-white/30 dark:border-slate-500 dark:text-white focus:bg-white/80 dark:focus:bg-slate-600"
                                             )}
                                             placeholder="0"
                                         />
@@ -123,7 +138,7 @@ export default function ScoreInput({ players, onSave, onCancel, isEmbedded = fal
 
                                     {/* Total Display */}
                                     <div className="w-14 text-center flex flex-col justify-center">
-                                        <span className={cn("text-lg font-black tabular-nums drop-shadow-sm", isFinisher ? "text-emerald-800" : "text-slate-800")}>
+                                        <span className={cn("text-lg font-black tabular-nums drop-shadow-sm", isFinisher ? "text-emerald-800 dark:text-emerald-300" : "text-slate-800 dark:text-slate-200")}>
                                             {newTotal}
                                         </span>
                                     </div>
@@ -140,9 +155,9 @@ export default function ScoreInput({ players, onSave, onCancel, isEmbedded = fal
                     })}
 
                     {/* Round Summary */}
-                    <div className="flex justify-between items-center px-4 py-2 mt-2 bg-slate-50 rounded-lg border border-slate-100">
-                        <span className="text-xs font-medium text-slate-500 uppercase">Total Manche</span>
-                        <span className="font-mono font-bold text-slate-700">
+                    <div className="flex justify-between items-center px-4 py-2 mt-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-100 dark:border-slate-600">
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Total Manche</span>
+                        <span className="font-mono font-bold text-slate-700 dark:text-slate-200">
                             {Object.values(scores).reduce((sum, val) => sum + (parseInt(val) || 0), 0)} pts
                         </span>
                     </div>
