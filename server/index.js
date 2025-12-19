@@ -335,9 +335,29 @@ io.on('connection', (socket) => {
     });
 });
 
+// Health check endpoint for Railway
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Catch-all route for SPA (React Router)
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist', 'index.html'));
+    const indexPath = path.join(__dirname, '../dist', 'index.html');
+    res.sendFile(indexPath, (err) => {
+        if (err) {
+            // If index.html doesn't exist, send a basic response
+            res.status(200).send(`
+                <!DOCTYPE html>
+                <html>
+                <head><title>SkyJo</title></head>
+                <body>
+                    <h1>SkyJo Server Running</h1>
+                    <p>Build files not found. The app may still be building.</p>
+                </body>
+                </html>
+            `);
+        }
+    });
 });
 
 const PORT = process.env.PORT || 3000;
