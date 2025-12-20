@@ -94,14 +94,3 @@ joueur sont ajoutés au score total obtenu lors des
 manches précédentes. Le jeu se termine dès qu’un
 joueur atteint 100 points ou plus. Le joueur avec le
 plus petit score gagne la partie.
-Alexander Bernhardt
-Fontanestraße 6
-57610 Altenkirchen
-Germany
-info@magilano.eu
-Distribué dans les
-pays francophones
-par Blackrock Games
-10, rue des Pâles
-63540 Romagnat
-3

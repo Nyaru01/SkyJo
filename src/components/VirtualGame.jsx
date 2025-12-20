@@ -389,7 +389,10 @@ export default function VirtualGame() {
 
                                 <section>
                                     <h3 className="font-bold text-amber-600 dark:text-amber-400 mb-2">✨ Colonnes identiques</h3>
-                                    <p>Si une colonne contient <strong>3 cartes identiques</strong> (toutes face visible), elle est <strong>éliminée</strong> !</p>
+                                    <p className="mb-2">Si une colonne contient <strong>3 cartes identiques</strong> (toutes face visible), elle est <strong>éliminée</strong> !</p>
+                                    <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-xs border border-amber-200 dark:border-amber-700">
+                                        <strong>⚠️ Ordre important :</strong> D'abord défausser la carte échangée, PUIS les 3 cartes identiques par-dessus.
+                                    </div>
                                 </section>
 
                                 <section>
