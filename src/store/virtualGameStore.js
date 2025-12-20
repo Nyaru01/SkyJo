@@ -14,6 +14,13 @@ import {
     calculateFinalScores,
     getValidActions,
 } from '../lib/skyjoEngine';
+import {
+    AI_DIFFICULTY,
+    AI_NAMES,
+    chooseInitialCardsToReveal,
+    decideDrawSource,
+    decideCardAction,
+} from '../lib/skyjoAI';
 
 export const useVirtualGameStore = create((set, get) => ({
     // Game state
@@ -31,6 +38,12 @@ export const useVirtualGameStore = create((set, get) => ({
     selectedCardIndex: null,
     showScores: false,
     animatingCards: [],
+
+    // AI mode state
+    aiMode: false,
+    aiPlayers: [], // Indices of AI players
+    aiDifficulty: AI_DIFFICULTY.NORMAL,
+    isAIThinking: false,
 
     /**
      * Start a new local game (full game with multiple rounds)
@@ -52,7 +65,121 @@ export const useVirtualGameStore = create((set, get) => ({
             gameWinner: null,
             selectedCardIndex: null,
             showScores: false,
+            aiMode: false,
+            aiPlayers: [],
         });
+    },
+
+    /**
+     * Start a new AI game (human vs AI players)
+     */
+    startAIGame: (humanPlayer, aiCount = 1, difficulty = AI_DIFFICULTY.NORMAL) => {
+        // Create players array: human first, then AI players
+        const players = [
+            { id: 'human-1', name: humanPlayer.name || 'Joueur', emoji: humanPlayer.emoji || '🐱' },
+        ];
+
+        const aiPlayerIndices = [];
+        for (let i = 0; i < aiCount; i++) {
+            players.push({
+                id: `ai-${i + 1}`,
+                name: AI_NAMES[i] || `🤖 Bot ${i + 1}`,
+                emoji: '🤖',
+            });
+            aiPlayerIndices.push(i + 1); // AI players are at indices 1, 2, 3...
+        }
+
+        const gameState = initializeGame(players);
+        const totalScores = {};
+        players.forEach(p => {
+            totalScores[p.id] = 0;
+        });
+
+        set({
+            gameState,
+            gameMode: 'ai',
+            roomCode: null,
+            totalScores,
+            roundNumber: 1,
+            isGameOver: false,
+            gameWinner: null,
+            selectedCardIndex: null,
+            showScores: false,
+            aiMode: true,
+            aiPlayers: aiPlayerIndices,
+            aiDifficulty: difficulty,
+            isAIThinking: false,
+        });
+    },
+
+    /**
+     * Set AI thinking state (for UI indicator)
+     */
+    setAIThinking: (isThinking) => {
+        set({ isAIThinking: isThinking });
+    },
+
+    /**
+     * Execute AI turn - called automatically when it's an AI player's turn
+     */
+    executeAITurn: () => {
+        const { gameState, aiDifficulty, aiPlayers } = get();
+        if (!gameState) return;
+
+        const currentPlayerIndex = gameState.currentPlayerIndex;
+        if (!aiPlayers.includes(currentPlayerIndex)) return;
+
+        const phase = gameState.phase;
+        const turnPhase = gameState.turnPhase;
+
+        // Handle initial reveal phase
+        if (phase === 'INITIAL_REVEAL') {
+            const currentPlayer = gameState.players[currentPlayerIndex];
+            const revealedCount = currentPlayer.hand.filter(c => c && c.isRevealed).length;
+
+            if (revealedCount < 2) {
+                const cardsToReveal = chooseInitialCardsToReveal(currentPlayer.hand, aiDifficulty);
+                const newState = revealInitialCards(gameState, currentPlayerIndex, cardsToReveal);
+                set({ gameState: newState, isAIThinking: false });
+            }
+            return;
+        }
+
+        // Handle playing/final round phase
+        if (phase === 'PLAYING' || phase === 'FINAL_ROUND') {
+            if (turnPhase === 'DRAW') {
+                // Step 1: Decide where to draw from
+                const drawSource = decideDrawSource(gameState, aiDifficulty);
+                let newState;
+
+                if (drawSource === 'DISCARD_PILE' && gameState.discardPile.length > 0) {
+                    newState = drawFromDiscard(gameState);
+                } else {
+                    newState = drawFromPile(gameState);
+                }
+
+                set({ gameState: newState });
+                return; // Will be called again for the next phase
+            }
+
+            if (turnPhase === 'REPLACE_OR_DISCARD' || turnPhase === 'MUST_REPLACE') {
+                // Step 2: Decide what to do with drawn card
+                const decision = decideCardAction(gameState, aiDifficulty);
+                let newState;
+
+                if (decision.action === 'REPLACE') {
+                    newState = replaceCard(gameState, decision.cardIndex);
+                    newState = endTurn(newState);
+                } else {
+                    // DISCARD_AND_REVEAL
+                    newState = discardAndReveal(gameState, decision.cardIndex);
+                    newState = endTurn(newState);
+                }
+
+                set({ gameState: newState, selectedCardIndex: null, isAIThinking: false });
+                return;
+            }
+        }
     },
 
     /**
@@ -205,6 +332,10 @@ export const useVirtualGameStore = create((set, get) => ({
             gameWinner: null,
             selectedCardIndex: null,
             showScores: false,
+            aiMode: false,
+            aiPlayers: [],
+            aiDifficulty: AI_DIFFICULTY.NORMAL,
+            isAIThinking: false,
         });
     },
 
@@ -316,3 +447,13 @@ export const selectTotalScores = (state) => state.totalScores;
 export const selectRoundNumber = (state) => state.roundNumber;
 export const selectIsGameOver = (state) => state.isGameOver;
 export const selectGameWinner = (state) => state.gameWinner;
+
+// AI selectors
+export const selectAIMode = (state) => state.aiMode;
+export const selectAIPlayers = (state) => state.aiPlayers;
+export const selectAIDifficulty = (state) => state.aiDifficulty;
+export const selectIsAIThinking = (state) => state.isAIThinking;
+export const selectIsCurrentPlayerAI = (state) => {
+    if (!state.gameState || !state.aiMode) return false;
+    return state.aiPlayers.includes(state.gameState.currentPlayerIndex);
+};

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Users, ArrowLeft, RotateCcw, Trophy, Info, Sparkles, CheckCircle, BookOpen, X } from 'lucide-react';
+import { Play, Users, ArrowLeft, RotateCcw, Trophy, Info, Sparkles, CheckCircle, BookOpen, X, Bot } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Input } from './ui/Input';
@@ -8,10 +8,11 @@ import { Toast } from './ui/Toast';
 import PlayerHand from './virtual/PlayerHand';
 import DrawDiscard from './virtual/DrawDiscard';
 import SkyjoCard from './virtual/SkyjoCard';
-import { useVirtualGameStore } from '../store/virtualGameStore';
+import { useVirtualGameStore, selectAIMode, selectAIPlayers, selectIsCurrentPlayerAI, selectIsAIThinking } from '../store/virtualGameStore';
 import { useOnlineGameStore } from '../store/onlineGameStore';
 import { useGameStore } from '../store/gameStore';
 import { calculateFinalScores } from '../lib/skyjoEngine';
+import { AI_DIFFICULTY } from '../lib/skyjoAI';
 import { useFeedback } from '../hooks/useFeedback';
 import { cn } from '../lib/utils';
 import { Copy, Wifi, WifiOff, Share2 } from 'lucide-react';
@@ -54,6 +55,15 @@ export default function VirtualGame() {
     const startNextRound = useVirtualGameStore((s) => s.startNextRound);
     const getFinalScores = useVirtualGameStore((s) => s.getFinalScores);
 
+    // AI Store
+    const startAIGame = useVirtualGameStore((s) => s.startAIGame);
+    const executeAITurn = useVirtualGameStore((s) => s.executeAITurn);
+    const setAIThinking = useVirtualGameStore((s) => s.setAIThinking);
+    const aiMode = useVirtualGameStore(selectAIMode);
+    const aiPlayers = useVirtualGameStore(selectAIPlayers);
+    const isCurrentPlayerAI = useVirtualGameStore(selectIsCurrentPlayerAI);
+    const isAIThinking = useVirtualGameStore(selectIsAIThinking);
+
     // Online Store
     const isOnlineConnected = useOnlineGameStore(s => s.isConnected);
     const onlineGameState = useOnlineGameStore(s => s.gameState);
@@ -92,6 +102,14 @@ export default function VirtualGame() {
     const [notification, setNotification] = useState(null);
     const [hasPlayedVictory, setHasPlayedVictory] = useState(false);
     const [showRulesModal, setShowRulesModal] = useState(false);
+
+    // AI Config State
+    const [aiConfig, setAIConfig] = useState({
+        playerName: '',
+        playerEmoji: '🐱',
+        aiCount: 1,
+        difficulty: AI_DIFFICULTY.NORMAL,
+    });
 
     // Feedback sounds
     const { playVictory } = useFeedback();
@@ -154,6 +172,37 @@ export default function VirtualGame() {
             setHasArchivedOnline(false);
         }
     }, [onlineIsGameOver, onlineGameStarted, hasArchivedOnline, onlinePlayers, onlineTotalScores, onlineGameWinner, onlineRoundNumber, archiveOnlineGame]);
+
+    // AI Auto-play: Execute AI turns automatically with delay
+    useEffect(() => {
+        if (!aiMode || !gameState) return;
+        if (gameState.phase === 'FINISHED') return;
+        if (!isCurrentPlayerAI) return;
+
+        // Set AI thinking state and execute turn after delay
+        setAIThinking(true);
+
+        const delay = gameState.phase === 'INITIAL_REVEAL' ? 800 : 1200;
+        const timer = setTimeout(() => {
+            executeAITurn();
+
+            // If AI still needs to make another action (e.g., after drawing), set another timer
+            const checkNextAction = setTimeout(() => {
+                const currentState = useVirtualGameStore.getState().gameState;
+                if (currentState &&
+                    currentState.currentPlayerIndex !== undefined &&
+                    useVirtualGameStore.getState().aiPlayers.includes(currentState.currentPlayerIndex) &&
+                    (currentState.turnPhase === 'REPLACE_OR_DISCARD' || currentState.turnPhase === 'MUST_REPLACE')) {
+                    executeAITurn();
+                }
+                setAIThinking(false);
+            }, 800);
+
+            return () => clearTimeout(checkNextAction);
+        }, delay);
+
+        return () => clearTimeout(timer);
+    }, [aiMode, gameState?.currentPlayerIndex, gameState?.phase, gameState?.turnPhase, isCurrentPlayerAI, executeAITurn, setAIThinking]);
 
     // Add player
     const addPlayer = () => {
@@ -312,6 +361,16 @@ export default function VirtualGame() {
                             En Ligne (1v1)
                         </Button>
 
+                        <Button
+                            size="lg"
+                            variant="outline"
+                            className="w-full border-purple-300 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                            onClick={() => setScreen('ai-setup')}
+                        >
+                            <Bot className="mr-2 h-5 w-5" />
+                            Contre l'IA
+                        </Button>
+
                         <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs text-slate-600 dark:text-slate-400">
                             <div className="flex items-start gap-2">
                                 <Info className="h-4 w-4 mt-0.5 shrink-0 text-slate-500" />
@@ -419,6 +478,128 @@ export default function VirtualGame() {
                         </div>
                     </>
                 )}
+            </div>
+        );
+    }
+
+    // Render AI setup screen
+    if (screen === 'ai-setup') {
+        const handleStartAIGame = () => {
+            startAIGame(
+                { name: aiConfig.playerName || 'Joueur', emoji: aiConfig.playerEmoji },
+                aiConfig.aiCount,
+                aiConfig.difficulty
+            );
+            setInitialReveals({});
+            setScreen('game');
+        };
+
+        return (
+            <div className="max-w-md mx-auto p-4 space-y-4 animate-in fade-in">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setScreen('menu')}
+                    className="mb-2"
+                >
+                    <ArrowLeft className="h-4 w-4 mr-1" />
+                    Retour
+                </Button>
+
+                <Card className="glass-premium dark:glass-dark shadow-xl">
+                    <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2" style={{ color: '#e2e8f0' }}>
+                            <Bot className="h-5 w-5 text-purple-600" />
+                            Partie contre l'IA
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {/* Player Name */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium" style={{ color: '#cbd5e1' }}>Votre pseudo</label>
+                            <div className="flex gap-2">
+                                <select
+                                    value={aiConfig.playerEmoji}
+                                    onChange={(e) => setAIConfig({ ...aiConfig, playerEmoji: e.target.value })}
+                                    className="h-10 w-14 text-2xl text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md cursor-pointer"
+                                >
+                                    {PLAYER_EMOJIS.map(e => <option key={e} value={e}>{e}</option>)}
+                                </select>
+                                <Input
+                                    placeholder="Votre nom"
+                                    value={aiConfig.playerName}
+                                    onChange={(e) => setAIConfig({ ...aiConfig, playerName: e.target.value })}
+                                    className="flex-1"
+                                />
+                            </div>
+                        </div>
+
+                        {/* AI Count */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium" style={{ color: '#cbd5e1' }}>Nombre d'adversaires IA</label>
+                            <div className="flex gap-2">
+                                {[1, 2, 3].map(count => (
+                                    <Button
+                                        key={count}
+                                        variant={aiConfig.aiCount === count ? 'default' : 'outline'}
+                                        className={cn(
+                                            "flex-1",
+                                            aiConfig.aiCount === count && "bg-purple-600 hover:bg-purple-700 text-white"
+                                        )}
+                                        onClick={() => setAIConfig({ ...aiConfig, aiCount: count })}
+                                    >
+                                        {count} 🤖
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Difficulty */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium" style={{ color: '#cbd5e1' }}>Difficulté</label>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant={aiConfig.difficulty === AI_DIFFICULTY.EASY ? 'default' : 'outline'}
+                                    className={cn(
+                                        "flex-1",
+                                        aiConfig.difficulty === AI_DIFFICULTY.EASY && "bg-green-600 hover:bg-green-700 text-white"
+                                    )}
+                                    onClick={() => setAIConfig({ ...aiConfig, difficulty: AI_DIFFICULTY.EASY })}
+                                >
+                                    😊 Facile
+                                </Button>
+                                <Button
+                                    variant={aiConfig.difficulty === AI_DIFFICULTY.NORMAL ? 'default' : 'outline'}
+                                    className={cn(
+                                        "flex-1",
+                                        aiConfig.difficulty === AI_DIFFICULTY.NORMAL && "bg-amber-600 hover:bg-amber-700 text-white"
+                                    )}
+                                    onClick={() => setAIConfig({ ...aiConfig, difficulty: AI_DIFFICULTY.NORMAL })}
+                                >
+                                    🤔 Normal
+                                </Button>
+                                <Button
+                                    variant={aiConfig.difficulty === AI_DIFFICULTY.HARD ? 'default' : 'outline'}
+                                    className={cn(
+                                        "flex-1",
+                                        aiConfig.difficulty === AI_DIFFICULTY.HARD && "bg-red-600 hover:bg-red-700 text-white"
+                                    )}
+                                    onClick={() => setAIConfig({ ...aiConfig, difficulty: AI_DIFFICULTY.HARD })}
+                                >
+                                    😈 Difficile
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Button
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg"
+                    onClick={handleStartAIGame}
+                >
+                    🚀 Affronter l'IA
+                </Button>
             </div>
         );
     }
