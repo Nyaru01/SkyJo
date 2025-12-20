@@ -247,6 +247,16 @@ export default function VirtualGame() {
 
     // Back to menu
     const handleBackToMenu = () => {
+        // Archive online game if it was started and has data
+        if (onlineGameStarted && onlinePlayers.length > 0) {
+            archiveOnlineGame({
+                players: onlinePlayers,
+                totalScores: onlineTotalScores,
+                winner: onlineGameWinner,
+                roundsPlayed: onlineRoundNumber
+            });
+            disconnectOnline();
+        }
         resetGame();
         setScreen('menu');
     };
