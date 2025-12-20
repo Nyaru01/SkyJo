@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, X, User, Sparkles } from 'lucide-react';
+import { Plus, X, User, Sparkles, Gamepad2 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
@@ -22,7 +22,7 @@ const PLAYER_COLORS = [
     { bg: 'bg-pink-500', text: 'text-pink-700', light: 'bg-pink-100' },
 ];
 
-export default function GameSetup() {
+export default function GameSetup({ onNavigate }) {
     const [players, setPlayers] = useState([
         { name: '', emoji: '🐱' },
         { name: '', emoji: '🐶' }
@@ -85,9 +85,12 @@ export default function GameSetup() {
                         <h1 className="text-2xl font-extrabold bg-gradient-to-r from-emerald-700 via-teal-600 to-emerald-700 bg-clip-text text-transparent drop-shadow-sm dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-400">
                             Skyjo Score
                         </h1>
-                        <p className="text-slate-700 dark:text-slate-300 font-medium text-sm">Configuration de la partie</p>
+                        <p className="text-slate-700 dark:text-slate-300 font-medium text-sm">Compteur de points</p>
                     </div>
                 </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                    🃏 Pour jouer avec vos vraies cartes
+                </p>
             </div>
 
             {/* Carte Joueurs */}
@@ -184,8 +187,34 @@ export default function GameSetup() {
                 className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:via-teal-500 hover:to-emerald-500 text-white font-bold shadow-xl shadow-emerald-900/25 border border-white/20 h-12 text-base animate-pulse-glow"
                 onClick={handleStart}
             >
-                🚀 Commencer la partie
+                🚀 Commencer à compter
             </Button>
+
+            {/* Virtual Game Section */}
+            <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-slate-300/50 dark:border-slate-600/50"></div>
+                </div>
+                <div className="relative flex justify-center text-xs">
+                    <span className="bg-transparent px-2 text-slate-500 dark:text-slate-400">ou</span>
+                </div>
+            </div>
+
+            <button
+                onClick={() => onNavigate?.('virtual')}
+                className="w-full p-4 rounded-2xl glass-premium dark:glass-dark border border-purple-200/50 dark:border-purple-700/50 hover:border-purple-400 transition-all group cursor-pointer"
+            >
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                        <Gamepad2 className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="text-left flex-1">
+                        <p className="font-bold text-slate-800 dark:text-slate-200">Jouer en virtuel</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Mode local ou en ligne</p>
+                    </div>
+                    <span className="text-purple-500 dark:text-purple-400 text-lg">→</span>
+                </div>
+            </button>
 
             {/* Modal Emoji Picker - RENDU EN DEHORS DE LA BOUCLE */}
             {openEmojiPicker !== null && selectedPlayerForPicker && (

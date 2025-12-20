@@ -65,7 +65,7 @@ export default function Dashboard() {
                             transition={pageTransition}
                             className="flex flex-col items-center justify-center min-h-[60vh]"
                         >
-                            <GameSetup />
+                            <GameSetup onNavigate={setActiveTab} />
                         </motion.div>
                     );
                 }
