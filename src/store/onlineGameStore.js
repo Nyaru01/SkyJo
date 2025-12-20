@@ -12,6 +12,9 @@ const socket = io(SOCKET_URL, {
     transports: ['websocket', 'polling']
 });
 
+// Track if listeners have been set up
+let listenersInitialized = false;
+
 export const useOnlineGameStore = create((set, get) => ({
     // Connection State
     isConnected: false,
@@ -42,26 +45,34 @@ export const useOnlineGameStore = create((set, get) => ({
 
     // Actions
     connect: () => {
-        if (!socket.connected) {
+        // Set up listeners only once
+        if (!listenersInitialized) {
+            listenersInitialized = true;
+
             socket.on('connect', () => {
+                console.log('[Socket] Connected:', socket.id);
                 set({ isConnected: true, socketId: socket.id, error: null });
             });
 
             socket.on('disconnect', () => {
+                console.log('[Socket] Disconnected');
                 set({ isConnected: false, socketId: null });
             });
 
             socket.on('error', (msg) => {
+                console.log('[Socket] Error:', msg);
                 set({ error: msg });
                 // Auto-clear error after 3s
                 setTimeout(() => set({ error: null }), 3000);
             });
 
             socket.on('room_created', (roomCode) => {
+                console.log('[Socket] Room created:', roomCode);
                 set({ roomCode, isHost: true, error: null });
             });
 
             socket.on('player_list_update', (players) => {
+                console.log('[Socket] Player list update:', players);
                 // Check if we became host
                 const { socketId } = get();
                 const me = players.find(p => p.id === socketId);
@@ -69,6 +80,7 @@ export const useOnlineGameStore = create((set, get) => ({
             });
 
             socket.on('game_started', ({ gameState, totalScores, roundNumber }) => {
+                console.log('[Socket] Game started, round:', roundNumber);
                 set({
                     gameState,
                     totalScores,
@@ -85,6 +97,7 @@ export const useOnlineGameStore = create((set, get) => ({
             });
 
             socket.on('game_over', ({ totalScores, winner }) => {
+                console.log('[Socket] Game over, winner:', winner);
                 set({
                     totalScores,
                     gameWinner: winner,
@@ -101,8 +114,7 @@ export const useOnlineGameStore = create((set, get) => ({
                         timestamp: Date.now()
                     }
                 });
-
-                // If we became the new host, update isHost
+                // If we became host
                 const { socketId, players } = get();
                 const me = players.find(p => p.id === socketId);
                 if (me && newHost === me.name) {
@@ -112,6 +124,7 @@ export const useOnlineGameStore = create((set, get) => ({
 
             // Handle game cancelled (not enough players)
             socket.on('game_cancelled', ({ reason }) => {
+                console.log('[Socket] Game cancelled:', reason);
                 set({
                     gameStarted: false,
                     gameState: null,
@@ -122,7 +135,10 @@ export const useOnlineGameStore = create((set, get) => ({
                     }
                 });
             });
+        }
 
+        // Connect if not already connected
+        if (!socket.connected) {
             socket.connect();
         }
     },
@@ -136,7 +152,11 @@ export const useOnlineGameStore = create((set, get) => ({
             isConnected: false,
             roomCode: null,
             gameState: null,
-            gameStarted: false
+            gameStarted: false,
+            isGameOver: false,
+            gameWinner: null,
+            players: [],
+            roundNumber: 1
         });
     },
 
