@@ -102,6 +102,50 @@ button {
   border: 1px solid rgba(71, 85, 105, 0.5);
 }
 
+/* =============================================== */
+/* FORCED DARK MODE OVERRIDES                     */
+/* Fix for devices with light system theme         */
+/* =============================================== */
+.dark .text-slate-700 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-slate-600 {
+  color: #94a3b8 !important;
+}
+
+.dark .text-slate-800 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-slate-500 {
+  color: #64748b !important;
+}
+
+.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+.dark .bg-slate-100 {
+  background-color: rgba(51, 65, 85, 0.5) !important;
+}
+
+.dark .bg-slate-50 {
+  background-color: rgba(51, 65, 85, 0.3) !important;
+}
+
+.dark .bg-white {
+  background-color: rgba(30, 41, 59, 0.95) !important;
+}
+
+.dark .border-slate-200 {
+  border-color: rgba(71, 85, 105, 0.5) !important;
+}
+
+.dark .border-slate-300 {
+  border-color: rgba(71, 85, 105, 0.5) !important;
+}
+
 /* Effets de glow */
 .shadow-glow-emerald {
   box-shadow: 0 0 20px rgba(16, 185, 129, 0.3),
