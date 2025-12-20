@@ -87,7 +87,7 @@ const SkyjoCard = memo(function SkyjoCard({
                 >
                     {/* Card back pattern */}
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-inner">
-                        <span className="text-white text-xs font-bold">S</span>
+                        <span className="text-white text-xs font-bold">?</span>
                     </div>
                 </div>
             </motion.div>
