@@ -435,29 +435,29 @@ export default function VirtualGame() {
                             className="fixed inset-0 bg-black/60 z-[100] backdrop-blur-sm"
                             onClick={() => setShowRulesModal(false)}
                         />
-                        <div className="fixed inset-4 top-8 bottom-8 z-[110] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+                        <div className="fixed inset-4 top-8 bottom-8 z-[110] bg-slate-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
                             {/* Modal Header */}
-                            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20">
-                                <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                                    <BookOpen className="h-5 w-5 text-amber-600" />
+                            <div className="flex items-center justify-between p-4 border-b border-slate-700 bg-gradient-to-r from-amber-900/20 to-orange-900/20">
+                                <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                                    <BookOpen className="h-5 w-5 text-amber-500" />
                                     Règles de Skyjo
                                 </h2>
                                 <button
                                     onClick={() => setShowRulesModal(false)}
-                                    className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                    className="p-2 rounded-lg hover:bg-slate-700 transition-colors"
                                 >
-                                    <X className="h-5 w-5 text-slate-500" />
+                                    <X className="h-5 w-5 text-slate-400" />
                                 </button>
                             </div>
                             {/* Modal Body */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-sm text-slate-700 dark:text-slate-300">
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-sm text-slate-300">
                                 <section>
-                                    <h3 className="font-bold text-amber-600 dark:text-amber-400 mb-2">🎯 Objectif</h3>
+                                    <h3 className="font-bold text-amber-400 mb-2">🎯 Objectif</h3>
                                     <p>Avoir le <strong>moins de points possible</strong> à la fin de la partie. Le jeu se termine quand un joueur atteint 100 points.</p>
                                 </section>
 
                                 <section>
-                                    <h3 className="font-bold text-amber-600 dark:text-amber-400 mb-2">🃏 Mise en place</h3>
+                                    <h3 className="font-bold text-amber-400 mb-2">🃏 Mise en place</h3>
                                     <ul className="list-disc list-inside space-y-1">
                                         <li>Chaque joueur reçoit <strong>12 cartes face cachée</strong> (grille 3×4)</li>
                                         <li>Retournez <strong>2 cartes</strong> de votre choix</li>
@@ -466,7 +466,7 @@ export default function VirtualGame() {
                                 </section>
 
                                 <section>
-                                    <h3 className="font-bold text-amber-600 dark:text-amber-400 mb-2">🔄 Tour de jeu</h3>
+                                    <h3 className="font-bold text-amber-400 mb-2">🔄 Tour de jeu</h3>
                                     <p className="mb-2">Piochez une carte de la <strong>pioche</strong> ou de la <strong>défausse</strong> :</p>
                                     <ul className="list-disc list-inside space-y-1">
                                         <li><strong>Pioche</strong> : Gardez-la pour remplacer une carte OU défaussez-la et retournez une carte cachée</li>
@@ -475,15 +475,15 @@ export default function VirtualGame() {
                                 </section>
 
                                 <section>
-                                    <h3 className="font-bold text-amber-600 dark:text-amber-400 mb-2">✨ Colonnes identiques</h3>
+                                    <h3 className="font-bold text-amber-400 mb-2">✨ Colonnes identiques</h3>
                                     <p className="mb-2">Si une colonne contient <strong>3 cartes identiques</strong> (toutes face visible), elle est <strong>éliminée</strong> !</p>
-                                    <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-xs border border-amber-200 dark:border-amber-700">
+                                    <div className="p-2 bg-amber-900/20 rounded-lg text-xs border border-amber-700">
                                         <strong>⚠️ Ordre important :</strong> D'abord défausser la carte échangée, PUIS les 3 cartes identiques par-dessus.
                                     </div>
                                 </section>
 
                                 <section>
-                                    <h3 className="font-bold text-amber-600 dark:text-amber-400 mb-2">🏁 Fin de manche</h3>
+                                    <h3 className="font-bold text-amber-400 mb-2">🏁 Fin de manche</h3>
                                     <ul className="list-disc list-inside space-y-1">
                                         <li>La manche se termine quand un joueur retourne toutes ses cartes</li>
                                         <li>Les autres joueurs jouent <strong>un dernier tour</strong></li>
@@ -492,13 +492,13 @@ export default function VirtualGame() {
                                 </section>
 
                                 <section>
-                                    <h3 className="font-bold text-amber-600 dark:text-amber-400 mb-2">🏆 Valeurs des cartes</h3>
+                                    <h3 className="font-bold text-amber-400 mb-2">🏆 Valeurs des cartes</h3>
                                     <div className="grid grid-cols-2 gap-2">
-                                        <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg text-center">
-                                            <span className="font-bold text-red-600">-2</span> à <span className="font-bold text-red-600">12</span>
+                                        <div className="p-2 bg-red-900/30 rounded-lg text-center">
+                                            <span className="font-bold text-red-400">-2</span> à <span className="font-bold text-red-400">12</span>
                                         </div>
-                                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-center">
-                                            <span className="font-bold text-blue-600">0</span> = neutre
+                                        <div className="p-2 bg-blue-900/30 rounded-lg text-center">
+                                            <span className="font-bold text-blue-400">0</span> = neutre
                                         </div>
                                     </div>
                                 </section>
