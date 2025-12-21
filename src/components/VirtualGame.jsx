@@ -364,8 +364,12 @@ export default function VirtualGame() {
                     <div className="absolute inset-0 animate-shimmer opacity-10 pointer-events-none" />
                     <CardHeader className="text-center">
                         <div className="flex justify-center mb-3">
-                            <div className="w-16 h-16 rounded-2xl gradient-winner flex items-center justify-center shadow-glow-emerald animate-float">
-                                <Sparkles className="h-8 w-8 text-white" />
+                            <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-glow-emerald animate-float overflow-hidden bg-slate-900 border border-emerald-500/30">
+                                <img
+                                    src="/logo.jpg"
+                                    alt="Skyjo Logo"
+                                    className="w-full h-full object-cover"
+                                />
                             </div>
                         </div>
                         <CardTitle className="text-2xl bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">

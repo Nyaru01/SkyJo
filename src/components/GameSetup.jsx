@@ -78,8 +78,12 @@ export default function GameSetup({ onNavigate }) {
             <div className="text-center glass-premium dark:glass-dark p-4 rounded-2xl shadow-xl relative overflow-hidden">
                 <div className="absolute inset-0 animate-shimmer opacity-20 pointer-events-none" />
                 <div className="relative z-10 flex items-center justify-center gap-4">
-                    <div className="w-12 h-12 rounded-xl gradient-winner flex items-center justify-center shadow-glow-emerald animate-float">
-                        <Sparkles className="h-6 w-6 text-white" />
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-glow-emerald animate-float overflow-hidden bg-slate-900 border border-emerald-500/30">
+                        <img
+                            src="/logo.jpg"
+                            alt="Skyjo Logo"
+                            className="w-full h-full object-cover"
+                        />
                     </div>
                     <div className="text-left">
                         <h1 className="text-2xl font-extrabold bg-gradient-to-r from-emerald-700 via-teal-600 to-emerald-700 bg-clip-text text-transparent drop-shadow-sm dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-400">
@@ -189,8 +193,12 @@ export default function GameSetup({ onNavigate }) {
                 className="w-full p-4 rounded-2xl glass-premium dark:glass-dark border border-purple-200/50 dark:border-purple-700/50 hover:border-purple-400 transition-all group cursor-pointer"
             >
                 <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                        <Gamepad2 className="h-5 w-5 text-white" />
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform overflow-hidden border border-purple-500/30 bg-slate-900">
+                        <img
+                            src="/logo.jpg"
+                            alt="Play"
+                            className="w-full h-full object-cover"
+                        />
                     </div>
                     <div className="text-left flex-1">
                         <p className="font-bold" style={{ color: '#e2e8f0' }}>Jouer en virtuel</p>
