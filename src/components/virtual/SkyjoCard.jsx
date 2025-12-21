@@ -28,12 +28,12 @@ const SkyjoCard = memo(function SkyjoCard({
             fontSize: 'clamp(0.8rem, 2.4vw, 1.2rem)'
         },
         sm: {
-            width: 'clamp(2.25rem, 6.5vw, 3rem)',
+            width: 'clamp(2.5rem, 7.5vw, 3.5rem)', // Widened
             height: 'clamp(3.375rem, 9.75vh, 4.5rem)', // 2:3 ratio
             fontSize: 'clamp(1.1rem, 3vw, 1.5rem)'
         },
         md: {
-            width: 'clamp(2.75rem, 7.5vw, 3.5rem)',
+            width: 'clamp(3rem, 8.5vw, 4.25rem)', // Widened
             height: 'clamp(4.125rem, 11.25vh, 5.25rem)', // 2:3 ratio
             fontSize: 'clamp(1.3rem, 3.5vw, 2rem)'
         },

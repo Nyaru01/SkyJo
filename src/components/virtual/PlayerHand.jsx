@@ -72,7 +72,7 @@ const PlayerHand = memo(function PlayerHand({
             {showName && (
                 <div
                     className={cn(
-                        "absolute left-1/2 -translate-x-1/2 px-3 py-1 rounded-full font-bold shadow-lg whitespace-nowrap uppercase tracking-wide flex items-center gap-2",
+                        "absolute left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full font-bold shadow-lg whitespace-nowrap uppercase tracking-wide flex items-center gap-2",
                         isCurrentPlayer && !isOpponent
                             ? "bg-emerald-500 text-white"
                             : isCurrentPlayer && isOpponent
@@ -82,21 +82,21 @@ const PlayerHand = memo(function PlayerHand({
                                     : "bg-emerald-600 text-white"
                     )}
                     style={{
-                        fontSize: '12px',
+                        fontSize: '11px',
                         zIndex: 50,
-                        top: '-14px', // Slightly adjusted
+                        top: '-12px', // Slightly adjusted
                     }}
                 >
                     {isOpponent ? (
-                        <span className="text-base">🤖 BOT</span>
+                        <span className="text-xs">🤖 BOT</span>
                     ) : (
-                        <span className="text-base">👤 VOUS</span>
+                        <span className="text-xs">👤 VOUS</span>
                     )}
                     {/* Score: 16pt minimum, bold */}
                     <span
                         className="font-black"
                         style={{
-                            fontSize: '16pt',
+                            fontSize: '14pt',
                             fontFamily: "'Outfit', system-ui, sans-serif",
                         }}
                     >
