@@ -4,12 +4,93 @@ import { cn } from '../../lib/utils';
 import { CARD_COLORS } from '../../lib/skyjoEngine';
 
 /**
- * Skyjo Card Component
- * Displays a card with flip animation, value, and color coding
- * 
- * Card sizes now scale dynamically with viewport height so the game
- * fits on mobile screens without scrolling.
+ * Skyjo Card Component - Skeuomorphic Design
+ * Reproduces the physical Skyjo card appearance with mosaic texture
  */
+
+// Mosaic color schemes for each card color
+const MOSAIC_COLORS = {
+    indigo: {
+        primary: '#4338ca',
+        secondary: '#6366f1',
+        tertiary: '#818cf8',
+        light: '#a5b4fc',
+        lines: 'rgba(255,255,255,0.3)',
+    },
+    blue: {
+        primary: '#2563eb',
+        secondary: '#3b82f6',
+        tertiary: '#60a5fa',
+        light: '#93c5fd',
+        lines: 'rgba(255,255,255,0.3)',
+    },
+    cyan: {
+        primary: '#0891b2',
+        secondary: '#06b6d4',
+        tertiary: '#22d3ee',
+        light: '#67e8f9',
+        lines: 'rgba(255,255,255,0.3)',
+    },
+    green: {
+        primary: '#059669',
+        secondary: '#10b981',
+        tertiary: '#34d399',
+        light: '#6ee7b7',
+        lines: 'rgba(255,255,255,0.25)',
+    },
+    yellow: {
+        primary: '#ca8a04',
+        secondary: '#eab308',
+        tertiary: '#facc15',
+        light: '#fde047',
+        lines: 'rgba(255,255,255,0.2)',
+    },
+    orange: {
+        primary: '#ea580c',
+        secondary: '#f97316',
+        tertiary: '#fb923c',
+        light: '#fdba74',
+        lines: 'rgba(255,255,255,0.25)',
+    },
+    red: {
+        primary: '#dc2626',
+        secondary: '#ef4444',
+        tertiary: '#f87171',
+        light: '#fca5a5',
+        lines: 'rgba(255,255,255,0.25)',
+    },
+};
+
+// Generate mosaic SVG pattern
+const MosaicPattern = ({ colors, id }) => (
+    <svg width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0 }}>
+        <defs>
+            <pattern id={`mosaic-${id}`} patternUnits="userSpaceOnUse" width="30" height="30">
+                {/* Gradient background */}
+                <rect width="30" height="30" fill={colors.secondary} />
+
+                {/* Irregular polygon cells to create mosaic/stained glass effect */}
+                <polygon points="0,0 15,5 10,15 0,12" fill={colors.primary} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="15,5 30,0 30,10 20,15 10,15" fill={colors.tertiary} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="0,12 10,15 5,30 0,30" fill={colors.tertiary} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="10,15 20,15 15,30 5,30" fill={colors.light} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="20,15 30,10 30,25 25,30 15,30" fill={colors.secondary} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="30,25 30,30 25,30" fill={colors.primary} stroke={colors.lines} strokeWidth="0.5" />
+            </pattern>
+
+            {/* Gradient overlay for depth */}
+            <linearGradient id={`depth-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="rgba(255,255,255,0.15)" />
+                <stop offset="50%" stopColor="rgba(255,255,255,0)" />
+                <stop offset="100%" stopColor="rgba(0,0,0,0.1)" />
+            </linearGradient>
+        </defs>
+
+        <rect width="100%" height="100%" fill={`url(#mosaic-${id})`} />
+        <rect width="100%" height="100%" fill={`url(#depth-${id})`} />
+    </svg>
+);
+
 const SkyjoCard = memo(function SkyjoCard({
     card,
     size = 'md',
@@ -19,35 +100,41 @@ const SkyjoCard = memo(function SkyjoCard({
     onClick,
     className,
 }) {
-    // Dynamic sizing based on viewport - STRICT 2:3 RATIO (width:height)
-    // Cards use standard playing card proportions
+    // Dynamic sizing - 2:3 ratio
     const sizeStyles = {
         xs: {
             width: 'clamp(1.5rem, 5vw, 2.25rem)',
-            height: 'clamp(2.25rem, 7.5vh, 3.375rem)', // 2:3 ratio
-            fontSize: 'clamp(0.8rem, 2.4vw, 1.2rem)'
+            height: 'clamp(2.25rem, 7.5vh, 3.375rem)',
+            fontSize: 'clamp(0.8rem, 2.4vw, 1.2rem)',
+            cornerSize: '0.4rem',
+            cornerFont: '0.35rem',
         },
         sm: {
-            width: 'clamp(2.625rem, 7.5vw, 3.625rem)', // +2px
-            height: 'clamp(3.375rem, 9.75vh, 4.5rem)', // 2:3 ratio
-            fontSize: 'clamp(1.1rem, 3vw, 1.5rem)'
+            width: 'clamp(2.625rem, 7.5vw, 3.625rem)',
+            height: 'clamp(3.375rem, 9.75vh, 4.5rem)',
+            fontSize: 'clamp(1.1rem, 3vw, 1.5rem)',
+            cornerSize: '0.6rem',
+            cornerFont: '0.45rem',
         },
         md: {
-            width: 'clamp(3.125rem, 8.5vw, 4.375rem)', // +2px
-            height: 'clamp(4.125rem, 11.25vh, 5.25rem)', // 2:3 ratio
-            fontSize: 'clamp(1.3rem, 3.5vw, 2rem)'
+            width: 'clamp(3.125rem, 8.5vw, 4.375rem)',
+            height: 'clamp(4.125rem, 11.25vh, 5.25rem)',
+            fontSize: 'clamp(1.3rem, 3.5vw, 2rem)',
+            cornerSize: '0.75rem',
+            cornerFont: '0.5rem',
         },
         lg: {
             width: 'clamp(3.5rem, 9vw, 4.5rem)',
-            height: 'clamp(5.25rem, 13.5vh, 6.75rem)', // 2:3 ratio
-            fontSize: 'clamp(1.6rem, 4.5vw, 2.4rem)'
+            height: 'clamp(5.25rem, 13.5vh, 6.75rem)',
+            fontSize: 'clamp(1.6rem, 4.5vw, 2.4rem)',
+            cornerSize: '0.9rem',
+            cornerFont: '0.6rem',
         },
     };
 
     const currentSize = sizeStyles[size] || sizeStyles.md;
 
     if (card === null) {
-        // Empty slot (column was removed)
         return (
             <div
                 className={cn(
@@ -62,8 +149,10 @@ const SkyjoCard = memo(function SkyjoCard({
         );
     }
 
-    const colors = CARD_COLORS[card.color] || CARD_COLORS.green;
+    const mosaicColors = MOSAIC_COLORS[card.color] || MOSAIC_COLORS.green;
     const isRevealed = card.isRevealed;
+    const patternId = `${card.id}-${card.color}`;
+    const displayValue = card.value < 0 ? card.value : card.value;
 
     return (
         <motion.div
@@ -75,97 +164,135 @@ const SkyjoCard = memo(function SkyjoCard({
             style={{
                 width: currentSize.width,
                 height: currentSize.height,
-                fontSize: currentSize.fontSize,
             }}
             onClick={isClickable ? onClick : undefined}
             whileHover={isClickable ? { scale: 1.08, y: -4 } : undefined}
             whileTap={isClickable ? { scale: 0.95 } : undefined}
         >
-            {/* Extended invisible touch/click area - 8px padding around the card */}
+            {/* Extended touch area */}
             {isClickable && (
                 <div
                     className="absolute pointer-events-auto"
-                    style={{
-                        top: '-8px',
-                        left: '-8px',
-                        right: '-8px',
-                        bottom: '-8px',
-                        zIndex: 10,
-                    }}
+                    style={{ top: '-8px', left: '-8px', right: '-8px', bottom: '-8px', zIndex: 10 }}
                     onClick={onClick}
                 />
             )}
+
             <motion.div
                 className="relative w-full h-full preserve-3d transition-transform duration-500"
                 animate={{ rotateY: isRevealed ? 0 : 180 }}
                 initial={false}
             >
-                {/* Front face (value visible) */}
+                {/* FRONT FACE - Skeuomorphic card design */}
                 <div
                     className={cn(
-                        "absolute inset-0 backface-hidden flex items-center justify-center font-black",
-                        colors.bg,
-                        colors.text,
+                        "absolute inset-0 backface-hidden overflow-hidden",
                         isSelected && "ring-4 ring-amber-400 ring-offset-2",
-                        isClickable && "hover:shadow-2xl",
-                        colors.glow && isRevealed && `${colors.glow}`
                     )}
                     style={{
-                        borderRadius: '12px',
-                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '10px',
+                        boxShadow: '0 6px 20px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+                        border: '3px solid white',
+                        background: mosaicColors.secondary,
                     }}
                 >
-                    {/* Glossy effect overlay */}
+                    {/* Mosaic texture pattern */}
+                    <MosaicPattern colors={mosaicColors} id={patternId} />
+
+                    {/* Top-left corner number */}
+                    <div
+                        className="absolute flex items-center justify-center"
+                        style={{
+                            top: '4px',
+                            left: '4px',
+                            width: currentSize.cornerSize,
+                            height: currentSize.cornerSize,
+                            background: 'rgba(255,255,255,0.9)',
+                            borderRadius: '50%',
+                            fontSize: currentSize.cornerFont,
+                            fontWeight: 'bold',
+                            color: mosaicColors.primary,
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                        }}
+                    >
+                        {displayValue}
+                    </div>
+
+                    {/* Bottom-right corner number (rotated) */}
+                    <div
+                        className="absolute flex items-center justify-center"
+                        style={{
+                            bottom: '4px',
+                            right: '4px',
+                            width: currentSize.cornerSize,
+                            height: currentSize.cornerSize,
+                            background: 'rgba(255,255,255,0.9)',
+                            borderRadius: '50%',
+                            fontSize: currentSize.cornerFont,
+                            fontWeight: 'bold',
+                            color: mosaicColors.primary,
+                            transform: 'rotate(180deg)',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                        }}
+                    >
+                        {displayValue}
+                    </div>
+
+                    {/* Center number with strong relief effect */}
+                    <div
+                        className="absolute inset-0 flex items-center justify-center"
+                        style={{ fontSize: currentSize.fontSize }}
+                    >
+                        <span
+                            style={{
+                                fontWeight: 900,
+                                color: '#ffffff',
+                                textShadow: '2px 2px 4px rgba(0,0,0,0.6), 0 0 8px rgba(0,0,0,0.4)',
+                                letterSpacing: '-0.02em',
+                            }}
+                        >
+                            {displayValue}
+                        </span>
+                    </div>
+
+                    {/* Glossy overlay */}
                     <div
                         className="absolute inset-0 pointer-events-none"
                         style={{
-                            borderRadius: '12px',
-                            background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 40%, transparent 60%)',
+                            borderRadius: '8px',
+                            background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 30%, transparent 50%)',
                         }}
                     />
-                    <span className="drop-shadow-md relative z-10">
-                        {card.value < 0 ? card.value : card.value}
-                    </span>
                 </div>
 
-                {/* Back face (hidden) */}
+                {/* BACK FACE */}
                 <div
                     className={cn(
                         "absolute inset-0 backface-hidden flex items-center justify-center rotate-y-180",
-                        "bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900",
                         isSelected && "ring-4 ring-amber-400 ring-offset-2",
                     )}
                     style={{
-                        borderRadius: '12px',
+                        borderRadius: '10px',
                         boxShadow: isHighlighted
                             ? '0 0 20px rgba(52, 211, 153, 0.6), 0 4px 16px rgba(0, 0, 0, 0.4)'
-                            : '0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3)',
+                            : '0 4px 16px rgba(0, 0, 0, 0.4)',
                         border: isHighlighted
-                            ? '2px solid rgba(52, 211, 153, 0.8)'
-                            : '1px solid rgba(255, 255, 255, 0.1)',
+                            ? '3px solid rgba(52, 211, 153, 0.8)'
+                            : '3px solid rgba(100, 116, 139, 0.5)',
+                        background: 'linear-gradient(135deg, #374151 0%, #1e293b 50%, #0f172a 100%)',
                     }}
                 >
-                    {/* Card back pattern - abstract geometric design */}
-                    <div
-                        className="flex items-center justify-center"
-                        style={{
-                            width: '60%',
-                            height: '60%',
-                        }}
-                    >
-                        {/* Abstract diamond/geometric pattern */}
-                        <svg className="w-full h-full" viewBox="0 0 24 24" fill="none">
-                            <rect x="6" y="6" width="12" height="12" rx="2" fill="url(#cardGrad)" transform="rotate(45 12 12)" />
-                            <circle cx="12" cy="12" r="3" fill="rgba(255,255,255,0.3)" />
-                            <defs>
-                                <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stopColor="#34d399" />
-                                    <stop offset="100%" stopColor="#0d9488" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                    </div>
+                    {/* Card back with diamond pattern */}
+                    <svg className="w-3/5 h-3/5" viewBox="0 0 24 24" fill="none">
+                        <rect x="6" y="6" width="12" height="12" rx="2" fill="url(#cardGrad)" transform="rotate(45 12 12)" />
+                        <circle cx="12" cy="12" r="3" fill="rgba(255,255,255,0.3)" />
+                        <defs>
+                            <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#34d399" />
+                                <stop offset="100%" stopColor="#0d9488" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
                 </div>
             </motion.div>
         </motion.div>

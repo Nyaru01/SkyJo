@@ -2,16 +2,76 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 
-// Card color mapping for mini preview (must match CARD_COLORS in skyjoEngine)
-const MINI_CARD_COLORS = {
-    indigo: { bg: 'bg-indigo-600', text: 'text-white' },
-    blue: { bg: 'bg-blue-500', text: 'text-white' },
-    cyan: { bg: 'bg-cyan-500', text: 'text-white' },
-    green: { bg: 'bg-emerald-500', text: 'text-white' },
-    yellow: { bg: 'bg-yellow-400', text: 'text-slate-800' },
-    orange: { bg: 'bg-orange-500', text: 'text-white' },
-    red: { bg: 'bg-red-500', text: 'text-white' },
+// Mosaic color schemes for each card color (same as SkyjoCard)
+const MOSAIC_COLORS = {
+    indigo: {
+        primary: '#4338ca',
+        secondary: '#6366f1',
+        tertiary: '#818cf8',
+        light: '#a5b4fc',
+        lines: 'rgba(255,255,255,0.3)',
+    },
+    blue: {
+        primary: '#2563eb',
+        secondary: '#3b82f6',
+        tertiary: '#60a5fa',
+        light: '#93c5fd',
+        lines: 'rgba(255,255,255,0.3)',
+    },
+    cyan: {
+        primary: '#0891b2',
+        secondary: '#06b6d4',
+        tertiary: '#22d3ee',
+        light: '#67e8f9',
+        lines: 'rgba(255,255,255,0.3)',
+    },
+    green: {
+        primary: '#059669',
+        secondary: '#10b981',
+        tertiary: '#34d399',
+        light: '#6ee7b7',
+        lines: 'rgba(255,255,255,0.25)',
+    },
+    yellow: {
+        primary: '#ca8a04',
+        secondary: '#eab308',
+        tertiary: '#facc15',
+        light: '#fde047',
+        lines: 'rgba(255,255,255,0.2)',
+    },
+    orange: {
+        primary: '#ea580c',
+        secondary: '#f97316',
+        tertiary: '#fb923c',
+        light: '#fdba74',
+        lines: 'rgba(255,255,255,0.25)',
+    },
+    red: {
+        primary: '#dc2626',
+        secondary: '#ef4444',
+        tertiary: '#f87171',
+        light: '#fca5a5',
+        lines: 'rgba(255,255,255,0.25)',
+    },
 };
+
+// Mini mosaic pattern for discard preview
+const MiniMosaicPattern = ({ colors, id }) => (
+    <svg width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0, borderRadius: '6px' }}>
+        <defs>
+            <pattern id={`mini-mosaic-${id}`} patternUnits="userSpaceOnUse" width="20" height="20">
+                <rect width="20" height="20" fill={colors.secondary} />
+                <polygon points="0,0 10,3 7,10 0,8" fill={colors.primary} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="10,3 20,0 20,7 13,10 7,10" fill={colors.tertiary} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="0,8 7,10 4,20 0,20" fill={colors.tertiary} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="7,10 13,10 10,20 4,20" fill={colors.light} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="13,10 20,7 20,17 17,20 10,20" fill={colors.secondary} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="20,17 20,20 17,20" fill={colors.primary} stroke={colors.lines} strokeWidth="0.5" />
+            </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill={`url(#mini-mosaic-${id})`} />
+    </svg>
+);
 
 /**
  * Compact trigger button for Draw/Discard popup
@@ -35,8 +95,9 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
     const isDrawPhase = turnPhase === 'DRAW';
     const isReplacePhase = turnPhase === 'REPLACE_OR_DISCARD' || turnPhase === 'MUST_REPLACE';
 
-    // Mini card preview for discard
-    const miniCardColors = discardTop ? (MINI_CARD_COLORS[discardTop.color] || MINI_CARD_COLORS.green) : null;
+    // Mini card preview for discard - use mosaic colors
+    const mosaicColors = discardTop ? (MOSAIC_COLORS[discardTop.color] || MOSAIC_COLORS.green) : null;
+    const patternId = discardTop ? `discard-${discardTop.color}` : 'discard-default';
 
     return (
         <div className="relative flex items-center justify-center gap-4 w-full">
@@ -104,26 +165,36 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                 {showDiscardPreview ? (
                     <motion.div
                         className={cn(
-                            "w-full h-full rounded-lg flex items-center justify-center relative",
-                            miniCardColors.bg,
+                            "w-full h-full rounded-lg flex items-center justify-center relative overflow-hidden",
                             canInteract ? "cursor-pointer" : "cursor-not-allowed opacity-80"
                         )}
                         style={{
                             fontSize: '16px',
                             fontWeight: 'bold',
                             boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-                            border: '2px solid rgba(255,255,255,0.3)',
+                            border: '2px solid rgba(255,255,255,0.5)',
+                            background: mosaicColors.secondary,
                         }}
                         onClick={canInteract ? (onDiscardAction || onClick) : undefined}
                         whileHover={canInteract ? { scale: 1.1, rotate: 5 } : undefined}
                         whileTap={canInteract ? { scale: 0.95 } : undefined}
                     >
-                        <span className={miniCardColors.text}>
+                        {/* Mosaic texture pattern */}
+                        <MiniMosaicPattern colors={mosaicColors} id={patternId} />
+
+                        {/* Card value - white text */}
+                        <span
+                            className="relative z-10"
+                            style={{
+                                color: '#ffffff',
+                                textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
+                            }}
+                        >
                             {discardTop.value}
                         </span>
 
                         {/* Discard Pile Count Badge */}
-                        <div className="absolute -bottom-2 -right-2 bg-slate-800 text-slate-300 text-[9px] px-1.5 py-0.5 rounded-full border border-slate-600 shadow-md">
+                        <div className="absolute -bottom-2 -right-2 bg-slate-800 text-slate-300 text-[9px] px-1.5 py-0.5 rounded-full border border-slate-600 shadow-md z-20">
                             {discardPileCount}
                         </div>
                     </motion.div>
