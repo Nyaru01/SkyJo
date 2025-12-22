@@ -59,6 +59,10 @@ export default function VirtualGame() {
     const startNextRound = useVirtualGameStore((s) => s.startNextRound);
     const getFinalScores = useVirtualGameStore((s) => s.getFinalScores);
 
+    // Notifications
+    const virtualLastNotification = useVirtualGameStore((s) => s.lastNotification);
+    const clearNotification = useVirtualGameStore((s) => s.clearNotification);
+
     // AI Store
     const startAIGame = useVirtualGameStore((s) => s.startAIGame);
     const executeAITurn = useVirtualGameStore((s) => s.executeAITurn);
@@ -82,7 +86,7 @@ export default function VirtualGame() {
     const onlineRoomCode = useOnlineGameStore(s => s.roomCode);
     const onlineIsHost = useOnlineGameStore(s => s.isHost);
     const socketId = useOnlineGameStore(s => s.socketId);
-    const lastNotification = useOnlineGameStore(s => s.lastNotification);
+    const onlineLastNotificationRaw = useOnlineGameStore(s => s.lastNotification);
     const lastAction = useOnlineGameStore(s => s.lastAction);
 
     // Main game store for archiving
@@ -127,10 +131,21 @@ export default function VirtualGame() {
 
     // Sync notifications from store
     useEffect(() => {
-        if (lastNotification) {
-            setNotification(lastNotification);
+        if (virtualLastNotification) {
+            setNotification(virtualLastNotification);
+            // Auto clear from store to avoid re-triggering
+            setTimeout(() => {
+                clearNotification();
+            }, 500);
         }
-    }, [lastNotification]);
+    }, [virtualLastNotification, clearNotification]);
+
+    // Online: Sync notifications from store
+    useEffect(() => {
+        if (onlineLastNotificationRaw) {
+            setNotification(onlineLastNotificationRaw);
+        }
+    }, [onlineLastNotificationRaw]);
 
     // Auto-navigate to game screen when online game starts
     useEffect(() => {
@@ -263,7 +278,9 @@ export default function VirtualGame() {
         if (!isCurrentPlayerAI) return;
 
         setAIThinking(true);
-        const delay = 1200;
+        setAIThinking(true);
+        // Slower delay for better readability (was 1200)
+        const delay = 2000;
         const timer = setTimeout(() => {
             executeAITurn();
 
@@ -277,7 +294,8 @@ export default function VirtualGame() {
                     executeAITurn();
                 }
                 setAIThinking(false);
-            }, 800);
+                setAIThinking(false);
+            }, 2500); // Wait longer before next action (was 800)
 
             return () => clearTimeout(checkNextAction);
         }, delay);

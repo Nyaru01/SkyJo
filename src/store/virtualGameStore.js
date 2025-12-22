@@ -43,7 +43,13 @@ export const useVirtualGameStore = create((set, get) => ({
     aiMode: false,
     aiPlayers: [], // Indices of AI players
     aiDifficulty: AI_DIFFICULTY.NORMAL,
+    aiDifficulty: AI_DIFFICULTY.NORMAL,
     isAIThinking: false,
+
+    // Notifications
+    lastNotification: null,
+
+    clearNotification: () => set({ lastNotification: null }),
 
     /**
      * Start a new local game (full game with multiple rounds)
@@ -140,7 +146,15 @@ export const useVirtualGameStore = create((set, get) => ({
             if (revealedCount < 2) {
                 const cardsToReveal = chooseInitialCardsToReveal(currentPlayer.hand, aiDifficulty);
                 const newState = revealInitialCards(gameState, currentPlayerIndex, cardsToReveal);
-                set({ gameState: newState, isAIThinking: false });
+                set({
+                    gameState: newState,
+                    isAIThinking: false,
+                    lastNotification: {
+                        type: 'info',
+                        message: `🤖 ${currentPlayer.name} a retourné 2 cartes`,
+                        timestamp: Date.now()
+                    }
+                });
             }
             return;
         }
@@ -153,12 +167,28 @@ export const useVirtualGameStore = create((set, get) => ({
                 let newState;
 
                 if (drawSource === 'DISCARD_PILE' && gameState.discardPile.length > 0) {
+                    const discardValue = gameState.discardPile[gameState.discardPile.length - 1].value;
                     newState = drawFromDiscard(gameState);
+                    set({
+                        gameState: newState,
+                        lastNotification: {
+                            type: 'info',
+                            message: `🤖 ${gameState.players[currentPlayerIndex].name} a pris dans la défausse (${discardValue})`,
+                            timestamp: Date.now()
+                        }
+                    });
                 } else {
                     newState = drawFromPile(gameState);
+                    set({
+                        gameState: newState,
+                        lastNotification: {
+                            type: 'info',
+                            message: `🤖 ${gameState.players[currentPlayerIndex].name} a pioché`,
+                            timestamp: Date.now()
+                        }
+                    });
                 }
 
-                set({ gameState: newState });
                 return; // Will be called again for the next phase
             }
 
@@ -170,13 +200,32 @@ export const useVirtualGameStore = create((set, get) => ({
                 if (decision.action === 'REPLACE') {
                     newState = replaceCard(gameState, decision.cardIndex);
                     newState = endTurn(newState);
+                    set({
+                        gameState: newState,
+                        selectedCardIndex: null,
+                        isAIThinking: false,
+                        lastNotification: {
+                            type: 'info',
+                            message: `🤖 ${gameState.players[currentPlayerIndex].name} a remplacé une carte`,
+                            timestamp: Date.now()
+                        }
+                    });
                 } else {
                     // DISCARD_AND_REVEAL
                     newState = discardAndReveal(gameState, decision.cardIndex);
                     newState = endTurn(newState);
+                    set({
+                        gameState: newState,
+                        selectedCardIndex: null,
+                        isAIThinking: false,
+                        lastNotification: {
+                            type: 'info',
+                            message: `🤖 ${gameState.players[currentPlayerIndex].name} a défaussé et retourné une carte`,
+                            timestamp: Date.now()
+                        }
+                    });
                 }
 
-                set({ gameState: newState, selectedCardIndex: null, isAIThinking: false });
                 return;
             }
         }
