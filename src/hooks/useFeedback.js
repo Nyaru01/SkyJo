@@ -270,6 +270,44 @@ export const useFeedback = () => {
         vibrate(30);
     }, [soundEnabled]);
 
+    // Card Flip sound - quick ascending
+    const playCardFlip = useCallback(() => {
+        if (!soundEnabled) return;
+        const ctx = getAudioContext();
+        if (!ctx || ctx.state !== 'running') return;
+
+        try {
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            // Swipe effect
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(300, ctx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.1);
+
+            gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+
+            oscillator.start(ctx.currentTime);
+            oscillator.stop(ctx.currentTime + 0.1);
+        } catch (e) { }
+    }, [soundEnabled]);
+
+    // Card Draw sound - sharp tap
+    const playCardDraw = useCallback(() => {
+        if (!soundEnabled) return;
+        playBeep(800, 30, 0.05); // Short high tick
+    }, [soundEnabled]);
+
+    // Card Place sound - lower thud
+    const playCardPlace = useCallback(() => {
+        if (!soundEnabled) return;
+        playBeep(200, 80, 0.1); // Lower thud
+    }, [soundEnabled]);
+
     return {
         playSuccess,
         playClick,
@@ -277,6 +315,9 @@ export const useFeedback = () => {
         playStart,
         playError,
         playUndo,
+        playCardFlip,
+        playCardDraw,
+        playCardPlace,
         vibrate
     };
 };

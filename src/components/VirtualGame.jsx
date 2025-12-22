@@ -126,8 +126,16 @@ export default function VirtualGame() {
         difficulty: AI_DIFFICULTY.NORMAL,
     });
 
+    // Cards shaking state (for invalid actions)
+    const [shakingCard, setShakingCard] = useState(null);
+
     // Feedback sounds and Music
-    const { playVictory } = useFeedback();
+    const {
+        playVictory,
+        playCardFlip,
+        playCardDraw,
+        playCardPlace
+    } = useFeedback();
     const musicEnabled = useGameStore(state => state.musicEnabled);
     const toggleMusic = useGameStore(state => state.toggleMusic);
 
@@ -318,6 +326,7 @@ export default function VirtualGame() {
 
     // Handle initial reveal selection
     const handleInitialReveal = (playerIndex, cardIndex) => {
+        playCardFlip();
         const key = `player-${playerIndex}`;
         const current = initialReveals[key] || [];
 
@@ -353,12 +362,15 @@ export default function VirtualGame() {
         // In online mode, we just emit actions
         if (isOnline) {
             if (activeState.turnPhase === 'REPLACE_OR_DISCARD') {
+                playCardPlace();
                 emitGameAction('replace_card', { cardIndex });
             } else if (activeState.turnPhase === 'MUST_REPLACE') {
                 // Not used in official rules directly but if engine supports it?
                 // Engine 'replace_card' handles replacement.
+                playCardPlace();
                 emitGameAction('replace_card', { cardIndex });
             } else if (activeState.turnPhase === 'MUST_REVEAL') {
+                playCardFlip();
                 emitGameAction('reveal_hidden', { cardIndex });
             }
             return;
@@ -369,11 +381,14 @@ export default function VirtualGame() {
         const card = currentPlayer.hand[cardIndex];
 
         if (gameState.turnPhase === 'REPLACE_OR_DISCARD') {
+            playCardPlace();
             replaceHandCard(cardIndex);
         } else if (gameState.turnPhase === 'MUST_REPLACE') {
+            playCardPlace();
             replaceHandCard(cardIndex);
         } else if (gameState.turnPhase === 'MUST_REVEAL') {
             if (!card?.isRevealed) {
+                playCardFlip();
                 revealHiddenCard(cardIndex);
             }
         }
@@ -1632,6 +1647,7 @@ export default function VirtualGame() {
                 }
                 canDiscardDrawn={activeGameState.turnPhase === 'REPLACE_OR_DISCARD'}
                 onDrawClick={() => {
+                    playCardDraw();
                     if (isOnlineMode) {
                         emitGameAction('draw_pile');
                     } else {
@@ -1639,6 +1655,7 @@ export default function VirtualGame() {
                     }
                 }}
                 onDiscardClick={() => {
+                    playCardDraw();
                     if (isOnlineMode) {
                         emitGameAction('draw_discard');
                     } else {
@@ -1651,6 +1668,7 @@ export default function VirtualGame() {
                     setShowDrawDiscardPopup(false);
                 }}
                 onDiscardDrawnCard={() => {
+                    playCardFlip(); // Sound for discarding
                     if (isOnlineMode) {
                         emitGameAction('discard_drawn');
                     } else {
