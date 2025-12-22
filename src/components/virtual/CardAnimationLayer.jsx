@@ -8,9 +8,16 @@ import SkyjoCard from './SkyjoCard';
  * Handles "flying card" animations by overlaying a motion component
  * that moves from a source element to a target element.
  */
-export default function CardAnimationLayer() {
-    const pendingAnimation = useVirtualGameStore((s) => s.pendingAnimation);
-    const clearPendingAnimation = useVirtualGameStore((s) => s.clearPendingAnimation);
+/**
+ * CardAnimationLayer
+ * Handles "flying card" animations by overlaying a motion component
+ * that moves from a source element to a target element.
+ * 
+ * @param {Object} props
+ * @param {Object} props.pendingAnimation - Animation object { sourceId, targetId, card, onComplete }
+ * @param {Function} props.onClear - Callback to clear animation
+ */
+export default function CardAnimationLayer({ pendingAnimation, onClear }) {
 
     const [animationState, setAnimationState] = useState(null); // { startRect, endRect, card }
 
@@ -36,17 +43,17 @@ export default function CardAnimationLayer() {
                 // Fallback if elements not found: just complete immediately
                 console.warn('Animation elements not found:', sourceId, targetId);
                 onComplete?.();
-                clearPendingAnimation();
+                onClear();
             }
         }
-    }, [pendingAnimation, clearPendingAnimation]);
+    }, [pendingAnimation, onClear]);
 
     const handleAnimationComplete = () => {
         if (animationState?.onComplete) {
             animationState.onComplete();
         }
         setAnimationState(null);
-        clearPendingAnimation();
+        onClear();
     };
 
     if (!animationState) return null;

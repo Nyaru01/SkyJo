@@ -43,6 +43,12 @@ export const useOnlineGameStore = create((set, get) => ({
     // Notification state for toasts
     lastNotification: null,
 
+    // Animation state
+    pendingAnimation: null, // { type, sourceId, targetId, card, onComplete }
+    setPendingAnimation: (animation) => set({ pendingAnimation: animation }),
+    clearPendingAnimation: () => set({ pendingAnimation: null }),
+
+
     // Actions
     connect: () => {
         // Set up listeners only once
@@ -93,6 +99,77 @@ export const useOnlineGameStore = create((set, get) => ({
             });
 
             socket.on('game_update', ({ gameState, lastAction }) => {
+                // If there's an action to animate, do it first
+                if (lastAction) {
+                    const { type, playerId, cardIndex, cardValue } = lastAction;
+                    // We need to find the player to execute animation 
+                    // But wait, the `gameState` received is the NEW state (post-action).
+                    // This is tricky. In local, we animate THEN update.
+                    // Here we receive the update. If we set it immediately, the card teleports.
+                    // So we must: 
+                    // 1. NOT set gameState immediately.
+                    // 2. Set animation.
+                    // 3. On animation complete, set gameState.
+
+                    // Helper to get Source/Target IDs
+                    let sourceId = null;
+                    let targetId = null;
+                    let cardToAnimate = null;
+
+                    if (type === 'draw_pile') {
+                        sourceId = 'deck-pile';
+                        targetId = 'drawn-card-slot';
+                        // For draw, we might not know the card if it's hidden, 
+                        // but usually if I drew it, I know it? 
+                        // Or if opponent drew, I assume it's face down?
+                        // The server `lastAction` should probably contain details.
+                    } else if (type === 'draw_discard') {
+                        sourceId = 'discard-pile';
+                        targetId = 'drawn-card-slot';
+                        cardToAnimate = { value: cardValue, isRevealed: true }; // We know value if from discard
+                    } else if (type === 'replace_card') {
+                        // From center to slot
+                        sourceId = 'drawn-card-slot';
+                        targetId = `card-${playerId}-${cardIndex}`;
+                        cardToAnimate = { value: cardValue, isRevealed: true };
+                    } else if (type === 'discard_drawn') {
+                        // From center to discard
+                        sourceId = 'drawn-card-slot';
+                        targetId = 'discard-pile';
+                        cardToAnimate = { value: cardValue, isRevealed: true };
+                    } else if (type === 'discard_and_reveal') {
+                        // This is a complex one: Card goes to discard, AND another card is revealed.
+                        // Animation: Drawn card -> Discard.
+                        sourceId = 'drawn-card-slot';
+                        targetId = 'discard-pile';
+                        cardToAnimate = { value: cardValue, isRevealed: true };
+                    } else if (type === 'undo_draw_discard') {
+                        // Undo: Drawn card (Center) -> Discard Pile
+                        sourceId = 'drawn-card-slot';
+                        targetId = 'discard-pile';
+                        // For undo, we don't have 'cardValue' in payload usually, 
+                        // but we know what the card WAS because it's in the CURRENT gameState.drawnCard
+                        // before we apply the update.
+                        const currentDrawn = get().gameState?.drawnCard;
+                        cardToAnimate = currentDrawn ? { ...currentDrawn, isRevealed: true } : { value: '?', isRevealed: true };
+                    }
+
+                    if (sourceId && targetId) {
+                        set({
+                            pendingAnimation: {
+                                sourceId,
+                                targetId,
+                                card: cardToAnimate,
+                                onComplete: () => {
+                                    set({ gameState, lastAction: lastAction || null });
+                                }
+                            }
+                        });
+                        return; // Stop here, wait for animation
+                    }
+                }
+
+                // Default: just update if no animation
                 set({ gameState, lastAction: lastAction || null });
             });
 
@@ -208,6 +285,13 @@ export const useOnlineGameStore = create((set, get) => ({
         if (roomCode) {
             socket.emit('game_action', { roomCode, action, payload });
             set({ selectedCardIndex: null });
+        }
+    },
+
+    undoTakeFromDiscard: () => {
+        const { roomCode } = get();
+        if (roomCode) {
+            socket.emit('game_action', { roomCode, action: 'undo_draw_discard' });
         }
     },
 

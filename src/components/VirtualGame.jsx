@@ -63,6 +63,8 @@ export default function VirtualGame() {
     // Notifications
     const virtualLastNotification = useVirtualGameStore((s) => s.lastNotification);
     const clearNotification = useVirtualGameStore((s) => s.clearNotification);
+    const virtualPendingAnimation = useVirtualGameStore(s => s.pendingAnimation);
+    const clearVirtualPendingAnimation = useVirtualGameStore(s => s.clearPendingAnimation);
 
     // AI Store
     const startAIGame = useVirtualGameStore((s) => s.startAIGame);
@@ -89,6 +91,8 @@ export default function VirtualGame() {
     const socketId = useOnlineGameStore(s => s.socketId);
     const onlineLastNotificationRaw = useOnlineGameStore(s => s.lastNotification);
     const lastAction = useOnlineGameStore(s => s.lastAction);
+    const onlinePendingAnimation = useOnlineGameStore(s => s.pendingAnimation);
+    const clearOnlinePendingAnimation = useOnlineGameStore(s => s.clearPendingAnimation);
 
     // Main game store for archiving
     const archiveOnlineGame = useGameStore(s => s.archiveOnlineGame);
@@ -1604,8 +1608,12 @@ export default function VirtualGame() {
                     // Logic: If we are in 'MUST_REPLACE' phase (meaning we took from discard)
                     // and we close the popup without confirming placement (which would change phase)
                     // then we should UN-DO the take action (put card back).
-                    if (activeGameState.turnPhase === 'MUST_REPLACE' && !isOnlineMode) {
-                        useVirtualGameStore.getState().undoTakeFromDiscard();
+                    if (activeGameState.turnPhase === 'MUST_REPLACE') {
+                        if (!isOnlineMode) {
+                            useVirtualGameStore.getState().undoTakeFromDiscard();
+                        } else {
+                            useOnlineGameStore.getState().undoTakeFromDiscard();
+                        }
                     }
                     setShowDrawDiscardPopup(false);
                 }}
@@ -1649,7 +1657,10 @@ export default function VirtualGame() {
             />
 
             {/* Animation Layer - always on top */}
-            <CardAnimationLayer />
+            <CardAnimationLayer
+                pendingAnimation={onlineGameStarted ? onlinePendingAnimation : virtualPendingAnimation}
+                onClear={onlineGameStarted ? clearOnlinePendingAnimation : clearVirtualPendingAnimation}
+            />
         </div>
     );
 }

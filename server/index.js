@@ -197,6 +197,22 @@ io.on('connection', (socket) => {
                         newState.turnPhase = 'DRAW'; // Reset phase expected by endTurn?
                         newState = endTurn(newState);
                         break;
+                    case 'undo_draw_discard':
+                        // Only allowed if we just took from discard (implies MUST_REPLACE phase in this engine)
+                        if (newState.turnPhase !== 'MUST_REPLACE' || !newState.drawnCard) return;
+
+                        // Put card back on discard pile
+                        newState = {
+                            ...newState,
+                            discardPile: [...newState.discardPile, newState.drawnCard],
+                            drawnCard: null,
+                            turnPhase: 'DRAW'
+                        };
+                        // Clear last action type to avoid confusing clients? 
+                        // Or send specific type so client can handle it (e.g. clear drawn card slot)
+                        lastAction.type = 'undo_draw_discard';
+                        lastAction.card = null;
+                        break;
                 }
             }
 

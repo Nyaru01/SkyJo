@@ -491,15 +491,29 @@ export const useVirtualGameStore = create((set, get) => ({
         const { gameState } = get();
         if (!gameState || !gameState.drawnCard || gameState.turnPhase !== 'MUST_REPLACE') return;
 
-        // Revert: put drawn card back to discard pile
-        const newDiscardPile = [...gameState.discardPile, gameState.drawnCard];
+        // Animate return to discard
+        // Source: Center (drawn-card-slot)
+        // Target: Discard Pile (discard-pile)
+
+        const cardToAnimate = gameState.drawnCard;
 
         set({
-            gameState: {
-                ...gameState,
-                discardPile: newDiscardPile,
-                drawnCard: null,
-                turnPhase: 'DRAW'
+            pendingAnimation: {
+                sourceId: 'drawn-card-slot',
+                targetId: 'discard-pile',
+                card: { ...cardToAnimate, isRevealed: true },
+                onComplete: () => {
+                    // Revert state
+                    const newDiscardPile = [...gameState.discardPile, gameState.drawnCard];
+                    set({
+                        gameState: {
+                            ...gameState,
+                            discardPile: newDiscardPile,
+                            drawnCard: null,
+                            turnPhase: 'DRAW'
+                        }
+                    });
+                }
             }
         });
     },
