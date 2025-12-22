@@ -449,41 +449,66 @@ export default function VirtualGame() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {/* Local Game Button */}
-                        <Button
-                            size="lg"
-                            className="w-full bg-skyjo-blue hover:bg-skyjo-blue/90 text-white font-bold shadow-xl shadow-skyjo-blue/40 border border-white/20 animate-pulse-glow"
+                        <button
                             onClick={() => setScreen('setup')}
+                            className="w-full relative group cursor-pointer rounded-[20px] transition-all hover:scale-[1.02] shadow-xl"
                         >
-                            <Play className="mr-2 h-5 w-5" />
-                            Partie Locale
-                        </Button>
+                            {/* Border Gradient - White */}
+                            <div className="absolute inset-0 bg-white rounded-[20px] animate-border-pulse opacity-100 shadow-[0_0_20px_rgba(255,255,255,0.8)]" />
+                            {/* Opaque Center */}
+                            <div className="absolute inset-[2px] bg-[#1e2235] rounded-[18px] z-10" />
+
+                            {/* Content */}
+                            <div className="relative z-20 flex items-center justify-start pl-20 gap-3 h-20 w-full text-white font-bold text-lg">
+                                {/* Halo effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-[18px]" />
+                                <Play className="h-6 w-6 fill-current" />
+                                Partie Locale
+                            </div>
+                        </button>
 
                         {/* Online Game Button */}
-                        <Button
-                            size="lg"
-                            variant="outline"
-                            className="w-full border-blue-400 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 font-bold shadow-xl shadow-blue-400/40 animate-pulse-glow"
-                            style={{ animationDelay: '0.3s' }}
+                        <button
                             onClick={() => {
                                 setScreen('lobby');
                                 connectOnline();
                             }}
+                            className="w-full relative group cursor-pointer rounded-[20px] transition-all hover:scale-[1.02] shadow-xl"
+                            style={{ animationDelay: '0.3s' }}
                         >
-                            <Wifi className="mr-2 h-5 w-5" />
-                            En Ligne (1v1)
-                        </Button>
+                            {/* Border Gradient - #5DA0F2 */}
+                            <div className="absolute inset-0 bg-[#5DA0F2] rounded-[20px] animate-border-pulse opacity-100 shadow-[0_0_20px_#5DA0F2]" />
+                            {/* Opaque Center */}
+                            <div className="absolute inset-[2px] bg-[#1e2235] rounded-[18px] z-10" />
+
+                            {/* Content */}
+                            <div className="relative z-20 flex items-center justify-start pl-20 gap-3 h-20 w-full text-[#5DA0F2] font-bold text-lg">
+                                {/* Halo effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-[#5DA0F2]/0 via-[#5DA0F2]/5 to-[#5DA0F2]/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-[18px]" />
+                                <Wifi className="h-6 w-6" />
+                                En Ligne (1v1)
+                            </div>
+                        </button>
 
                         {/* AI Game Button */}
-                        <Button
-                            size="lg"
-                            variant="outline"
-                            className="w-full border-purple-400 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 font-bold shadow-xl shadow-purple-400/40 animate-pulse-glow"
-                            style={{ animationDelay: '0.6s' }}
+                        <button
                             onClick={() => setScreen('ai-setup')}
+                            className="w-full relative group cursor-pointer rounded-[20px] transition-all hover:scale-[1.02] shadow-xl"
+                            style={{ animationDelay: '0.6s' }}
                         >
-                            <Bot className="mr-2 h-5 w-5" />
-                            Contre l'IA
-                        </Button>
+                            {/* Border Gradient - #C084FC */}
+                            <div className="absolute inset-0 bg-[#C084FC] rounded-[20px] animate-border-pulse opacity-100 shadow-[0_0_20px_#C084FC]" />
+                            {/* Opaque Center */}
+                            <div className="absolute inset-[2px] bg-[#1e2235] rounded-[18px] z-10" />
+
+                            {/* Content */}
+                            <div className="relative z-20 flex items-center justify-start pl-20 gap-3 h-20 w-full text-[#C084FC] font-bold text-lg">
+                                {/* Halo effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-[#C084FC]/0 via-[#C084FC]/5 to-[#C084FC]/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-[18px]" />
+                                <Bot className="h-6 w-6" />
+                                Contre l'IA
+                            </div>
+                        </button>
 
                         <div className="mt-2 p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs text-slate-600 dark:text-slate-400">
                             <div className="flex items-start gap-2">

@@ -589,3 +589,33 @@ body,
 .animate-card-glow {
   animation: card-glow 1.5s ease-in-out infinite;
 }
+
+/* =============================================== */
+/* SPECIAL EFFECTS - LIVING BORDER                */
+/* =============================================== */
+
+@keyframes border-spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes border-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-border-pulse {
+  animation: border-pulse 3s ease-in-out infinite;
+}
+
+.animate-border-spin {
+  animation: border-spin 4s linear infinite;
+}

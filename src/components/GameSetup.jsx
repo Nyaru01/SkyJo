@@ -194,26 +194,34 @@ export default function GameSetup({ onNavigate }) {
 
             <button
                 onClick={() => onNavigate?.('virtual')}
-                className="w-full relative group cursor-pointer overflow-hidden rounded-2xl transition-all hover:scale-[1.02]"
+                className="w-full relative group cursor-pointer overflow-hidden rounded-[20px] transition-all hover:scale-[1.02] shadow-xl"
             >
-                {/* Halo Blanc Scintillant */}
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/10 via-white/5 to-white/10 animate-pulse-slow blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                {/* Rotating Beam Border - Pseudo-element simulation */}
+                <div className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0_300deg,#9333ea_360deg)] animate-border-spin opacity-100" />
 
-                <div className="relative p-6 rounded-2xl glass-premium dark:glass-dark border border-purple-200/50 dark:border-purple-700/50 hover:border-white/40 transition-all flex items-center gap-6 shadow-[0_0_15px_rgba(255,255,255,0.15)] group-hover:shadow-[0_0_25px_rgba(255,255,255,0.3)]">
-                    <div className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden border border-white/20 bg-slate-900 shrink-0">
+                {/* Opaque Center - Masks the center to create 2px border */}
+                <div className="absolute inset-[2px] bg-[#1e2235] rounded-[18px] z-10" />
+
+                {/* Content Layer */}
+                <div className="relative z-20 p-6 flex items-center gap-6 h-full w-full">
+                    {/* Halo effect on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-[18px]" />
+
+                    <div className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden border border-white/10 bg-slate-900 shrink-0 relative z-30">
                         <img
                             src="/virtual-logo.jpg"
                             alt="Skyjo Virtual"
                             className="w-full h-full object-cover scale-110"
                         />
                     </div>
-                    <div className="text-left flex-1">
-                        <p className="font-extrabold text-xl bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Jouer en virtuel</p>
+                    <div className="text-left flex-1 relative z-30">
+                        <p className="font-extrabold text-xl text-white drop-shadow-sm">Jouer en virtuel</p>
                         <p className="text-sm text-slate-400 mt-1">Mode local ou en ligne</p>
                     </div>
-                    <span className="text-white/80 text-2xl group-hover:translate-x-1 transition-transform">→</span>
+                    <span className="text-white/80 text-2xl group-hover:translate-x-1 transition-transform relative z-30">→</span>
                 </div>
             </button>
+
 
             {/* Modal Emoji Picker - RENDU EN DEHORS DE LA BOUCLE */}
             {openEmojiPicker !== null && selectedPlayerForPicker && (

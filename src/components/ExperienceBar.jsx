@@ -41,7 +41,7 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
             </div>
 
             {/* XP Bubbles - More compact */}
-            <div className="flex items-center gap-1 p-1.5 rounded-lg bg-slate-800/30 backdrop-blur-sm border border-slate-700/50">
+            <div className="flex items-center gap-1 p-1.5 rounded-lg bg-slate-800/30 backdrop-blur-sm border border-[#1a4869]">
                 {[...Array(10)].map((_, index) => {
                     const isFilled = index < currentXP;
 
