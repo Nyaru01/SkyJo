@@ -1418,7 +1418,7 @@ export default function VirtualGame() {
                                     : "bg-violet-600 text-white"
                         )}
                         style={{
-                            maxWidth: '85%',
+                            maxWidth: '95%',
                             boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
                         }}
                     >

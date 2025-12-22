@@ -2,13 +2,15 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 
-// Card color mapping for mini preview
+// Card color mapping for mini preview (must match CARD_COLORS in skyjoEngine)
 const MINI_CARD_COLORS = {
-    red: { bg: 'bg-red-500', text: 'text-white' },
-    orange: { bg: 'bg-orange-500', text: 'text-white' },
-    yellow: { bg: 'bg-yellow-400', text: 'text-slate-800' },
-    green: { bg: 'bg-emerald-500', text: 'text-white' },
+    indigo: { bg: 'bg-indigo-600', text: 'text-white' },
     blue: { bg: 'bg-blue-500', text: 'text-white' },
+    cyan: { bg: 'bg-cyan-500', text: 'text-white' },
+    green: { bg: 'bg-emerald-500', text: 'text-white' },
+    yellow: { bg: 'bg-yellow-400', text: 'text-slate-800' },
+    orange: { bg: 'bg-orange-500', text: 'text-white' },
+    red: { bg: 'bg-red-500', text: 'text-white' },
 };
 
 /**
