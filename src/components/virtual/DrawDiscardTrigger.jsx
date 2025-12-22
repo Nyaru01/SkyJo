@@ -110,14 +110,15 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                     canInteract ? "cursor-pointer" : "cursor-not-allowed opacity-80"
                 )}
                 style={{
-                    background: 'linear-gradient(135deg, #374151 0%, #1e293b 50%, #0f172a 100%)',
+                    backgroundColor: '#1e293b', // Fallback
                     boxShadow: activeActionSource === 'deck-pile'
                         ? '0 0 20px 5px rgba(52, 211, 153, 0.7)' // Intense Green Glow if active
                         : canInteract ? '0 4px 12px rgba(0,0,0,0.5)' : 'none',
                     border: activeActionSource === 'deck-pile'
                         ? '2px solid #34d399' // Green border
                         : '2px solid rgba(100, 116, 139, 0.4)',
-                    transition: 'box-shadow 0.3s ease, border-color 0.3s ease'
+                    transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
+                    overflow: 'hidden'
                 }}
                 onClick={canInteract ? (onDrawAction || onClick) : undefined}
                 whileHover={canInteract ? { scale: 1.1, rotate: -5 } : undefined}
@@ -127,10 +128,11 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                 id="deck-pile"
             >
                 {/* Card back design */}
-                <svg className="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none">
-                    <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" transform="rotate(45 12 12)" opacity="0.3" />
-                    <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.5" />
-                </svg>
+                <img
+                    src="/card-back.png"
+                    alt="Deck"
+                    className="w-full h-full object-cover"
+                />
 
                 {/* Count Badge for Draw Pile (Optional - usually on button but good to have here too maybe? No, kept on button) */}
             </motion.div>

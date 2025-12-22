@@ -278,7 +278,7 @@ const SkyjoCard = memo(function SkyjoCard({
                 {/* BACK FACE */}
                 <div
                     className={cn(
-                        "absolute inset-0 backface-hidden flex items-center justify-center rotate-y-180",
+                        "absolute inset-0 backface-hidden flex items-center justify-center rotate-y-180 overflow-hidden",
                         isSelected && "ring-4 ring-amber-400 ring-offset-2",
                     )}
                     style={{
@@ -289,20 +289,14 @@ const SkyjoCard = memo(function SkyjoCard({
                         border: isHighlighted
                             ? '3px solid rgba(52, 211, 153, 0.8)'
                             : '3px solid rgba(100, 116, 139, 0.5)',
-                        background: 'linear-gradient(135deg, #374151 0%, #1e293b 50%, #0f172a 100%)',
+                        backgroundColor: '#1e293b', // Fallback
                     }}
                 >
-                    {/* Card back with diamond pattern */}
-                    <svg className="w-3/5 h-3/5" viewBox="0 0 24 24" fill="none">
-                        <rect x="6" y="6" width="12" height="12" rx="2" fill="url(#cardGrad)" transform="rotate(45 12 12)" />
-                        <circle cx="12" cy="12" r="3" fill="rgba(255,255,255,0.3)" />
-                        <defs>
-                            <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#34d399" />
-                                <stop offset="100%" stopColor="#0d9488" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
+                    <img
+                        src="/card-back.png"
+                        alt="Card Back"
+                        className="w-full h-full object-cover"
+                    />
                 </div>
             </motion.div>
         </motion.div>
