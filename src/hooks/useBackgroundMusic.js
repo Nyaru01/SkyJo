@@ -20,94 +20,220 @@ function shuffleArray(array) {
     return shuffled;
 }
 
+// ============================================
+// SHARED WEB AUDIO CONTEXT (for mobile compatibility)
+// ============================================
+let sharedAudioContext = null;
+let audioContextUnlocked = false;
+
+/**
+ * Get or create the shared AudioContext
+ */
+const getAudioContext = () => {
+    if (!sharedAudioContext) {
+        try {
+            sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.log('WebAudio API not available');
+            return null;
+        }
+    }
+    return sharedAudioContext;
+};
+
+/**
+ * Unlock AudioContext on first user interaction
+ */
+const unlockAudioContext = async () => {
+    if (audioContextUnlocked) return true;
+
+    const ctx = getAudioContext();
+    if (!ctx) return false;
+
+    if (ctx.state === 'suspended') {
+        try {
+            await ctx.resume();
+            console.log('🎵 AudioContext resumed for background music');
+        } catch (e) {
+            console.log('Failed to resume AudioContext:', e);
+            return false;
+        }
+    }
+
+    audioContextUnlocked = true;
+    return true;
+};
+
+// Set up unlock listeners once
+if (typeof document !== 'undefined') {
+    const unlockEvents = ['touchstart', 'touchend', 'click', 'keydown'];
+    const handleUnlock = () => {
+        unlockAudioContext();
+        unlockEvents.forEach(event => {
+            document.removeEventListener(event, handleUnlock, true);
+        });
+    };
+    unlockEvents.forEach(event => {
+        document.addEventListener(event, handleUnlock, { capture: true, passive: true });
+    });
+}
+
+// Pre-loaded audio buffers
+const audioBuffers = {};
+
+/**
+ * Load an audio file into a buffer
+ */
+const loadAudioBuffer = async (url) => {
+    if (audioBuffers[url]) return audioBuffers[url];
+
+    const ctx = getAudioContext();
+    if (!ctx) return null;
+
+    try {
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+        audioBuffers[url] = audioBuffer;
+        console.log(`✓ Loaded music: ${url.split('/').pop()}`);
+        return audioBuffer;
+    } catch (e) {
+        console.log(`Failed to load ${url}:`, e);
+        return null;
+    }
+};
+
 export const useBackgroundMusic = (shouldPlay = false) => {
-    const audioRef = useRef(null);
+    const sourceNodeRef = useRef(null);
+    const gainNodeRef = useRef(null);
     const shuffledPlaylistRef = useRef(shuffleArray(PLAYLIST));
     const currentTrackIndexRef = useRef(0);
     const hasStartedSessionRef = useRef(false);
-    const playNextTrackRef = useRef(null);
+    const isLoadingRef = useRef(false);
+    const shouldPlayRef = useRef(shouldPlay);
 
     const musicEnabled = useGameStore(state => state.musicEnabled);
     const [isPlaying, setIsPlaying] = useState(false);
 
-    // Function to play next track - stored in ref for stable reference
-    const playNextTrack = useCallback(() => {
-        currentTrackIndexRef.current++;
+    // Keep shouldPlayRef in sync
+    shouldPlayRef.current = shouldPlay;
 
-        // If we've played all tracks, reshuffle and start over
-        if (currentTrackIndexRef.current >= PLAYLIST.length) {
-            shuffledPlaylistRef.current = shuffleArray(PLAYLIST);
-            currentTrackIndexRef.current = 0;
+    // Play a specific track using Web Audio API
+    const playTrack = useCallback(async (trackUrl) => {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+
+        // Make sure AudioContext is running
+        if (ctx.state === 'suspended') {
+            try {
+                await ctx.resume();
+            } catch (e) {
+                console.log('Could not resume AudioContext');
+                return;
+            }
         }
 
-        if (audioRef.current) {
-            audioRef.current.src = shuffledPlaylistRef.current[currentTrackIndexRef.current];
-            audioRef.current.load();
-            audioRef.current.play().catch(e => console.log("Audio play failed:", e));
+        // Stop current source if playing
+        if (sourceNodeRef.current) {
+            try {
+                sourceNodeRef.current.onended = null; // Remove old handler
+                sourceNodeRef.current.stop();
+            } catch (e) {
+                // Already stopped
+            }
         }
-    }, []);
 
-    // Keep the ref updated with the latest callback
-    playNextTrackRef.current = playNextTrack;
+        // Load buffer if not cached
+        isLoadingRef.current = true;
+        const buffer = await loadAudioBuffer(trackUrl);
+        isLoadingRef.current = false;
 
-    // Initialize audio object once
-    useEffect(() => {
-        if (!audioRef.current) {
-            audioRef.current = new Audio();
-            audioRef.current.volume = 0.3;
-            // Use a wrapper function that calls the ref to ensure we always use the latest callback
-            const handleEnded = () => {
-                if (playNextTrackRef.current) {
-                    playNextTrackRef.current();
+        if (!buffer) return;
+
+        // Check if we should still be playing
+        if (!shouldPlayRef.current || !useGameStore.getState().musicEnabled) {
+            return;
+        }
+
+        // Create new source
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+
+        // Create/reuse gain node for volume control
+        if (!gainNodeRef.current) {
+            gainNodeRef.current = ctx.createGain();
+            gainNodeRef.current.connect(ctx.destination);
+        }
+        gainNodeRef.current.gain.value = 0.3;
+
+        source.connect(gainNodeRef.current);
+
+        // Handle track end - play next track
+        source.onended = () => {
+            console.log('🎵 Track ended, playing next...');
+            // Only play next if we should still be playing
+            if (shouldPlayRef.current && useGameStore.getState().musicEnabled) {
+                currentTrackIndexRef.current++;
+                if (currentTrackIndexRef.current >= PLAYLIST.length) {
+                    shuffledPlaylistRef.current = shuffleArray(PLAYLIST);
+                    currentTrackIndexRef.current = 0;
                 }
-            };
-            audioRef.current.addEventListener('ended', handleEnded);
-
-            // Store the handler for cleanup
-            audioRef.current._endedHandler = handleEnded;
-        }
-
-        return () => {
-            if (audioRef.current) {
-                audioRef.current.pause();
-                if (audioRef.current._endedHandler) {
-                    audioRef.current.removeEventListener('ended', audioRef.current._endedHandler);
-                }
+                playTrack(shuffledPlaylistRef.current[currentTrackIndexRef.current]);
             }
         };
+
+        source.start(0);
+        sourceNodeRef.current = source;
+        setIsPlaying(true);
+        console.log(`🎵 Now playing: ${trackUrl.split('/').pop()}`);
     }, []);
 
-    // Handle play/pause and shuffle on new session
-    useEffect(() => {
-        if (!audioRef.current) return;
+    // Stop playback
+    const stopPlayback = useCallback(() => {
+        if (sourceNodeRef.current) {
+            try {
+                sourceNodeRef.current.onended = null; // Prevent triggering next track
+                sourceNodeRef.current.stop();
+            } catch (e) {
+                // Already stopped
+            }
+            sourceNodeRef.current = null;
+        }
+        setIsPlaying(false);
+    }, []);
 
+    // Handle play/pause
+    useEffect(() => {
         if (musicEnabled && shouldPlay) {
-            // If this is a new play session (music was stopped), reshuffle the playlist
+            // Start a new session
             if (!hasStartedSessionRef.current) {
                 shuffledPlaylistRef.current = shuffleArray(PLAYLIST);
                 currentTrackIndexRef.current = 0;
                 hasStartedSessionRef.current = true;
-
-                audioRef.current.src = shuffledPlaylistRef.current[0];
-                audioRef.current.load();
             }
 
-            audioRef.current.play()
-                .then(() => setIsPlaying(true))
-                .catch(error => {
-                    console.log("Audio play failed:", error);
-                    setIsPlaying(false);
-                });
+            // Start playing first track
+            if (!isLoadingRef.current) {
+                playTrack(shuffledPlaylistRef.current[currentTrackIndexRef.current]);
+            }
         } else {
-            audioRef.current.pause();
-            setIsPlaying(false);
-            // Reset for next session - will reshuffle when music starts again
+            stopPlayback();
             hasStartedSessionRef.current = false;
         }
-    }, [musicEnabled, shouldPlay]);
+
+        return () => {
+            // Cleanup on unmount
+        };
+    }, [musicEnabled, shouldPlay, playTrack, stopPlayback]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            stopPlayback();
+        };
+    }, [stopPlayback]);
 
     return {
-        isPlaying,
-        playNext: playNextTrack
+        isPlaying
     };
 };
