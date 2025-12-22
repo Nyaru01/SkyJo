@@ -241,6 +241,38 @@ body,
   background-color: rgba(30, 41, 59, 0.95) !important;
 }
 
+/* Force dark backgrounds for all white opacity variants */
+.dark .bg-white\/90,
+.dark .bg-white\/85,
+.dark .bg-white\/80,
+.dark .bg-white\/70,
+.dark .bg-white\/60,
+.dark .bg-white\/50,
+.dark .bg-white\/40,
+.dark .bg-white\/30,
+.dark .bg-white\/20,
+.dark .bg-white\/10,
+.dark .bg-white\/5 {
+  background-color: rgba(30, 41, 59, 0.85) !important;
+}
+
+/* Force dark backgrounds for light slate variants */
+.dark .bg-slate-50\/90,
+.dark .bg-slate-100\/90,
+.dark .bg-slate-50\/80,
+.dark .bg-slate-100\/80 {
+  background-color: rgba(51, 65, 85, 0.5) !important;
+}
+
+/* Force dark backgrounds for sky/emerald/amber light variants in rankings */
+.dark .bg-sky-50,
+.dark .bg-emerald-50,
+.dark .bg-emerald-50\/90,
+.dark .bg-amber-50,
+.dark .bg-amber-50\/80 {
+  background-color: rgba(30, 41, 59, 0.9) !important;
+}
+
 .dark .border-slate-200 {
   border-color: rgba(71, 85, 105, 0.5) !important;
 }

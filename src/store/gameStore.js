@@ -35,7 +35,7 @@ export const useGameStore = create(
             rounds: [],
             gameStatus: 'SETUP',
             gameHistory: [], // Array of archived finished games
-            darkMode: false,
+            darkMode: true, // Always default to dark mode
             soundEnabled: true,
             musicEnabled: true,
 
