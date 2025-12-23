@@ -394,6 +394,7 @@ export default function VirtualGame() {
         }
     };
 
+
     // Back to menu
     const handleBackToMenu = () => {
         // Archive online game if it was started and has data (avoid duplicates)
@@ -415,7 +416,28 @@ export default function VirtualGame() {
         // If game is over, it was already archived by the "See Results" button
         if (gameState && gameState.players && gameState.players.length > 0 && !onlineGameStarted && !isGameOver) {
             // Calculate current winner based on totalScores
-            const scores = totalScores || {};
+            let scores = { ...totalScores } || {};
+            let currentRoundScores = [];
+
+            // If the current round is FINISHED but not yet committed to totalScores (e.g. user quits on result screen),
+            // we need to add these scores to the archive
+            if (gameState.phase === 'FINISHED') {
+                const roundResults = calculateFinalScores(gameState);
+                currentRoundScores = roundResults;
+                roundResults.forEach(r => {
+                    scores[r.playerId] = (scores[r.playerId] || 0) + r.finalScore;
+                });
+
+                // Award XP if quitting after a win
+                // Find round winner (lowest score)
+                const roundWinner = roundResults.sort((a, b) => a.finalScore - b.finalScore)[0];
+                if (roundWinner && roundWinner.playerId === 'human-1') { // Assuming human-1 is always the player ID in AI mode or local P1
+                    // Check if we haven't already awarded XP for this (might be tricky if we don't track it)
+                    // But quitting implies we are leaving, so awarding here is safe as long as we don't save "game state" to resume
+                    addXP(1);
+                }
+            }
+
             const playersWithScores = gameState.players.map(p => ({
                 ...p,
                 finalScore: scores[p.id] || 0
@@ -1268,6 +1290,26 @@ export default function VirtualGame() {
                                         startOnlineNextRound();
                                     } else {
                                         // Local mode: use local store
+
+                                        // 1. Check for Round Winner XP (before ending round)
+                                        if (activeGameState.phase === 'FINISHED') {
+                                            const roundResults = calculateFinalScores(activeGameState);
+                                            // Find round winner (strictly lowest score wins round?) 
+                                            // Skyjo rules: lowest score wins round.
+                                            // Sort by score ascending
+                                            const sortedResults = [...roundResults].sort((a, b) => a.finalScore - b.finalScore);
+                                            const roundWinner = sortedResults[0];
+
+                                            // Tie handling: if multiple people have same lowest score, both considered winners?
+                                            // Simplification: if player has equal lowest score, they get XP
+                                            const playerResult = roundResults.find(r => r.playerId === 'human-1');
+
+                                            if (playerResult && playerResult.finalScore === roundWinner.finalScore) {
+                                                // Player won or tied for win in this round
+                                                addXP(1);
+                                            }
+                                        }
+
                                         // Capture results directly to ensure we have the latest state for archiving
                                         const result = endRound();
 
@@ -1281,7 +1323,11 @@ export default function VirtualGame() {
                                                 gameType: aiMode ? 'ai' : 'local'
                                             });
 
-                                            // Award XP if applicable
+                                            // Award EXTRA XP if Game Winner (Bonus)
+                                            // We already gave XP for round win above.
+                                            // Should we give more for game win?
+                                            // Let's say yes, Game Win is +2 XP ? Or just another +1.
+                                            // Original code gave +1. Let's keep +1 for Game Win.
                                             if (result.gameWinner) {
                                                 if (aiMode && result.gameWinner.id === 'human-1') {
                                                     addXP(1);

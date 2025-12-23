@@ -44,16 +44,40 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                         className="flex items-center gap-2 group cursor-pointer"
                     >
                         <div className="relative">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:shadow-amber-500/50 transition-shadow">
-                                <Star className="w-4 h-4 text-white fill-white" />
+                            {/* Animated Halo/Ripple for interactivity hint */}
+                            <motion.div
+                                className="absolute -inset-2 rounded-full bg-amber-500/20 blur-md"
+                                animate={{
+                                    scale: [1, 1.2, 1],
+                                    opacity: [0.3, 0.6, 0.3]
+                                }}
+                                transition={{
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                            />
+
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:shadow-amber-500/50 transition-shadow relative z-10">
+                                <motion.div
+                                    animate={{
+                                        rotate: [0, -20, 20, -10, 10, 0],
+                                        scale: [1, 1.15, 1.15, 1.1, 1.1, 1]
+                                    }}
+                                    transition={{
+                                        duration: 2.5,
+                                        repeat: Infinity,
+                                        repeatDelay: 1,
+                                        ease: "easeInOut"
+                                    }}
+                                >
+                                    <Star className="w-4 h-4 text-white fill-white" />
+                                </motion.div>
                             </div>
                             {/* Level number badge */}
-                            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-slate-900 border border-amber-400 flex items-center justify-center">
+                            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-slate-900 border border-amber-400 flex items-center justify-center z-20">
                                 <span className="text-[8px] font-bold text-amber-400">{level}</span>
                             </div>
-
-                            {/* Pulse hint */}
-                            <span className="absolute inset-0 rounded-full ring-2 ring-white/30 animate-ping opacity-0 group-hover:opacity-100 duration-1000" />
                         </div>
                         <div>
                             <p className="text-[10px] text-slate-400 font-medium leading-tight group-hover:text-amber-400 transition-colors">Niveau</p>
