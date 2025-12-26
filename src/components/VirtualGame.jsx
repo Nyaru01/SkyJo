@@ -1545,7 +1545,7 @@ export default function VirtualGame() {
             {!isInitialReveal && (
                 <div
                     className="flex justify-center px-4"
-                    style={{ marginTop: '6px', marginBottom: '8px' }}
+                    style={{ marginTop: '2px', marginBottom: '4px' }}
                 >
                     <div style={{ width: '100%', maxWidth: '340px' }}>
                         <DrawDiscardTrigger
@@ -1598,7 +1598,7 @@ export default function VirtualGame() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     className="text-center"
-                    style={{ marginBottom: '12px' }}
+                    style={{ marginBottom: '8px' }}
                 >
                     <span
                         className={cn(

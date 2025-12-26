@@ -126,11 +126,11 @@ const SkyjoCard = memo(function SkyjoCard({
             cornerFont: '0.45rem',
         },
         md: {
-            width: 'clamp(3.125rem, 8.5vw, 4.375rem)',
-            height: 'clamp(4.125rem, 11.25vh, 5.25rem)',
-            fontSize: 'clamp(1.3rem, 3.5vw, 2rem)',
-            cornerSize: '0.75rem',
-            cornerFont: '0.5rem',
+            width: 'clamp(2.8rem, 8vw, 4rem)',
+            height: 'clamp(3.8rem, 10.5vh, 5rem)',
+            fontSize: 'clamp(1.2rem, 3.2vw, 1.8rem)',
+            cornerSize: '0.7rem',
+            cornerFont: '0.45rem',
         },
         lg: {
             width: 'clamp(3.5rem, 9vw, 4.5rem)',

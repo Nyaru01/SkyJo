@@ -62,8 +62,8 @@ const PlayerHand = memo(function PlayerHand({
                 backgroundColor: 'rgba(0, 0, 0, 0.85)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                padding: '18px 16px 16px 16px', // Reduced top padding
-                borderRadius: '20px', // Softer corners
+                padding: '14px 12px 12px 12px', // Compact padding
+                borderRadius: '16px', // Slightly tighter corners
                 // Border handled by className for active state, remove inline default
                 ...(isCurrentPlayer ? {
                     boxShadow: isOpponent
@@ -88,7 +88,7 @@ const PlayerHand = memo(function PlayerHand({
                     style={{
                         fontSize: '11px',
                         zIndex: 50,
-                        top: '-12px', // Slightly adjusted
+                        top: '-10px', // Adjusted for compact padding
                     }}
                     id={`player-badge-${player.id}`}
                 >
@@ -122,8 +122,8 @@ const PlayerHand = memo(function PlayerHand({
                 style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(4, 1fr)',
-                    gap: '12px',
-                    marginTop: '10px', // Reduced margin
+                    gap: '8px', // Compact gap
+                    marginTop: '8px', // Compact margin
                     justifyItems: 'center',
                 }}
                 variants={containerVariants}
