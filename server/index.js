@@ -227,7 +227,27 @@ io.on('connection', (socket) => {
 
     socket.on('next_round', (roomCode) => {
         const room = rooms.get(roomCode);
-        if (!room || !room.gameState || room.gameState.phase !== 'FINISHED') return;
+
+        if (!room) {
+            socket.emit('error', 'Salle introuvable ou expirée');
+            return;
+        }
+
+        // If game is already restarted (e.g. other player triggered it), sync this client
+        if (room.gameState && (room.gameState.phase === 'INITIAL_REVEAL' || room.gameState.phase === 'PLAYING')) {
+            console.log(`Resyncing ${socket.id} to new round ${room.roundNumber}`);
+            socket.emit('game_started', {
+                gameState: room.gameState,
+                totalScores: room.totalScores,
+                roundNumber: room.roundNumber
+            });
+            return;
+        }
+
+        if (!room.gameState || room.gameState.phase !== 'FINISHED') {
+            socket.emit('error', 'La manche n\'est pas terminée');
+            return;
+        }
 
         // Check if host? 
         // For now, anyone can trigger next round to keep it simple, or checking socket.id

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Users, ArrowLeft, RotateCcw, Trophy, Info, Sparkles, CheckCircle, BookOpen, X, Bot } from 'lucide-react';
+import { Play, Users, ArrowLeft, RotateCcw, Trophy, Info, Sparkles, CheckCircle, BookOpen, X, Bot, Lock, Image as ImageIcon, Palette } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Input } from './ui/Input';
@@ -97,10 +97,20 @@ export default function VirtualGame() {
 
     // Main game store for archiving
     const archiveOnlineGame = useGameStore(s => s.archiveOnlineGame);
+    const playerLevel = useGameStore(s => s.level);
+    const playerCardSkin = useGameStore(s => s.cardSkin);
 
     // Online Actions
     const connectOnline = useOnlineGameStore(s => s.connect);
     const disconnectOnline = useOnlineGameStore(s => s.disconnect);
+
+    // Enforce Level Requirements for Skins
+    useEffect(() => {
+        if (playerLevel < 3 && playerCardSkin !== 'classic') {
+            // If user is below level 3 but has a non-classic skin (e.g. from previous high level or bug), reset it.
+            useGameStore.getState().setCardSkin('classic');
+        }
+    }, [playerLevel, playerCardSkin]);
     const setPlayerInfo = useOnlineGameStore(s => s.setPlayerInfo);
     const createRoom = useOnlineGameStore(s => s.createRoom);
     const joinRoom = useOnlineGameStore(s => s.joinRoom);
@@ -118,6 +128,7 @@ export default function VirtualGame() {
     const [hasPlayedVictory, setHasPlayedVictory] = useState(false);
     const [showRulesModal, setShowRulesModal] = useState(false);
     const [showDrawDiscardPopup, setShowDrawDiscardPopup] = useState(false);
+    const [isNextRoundPending, setIsNextRoundPending] = useState(false);
 
     // AI Config State
     const [aiConfig, setAIConfig] = useState({
@@ -158,8 +169,17 @@ export default function VirtualGame() {
     useEffect(() => {
         if (onlineLastNotificationRaw) {
             setNotification(onlineLastNotificationRaw);
+            // If we got an error or info, likely the pending state should be cleared (especially error)
+            if (onlineLastNotificationRaw.type === 'error') {
+                setIsNextRoundPending(false);
+            }
         }
     }, [onlineLastNotificationRaw]);
+
+    // Reset pending state when round number changes
+    useEffect(() => {
+        setIsNextRoundPending(false);
+    }, [onlineRoundNumber]);
 
     // Auto-navigate to game screen when online game starts
     useEffect(() => {
@@ -632,6 +652,72 @@ export default function VirtualGame() {
                         </div>
                     </>
                 )}
+
+                {/* Card Customization Container */}
+                <Card className="glass-premium dark:glass-dark shadow-xl border border-slate-200/50 dark:border-slate-700/50">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                            <Palette className="h-4 w-4 text-purple-500" />
+                            Personnaliser vos cartes
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {playerLevel < 3 ? (
+                            <div className="relative p-4 rounded-xl bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-2 text-center overflow-hidden">
+                                <div className="absolute inset-0 bg-slate-200/10 dark:bg-black/20 backdrop-blur-[1px]" />
+                                <div className="z-10 bg-slate-200 dark:bg-slate-700 p-3 rounded-full">
+                                    <Lock className="h-6 w-6 text-slate-500 dark:text-slate-400" />
+                                </div>
+                                <div className="z-10">
+                                    <p className="font-bold text-slate-600 dark:text-slate-300">Niveau 3 requis</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">Jouez pour débloquer les skins !</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    { id: 'classic', name: 'Classique', img: '/card-back.png' },
+                                    { id: 'papyrus', name: 'Papyrus', img: '/card-back-papyrus.jpg' }
+                                ].map((skin) => {
+                                    const isSelected = playerCardSkin === skin.id;
+                                    return (
+                                        <div
+                                            key={skin.id}
+                                            onClick={() => useGameStore.getState().setCardSkin(skin.id)}
+                                            className={cn(
+                                                "relative cursor-pointer group rounded-xl overflow-hidden transition-all duration-300",
+                                                isSelected
+                                                    ? "ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-slate-900 scale-[1.02] shadow-lg"
+                                                    : "hover:scale-[1.02] hover:shadow-md border border-transparent hover:border-slate-300 dark:hover:border-slate-600"
+                                            )}
+                                        >
+                                            <div className="aspect-[2/3] w-full relative">
+                                                <img
+                                                    src={skin.img}
+                                                    alt={skin.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                {isSelected && (
+                                                    <div className="absolute top-2 right-2 bg-emerald-500 text-white p-1 rounded-full shadow-lg">
+                                                        <CheckCircle className="h-3 w-3" />
+                                                    </div>
+                                                )}
+                                                <div className="absolute inset-x-0 bottom-0 bg-black/60 p-2 text-center backdrop-blur-sm">
+                                                    <span className={cn(
+                                                        "text-xs font-bold block",
+                                                        isSelected ? "text-emerald-300" : "text-slate-200"
+                                                    )}>
+                                                        {skin.name}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         );
     }
@@ -1288,9 +1374,11 @@ export default function VirtualGame() {
                             </Button>
                             <Button
                                 className="flex-1 bg-skyjo-blue hover:bg-skyjo-blue/90 text-white"
+                                disabled={isOnlineMode && isNextRoundPending}
                                 onClick={() => {
                                     if (isOnlineMode) {
                                         // Online mode: emit to server
+                                        setIsNextRoundPending(true);
                                         startOnlineNextRound();
                                     } else {
                                         // Local mode: use local store
@@ -1354,8 +1442,17 @@ export default function VirtualGame() {
                                     </>
                                 ) : (
                                     <>
-                                        <Play className="h-4 w-4 mr-1" />
-                                        Manche suivante
+                                        {isNextRoundPending ? (
+                                            <>
+                                                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                                                Chargement...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Play className="h-4 w-4 mr-1" />
+                                                Manche suivante
+                                            </>
+                                        )}
                                     </>
                                 )}
                             </Button>

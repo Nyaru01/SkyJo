@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import SkyjoCard from './SkyjoCard';
+import { useGameStore } from '../../store/gameStore';
 
 // Mosaic color schemes for each card color (same as SkyjoCard)
 const MOSAIC_COLORS = {
@@ -90,6 +91,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
     turnPhase,
     activeActionSource, // 'deck-pile' or 'discard-pile' when an animation is starting from here
 }) {
+    const cardSkin = useGameStore(s => (s && s.cardSkin) ? s.cardSkin : 'classic');
     const hasDrawnCard = !!drawnCard;
     const showDiscardPreview = discardTop && !hasDrawnCard;
 
@@ -129,7 +131,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
             >
                 {/* Card back design */}
                 <img
-                    src="/card-back.png"
+                    src={cardSkin === 'papyrus' ? "/card-back-papyrus.jpg" : "/card-back.png"}
                     alt="Deck"
                     className="w-full h-full object-cover"
                 />

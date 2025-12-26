@@ -38,6 +38,9 @@ export const useGameStore = create(
             darkMode: true, // Always default to dark mode
             soundEnabled: true,
             musicEnabled: true,
+            cardSkin: 'classic', // classic, papyrus
+
+            setCardSkin: (skin) => set({ cardSkin: skin }),
 
             // XP & Level System
             currentXP: 0,  // 0-9, resets to 0 on level up

@@ -247,7 +247,25 @@ export const useOnlineGameStore = create((set, get) => ({
             set({ error: "Entrez un pseudo !" });
             return;
         }
-        socket.emit('create_room', { playerName, emoji: playerEmoji });
+
+        if (!socket.connected) {
+            socket.on('connect', () => {
+                socket.emit('create_room', { playerName, emoji: playerEmoji });
+                // Remove this specific one-time listener to avoid duplicates if reconnect logic handles it
+                // Actually this is tricky if we use .once('connect') but we might already be connected
+            }); // This is risky if already connecting.
+
+            // Better approach: Check if connecting?
+            // If disconnected, try to connect and emit ONCE connected.
+            socket.connect();
+
+            // Wait for connection with a once listener
+            socket.once('connect', () => {
+                socket.emit('create_room', { playerName, emoji: playerEmoji });
+            });
+        } else {
+            socket.emit('create_room', { playerName, emoji: playerEmoji });
+        }
     },
 
     joinRoom: (code) => {

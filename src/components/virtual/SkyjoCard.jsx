@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import { CARD_COLORS } from '../../lib/skyjoEngine';
+import { useGameStore } from '../../store/gameStore';
 
 /**
  * Skyjo Card Component - Skeuomorphic Design
@@ -141,6 +142,9 @@ const SkyjoCard = memo(function SkyjoCard({
     };
 
     const currentSize = sizeStyles[size] || sizeStyles.md;
+
+    // Robust retrieval with fallback
+    const cardSkin = useGameStore(s => (s && s.cardSkin) ? s.cardSkin : 'classic');
 
     if (card === null) {
         return (
@@ -294,7 +298,7 @@ const SkyjoCard = memo(function SkyjoCard({
                     }}
                 >
                     <img
-                        src="/card-back.png"
+                        src={cardSkin === 'papyrus' ? "/card-back-papyrus.jpg" : "/card-back.png"}
                         alt="Card Back"
                         className="w-full h-full object-cover"
                     />
