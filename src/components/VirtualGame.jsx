@@ -13,6 +13,7 @@ import CardAnimationLayer from './virtual/CardAnimationLayer';
 import SkyjoCard from './virtual/SkyjoCard';
 import LevelUpReward from './LevelUpReward';
 import ExperienceBar from './ExperienceBar';
+import SkinCarousel from './SkinCarousel';
 import { useVirtualGameStore, selectAIMode, selectAIPlayers, selectIsCurrentPlayerAI, selectIsAIThinking } from '../store/virtualGameStore';
 import { useOnlineGameStore } from '../store/onlineGameStore';
 import { useGameStore } from '../store/gameStore';
@@ -675,70 +676,18 @@ export default function VirtualGame() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {[
+                        <SkinCarousel
+                            skins={[
                                 { id: 'classic', name: 'Classique', img: '/card-back.png', level: 1 },
                                 { id: 'papyrus', name: 'Papyrus', img: '/card-back-papyrus.jpg', level: 3 },
                                 { id: 'neon', name: 'Neon', img: '/card-back-neon.png', level: 5 },
                                 { id: 'gold', name: 'Gold', img: '/card-back-gold.png', level: 10 },
                                 { id: 'galaxy', name: 'Galaxy', img: '/card-back-galaxy.png', level: 15 }
-                            ].map((skin) => {
-                                const isSelected = playerCardSkin === skin.id;
-                                const isLocked = playerLevel < skin.level;
-
-                                return (
-                                    <div
-                                        key={skin.id}
-                                        onClick={() => !isLocked && useGameStore.getState().setCardSkin(skin.id)}
-                                        className={cn(
-                                            "relative group rounded-xl overflow-hidden transition-all duration-300",
-                                            isLocked ? "opacity-70 cursor-not-allowed" : "cursor-pointer",
-                                            isSelected
-                                                ? "ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-slate-900 scale-[1.02] shadow-lg"
-                                                : !isLocked && "hover:scale-[1.02] hover:shadow-md border border-transparent hover:border-slate-300 dark:hover:border-slate-600"
-                                        )}
-                                    >
-                                        <div className="aspect-[2/3] w-full relative">
-                                            <img
-                                                src={skin.img}
-                                                alt={skin.name}
-                                                className={cn(
-                                                    "w-full h-full object-cover transition-all",
-                                                    isLocked && "grayscale blur-[2px]"
-                                                )}
-                                            />
-
-                                            {/* Selection Indicator */}
-                                            {isSelected && (
-                                                <div className="absolute top-2 right-2 bg-emerald-500 text-white p-1 rounded-full shadow-lg z-10">
-                                                    <CheckCircle className="h-3 w-3" />
-                                                </div>
-                                            )}
-
-                                            {/* Locked Overlay */}
-                                            {isLocked && (
-                                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[1px] text-white p-2 text-center">
-                                                    <Lock className="h-6 w-6 mb-1 text-slate-300" />
-                                                    <span className="text-xs font-bold">Niveau {skin.level}</span>
-                                                </div>
-                                            )}
-
-                                            {/* Label */}
-                                            {!isLocked && (
-                                                <div className="absolute inset-x-0 bottom-0 bg-black/60 p-2 text-center backdrop-blur-sm">
-                                                    <span className={cn(
-                                                        "text-xs font-bold block",
-                                                        isSelected ? "text-emerald-300" : "text-slate-200"
-                                                    )}>
-                                                        {skin.name}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                            ]}
+                            selectedSkinId={playerCardSkin}
+                            onSelect={(id) => useGameStore.getState().setCardSkin(id)}
+                            playerLevel={playerLevel}
+                        />
                     </CardContent>
                 </Card>
             </div>
