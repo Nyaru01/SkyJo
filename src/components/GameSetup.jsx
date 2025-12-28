@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, X, User, Sparkles, Gamepad2 } from 'lucide-react';
+import { Plus, X, User, Sparkles, Gamepad2, RefreshCw, CheckCircle } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { useGameStore } from '../store/gameStore';
 import { useFeedback } from '../hooks/useFeedback';
+import { useUpdateCheck } from './UpdatePrompt';
 import { cn } from '../lib/utils';
 
 // Emojis disponibles pour les avatars
@@ -31,6 +32,7 @@ export default function GameSetup({ onNavigate }) {
     const [openEmojiPicker, setOpenEmojiPicker] = useState(null);
     const setConfiguration = useGameStore(state => state.setConfiguration);
     const { playStart } = useFeedback();
+    const { checkForUpdates, isChecking, checkResult } = useUpdateCheck();
 
     const addPlayer = () => {
         if (players.length < 8) {
@@ -220,6 +222,35 @@ export default function GameSetup({ onNavigate }) {
                     </div>
                     <span className="text-white/80 text-2xl group-hover:translate-x-1 transition-transform relative z-30">→</span>
                 </div>
+            </button>
+
+            {/* Check for Updates Button */}
+            <button
+                onClick={checkForUpdates}
+                disabled={isChecking}
+                className={cn(
+                    "w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all text-sm font-medium",
+                    checkResult === 'up-to-date'
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                        : "bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 border border-slate-600/30"
+                )}
+            >
+                {isChecking ? (
+                    <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        Recherche en cours...
+                    </>
+                ) : checkResult === 'up-to-date' ? (
+                    <>
+                        <CheckCircle className="w-4 h-4" />
+                        Vous êtes à jour !
+                    </>
+                ) : (
+                    <>
+                        <RefreshCw className="w-4 h-4" />
+                        Rechercher des mises à jour
+                    </>
+                )}
             </button>
 
 

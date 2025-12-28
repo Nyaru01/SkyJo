@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import Dashboard from './components/Dashboard';
 import ImagePreloader from './components/ui/ImagePreloader';
-import UpdatePrompt from './components/UpdatePrompt';
+import { UpdateProvider } from './components/UpdatePrompt';
 
 function App() {
   // Always force dark mode on mount
@@ -12,13 +12,13 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen font-sans text-slate-900 dark:text-slate-100 selection:bg-emerald-100 dark:selection:bg-emerald-900">
-      <ImagePreloader>
-        <Dashboard />
-      </ImagePreloader>
-      {/* PWA Update Prompt */}
-      <UpdatePrompt />
-    </div>
+    <UpdateProvider>
+      <div className="min-h-screen font-sans text-slate-900 dark:text-slate-100 selection:bg-emerald-100 dark:selection:bg-emerald-900">
+        <ImagePreloader>
+          <Dashboard />
+        </ImagePreloader>
+      </div>
+    </UpdateProvider>
   );
 }
 
