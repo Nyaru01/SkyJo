@@ -312,7 +312,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
 
                 {/* Instruction Banner - Integrated at bottom */}
                 {instructionText && (
-                    <div className="absolute -bottom-10 left-0 right-0 flex justify-center pointer-events-none z-20">
+                    <div className="absolute top-full mt-2 left-0 right-0 flex justify-center pointer-events-none z-[100]">
                         <motion.div
                             initial={{ opacity: 0, y: -5 }}
                             animate={{ opacity: 1, y: 0 }}

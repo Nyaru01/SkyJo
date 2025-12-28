@@ -1585,7 +1585,7 @@ export default function VirtualGame() {
             {/* Compact Draw/Discard Trigger Button - ABOVE the banner */}
             {!isInitialReveal && (
                 <div
-                    className="flex justify-center px-4"
+                    className="flex justify-center px-4 relative z-40"
                     style={{ marginTop: '2px', marginBottom: '4px' }}
                 >
                     <div style={{ width: '100%', maxWidth: '340px' }}>
@@ -1640,6 +1640,7 @@ export default function VirtualGame() {
                 </div>
             )}
 
+            {/* Instruction Banner - BELOW the PIOCHER button */}
             {/* Instruction Banner moved inside DrawDiscardTrigger */}
 
             {/* Local Player at BOTTOM for thumb zone optimization */}
