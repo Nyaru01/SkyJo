@@ -21,6 +21,7 @@ import { calculateFinalScores } from '../lib/skyjoEngine';
 import { AI_DIFFICULTY, chooseInitialCardsToReveal } from '../lib/skyjoAI';
 import { useFeedback } from '../hooks/useFeedback';
 import { useBackgroundMusic } from '../hooks/useBackgroundMusic';
+import { useNotifications } from '../hooks/useNotifications';
 import { cn } from '../lib/utils';
 import { Copy, Wifi, WifiOff, Share2, Music, Music2 } from 'lucide-react';
 
@@ -153,6 +154,9 @@ export default function VirtualGame() {
     const musicEnabled = useGameStore(state => state.musicEnabled);
     const toggleMusic = useGameStore(state => state.toggleMusic);
 
+    // Browser notifications for lobby
+    const { requestPermission, sendNotification, isTabHidden, hasPermission } = useNotifications();
+
     // Play music when in game or lobby
     useBackgroundMusic(screen === 'game' || screen === 'lobby');
 
@@ -183,9 +187,18 @@ export default function VirtualGame() {
                 const audio = new Audio('/Sounds/whoosh-radio-ready-219487.mp3');
                 audio.volume = 0.5;
                 audio.play().catch(e => console.log('Audio play failed', e)); // Auto-play restrictions
+
+                // Send browser notification if tab is in background
+                if (isTabHidden()) {
+                    sendNotification('Skyjo - Nouveau joueur ! 🎮', {
+                        body: onlineLastNotificationRaw.message,
+                        tag: 'player-joined', // Prevents duplicate notifications
+                        renotify: true
+                    });
+                }
             }
         }
-    }, [onlineLastNotificationRaw]);
+    }, [onlineLastNotificationRaw, isTabHidden, sendNotification]);
 
     // Reset pending state when round number changes
     useEffect(() => {
@@ -1088,6 +1101,8 @@ export default function VirtualGame() {
                                     onClick={() => {
                                         setPlayerInfo(myPseudo || 'Joueur', myEmoji);
                                         createRoom();
+                                        // Request notification permission when creating a room
+                                        requestPermission();
                                     }}
                                 >
                                     Créer une salle
