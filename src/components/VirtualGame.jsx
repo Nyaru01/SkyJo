@@ -1614,6 +1614,7 @@ export default function VirtualGame() {
                                 }
                             }}
                             discardTop={discardTop}
+                            discardPile={activeGameState.discardPile}
                             drawnCard={activeGameState.drawnCard}
                             drawPileCount={activeGameState.drawPile.length}
                             discardPileCount={activeGameState.discardPile.length}
