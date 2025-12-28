@@ -4,6 +4,13 @@ import { cn } from '../../lib/utils';
 import SkyjoCard from './SkyjoCard';
 import { useGameStore } from '../../store/gameStore';
 
+// Simple haptic feedback for pile touches
+const triggerHaptic = () => {
+    if (navigator.vibrate) {
+        navigator.vibrate(25);
+    }
+};
+
 // Mosaic color schemes for each card color (same as SkyjoCard)
 const MOSAIC_COLORS = {
     indigo: {
@@ -122,7 +129,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                     transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
                     overflow: 'hidden'
                 }}
-                onClick={canInteract ? (onDrawAction || onClick) : undefined}
+                onClick={canInteract ? () => { triggerHaptic(); (onDrawAction || onClick)?.(); } : undefined}
                 whileHover={canInteract ? { scale: 1.1, rotate: -5 } : undefined}
                 whileTap={canInteract ? { scale: 0.95 } : undefined}
                 animate={activeActionSource === 'deck-pile' ? { scale: [1, 1.1, 1] } : {}}
@@ -221,7 +228,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                             background: mosaicColors.secondary,
                             transition: 'box-shadow 0.3s ease, border-color 0.3s ease'
                         }}
-                        onClick={canInteract ? (onDiscardAction || onClick) : undefined}
+                        onClick={canInteract ? () => { triggerHaptic(); (onDiscardAction || onClick)?.(); } : undefined}
                         whileHover={canInteract ? { scale: 1.1, rotate: 5 } : undefined}
                         whileTap={canInteract ? { scale: 0.95 } : undefined}
                         animate={activeActionSource === 'discard-pile' ? { scale: [1, 1.1, 1] } : {}}

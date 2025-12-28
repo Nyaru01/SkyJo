@@ -3,6 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SkyjoCard from './SkyjoCard';
 import { cn } from '../../lib/utils';
 
+// Simple haptic feedback function
+const triggerHaptic = (pattern = 30) => {
+    if (navigator.vibrate) {
+        navigator.vibrate(pattern);
+    }
+};
+
 /**
  * Draw/Discard Popup Modal
  * Full-screen modal with blur backdrop for draw/discard actions
@@ -24,21 +31,25 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
 }) {
     // Draw a card but DON'T close popup - let user decide to discard or place on grid
     const handleDrawClick = () => {
+        triggerHaptic(40);
         onDrawClick?.();
         // Popup stays open to show drawn card and allow discard option
     };
 
     const handleDiscardClick = () => {
+        triggerHaptic(40);
         onDiscardClick?.();
         // Popup stays open to show drawn card
     };
 
     const handleConfirmPlacement = () => {
+        triggerHaptic([30, 50, 30]); // Double tap feedback for confirmation
         // Explicitly confirm placement - calls parent handler to close WITHOUT undoing
         onConfirmPlacement?.();
     };
 
     const handleDiscardDrawnCard = () => {
+        triggerHaptic(50);
         onDiscardDrawnCard?.();
     };
 

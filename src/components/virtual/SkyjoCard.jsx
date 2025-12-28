@@ -4,6 +4,13 @@ import { cn } from '../../lib/utils';
 import { CARD_COLORS } from '../../lib/skyjoEngine';
 import { useGameStore } from '../../store/gameStore';
 
+// Simple haptic feedback for card touches
+const triggerHaptic = () => {
+    if (navigator.vibrate) {
+        navigator.vibrate(20); // Light tap
+    }
+};
+
 /**
  * Skyjo Card Component - Skeuomorphic Design
  * Reproduces the physical Skyjo card appearance with mosaic texture
@@ -177,7 +184,7 @@ const SkyjoCard = memo(function SkyjoCard({
                 width: currentSize.width,
                 height: currentSize.height,
             }}
-            onClick={isClickable ? onClick : undefined}
+            onClick={isClickable ? () => { triggerHaptic(); onClick?.(); } : undefined}
             whileHover={isClickable ? { scale: 1.08, y: -4 } : undefined}
             whileTap={isClickable ? { scale: 0.95 } : undefined}
             animate={isShaking ? "shake" : undefined}
@@ -188,7 +195,7 @@ const SkyjoCard = memo(function SkyjoCard({
                 <div
                     className="absolute pointer-events-auto"
                     style={{ top: '-8px', left: '-8px', right: '-8px', bottom: '-8px', zIndex: 10 }}
-                    onClick={onClick}
+                    onClick={() => { triggerHaptic(); onClick?.(); }}
                 />
             )}
 
