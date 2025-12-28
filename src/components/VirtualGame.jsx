@@ -1515,7 +1515,7 @@ export default function VirtualGame() {
 
     return (
         <div
-            className="max-w-3xl mx-auto p-1 sm:p-2 sm:space-y-3 animate-in fade-in relative h-[100dvh] flex flex-col justify-between overflow-hidden"
+            className="max-w-3xl mx-auto p-0 animate-in fade-in relative h-screen supports-[height:100svh]:h-[100svh] flex flex-col justify-around overflow-hidden"
             style={{
                 // Vignette effect around edges based on turn
                 boxShadow: isMyTurn
@@ -1577,7 +1577,7 @@ export default function VirtualGame() {
                         selectedCardIndex={null}
                         canInteract={false} // Opponent's hand is never directly interactive for local player
                         onCardClick={() => { }} // No interaction on opponent's hand
-                        size="md"
+                        size="sm"
                     />
                 </div>
             )}

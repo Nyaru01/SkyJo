@@ -144,174 +144,176 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
 
     return (
         <>
-            <div className="relative flex items-center justify-center gap-4 w-full">
-                {/* Draw pile card preview - Face-down card on the LEFT - CLICKABLE */}
-                <motion.div
-                    className={cn(
-                        "w-14 h-20 rounded-lg flex items-center justify-center shrink-0 relative",
-                        canInteract ? "cursor-pointer" : "cursor-not-allowed opacity-80"
-                    )}
-                    style={{
-                        backgroundColor: '#1e293b', // Fallback
-                        boxShadow: activeActionSource === 'deck-pile'
-                            ? '0 0 20px 5px rgba(52, 211, 153, 0.7)' // Intense Green Glow if active
-                            : canInteract ? '0 4px 12px rgba(0,0,0,0.5)' : 'none',
-                        border: activeActionSource === 'deck-pile'
-                            ? '2px solid #34d399' // Green border
-                            : '2px solid rgba(100, 116, 139, 0.4)',
-                        transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
-                        overflow: 'hidden'
-                    }}
-                    onClick={canInteract ? () => { triggerHaptic(); (onDrawAction || onClick)?.(); } : undefined}
-                    whileHover={canInteract ? { scale: 1.1, rotate: -5 } : undefined}
-                    whileTap={canInteract ? { scale: 0.95 } : undefined}
-                    animate={
-                        activeActionSource === 'deck-pile'
-                            ? { scale: [1, 1.1, 1] }
-                            : canInteract
-                                ? { scale: [1, 1.03, 1] }
-                                : {}
-                    }
-                    transition={{ duration: canInteract ? 1.5 : 0.8, repeat: Infinity }}
-                    id="deck-pile"
-                >
-                    {/* Card back design */}
-                    <img
-                        src={cardSkin === 'papyrus' ? "/card-back-papyrus.jpg" : "/card-back.png"}
-                        alt="Deck"
-                        className="w-full h-full object-cover"
-                    />
-
-                    {/* Count Badge for Draw Pile (Optional - usually on button but good to have here too maybe? No, kept on button) */}
-                </motion.div>
-
-                {hasDrawnCard ? (
-                    // Show the actual drawn card in the center
+            <div className="flex flex-col items-center gap-2 w-full">
+                <div className="relative flex items-center justify-center gap-4 w-full">
+                    {/* Draw pile card preview - Face-down card on the LEFT - CLICKABLE */}
                     <motion.div
                         className={cn(
-                            "relative z-10",
-                            canInteract ? "cursor-pointer" : "cursor-default"
-                        )}
-                        onClick={onClick}
-                        whileHover={canInteract ? { scale: 1.05 } : undefined}
-                        whileTap={canInteract ? { scale: 0.95 } : undefined}
-                        id="drawn-card-slot"
-                    >
-                        <SkyjoCard
-                            card={{ ...drawnCard, isRevealed: true }}
-                            size="md"
-                            isHighlighted={canInteract}
-                        // Add a label below or above?
-                        />
-                        {/* Helper text below */}
-                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap flex flex-col items-center gap-1">
-                            <span className={cn(
-                                "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border shadow-lg backdrop-blur-sm",
-                                turnPhase === 'MUST_REPLACE'
-                                    ? "bg-amber-500/20 border-amber-500/50 text-amber-300"
-                                    : "bg-emerald-500/20 border-emerald-500/50 text-emerald-300"
-                            )}>
-                                {instructionText || (turnPhase === 'MUST_REPLACE' ? 'DÉFAUSSE' : 'PIOCHE')}
-                            </span>
-                        </div>
-                    </motion.div>
-                ) : (
-                    <motion.button
-                        onClick={onClick}
-                        disabled={!canInteract}
-                        className={cn(
-                            "flex items-center justify-center gap-4 w-full px-4 py-3 rounded-2xl transition-all relative z-10",
-                            canInteract
-                                ? (instructionText && turnPhase === 'MUST_REVEAL' ? "cursor-default bg-indigo-600 border border-indigo-400/50" : "cursor-pointer bg-slate-700 hover:bg-slate-600 border border-emerald-500/50")
-                                : "cursor-not-allowed bg-slate-700/60 opacity-60 border border-slate-600/30"
+                            "w-14 h-20 rounded-lg flex items-center justify-center shrink-0 relative",
+                            canInteract ? "cursor-pointer" : "cursor-not-allowed opacity-80"
                         )}
                         style={{
-                            boxShadow: canInteract
-                                ? '0 4px 15px rgba(0, 0, 0, 0.3), 0 0 15px rgba(52, 211, 153, 0.2)'
-                                : '0 4px 15px rgba(0, 0, 0, 0.3)',
-                            maxWidth: '280px' // Limit button width so cards stay effective
+                            backgroundColor: '#1e293b', // Fallback
+                            boxShadow: activeActionSource === 'deck-pile'
+                                ? '0 0 20px 5px rgba(52, 211, 153, 0.7)' // Intense Green Glow if active
+                                : canInteract ? '0 4px 12px rgba(0,0,0,0.5)' : 'none',
+                            border: activeActionSource === 'deck-pile'
+                                ? '2px solid #34d399' // Green border
+                                : '2px solid rgba(100, 116, 139, 0.4)',
+                            transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
+                            overflow: 'hidden'
                         }}
-                        whileHover={canInteract ? { scale: 1.02, y: -2 } : undefined}
-                        whileTap={canInteract ? { scale: 0.98 } : undefined}
+                        onClick={canInteract ? () => { triggerHaptic(); (onDrawAction || onClick)?.(); } : undefined}
+                        whileHover={canInteract ? { scale: 1.1, rotate: -5 } : undefined}
+                        whileTap={canInteract ? { scale: 0.95 } : undefined}
+                        animate={
+                            activeActionSource === 'deck-pile'
+                                ? { scale: [1, 1.1, 1] }
+                                : canInteract
+                                    ? { scale: [1, 1.03, 1] }
+                                    : {}
+                        }
+                        transition={{ duration: canInteract ? 1.5 : 0.8, repeat: Infinity }}
+                        id="deck-pile"
                     >
-                        {/* Label */}
-                        <span className={cn(
-                            "font-bold text-white uppercase tracking-wide whitespace-nowrap",
-                            instructionText ? "text-[10px]" : "text-sm"
-                        )}>
-                            {instructionText || 'Piocher'}
-                        </span>
+                        {/* Card back design */}
+                        <img
+                            src={cardSkin === 'papyrus' ? "/card-back-papyrus.jpg" : "/card-back.png"}
+                            alt="Deck"
+                            className="w-full h-full object-cover"
+                        />
 
+                        {/* Count Badge for Draw Pile (Optional - usually on button but good to have here too maybe? No, kept on button) */}
+                    </motion.div>
 
-                    </motion.button>
-                )}
-
-                {/* Discard card preview - positioned to the right - CLICKABLE */}
-                {/* Always render a placeholder to keep alignment symmetric if user wants "aligned all time" */}
-                <div className="w-14 h-20 flex items-center justify-center shrink-0 relative">
-                    {showDiscardPreview ? (
+                    {hasDrawnCard ? (
+                        // Show the actual drawn card in the center
                         <motion.div
                             className={cn(
-                                "w-full h-full rounded-lg flex items-center justify-center relative overflow-hidden",
+                                "relative z-10",
                                 canInteract ? "cursor-pointer" : "cursor-default"
                             )}
-                            style={{
-                                fontSize: '16px',
-                                fontWeight: 'bold',
-                                boxShadow: activeActionSource === 'discard-pile'
-                                    ? '0 0 20px 5px rgba(245, 158, 11, 0.7)' // Amber Glow
-                                    : '0 4px 12px rgba(0,0,0,0.5)',
-                                border: activeActionSource === 'discard-pile'
-                                    ? '2px solid #f59e0b' // Amber border
-                                    : '2px solid rgba(255,255,255,0.5)',
-                                background: mosaicColors.secondary,
-                                transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
-                                // Prevent text selection on long-press (mobile)
-                                userSelect: 'none',
-                                WebkitUserSelect: 'none',
-                                WebkitTouchCallout: 'none',
-                                touchAction: 'manipulation',
-                            }}
-                            onClick={canInteract ? () => { triggerHaptic(); (onDiscardAction || onClick)?.(); } : undefined}
-                            onPointerDown={handleDiscardPointerDown}
-                            onPointerUp={handleDiscardPointerUp}
-                            onPointerLeave={handleDiscardPointerLeave}
-                            onPointerCancel={handleDiscardPointerUp}
-                            whileHover={canInteract ? { scale: 1.1, rotate: 5 } : undefined}
+                            onClick={onClick}
+                            whileHover={canInteract ? { scale: 1.05 } : undefined}
                             whileTap={canInteract ? { scale: 0.95 } : undefined}
-                            animate={activeActionSource === 'discard-pile' ? { scale: [1, 1.1, 1] } : {}}
-                            transition={{ duration: 0.8, repeat: Infinity }}
-                            id="discard-pile"
+                            id="drawn-card-slot"
                         >
-                            {/* Mosaic texture pattern */}
-                            <MiniMosaicPattern colors={mosaicColors} id={patternId} />
-
-                            {/* Card value - white text */}
-                            <span
-                                className="relative z-10"
-                                style={{
-                                    color: '#ffffff',
-                                    textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
-                                }}
-                            >
-                                {discardTop.value}
-                            </span>
-
-                            {/* Discard Pile Count Badge */}
-                            <div className="absolute -bottom-2 -right-2 bg-slate-800 text-slate-300 text-[9px] px-1.5 py-0.5 rounded-full border border-slate-600 shadow-md z-20">
-                                {discardPileCount}
-                            </div>
+                            <SkyjoCard
+                                card={{ ...drawnCard, isRevealed: true }}
+                                size="md"
+                                isHighlighted={canInteract}
+                            // Add a label below or above?
+                            />
                         </motion.div>
                     ) : (
-                        /* Empty placeholder when no discard visible to maintain symmetry if desired */
-                        <div className="w-full h-full rounded-lg border-2 border-dashed border-slate-700/50 flex items-center justify-center">
-                            <span className="text-[9px] text-slate-600">{discardPileCount}</span>
-                        </div>
+                        <motion.button
+                            onClick={onClick}
+                            disabled={!canInteract}
+                            className={cn(
+                                "flex items-center justify-center gap-4 w-full px-4 py-3 rounded-2xl transition-all relative z-10",
+                                canInteract
+                                    ? (instructionText && turnPhase === 'MUST_REVEAL' ? "cursor-default bg-indigo-600 border border-indigo-400/50" : "cursor-pointer bg-slate-700 hover:bg-slate-600 border border-emerald-500/50")
+                                    : "cursor-not-allowed bg-slate-700/60 opacity-60 border border-slate-600/30"
+                            )}
+                            style={{
+                                boxShadow: canInteract
+                                    ? '0 4px 15px rgba(0, 0, 0, 0.3), 0 0 15px rgba(52, 211, 153, 0.2)'
+                                    : '0 4px 15px rgba(0, 0, 0, 0.3)',
+                                maxWidth: '280px' // Limit button width so cards stay effective
+                            }}
+                            whileHover={canInteract ? { scale: 1.02, y: -2 } : undefined}
+                            whileTap={canInteract ? { scale: 0.98 } : undefined}
+                        >
+                            {/* Label */}
+                            <span className={cn(
+                                "font-bold text-white uppercase tracking-wide whitespace-nowrap",
+                                instructionText ? "text-[10px]" : "text-sm"
+                            )}>
+                                {instructionText || 'Piocher'}
+                            </span>
+
+
+                        </motion.button>
                     )}
+
+                    {/* Discard card preview - positioned to the right - CLICKABLE */}
+                    {/* Always render a placeholder to keep alignment symmetric if user wants "aligned all time" */}
+                    <div className="w-14 h-20 flex items-center justify-center shrink-0 relative">
+                        {showDiscardPreview ? (
+                            <motion.div
+                                className={cn(
+                                    "w-full h-full rounded-lg flex items-center justify-center relative overflow-hidden",
+                                    canInteract ? "cursor-pointer" : "cursor-default"
+                                )}
+                                style={{
+                                    fontSize: '16px',
+                                    fontWeight: 'bold',
+                                    boxShadow: activeActionSource === 'discard-pile'
+                                        ? '0 0 20px 5px rgba(245, 158, 11, 0.7)' // Amber Glow
+                                        : '0 4px 12px rgba(0,0,0,0.5)',
+                                    border: activeActionSource === 'discard-pile'
+                                        ? '2px solid #f59e0b' // Amber border
+                                        : '2px solid rgba(255,255,255,0.5)',
+                                    background: mosaicColors.secondary,
+                                    transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
+                                    // Prevent text selection on long-press (mobile)
+                                    userSelect: 'none',
+                                    WebkitUserSelect: 'none',
+                                    WebkitTouchCallout: 'none',
+                                    touchAction: 'manipulation',
+                                }}
+                                onClick={canInteract ? () => { triggerHaptic(); (onDiscardAction || onClick)?.(); } : undefined}
+                                onPointerDown={handleDiscardPointerDown}
+                                onPointerUp={handleDiscardPointerUp}
+                                onPointerLeave={handleDiscardPointerLeave}
+                                onPointerCancel={handleDiscardPointerUp}
+                                whileHover={canInteract ? { scale: 1.1, rotate: 5 } : undefined}
+                                whileTap={canInteract ? { scale: 0.95 } : undefined}
+                                animate={activeActionSource === 'discard-pile' ? { scale: [1, 1.1, 1] } : {}}
+                                transition={{ duration: 0.8, repeat: Infinity }}
+                                id="discard-pile"
+                            >
+                                {/* Mosaic texture pattern */}
+                                <MiniMosaicPattern colors={mosaicColors} id={patternId} />
+
+                                {/* Card value - white text */}
+                                <span
+                                    className="relative z-10"
+                                    style={{
+                                        color: '#ffffff',
+                                        textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
+                                    }}
+                                >
+                                    {discardTop.value}
+                                </span>
+
+                                {/* Discard Pile Count Badge */}
+                                <div className="absolute -bottom-2 -right-2 bg-slate-800 text-slate-300 text-[9px] px-1.5 py-0.5 rounded-full border border-slate-600 shadow-md z-20">
+                                    {discardPileCount}
+                                </div>
+                            </motion.div>
+                        ) : (
+                            /* Empty placeholder when no discard visible to maintain symmetry if desired */
+                            <div className="w-full h-full rounded-lg border-2 border-dashed border-slate-700/50 flex items-center justify-center">
+                                <span className="text-[9px] text-slate-600">{discardPileCount}</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* Instruction Banner - Integrated at bottom */}
-
+                {hasDrawnCard && (
+                    // Helper text below the cards
+                    <div className="whitespace-nowrap flex flex-col items-center gap-1 animate-in fade-in slide-in-from-top-2">
+                        <span className={cn(
+                            "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border shadow-lg backdrop-blur-sm",
+                            turnPhase === 'MUST_REPLACE'
+                                ? "bg-amber-500/20 border-amber-500/50 text-amber-300"
+                                : "bg-emerald-500/20 border-emerald-500/50 text-emerald-300"
+                        )}>
+                            {instructionText || (turnPhase === 'MUST_REPLACE' ? 'DÉFAUSSE' : 'PIOCHE')}
+                        </span>
+                    </div>
+                )}
             </div>
 
             {/* Discard History Overlay */}
