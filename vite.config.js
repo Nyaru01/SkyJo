@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'prompt', // Changed from autoUpdate to prompt for user control
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'bg-skyjo.png'],
       workbox: {
-        // Skip waiting means new SW activates immediately
-        skipWaiting: true,
-        // Take control of all clients immediately
+        // Note: skipWaiting removed - let the user control the update via the prompt
+        // The updateServiceWorker(true) in UpdatePrompt.jsx will call skipWaiting
+        // Take control of all clients after activation
         clientsClaim: true,
         // Clean old caches
         cleanupOutdatedCaches: true,

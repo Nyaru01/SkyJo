@@ -7,7 +7,7 @@ import { useGameStore } from '../../store/gameStore';
 // Simple haptic feedback for card touches
 const triggerHaptic = () => {
     if (navigator.vibrate) {
-        navigator.vibrate(20); // Light tap
+        navigator.vibrate(50); // Perceptible tap on Android
     }
 };
 

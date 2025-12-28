@@ -7,7 +7,7 @@ import { useGameStore } from '../../store/gameStore';
 // Simple haptic feedback for pile touches
 const triggerHaptic = () => {
     if (navigator.vibrate) {
-        navigator.vibrate(25);
+        navigator.vibrate(50); // Perceptible tap on Android
     }
 };
 
