@@ -211,7 +211,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                     ? "bg-amber-500/20 border-amber-500/50 text-amber-300"
                                     : "bg-emerald-500/20 border-emerald-500/50 text-emerald-300"
                             )}>
-                                {turnPhase === 'MUST_REPLACE' ? 'DÉFAUSSE' : 'PIOCHE'}
+                                {instructionText || (turnPhase === 'MUST_REPLACE' ? 'DÉFAUSSE' : 'PIOCHE')}
                             </span>
                         </div>
                     </motion.div>
@@ -222,7 +222,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                         className={cn(
                             "flex items-center justify-center gap-4 w-full px-4 py-2 rounded-2xl transition-all relative z-10",
                             canInteract
-                                ? "cursor-pointer bg-slate-700 hover:bg-slate-600 border border-emerald-500/50"
+                                ? (instructionText && turnPhase === 'MUST_REVEAL' ? "cursor-default bg-indigo-600 border border-indigo-400/50" : "cursor-pointer bg-slate-700 hover:bg-slate-600 border border-emerald-500/50")
                                 : "cursor-not-allowed bg-slate-700/60 opacity-60 border border-slate-600/30"
                         )}
                         style={{
@@ -235,8 +235,11 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                         whileTap={canInteract ? { scale: 0.98 } : undefined}
                     >
                         {/* Label */}
-                        <span className="text-sm font-bold text-white uppercase tracking-wide whitespace-nowrap">
-                            Piocher
+                        <span className={cn(
+                            "font-bold text-white uppercase tracking-wide whitespace-nowrap",
+                            instructionText ? "text-[10px]" : "text-sm"
+                        )}>
+                            {instructionText || 'Piocher'}
                         </span>
 
                         {/* Draw pile count */}
@@ -311,18 +314,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                 </div>
 
                 {/* Instruction Banner - Integrated at bottom */}
-                {instructionText && (
-                    <div className="absolute top-full mt-2 left-0 right-0 flex justify-center pointer-events-none z-[100]">
-                        <motion.div
-                            initial={{ opacity: 0, y: -5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            key={instructionText}
-                            className="bg-indigo-600 text-white text-[11px] font-bold px-4 py-1.5 rounded-full backdrop-blur-md shadow-xl tracking-wide whitespace-nowrap flex items-center gap-2"
-                        >
-                            {instructionText}
-                        </motion.div>
-                    </div>
-                )}
+
             </div>
 
             {/* Discard History Overlay */}
