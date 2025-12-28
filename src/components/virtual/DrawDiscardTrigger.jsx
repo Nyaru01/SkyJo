@@ -164,8 +164,14 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                     onClick={canInteract ? () => { triggerHaptic(); (onDrawAction || onClick)?.(); } : undefined}
                     whileHover={canInteract ? { scale: 1.1, rotate: -5 } : undefined}
                     whileTap={canInteract ? { scale: 0.95 } : undefined}
-                    animate={activeActionSource === 'deck-pile' ? { scale: [1, 1.1, 1] } : {}}
-                    transition={{ duration: 0.8, repeat: Infinity }}
+                    animate={
+                        activeActionSource === 'deck-pile'
+                            ? { scale: [1, 1.1, 1] }
+                            : canInteract
+                                ? { scale: [1, 1.03, 1] }
+                                : {}
+                    }
+                    transition={{ duration: canInteract ? 1.5 : 0.8, repeat: Infinity }}
                     id="deck-pile"
                 >
                     {/* Card back design */}

@@ -20,6 +20,7 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
     drawPileCount,
     discardPileCount,
     discardTop,
+    discardPile = [], // Full discard pile for history
     drawnCard,
     canDraw = false,
     canTakeDiscard = false,
@@ -94,10 +95,43 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                                 {/* Header */}
                                 <h3 className="text-lg font-bold text-white mb-4">🃏 Carte en main</h3>
 
-                                {/* Drawn card display */}
-                                <div className="relative mb-4">
-                                    <div className="absolute inset-0 bg-amber-400/30 rounded-xl blur-md" />
-                                    <SkyjoCard card={drawnCard} size="lg" isHighlighted />
+                                {/* Drawn card + Discard history side by side */}
+                                <div className="flex items-center gap-6 mb-4">
+                                    {/* Main drawn card */}
+                                    <div className="relative">
+                                        <div className="absolute inset-0 bg-amber-400/30 rounded-xl blur-md" />
+                                        <SkyjoCard card={drawnCard} size="lg" isHighlighted />
+                                    </div>
+
+                                    {/* Discard history - last 3 cards stacked */}
+                                    {discardPile.length > 0 && (
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-xs text-slate-400 mb-2">📜 Défausse</span>
+                                            <div className="relative" style={{ width: 50, height: 70 }}>
+                                                {discardPile.slice(-3).map((card, index, arr) => (
+                                                    <div
+                                                        key={card.id || index}
+                                                        className="absolute"
+                                                        style={{
+                                                            top: (arr.length - 1 - index) * 4,
+                                                            left: (arr.length - 1 - index) * 2,
+                                                            zIndex: index,
+                                                            transform: `rotate(${(index - 1) * 3}deg)`,
+                                                        }}
+                                                    >
+                                                        <SkyjoCard
+                                                            card={{ ...card, isRevealed: true }}
+                                                            size="sm"
+                                                            isClickable={false}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <span className="text-[10px] text-slate-500 mt-1">
+                                                {discardPile.length} carte{discardPile.length > 1 ? 's' : ''}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Two clear action buttons */}

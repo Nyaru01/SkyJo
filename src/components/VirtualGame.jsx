@@ -1804,6 +1804,7 @@ export default function VirtualGame() {
                 drawPileCount={activeGameState.drawPile.length}
                 discardPileCount={activeGameState.discardPile.length}
                 discardTop={discardTop}
+                discardPile={activeGameState.discardPile}
                 drawnCard={activeGameState.drawnCard}
                 canDraw={activeGameState.turnPhase === 'DRAW'}
                 canTakeDiscard={
