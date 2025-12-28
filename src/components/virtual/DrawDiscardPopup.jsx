@@ -107,16 +107,16 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                                     {discardPile.length > 0 && (
                                         <div className="flex flex-col items-center">
                                             <span className="text-xs text-slate-400 mb-2">📜 Défausse</span>
-                                            <div className="relative" style={{ width: 50, height: 70 }}>
+                                            <div className="relative" style={{ width: 100, height: 70 }}>
                                                 {discardPile.slice(-3).map((card, index, arr) => (
                                                     <div
                                                         key={card.id || index}
                                                         className="absolute"
                                                         style={{
-                                                            top: (arr.length - 1 - index) * 4,
-                                                            left: (arr.length - 1 - index) * 2,
+                                                            top: index * 2,
+                                                            left: index * 25,
                                                             zIndex: index,
-                                                            transform: `rotate(${(index - 1) * 3}deg)`,
+                                                            transform: `rotate(${(index - 1) * 5}deg)`,
                                                         }}
                                                     >
                                                         <SkyjoCard

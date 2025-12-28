@@ -1586,7 +1586,7 @@ export default function VirtualGame() {
             {!isInitialReveal && (
                 <div
                     className="flex justify-center px-4 relative z-40"
-                    style={{ marginTop: '2px', marginBottom: '4px' }}
+                    style={{ marginTop: '24px', marginBottom: '24px' }}
                 >
                     <div style={{ width: '100%', maxWidth: '340px' }}>
                         <DrawDiscardTrigger
@@ -1630,7 +1630,7 @@ export default function VirtualGame() {
                             instructionText={
                                 (activeGameState.phase === 'FINAL_ROUND' ? '⚠️ DERNIER TOUR ! ' : '') +
                                 (isInitialReveal ? `Retournez chacun 2 cartes ${selectedForReveal.length > 0 ? `(${selectedForReveal.length}/2)` : ''}` :
-                                    activeGameState.turnPhase === 'DRAW' ? '👆 Touchez la pioche ou la défausse' :
+                                    activeGameState.turnPhase === 'DRAW' ? 'Piocher ou défausser' :
                                         activeGameState.turnPhase === 'REPLACE_OR_DISCARD' ? '👆 Jouez dans votre grille ou défaussez' :
                                             activeGameState.turnPhase === 'MUST_REPLACE' ? '👆 Remplacez une de vos cartes' :
                                                 activeGameState.turnPhase === 'MUST_REVEAL' ? '👆 Retournez une carte cachée' : '')
@@ -1645,7 +1645,7 @@ export default function VirtualGame() {
 
             {/* Local Player at BOTTOM for thumb zone optimization */}
             {activeGameState.players[myPlayerIndex] && (
-                <div className="relative rounded-2xl transition-all duration-500">
+                <div className="relative rounded-2xl transition-all duration-500 mt-24">
                     <PlayerHand
                         player={activeGameState.players[myPlayerIndex]}
                         isCurrentPlayer={!isInitialReveal && activeGameState.currentPlayerIndex === myPlayerIndex}

@@ -148,7 +148,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                 {/* Draw pile card preview - Face-down card on the LEFT - CLICKABLE */}
                 <motion.div
                     className={cn(
-                        "w-10 h-14 rounded-lg flex items-center justify-center shrink-0 relative",
+                        "w-14 h-20 rounded-lg flex items-center justify-center shrink-0 relative",
                         canInteract ? "cursor-pointer" : "cursor-not-allowed opacity-80"
                     )}
                     style={{
@@ -204,7 +204,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                         // Add a label below or above?
                         />
                         {/* Helper text below */}
-                        <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap flex flex-col items-center gap-1">
+                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap flex flex-col items-center gap-1">
                             <span className={cn(
                                 "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border shadow-lg backdrop-blur-sm",
                                 turnPhase === 'MUST_REPLACE'
@@ -220,7 +220,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                         onClick={onClick}
                         disabled={!canInteract}
                         className={cn(
-                            "flex items-center justify-center gap-4 w-full px-4 py-2 rounded-2xl transition-all relative z-10",
+                            "flex items-center justify-center gap-4 w-full px-4 py-3 rounded-2xl transition-all relative z-10",
                             canInteract
                                 ? (instructionText && turnPhase === 'MUST_REVEAL' ? "cursor-default bg-indigo-600 border border-indigo-400/50" : "cursor-pointer bg-slate-700 hover:bg-slate-600 border border-emerald-500/50")
                                 : "cursor-not-allowed bg-slate-700/60 opacity-60 border border-slate-600/30"
@@ -242,16 +242,13 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                             {instructionText || 'Piocher'}
                         </span>
 
-                        {/* Draw pile count */}
-                        <span className="text-xs font-medium text-slate-400 whitespace-nowrap">
-                            ({drawPileCount})
-                        </span>
+
                     </motion.button>
                 )}
 
                 {/* Discard card preview - positioned to the right - CLICKABLE */}
                 {/* Always render a placeholder to keep alignment symmetric if user wants "aligned all time" */}
-                <div className="w-10 h-14 flex items-center justify-center shrink-0 relative">
+                <div className="w-14 h-20 flex items-center justify-center shrink-0 relative">
                     {showDiscardPreview ? (
                         <motion.div
                             className={cn(
