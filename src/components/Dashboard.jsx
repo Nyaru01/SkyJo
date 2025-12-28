@@ -95,7 +95,7 @@ export default function Dashboard() {
 
                                 <Button
                                     variant="danger"
-                                    onClick={() => { if (confirm('Voulez-vous vraiment quitter et réinitialiser la partie ?')) resetGame(); }}
+                                    onClick={() => { if (confirm('Voulez-vous vraiment quitter et réinitialiser la partie ?')) { resetGame(); setActiveTab('home'); } }}
                                     className="w-full justify-start"
                                 >
                                     Arrêter la partie
@@ -225,7 +225,7 @@ export default function Dashboard() {
                                         variant="outline"
                                         size="sm"
                                         className="text-red-600 hover:text-red-700 hover:bg-red-50/80 border-red-300 bg-white/50 dark:bg-white/10 dark:text-red-400 dark:border-red-600"
-                                        onClick={() => { if (confirm('Arrêter et réinitialiser la partie ?')) resetGame(); }}
+                                        onClick={() => { if (confirm('Arrêter et réinitialiser la partie ?')) { resetGame(); setActiveTab('home'); } }}
                                     >
                                         Arrêter
                                     </Button>
