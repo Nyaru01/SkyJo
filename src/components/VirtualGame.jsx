@@ -1628,12 +1628,13 @@ export default function VirtualGame() {
                                 (onlineGameStarted ? onlinePendingAnimation?.sourceId : virtualPendingAnimation?.sourceId)
                             }
                             instructionText={
-                                (activeGameState.phase === 'FINAL_ROUND' ? '⚠️ DERNIER TOUR ! ' : '') +
-                                (isInitialReveal ? `Retournez chacun 2 cartes ${selectedForReveal.length > 0 ? `(${selectedForReveal.length}/2)` : ''}` :
-                                    activeGameState.turnPhase === 'DRAW' ? 'Piocher ou défausser' :
-                                        activeGameState.turnPhase === 'REPLACE_OR_DISCARD' ? '👆 Jouez dans votre grille ou défaussez' :
-                                            activeGameState.turnPhase === 'MUST_REPLACE' ? '👆 Remplacez une de vos cartes' :
-                                                activeGameState.turnPhase === 'MUST_REVEAL' ? '👆 Retournez une carte cachée' : '')
+                                activeGameState.phase === 'FINAL_ROUND'
+                                    ? '⚠️ DERNIER TOUR'
+                                    : (isInitialReveal ? `Retournez chacun 2 cartes ${selectedForReveal.length > 0 ? `(${selectedForReveal.length}/2)` : ''}` :
+                                        activeGameState.turnPhase === 'DRAW' ? 'Piocher ou défausser' :
+                                            activeGameState.turnPhase === 'REPLACE_OR_DISCARD' ? '👆 Jouez dans votre grille ou défaussez' :
+                                                activeGameState.turnPhase === 'MUST_REPLACE' ? '👆 Remplacez une de vos cartes' :
+                                                    activeGameState.turnPhase === 'MUST_REVEAL' ? '👆 Retournez une carte cachée' : '')
                             }
                         />
                     </div>
