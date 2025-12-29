@@ -283,48 +283,71 @@ io.on('connection', (socket) => {
             return;
         }
 
-        // Check if host? 
-        // For now, anyone can trigger next round to keep it simple, or checking socket.id
-
-        // Calculate scores adding to total
-        // Note: We might have already calculated stats on client side, but source of truth is here.
-        // We should only add scores ONCE.
-        // We can add a flag `room.roundScored`?
-
-        if (!room.roundScored) {
-            const roundScores = calculateFinalScores(room.gameState);
-            roundScores.forEach(score => {
-                room.totalScores[score.playerId] = (room.totalScores[score.playerId] || 0) + score.finalScore;
-            });
-            room.roundScored = true;
+        // Initialize ready set if not exists
+        if (!room.playersReadyForNextRound) {
+            room.playersReadyForNextRound = new Set();
         }
 
-        // Check 100 points
-        const maxScore = Math.max(...Object.values(room.totalScores));
-        if (maxScore >= 100) {
-            room.isGameOver = true;
-            const minScore = Math.min(...Object.values(room.totalScores));
-            const winnerId = Object.keys(room.totalScores).find(id => room.totalScores[id] === minScore);
-            const winnerPlayer = room.players.find(p => p.id === winnerId);
-            room.gameWinner = { name: winnerPlayer?.name, emoji: winnerPlayer?.emoji, score: minScore };
+        // Find the player who clicked
+        const player = room.players.find(p => p.id === socket.id);
+        if (!player) return;
 
-            io.to(roomCode).emit('game_over', {
-                totalScores: room.totalScores,
-                winner: room.gameWinner
-            });
-        } else {
-            // Next Round
-            room.roundNumber++;
-            room.roundScored = false;
-            const gamePlayers = room.players.map(p => ({
-                id: p.id, name: p.name, emoji: p.emoji
-            }));
-            room.gameState = initializeGame(gamePlayers);
-            io.to(roomCode).emit('game_started', {
-                gameState: room.gameState,
-                totalScores: room.totalScores,
-                roundNumber: room.roundNumber
-            });
+        // Mark this player as ready
+        room.playersReadyForNextRound.add(socket.id);
+        console.log(`${player.name} is ready for next round (${room.playersReadyForNextRound.size}/${room.players.length})`);
+
+        // Notify all players about who is ready
+        io.to(roomCode).emit('player_ready_next_round', {
+            playerId: socket.id,
+            playerName: player.name,
+            playerEmoji: player.emoji,
+            readyCount: room.playersReadyForNextRound.size,
+            totalPlayers: room.players.length
+        });
+
+        // Check if all players are ready
+        if (room.playersReadyForNextRound.size >= room.players.length) {
+            console.log(`All players ready! Starting next round for room ${roomCode}`);
+
+            // Reset ready set
+            room.playersReadyForNextRound = new Set();
+
+            // Calculate scores adding to total (only once)
+            if (!room.roundScored) {
+                const roundScores = calculateFinalScores(room.gameState);
+                roundScores.forEach(score => {
+                    room.totalScores[score.playerId] = (room.totalScores[score.playerId] || 0) + score.finalScore;
+                });
+                room.roundScored = true;
+            }
+
+            // Check 100 points
+            const maxScore = Math.max(...Object.values(room.totalScores));
+            if (maxScore >= 100) {
+                room.isGameOver = true;
+                const minScore = Math.min(...Object.values(room.totalScores));
+                const winnerId = Object.keys(room.totalScores).find(id => room.totalScores[id] === minScore);
+                const winnerPlayer = room.players.find(p => p.id === winnerId);
+                room.gameWinner = { name: winnerPlayer?.name, emoji: winnerPlayer?.emoji, score: minScore };
+
+                io.to(roomCode).emit('game_over', {
+                    totalScores: room.totalScores,
+                    winner: room.gameWinner
+                });
+            } else {
+                // Next Round
+                room.roundNumber++;
+                room.roundScored = false;
+                const gamePlayers = room.players.map(p => ({
+                    id: p.id, name: p.name, emoji: p.emoji
+                }));
+                room.gameState = initializeGame(gamePlayers);
+                io.to(roomCode).emit('game_started', {
+                    gameState: room.gameState,
+                    totalScores: room.totalScores,
+                    roundNumber: room.roundNumber
+                });
+            }
         }
     });
 

@@ -1287,7 +1287,9 @@ export default function VirtualGame() {
         // Calculate what cumulative scores would be after this round
         const projectedTotals = {};
         scores?.forEach(score => {
-            projectedTotals[score.playerId] = (activeTotalScores[score.playerId] || 0) + score.finalScore;
+            const currentTotal = Number(activeTotalScores[score.playerId]) || 0;
+            const roundScore = Number(score.finalScore) || 0;
+            projectedTotals[score.playerId] = currentTotal + roundScore;
         });
 
         // Check if game would end after this round

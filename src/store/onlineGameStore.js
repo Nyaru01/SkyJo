@@ -215,7 +215,6 @@ export const useOnlineGameStore = create((set, get) => ({
                 }
             });
 
-            // Handle game cancelled (not enough players)
             socket.on('game_cancelled', ({ reason }) => {
                 console.log('[Socket] Game cancelled:', reason);
                 set({
@@ -227,6 +226,27 @@ export const useOnlineGameStore = create((set, get) => ({
                         timestamp: Date.now()
                     }
                 });
+            });
+
+            // Handle player ready for next round
+            socket.on('player_ready_next_round', ({ playerName, playerEmoji, readyCount, totalPlayers }) => {
+                console.log(`[Socket] ${playerName} is ready (${readyCount}/${totalPlayers})`);
+                const { socketId, players } = get();
+
+                // Find if it's me who just clicked
+                const clickedPlayer = players.find(p => p.name === playerName && p.emoji === playerEmoji);
+                const isMe = clickedPlayer?.id === socketId;
+
+                // Only notify if someone else clicked ready
+                if (!isMe) {
+                    set({
+                        lastNotification: {
+                            type: 'info',
+                            message: `${playerEmoji} ${playerName} veut continuer (${readyCount}/${totalPlayers})`,
+                            timestamp: Date.now()
+                        }
+                    });
+                }
             });
         }
 
