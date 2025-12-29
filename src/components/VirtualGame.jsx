@@ -1423,8 +1423,8 @@ export default function VirtualGame() {
                                         {score.playerName}
                                     </span>
                                     {score.isFinisher && (
-                                        <span className="text-xs bg-emerald-900 text-emerald-300 px-2 py-0.5 rounded-full">
-                                            Finisseur
+                                        <span className="text-xs bg-amber-900 text-amber-300 px-2 py-0.5 rounded-full">
+                                            🎯 A retourné
                                         </span>
                                     )}
                                 </div>
