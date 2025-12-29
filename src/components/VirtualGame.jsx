@@ -124,8 +124,8 @@ export default function VirtualGame() {
 
     // Local State for Lobby
     const [lobbyCode, setLobbyCode] = useState('');
-    const [myPseudo, setMyPseudo] = useState('');
-    const [myEmoji, setMyEmoji] = useState('🐱');
+    const [myPseudo, setMyPseudo] = useState(() => localStorage.getItem('skyjo_player_pseudo') || '');
+    const [myEmoji, setMyEmoji] = useState(() => localStorage.getItem('skyjo_player_emoji') || '🐱');
     const [copyToast, setCopyToast] = useState(null);
     const [notification, setNotification] = useState(null);
     const [hasPlayedVictory, setHasPlayedVictory] = useState(false);
@@ -133,12 +133,16 @@ export default function VirtualGame() {
     const [showDrawDiscardPopup, setShowDrawDiscardPopup] = useState(false);
     const [isNextRoundPending, setIsNextRoundPending] = useState(false);
 
-    // AI Config State
-    const [aiConfig, setAIConfig] = useState({
-        playerName: '',
-        playerEmoji: '🐱',
-        aiCount: 1,
-        difficulty: AI_DIFFICULTY.NORMAL,
+    // AI Config State - Load from localStorage for persistence
+    const [aiConfig, setAIConfig] = useState(() => {
+        const savedPseudo = localStorage.getItem('skyjo_player_pseudo') || '';
+        const savedEmoji = localStorage.getItem('skyjo_player_emoji') || '🐱';
+        return {
+            playerName: savedPseudo,
+            playerEmoji: savedEmoji,
+            aiCount: 1,
+            difficulty: AI_DIFFICULTY.NORMAL,
+        };
     });
 
     // Cards shaking state (for invalid actions)
@@ -149,7 +153,8 @@ export default function VirtualGame() {
         playVictory,
         playCardFlip,
         playCardDraw,
-        playCardPlace
+        playCardPlace,
+        playStart
     } = useFeedback();
     const musicEnabled = useGameStore(state => state.musicEnabled);
     const toggleMusic = useGameStore(state => state.toggleMusic);
@@ -160,6 +165,25 @@ export default function VirtualGame() {
     // Play music when in game or lobby
     useBackgroundMusic(screen === 'game' || screen === 'lobby');
 
+    // Save pseudo and emoji to localStorage when they change
+    useEffect(() => {
+        if (aiConfig.playerName) {
+            localStorage.setItem('skyjo_player_pseudo', aiConfig.playerName);
+        }
+        if (aiConfig.playerEmoji) {
+            localStorage.setItem('skyjo_player_emoji', aiConfig.playerEmoji);
+        }
+    }, [aiConfig.playerName, aiConfig.playerEmoji]);
+
+    // Also save from online mode
+    useEffect(() => {
+        if (myPseudo) {
+            localStorage.setItem('skyjo_player_pseudo', myPseudo);
+        }
+        if (myEmoji) {
+            localStorage.setItem('skyjo_player_emoji', myEmoji);
+        }
+    }, [myPseudo, myEmoji]);
     // Sync notifications from store
     useEffect(() => {
         if (virtualLastNotification) {
@@ -710,6 +734,7 @@ export default function VirtualGame() {
     // Render AI setup screen
     if (screen === 'ai-setup') {
         const handleStartAIGame = () => {
+            playStart(); // Play start sound
             startAIGame(
                 { name: aiConfig.playerName || 'Joueur', emoji: aiConfig.playerEmoji },
                 aiConfig.aiCount,
@@ -755,8 +780,16 @@ export default function VirtualGame() {
                                     value={aiConfig.playerName}
                                     onChange={(e) => setAIConfig({ ...aiConfig, playerName: e.target.value })}
                                     className="flex-1 h-10"
+                                    required
+                                    style={{
+                                        borderColor: '#5742e2',
+                                        borderWidth: '2px'
+                                    }}
                                 />
                             </div>
+                            {!aiConfig.playerName.trim() && (
+                                <p className="text-xs text-amber-400 mt-1">* Pseudo obligatoire</p>
+                            )}
                         </div>
 
                         {/* AI Count */}
@@ -820,8 +853,14 @@ export default function VirtualGame() {
 
                 <Button
                     size="lg"
-                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg"
+                    className={cn(
+                        "w-full text-white shadow-lg transition-all",
+                        aiConfig.playerName.trim()
+                            ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500"
+                            : "bg-slate-600 cursor-not-allowed opacity-60"
+                    )}
                     onClick={handleStartAIGame}
+                    disabled={!aiConfig.playerName.trim()}
                 >
                     🚀 Affronter l'IA
                 </Button>
@@ -1090,6 +1129,11 @@ export default function VirtualGame() {
                                     value={myPseudo}
                                     onChange={(e) => setMyPseudo(e.target.value)}
                                     className="flex-1 h-10"
+                                    required
+                                    style={{
+                                        borderColor: '#5742e2',
+                                        borderWidth: '2px'
+                                    }}
                                 />
                             </div>
                         </div>
@@ -1515,7 +1559,7 @@ export default function VirtualGame() {
 
     return (
         <div
-            className="max-w-3xl mx-auto p-0 animate-in fade-in relative h-screen supports-[height:100svh]:h-[100svh] flex flex-col justify-around overflow-hidden"
+            className="skyjo-game-container max-w-3xl mx-auto p-0 py-1 animate-in fade-in relative h-screen supports-[height:100svh]:h-[100svh] flex flex-col justify-between overflow-hidden"
             style={{
                 // Vignette effect around edges based on turn
                 boxShadow: isMyTurn
@@ -1526,7 +1570,7 @@ export default function VirtualGame() {
             }}
         >
             {/* Header - ultra-thin single line */}
-            <div className="flex items-center justify-between px-2 py-1 mb-1">
+            <div className="flex items-center justify-between px-2 py-0.5 shrink-0">
                 <Button
                     variant="ghost"
                     size="sm"
@@ -1582,6 +1626,39 @@ export default function VirtualGame() {
                 </div>
             )}
 
+            {/* Initial Reveal Instruction Banner */}
+            {isInitialReveal && (
+                <div className="flex justify-center px-4 relative z-40">
+                    <div
+                        className="flex items-center justify-center gap-3 px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 border border-indigo-400/50 shadow-lg"
+                        style={{
+                            boxShadow: '0 0 20px rgba(99, 102, 241, 0.4), 0 4px 15px rgba(0, 0, 0, 0.3)'
+                        }}
+                    >
+                        <span className="text-2xl">👆</span>
+                        <div className="flex flex-col items-center">
+                            <span className="font-bold text-white text-sm uppercase tracking-wide">
+                                Retournez 2 cartes
+                            </span>
+                            <span className="text-indigo-200 text-xs font-medium">
+                                {(initialReveals[`player-${myPlayerIndex}`] || []).length}/2 sélectionnées
+                            </span>
+                        </div>
+                        <div className="flex gap-1">
+                            {[0, 1].map(i => (
+                                <div
+                                    key={i}
+                                    className={`w-3 h-3 rounded-full transition-all duration-300 ${(initialReveals[`player-${myPlayerIndex}`] || []).length > i
+                                        ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'
+                                        : 'bg-white/30'
+                                        }`}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Compact Draw/Discard Trigger Button - ABOVE the banner */}
             {!isInitialReveal && (
                 <div
@@ -1631,10 +1708,13 @@ export default function VirtualGame() {
                                 activeGameState.phase === 'FINAL_ROUND'
                                     ? '⚠️ DERNIER TOUR'
                                     : (isInitialReveal ? `Retournez chacun 2 cartes ${selectedForReveal.length > 0 ? `(${selectedForReveal.length}/2)` : ''}` :
-                                        activeGameState.turnPhase === 'DRAW' ? 'Piocher ou défausser' :
-                                            activeGameState.turnPhase === 'REPLACE_OR_DISCARD' ? '👆 Jouez dans votre grille ou défaussez' :
-                                                activeGameState.turnPhase === 'MUST_REPLACE' ? '👆 Remplacez une de vos cartes' :
-                                                    activeGameState.turnPhase === 'MUST_REVEAL' ? '👆 Retournez une carte cachée' : '')
+                                        // Only show action instructions when it's the human player's turn (virtual mode only)
+                                        activeGameState.currentPlayerIndex !== myPlayerIndex && !isOnlineMode
+                                            ? "🤖 Tour de l'IA..."
+                                            : (activeGameState.turnPhase === 'DRAW' ? 'Piocher ou défausser' :
+                                                activeGameState.turnPhase === 'REPLACE_OR_DISCARD' ? '👆 Jouez dans votre grille ou défaussez' :
+                                                    activeGameState.turnPhase === 'MUST_REPLACE' ? '👆 Remplacez une de vos cartes' :
+                                                        activeGameState.turnPhase === 'MUST_REVEAL' ? '👆 Retournez une carte cachée' : ''))
                             }
                         />
                     </div>

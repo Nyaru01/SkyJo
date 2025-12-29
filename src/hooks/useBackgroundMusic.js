@@ -6,7 +6,8 @@ const PLAYLIST = [
     '/Music/chill-lofi-347217.mp3',
     '/Music/reveil-239031.mp3',
     '/Music/scizzie - aquatic ambience.mp3',
-    '/Music/nostalgic-lofi-game-beat-main-track-344542.mp3'
+    '/Music/nostalgic-lofi-game-beat-main-track-344542.mp3',
+    '/Music/lofi-piano-soulful-slow-music-260273.mp3'
 ];
 
 /**

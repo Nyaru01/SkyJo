@@ -62,7 +62,7 @@ const PlayerHand = memo(function PlayerHand({
                 backgroundColor: 'rgba(0, 0, 0, 0.85)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                padding: '14px 12px 12px 12px', // Compact padding
+                padding: '20px 8px 6px 8px', // Top padding for badge, minimal sides
                 borderRadius: '16px', // Slightly tighter corners
                 // Border handled by className for active state, remove inline default
                 ...(isCurrentPlayer ? {
@@ -88,7 +88,7 @@ const PlayerHand = memo(function PlayerHand({
                     style={{
                         fontSize: '11px',
                         zIndex: 50,
-                        top: '-10px', // Adjusted for compact padding
+                        top: '-15px', // Position above the container
                     }}
                     id={`player-badge-${player.id}`}
                 >
@@ -96,7 +96,7 @@ const PlayerHand = memo(function PlayerHand({
                         isOnlineOpponent ? (
                             <span className="text-xs">{player.emoji} {player.name}</span>
                         ) : (
-                            <span className="text-xs">🤖 BOT</span>
+                            <span className="text-xs">🤖 IA</span>
                         )
                     ) : (
                         <span className="text-xs">👤 VOUS</span>
@@ -122,8 +122,8 @@ const PlayerHand = memo(function PlayerHand({
                 style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(4, 1fr)',
-                    gap: '8px', // Compact gap
-                    marginTop: '8px', // Compact margin
+                    gap: '5px', // Minimal gap
+                    marginTop: '2px', // Minimal margin since padding handles badge space
                     justifyItems: 'center',
                 }}
                 variants={containerVariants}

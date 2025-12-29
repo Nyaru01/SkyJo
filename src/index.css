@@ -634,3 +634,22 @@ body,
 .animate-spin-slow {
   animation: spin-slow 3s linear infinite;
 }
+
+/* =============================================== */
+/* RESPONSIVE SCALING FOR SMALL SCREENS           */
+/* =============================================== */
+
+/* Scale down the game layout on small viewport heights */
+@media (max-height: 750px) {
+    .skyjo-game-container {
+        transform: scale(0.95);
+        transform-origin: center top;
+    }
+}
+
+@media (max-height: 650px) {
+    .skyjo-game-container {
+        transform: scale(0.9);
+        transform-origin: center top;
+    }
+}
