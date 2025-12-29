@@ -11,7 +11,7 @@ export const AI_DIFFICULTY = {
 };
 
 // AI player names (without emoji - emoji is set separately)
-export const AI_NAMES = ['Bot Alpha', 'Bot Beta', 'Bot Gamma'];
+export const AI_NAMES = ['IA Alpha', 'IA Beta', 'IA Gamma'];
 
 /**
  * Get a random element from an array
