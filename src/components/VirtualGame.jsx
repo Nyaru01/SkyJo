@@ -1531,8 +1531,8 @@ export default function VirtualGame() {
                                     <>
                                         {isNextRoundPending ? (
                                             <>
-                                                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                                                Chargement...
+                                                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1" />
+                                                Attendez...
                                             </>
                                         ) : (
                                             <>

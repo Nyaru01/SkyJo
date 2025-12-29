@@ -229,15 +229,12 @@ export const useOnlineGameStore = create((set, get) => ({
             });
 
             // Handle player ready for next round
-            socket.on('player_ready_next_round', ({ playerName, playerEmoji, readyCount, totalPlayers }) => {
+            socket.on('player_ready_next_round', ({ playerId, playerName, playerEmoji, readyCount, totalPlayers }) => {
                 console.log(`[Socket] ${playerName} is ready (${readyCount}/${totalPlayers})`);
-                const { socketId, players } = get();
-
-                // Find if it's me who just clicked
-                const clickedPlayer = players.find(p => p.name === playerName && p.emoji === playerEmoji);
-                const isMe = clickedPlayer?.id === socketId;
+                const { socketId } = get();
 
                 // Only notify if someone else clicked ready
+                const isMe = playerId === socketId;
                 if (!isMe) {
                     set({
                         lastNotification: {
