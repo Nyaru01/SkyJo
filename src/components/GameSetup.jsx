@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Plus, X, User, Sparkles, Gamepad2, RefreshCw, CheckCircle } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
+// Card imports removed as they are no longer used
 import { useGameStore } from '../store/gameStore';
 import { useFeedback } from '../hooks/useFeedback';
 import { useUpdateCheck } from './UpdatePrompt';
@@ -75,118 +75,125 @@ export default function GameSetup({ onNavigate }) {
     const selectedPlayerForPicker = openEmojiPicker !== null ? players[openEmojiPicker] : null;
 
     return (
-        <div className="max-w-md mx-auto p-3 space-y-3 animate-in fade-in zoom-in duration-300 h-[calc(100vh-6rem)] flex flex-col justify-center">
+        <div className="max-w-md mx-auto p-3 space-y-2 animate-in fade-in zoom-in duration-300 h-[calc(100vh-6rem)] flex flex-col justify-center">
             {/* Header Premium */}
             {/* Header Premium - Uniformisé avec le bouton Virtuel */}
-            <div className="w-full relative overflow-hidden rounded-2xl">
-                {/* Halo Blanc Léger Permanent */}
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/5 to-white/10 animate-pulse-slow blur-xl opacity-30" />
+            {/* Unified Skyjo Score Container */}
+            <div className="w-full relative group overflow-hidden rounded-[20px] shadow-[0_0_15px_rgba(255,255,255,0.15)] transition-all">
+                {/* Rotating Beam Border */}
+                <div className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0_300deg,#184766_360deg)] animate-border-spin opacity-100" />
 
-                <div className="relative p-6 rounded-2xl glass-premium dark:glass-dark border border-skyjo-blue/30 flex items-center gap-6 shadow-[0_0_15px_rgba(255,255,255,0.15)]">
-                    <div className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-lg overflow-hidden border border-white/20 bg-slate-900 shrink-0">
-                        <img
-                            src="/logo.jpg"
-                            alt="Skyjo Logo"
-                            className="w-full h-full object-cover scale-110"
-                        />
+                {/* Opaque Center - Masks the center to create 2px border */}
+                <div className="absolute inset-[2px] bg-white dark:bg-slate-900/90 rounded-[18px] z-10 glass-premium dark:glass-dark" />
+
+                {/* Content Layer */}
+                <div className="relative z-20 flex flex-col">
+                    {/* Background Effect - changed to simple pulse to avoid green shadow */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-white/10 animate-pulse blur-xl opacity-30 pointer-events-none rounded-[18px]" />
+
+                    {/* Header Section */}
+                    <div className="relative p-5 flex items-center gap-5 border-b border-white/5">
+                        <div className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-lg overflow-hidden border border-white/20 bg-slate-900 shrink-0">
+                            <img
+                                src="/logo.jpg"
+                                alt="Skyjo Logo"
+                                className="w-full h-full object-cover scale-110"
+                            />
+                        </div>
+                        <div className="text-left flex-1">
+                            <h1 className="text-2xl font-extrabold text-skyjo-blue drops-shadow-sm dark:text-sky-300">
+                                Skyjo Score
+                            </h1>
+                            <p className="text-slate-400 font-medium text-sm mt-1">Compteur de points</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-500 mt-2 flex items-center gap-1">
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-skyjo-blue animate-pulse"></span>
+                                Pour vos vraies parties
+                            </p>
+                        </div>
                     </div>
-                    <div className="text-left flex-1">
-                        <h1 className="text-2xl font-extrabold text-skyjo-blue drops-shadow-sm dark:text-sky-300">
-                            Skyjo Score
-                        </h1>
-                        <p className="text-slate-400 font-medium text-sm mt-1">Compteur de points</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-500 mt-2 flex items-center gap-1">
-                            <span className="inline-block w-1.5 h-1.5 rounded-full bg-skyjo-blue animate-pulse"></span>
-                            Pour vos vraies parties
-                        </p>
+
+                    {/* Players Section */}
+                    <div className="relative p-4 space-y-3 flex-1">
+                        <div className="flex items-center gap-2 text-base font-bold text-slate-800 dark:text-slate-100 mb-1 px-1">
+                            <User className="h-4 w-4 text-skyjo-blue dark:text-sky-400" />
+                            Joueurs
+                        </div>
+                        {players.map((player, index) => {
+                            const color = PLAYER_COLORS[index];
+                            return (
+                                <div
+                                    key={index}
+                                    className="flex gap-2 animate-scale-in"
+                                    style={{ animationDelay: `${index * 80}ms` }}
+                                >
+                                    {/* Emoji Selector Button */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setOpenEmojiPicker(openEmojiPicker === index ? null : index)}
+                                        className={cn(
+                                            "w-9 h-9 rounded-lg flex items-center justify-center text-lg shadow-lg transition-all hover:scale-110 border border-white/10",
+                                            "bg-skyjo-blue text-white shadow-skyjo-blue/30"
+                                        )}
+                                    >
+                                        {player.emoji}
+                                    </button>
+
+                                    {/* Name Input */}
+                                    <div className="relative flex-1">
+                                        <Input
+                                            placeholder={`Joueur ${index + 1}`}
+                                            value={player.name}
+                                            onChange={(e) => updateName(index, e.target.value)}
+                                            className={cn(
+                                                "h-9 bg-white/90 dark:bg-white/10 border-slate-300 dark:border-white/20 focus:bg-white dark:focus:bg-white/20 focus:border-emerald-400 transition-all shadow-sm text-sm text-slate-900 dark:text-white placeholder:text-slate-500",
+                                                player.name && "font-medium"
+                                            )}
+                                        />
+                                    </div>
+
+                                    {/* Remove Button */}
+                                    {players.length > 2 && (
+                                        <Button
+                                            variant="secondary"
+                                            size="icon"
+                                            onClick={() => removePlayer(index)}
+                                            className="shrink-0 h-9 w-9 text-red-600 hover:bg-red-100/70 hover:text-red-700 bg-white/60 dark:bg-white/10 border-white/40 dark:border-white/20 transition-all"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                </div>
+                            );
+                        })}
+
+                        {players.length < 8 && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full border-dashed border-emerald-400/60 text-emerald-800 dark:text-emerald-400 hover:bg-emerald-50/60 dark:hover:bg-emerald-900/30 hover:border-emerald-500 bg-white/30 dark:bg-white/5 transition-all"
+                                onClick={addPlayer}
+                            >
+                                <Plus className="mr-1 h-4 w-4" /> Ajouter
+                            </Button>
+                        )}
+                    </div>
+
+                    {/* Action Section */}
+                    <div className="relative p-4 pt-2">
+                        <Button
+                            size="lg"
+                            className="w-full bg-skyjo-blue hover:bg-skyjo-blue/90 text-white font-bold shadow-xl shadow-skyjo-blue/25 border border-white/20 h-12 text-base transition-all hover:scale-[1.02]"
+                            onClick={handleStart}
+                        >
+                            🚀 Commencer à compter
+                        </Button>
                     </div>
                 </div>
             </div>
 
-            {/* Carte Joueurs */}
-            <Card className="glass-premium dark:glass-dark shadow-xl">
-                <CardHeader className="py-2 px-4">
-                    <CardTitle className="text-slate-900 dark:text-slate-100 flex items-center gap-2 text-base">
-                        <User className="h-4 w-4 text-skyjo-blue dark:text-sky-400" />
-                        Joueurs
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 py-2 px-4">
-                    {players.map((player, index) => {
-                        const color = PLAYER_COLORS[index];
-                        return (
-                            <div
-                                key={index}
-                                className="flex gap-2 animate-scale-in"
-                                style={{ animationDelay: `${index * 80}ms` }}
-                            >
-                                {/* Emoji Selector Button */}
-                                <button
-                                    type="button"
-                                    onClick={() => setOpenEmojiPicker(openEmojiPicker === index ? null : index)}
-                                    className={cn(
-                                        "w-9 h-9 rounded-lg flex items-center justify-center text-lg shadow-lg transition-all hover:scale-110 border border-white/10",
-                                        "bg-skyjo-blue text-white shadow-skyjo-blue/30"
-                                    )}
-                                >
-                                    {player.emoji}
-                                </button>
-
-                                {/* Name Input */}
-                                <div className="relative flex-1">
-                                    <Input
-                                        placeholder={`Joueur ${index + 1}`}
-                                        value={player.name}
-                                        onChange={(e) => updateName(index, e.target.value)}
-                                        className={cn(
-                                            "h-9 bg-white/90 dark:bg-white/10 border-slate-300 dark:border-white/20 focus:bg-white dark:focus:bg-white/20 focus:border-emerald-400 transition-all shadow-sm text-sm text-slate-900 dark:text-white placeholder:text-slate-500",
-                                            player.name && "font-medium"
-                                        )}
-                                    />
-                                </div>
-
-                                {/* Remove Button */}
-                                {players.length > 2 && (
-                                    <Button
-                                        variant="secondary"
-                                        size="icon"
-                                        onClick={() => removePlayer(index)}
-                                        className="shrink-0 h-9 w-9 text-red-600 hover:bg-red-100/70 hover:text-red-700 bg-white/60 dark:bg-white/10 border-white/40 dark:border-white/20 transition-all"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </Button>
-                                )}
-                            </div>
-                        );
-                    })}
-
-                    {players.length < 8 && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full border-dashed border-emerald-400/60 text-emerald-800 dark:text-emerald-400 hover:bg-emerald-50/60 dark:hover:bg-emerald-900/30 hover:border-emerald-500 bg-white/30 dark:bg-white/5 transition-all"
-                            onClick={addPlayer}
-                        >
-                            <Plus className="mr-1 h-4 w-4" /> Ajouter
-                        </Button>
-                    )}
-                </CardContent>
-            </Card>
-
-            {/* Carte Seuil REMOVED */}
-
-            {/* Bouton Démarrer */}
-            <Button
-                size="lg"
-                className="w-full bg-skyjo-blue hover:bg-skyjo-blue/90 text-white font-bold shadow-xl shadow-skyjo-blue/25 border border-white/20 h-12 text-base animate-pulse-glow"
-                onClick={handleStart}
-            >
-                🚀 Commencer à compter
-            </Button>
-
             {/* Virtual Game Section */}
-            <div className="py-4 flex justify-center">
-                <span className="text-base font-semibold text-slate-500 uppercase tracking-widest">———  OU  ———</span>
+            <div className="py-1 flex justify-center">
+                <span className="text-sm font-semibold text-slate-500 uppercase tracking-widest">———  OU  ———</span>
             </div>
 
             <button
@@ -200,7 +207,7 @@ export default function GameSetup({ onNavigate }) {
                 <div className="absolute inset-[2px] bg-[#1e2235] rounded-[18px] z-10" />
 
                 {/* Content Layer */}
-                <div className="relative z-20 p-6 flex items-center gap-6 h-full w-full">
+                <div className="relative z-20 p-4 flex items-center gap-6 h-full w-full">
                     {/* Halo effect on hover */}
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-[18px]" />
 
