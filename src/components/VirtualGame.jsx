@@ -607,9 +607,9 @@ export default function VirtualGame() {
                 <Card className="glass-premium dark:glass-dark shadow-xl relative">
                     <CardHeader className="text-center">
                         <div className="flex justify-center mb-3">
-                            <div className="flex justify-center mb-1">
+                            <div className="flex justify-center mb-1 w-full">
                                 <div
-                                    className="w-80 rounded-xl flex items-center justify-center shadow-lg animate-float overflow-hidden bg-slate-900 border border-skyjo-blue/30"
+                                    className="w-full rounded-xl flex items-center justify-center shadow-lg animate-float overflow-hidden bg-slate-900 border border-skyjo-blue/30"
                                     style={{ aspectRatio: '32/9' }}
                                 >
                                     <img
