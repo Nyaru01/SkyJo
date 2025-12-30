@@ -201,16 +201,12 @@ export default function GameSetup({ onNavigate }) {
             </div>
 
             {/* Virtual Game Section */}
-            <div className="py-1 flex justify-center">
-                <span className="text-sm font-semibold text-slate-500 uppercase tracking-widest">———  OU  ———</span>
-            </div>
-
             <button
                 onClick={() => {
                     playStart();
                     onNavigate?.('virtual');
                 }}
-                className="w-full relative group cursor-pointer overflow-hidden rounded-[24px] transition-all hover:scale-[1.02] shadow-2xl mt-1"
+                className="w-full relative group cursor-pointer overflow-hidden rounded-[24px] transition-all hover:scale-[1.02] shadow-2xl mt-8"
             >
                 {/* Rotating Beam Border - Pseudo-element simulation */}
                 <div className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0_300deg,#9333ea_360deg)] animate-border-spin opacity-100" />
