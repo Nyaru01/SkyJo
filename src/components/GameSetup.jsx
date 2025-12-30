@@ -84,7 +84,7 @@ export default function GameSetup({ onNavigate }) {
                 <div className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0_300deg,#0ea5e9_360deg)] animate-border-spin opacity-100" />
 
                 {/* Glass Background (Premium) */}
-                <div className="absolute inset-[1px] bg-slate-900/90 backdrop-blur-xl rounded-[23px] z-10" />
+                <div className="absolute inset-[2px] bg-slate-900/90 backdrop-blur-xl rounded-[22px] z-10" />
 
                 {/* Internal Ambient Gradient (Blue/Cyan for Score) */}
                 <div className="absolute inset-0 bg-gradient-to-br from-sky-500 via-cyan-500 to-blue-500 opacity-10 z-10 pointer-events-none rounded-[24px]" />
@@ -216,7 +216,7 @@ export default function GameSetup({ onNavigate }) {
                 <div className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0_300deg,#9333ea_360deg)] animate-border-spin opacity-100" />
 
                 {/* Glass Background (Premium) */}
-                <div className="absolute inset-[1px] bg-slate-900/90 backdrop-blur-xl rounded-[23px] z-10" />
+                <div className="absolute inset-[2px] bg-slate-900/90 backdrop-blur-xl rounded-[22px] z-10" />
 
                 {/* Internal Ambient Gradient (Purple) */}
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-fuchsia-500 to-pink-500 opacity-10 z-10 pointer-events-none rounded-[24px]" />
@@ -227,7 +227,7 @@ export default function GameSetup({ onNavigate }) {
                 {/* Content Layer */}
                 <div className="relative z-20 p-5 flex items-center gap-6 h-full w-full">
                     {/* Halo effect on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-[23px]" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-[22px]" />
 
                     <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden border border-white/10 bg-slate-900 shrink-0 relative z-30">
                         <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay" />

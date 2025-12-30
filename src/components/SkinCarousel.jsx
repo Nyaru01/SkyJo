@@ -37,7 +37,8 @@ export default function SkinCarousel({ skins, selectedSkinId, onSelect, playerLe
     return (
         <div className="relative w-full h-[260px] flex items-center justify-center perspective-1000 overflow-hidden py-4">
             {/* Background Light Effect - Updated to match new container */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-purple-500/20 blur-[80px] rounded-full pointer-events-none" />
+            {/* Background Light Effect - Updated to match new container */}
+            <div className="absolute inset-0 bg-purple-500/20 blur-3xl opacity-50 pointer-events-none" />
 
             {/* Prev Button */}
             <button

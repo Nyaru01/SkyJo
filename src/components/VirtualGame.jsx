@@ -694,7 +694,7 @@ export default function VirtualGame() {
                 <div className="relative w-full rounded-[24px] shadow-2xl overflow-hidden mt-4">
                     {/* Border & Background Effects - Amber/Gold Theme */}
                     <div className="absolute inset-0 bg-gradient-to-br from-amber-500 via-orange-500 to-yellow-500 opacity-20" />
-                    <div className="absolute inset-[1px] bg-slate-900/90 backdrop-blur-xl rounded-[23px] z-10" />
+                    <div className="absolute inset-[2px] bg-slate-900/90 backdrop-blur-xl rounded-[22px] z-10" />
 
                     {/* Decorative Top Beam */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-amber-400 to-transparent z-20 opacity-60" />
@@ -790,14 +790,14 @@ export default function VirtualGame() {
                 <div className="relative w-full rounded-[24px] shadow-2xl overflow-hidden mt-6">
                     {/* Border & Background Effects */}
                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 opacity-20" />
-                    <div className="absolute inset-[1px] bg-slate-900/90 backdrop-blur-xl rounded-[23px] z-10" />
+                    <div className="absolute inset-[2px] bg-slate-900/90 backdrop-blur-xl rounded-[22px] z-10" />
 
                     {/* Decorative Top Beam */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-purple-400 to-transparent z-20 opacity-50" />
 
-                    <div className="relative z-20 pt-5 pb-2 pl-8 pr-4">
+                    <div className="relative z-20 pt-5 pb-2">
                         {/* Header */}
-                        <div className="flex items-center justify-start gap-3 mb-2 px-1">
+                        <div className="flex items-center justify-start gap-3 mb-2 pl-8 pr-4">
                             <div className="w-8 h-8 flex items-center justify-center rounded-xl bg-purple-500/10 border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
                                 <Palette className="h-4 w-4 text-purple-400" />
                             </div>
