@@ -674,7 +674,7 @@ export default function VirtualGame() {
                             className="w-full p-2 mt-4 rounded-2xl glass-premium dark:glass-dark border border-amber-200/50 dark:border-amber-700/50 hover:border-amber-400 transition-all group cursor-pointer"
                         >
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                                     <BookOpen className="h-4 w-4 text-white" />
                                 </div>
                                 <div className="text-left flex-1">
@@ -690,11 +690,19 @@ export default function VirtualGame() {
                 </Card>
 
                 {/* Experience Bar Container */}
-                <Card className="glass-premium dark:glass-dark shadow-xl border border-slate-200/50 dark:border-slate-700/50">
-                    <CardContent className="pt-4 px-4 pb-2">
+                {/* Experience Bar Container - Redesigned */}
+                <div className="relative w-full rounded-[24px] shadow-2xl overflow-hidden mt-4">
+                    {/* Border & Background Effects - Amber/Gold Theme */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500 via-orange-500 to-yellow-500 opacity-20" />
+                    <div className="absolute inset-[1px] bg-slate-900/90 backdrop-blur-xl rounded-[23px] z-10" />
+
+                    {/* Decorative Top Beam */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-amber-400 to-transparent z-20 opacity-60" />
+
+                    <div className="relative z-20 pt-3 pb-3 pl-8 pr-4">
                         <ExperienceBar />
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
 
 
 
@@ -778,14 +786,27 @@ export default function VirtualGame() {
                 )}
 
                 {/* Card Customization Container */}
-                <Card className="glass-premium dark:glass-dark shadow-xl border border-slate-200/50 dark:border-slate-700/50">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-base flex items-center gap-2 text-slate-700 dark:text-slate-200">
-                            <Palette className="h-4 w-4 text-purple-500" />
-                            Personnaliser vos cartes
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                {/* Card Customization Container - Redesigned */}
+                <div className="relative w-full rounded-[24px] shadow-2xl overflow-hidden mt-6">
+                    {/* Border & Background Effects */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 opacity-20" />
+                    <div className="absolute inset-[1px] bg-slate-900/90 backdrop-blur-xl rounded-[23px] z-10" />
+
+                    {/* Decorative Top Beam */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-purple-400 to-transparent z-20 opacity-50" />
+
+                    <div className="relative z-20 pt-5 pb-2 pl-8 pr-4">
+                        {/* Header */}
+                        <div className="flex items-center justify-start gap-3 mb-2 px-1">
+                            <div className="w-8 h-8 flex items-center justify-center rounded-xl bg-purple-500/10 border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+                                <Palette className="h-4 w-4 text-purple-400" />
+                            </div>
+                            <h3 className="text-lg font-bold text-white tracking-wide text-shadow-sm">
+                                Personnaliser vos cartes
+                            </h3>
+                        </div>
+
+                        {/* Carousel */}
                         <SkinCarousel
                             skins={[
                                 { id: 'classic', name: 'Classique', img: '/card-back.png', level: 1 },
@@ -798,8 +819,8 @@ export default function VirtualGame() {
                             onSelect={(id) => useGameStore.getState().setCardSkin(id)}
                             playerLevel={playerLevel}
                         />
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -807,7 +828,7 @@ export default function VirtualGame() {
     // Render AI setup screen
     if (screen === 'ai-setup') {
         const handleStartAIGame = () => {
-            playStart(); // Play start sound
+            // playStart(); // Removed
             startAIGame(
                 { name: aiConfig.playerName || 'Joueur', emoji: aiConfig.playerEmoji },
                 aiConfig.aiCount,

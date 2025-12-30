@@ -36,12 +36,12 @@ export default function SkinCarousel({ skins, selectedSkinId, onSelect, playerLe
 
     return (
         <div className="relative w-full h-[260px] flex items-center justify-center perspective-1000 overflow-hidden py-4">
-            {/* Background Light Effect */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-amber-500/10 blur-[80px] rounded-full pointer-events-none" />
+            {/* Background Light Effect - Updated to match new container */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-purple-500/20 blur-[80px] rounded-full pointer-events-none" />
 
             {/* Prev Button */}
             <button
-                className="absolute left-2 z-50 p-2 rounded-full bg-slate-800/50 hover:bg-slate-700/80 text-white backdrop-blur-sm transition-colors"
+                className="absolute left-2 z-50 p-2 rounded-full bg-slate-800/40 hover:bg-slate-700/60 border border-white/10 text-white backdrop-blur-md transition-colors"
                 onClick={handlePrev}
             >
                 <ChevronLeft className="w-6 h-6" />
@@ -51,14 +51,11 @@ export default function SkinCarousel({ skins, selectedSkinId, onSelect, playerLe
             <div className="relative flex items-center justify-center w-full h-full">
                 <AnimatePresence initial={false} mode="popLayout">
                     {skins.map((skin, i) => {
-                        // Calculate relative position based on active index
-                        // We handle wrapping manually for visuals only if needed, 
-                        // but a simple list is easier for now. 
-                        // Let's implement a centered list window.
-
-                        let offset = i - activeIndex;
-                        // Handle circular wrap logic visually if we want endless loop?
-                        // Simple linear for defined set of 5 skins is clearer.
+                        // Circular Logic
+                        const count = skins.length;
+                        let offset = (i - activeIndex + count) % count;
+                        // Adjust offset to be shortest distance (so -2, -1, 0, 1, 2)
+                        if (offset > count / 2) offset -= count;
 
                         // Limit visible items to -2, -1, 0, 1, 2
                         if (Math.abs(offset) > 2) return null;
@@ -67,22 +64,31 @@ export default function SkinCarousel({ skins, selectedSkinId, onSelect, playerLe
                         const isLocked = playerLevel < skin.level;
                         const isSelected = selectedSkinId === skin.id;
 
+                        // Calculate visual properties
+                        const xOffset = offset * 60; // Slightly tighter spacing
+                        const scale = isActive ? 1.1 : Math.max(0.7, 1 - Math.abs(offset) * 0.15);
+                        const opacity = isActive ? 1 : Math.max(0.3, 0.8 - Math.abs(offset) * 0.2);
+                        const zIndex = 50 - Math.abs(offset);
+                        const rotateY = offset * -25;
+
                         return (
                             <motion.div
                                 key={skin.id}
                                 layout
-                                initial={{ scale: 0.8, opacity: 0 }}
+                                initial={false}
                                 animate={{
-                                    x: offset * 85 + '%', // Spacing
-                                    scale: isActive ? 1 : 0.8,
-                                    opacity: isActive ? 1 : 0.5,
-                                    zIndex: isActive ? 10 : 10 - Math.abs(offset),
-                                    rotateY: offset * -25, // 3D rotation effect
+                                    x: `${xOffset}%`,
+                                    scale: scale,
+                                    opacity: opacity,
+                                    zIndex: zIndex,
+                                    rotateY: rotateY,
+                                    filter: isActive ? 'brightness(1.1)' : 'brightness(0.6) blur(0.5px)',
                                 }}
                                 transition={{
                                     type: "spring",
-                                    stiffness: 300,
-                                    damping: 30
+                                    stiffness: 400,
+                                    damping: 35,
+                                    mass: 0.8
                                 }}
                                 className="absolute cursor-pointer rounded-xl transition-shadow duration-300"
                                 onClick={() => handleItemClick(i, skin)}
@@ -94,8 +100,8 @@ export default function SkinCarousel({ skins, selectedSkinId, onSelect, playerLe
                             >
                                 <div className={cn(
                                     "w-full h-full relative rounded-xl overflow-hidden border-2 shadow-2xl transition-all duration-300 bg-slate-900",
-                                    isActive ? "border-amber-500/50 shadow-amber-500/20" : "border-slate-700/50 shadow-black/50 grayscale-[0.5]",
-                                    isSelected && isActive && "ring-4 ring-white ring-offset-2 ring-offset-slate-900"
+                                    isActive ? "border-purple-400 shadow-purple-500/50" : "border-slate-700/30 shadow-black/80",
+                                    isSelected && isActive && "ring-4 ring-white ring-offset-2 ring-offset-purple-900"
                                 )}>
                                     {/* Image */}
                                     <img
@@ -152,7 +158,7 @@ export default function SkinCarousel({ skins, selectedSkinId, onSelect, playerLe
 
             {/* Next Button */}
             <button
-                className="absolute right-2 z-50 p-2 rounded-full bg-slate-800/50 hover:bg-slate-700/80 text-white backdrop-blur-sm transition-colors"
+                className="absolute right-2 z-50 p-2 rounded-full bg-slate-800/40 hover:bg-slate-700/60 border border-white/10 text-white backdrop-blur-md transition-colors"
                 onClick={handleNext}
             >
                 <ChevronRight className="w-6 h-6" />

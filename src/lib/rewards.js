@@ -4,44 +4,44 @@ export const LEVEL_REWARDS = {
         type: 'emoji',
         content: '🍪',
         name: 'Cookie Pixel',
-        description: 'Un délicieux cookie mi-fondant, mi-pixel. C\'est virtuel, donc 0 calorie !',
+        description: '0 calorie, 100% virtuel. Mangez-le avec les yeux.',
         rarity: 'common'
     },
     3: {
         type: 'skin',
         image: '/card-back-papyrus.jpg',
         name: 'Skin Papyrus',
-        description: 'Un look rétro-douteux pour vos cartes. L\'histoire s\'écrit... sur votre dos de carte.',
+        description: 'Pour jouer comme en 1999 av. J-C. Attention, fragile.',
         rarity: 'uncommon'
     },
-    4: { type: 'emoji', content: '🎓', name: 'Savant Fou', description: 'Une intelligence supérieure... ou pas.', rarity: 'common' },
+    4: { type: 'emoji', content: '🎓', name: 'Savant Fou', description: 'E=mc² ? Non, Skyjo = -2. C\'est ça la vraie science.', rarity: 'common' },
     5: {
         type: 'skin',
         image: '/card-back-neon.png',
         name: 'Skin Neon',
-        description: 'Cyberpunk attitude. Attention, ne consomme pas d\'électricité réelle.',
+        description: 'Tellement brillant que vous aurez besoin de lunettes de soleil.',
         rarity: 'rare'
     },
-    6: { type: 'emoji', content: '🎭', name: 'Double Jeu', description: 'Pour ceux qui cachent bien leur jeu.', rarity: 'common' },
-    7: { type: 'generic', content: '🎰', name: 'Lucky Seven', description: 'Titre débloqué : La chance tourne !', rarity: 'uncommon' },
-    8: { type: 'emoji', content: '🚀', name: 'Vers la Lune', description: 'Votre score décolle... vers le bas on espère.', rarity: 'rare' },
-    9: { type: 'generic', content: '🦈', name: 'Card Shark', description: 'Titre débloqué : Prédateur des tables.', rarity: 'rare' },
+    6: { type: 'emoji', content: '🎭', name: 'Double Jeu', description: 'Idéal pour bluffer... même contre une IA.', rarity: 'common' },
+    7: { type: 'generic', content: '🎰', name: 'Lucky Seven', description: 'Le chiffre porte-bonheur. Enfin, sauf si vous piochez un 12.', rarity: 'uncommon' },
+    8: { type: 'emoji', content: '🚀', name: 'Vers la Lune', description: 'Votre score décolle... on espère que c\'est vers le bas !', rarity: 'rare' },
+    9: { type: 'generic', content: '🦈', name: 'Card Shark', description: 'Vous ne jouez plus, vous chassez. *Musique des Dents de la Mer*', rarity: 'rare' },
     10: {
         type: 'skin',
         image: '/card-back-gold.png',
         name: 'Skin Gold',
-        description: 'Le luxe ultime. Brille de mille feux (pixels).',
+        description: 'Si brillant que vos adversaires seront éblouis (littéralement).',
         rarity: 'epic'
     },
-    11: { type: 'emoji', content: '👑', name: 'Roi du Skyjo', description: 'La couronne vous va si bien.', rarity: 'epic' },
-    12: { type: 'generic', content: '🧙‍♂️', name: 'Grand Master', description: 'Titre débloqué : Vous voyez les chiffres en matrice.', rarity: 'epic' },
-    13: { type: 'emoji', content: '💎', name: 'Précieux', description: 'Solide comme un diamant.', rarity: 'legendary' },
-    14: { type: 'generic', content: '🏆', name: 'Legend', description: 'Titre débloqué : On parlera de vous dans 100 ans.', rarity: 'legendary' },
+    11: { type: 'emoji', content: '👑', name: 'Roi du Skyjo', description: 'Inclinez-vous, mortels. Le patron est dans la place.', rarity: 'epic' },
+    12: { type: 'generic', content: '🧙‍♂️', name: 'Grand Master', description: 'Vous voyez les chiffres en vert comme dans Matrix.', rarity: 'epic' },
+    13: { type: 'emoji', content: '💎', name: 'Précieux', description: 'Mon préééciiiieux... Ne le jetez pas dans la lave.', rarity: 'legendary' },
+    14: { type: 'generic', content: '🏆', name: 'Légende', description: 'On racontera vos exploits aux générations futures.', rarity: 'legendary' },
     15: {
         type: 'skin',
         image: '/card-back-galaxy.png',
         name: 'Skin Galaxy',
-        description: 'L\'univers dans votre main. Littéralement.',
+        description: 'L\'univers entier dans votre main. Ne le faites pas tomber.',
         rarity: 'legendary'
     },
 };

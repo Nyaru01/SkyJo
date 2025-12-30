@@ -1,4 +1,5 @@
 import { memo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Zap, Trophy, Lock, Check, X } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
@@ -37,7 +38,7 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                         <div className="relative">
                             {/* Animated Halo/Ripple for interactivity hint */}
                             <motion.div
-                                className="absolute -inset-2 rounded-full bg-amber-500/20 blur-md"
+                                className="absolute -inset-2 rounded-xl bg-amber-500/20 blur-md"
                                 animate={{
                                     scale: [1, 1.2, 1],
                                     opacity: [0.3, 0.6, 0.3]
@@ -49,7 +50,7 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                                 }}
                             />
 
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:shadow-amber-500/50 transition-shadow relative z-10">
+                            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:shadow-amber-500/50 transition-shadow relative z-10">
                                 <motion.div
                                     animate={{
                                         rotate: [0, -20, 20, -10, 10, 0],
@@ -70,9 +71,10 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                                 <span className="text-[8px] font-bold text-amber-400">{level}</span>
                             </div>
                         </div>
-                        <div>
-                            <p className="text-[10px] text-slate-400 font-medium leading-tight group-hover:text-amber-400 transition-colors">Niveau</p>
-                            <p className="text-sm font-bold text-white leading-none">{level}</p>
+                        <div className="ml-1">
+                            <p className="text-lg font-black text-white uppercase tracking-wider leading-none shadow-black drop-shadow-md">
+                                NIVEAU <span className="text-2xl text-amber-400">{level}</span>
+                            </p>
                         </div>
                     </motion.button>
 
@@ -119,135 +121,147 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                 </div>
 
                 {/* Progress text - smaller */}
-                <p className="text-center text-[9px] text-slate-500 mt-1">
+                <p className="text-center text-xs font-medium text-slate-400 mt-2">
                     {10 - currentXP} victoire{10 - currentXP > 1 ? 's' : ''} avant le niveau {level + 1}
                 </p>
             </div>
 
-            {/* Progression Popup */}
-            <AnimatePresence>
-                {showRewards && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 font-sans">
-                        {/* Backdrop */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
-                            onClick={() => setShowRewards(false)}
-                        />
+            {/* Progression Popup - Portalled to body to match z-index */}
+            {createPortal(
+                <AnimatePresence mode="wait">
+                    {showRewards && (
+                        <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4 font-sans pointer-events-auto">
+                            {/* Backdrop */}
+                            <motion.div
+                                key="backdrop"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute inset-0 bg-slate-900/80 backdrop-blur-md"
+                                onClick={() => setShowRewards(false)}
+                            />
 
-                        {/* Modal */}
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className="relative w-full max-w-sm bg-[#1e2235] rounded-2xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
-                        >
-                            {/* Header */}
-                            <div className="p-4 border-b border-white/10 bg-gradient-to-r from-blue-600/20 to-purple-600/20 relative">
-                                <button
-                                    onClick={() => setShowRewards(false)}
-                                    className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
-                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                    <Trophy className="w-5 h-5 text-amber-400" />
-                                    Progression de Carrière
-                                </h3>
-                                <div className="mt-4">
-                                    <div className="flex justify-between text-xs text-slate-400 mb-1">
-                                        <span>Niveau Actuel: {level}</span>
-                                        <span>Objectif: {maxLevel}</span>
-                                    </div>
-                                    <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
-                                            style={{ width: `${progressPercent}%` }}
-                                        />
+                            {/* Modal */}
+                            <motion.div
+                                key="modal"
+                                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                className="relative w-full max-w-sm bg-[#1e2235] rounded-2xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[80vh] z-10"
+                            >
+                                {/* Header */}
+                                <div className="p-4 border-b border-white/10 bg-gradient-to-r from-blue-600/20 to-purple-600/20 relative">
+                                    <button
+                                        onClick={() => setShowRewards(false)}
+                                        className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                        <Trophy className="w-5 h-5 text-amber-400" />
+                                        Progression de Carrière
+                                    </h3>
+                                    <div className="mt-4">
+                                        <div className="flex justify-between text-xs text-slate-400 mb-1">
+                                            <span>Niveau Actuel: {level}</span>
+                                            <span>Objectif: {maxLevel}</span>
+                                        </div>
+                                        <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
+                                                style={{ width: `${progressPercent}%` }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Content */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-                                {REWARDS.map((reward) => {
-                                    const isUnlocked = level >= reward.level;
-                                    const isNext = level + 1 === reward.level;
+                                {/* Content */}
+                                <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                                    {REWARDS.map((reward) => {
+                                        const isUnlocked = level >= reward.level;
+                                        const isNext = level + 1 === reward.level;
 
-                                    return (
-                                        <div
-                                            key={reward.level}
-                                            className={cn(
-                                                "relative p-3 rounded-xl border transition-all",
-                                                isUnlocked
-                                                    ? "bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/30"
-                                                    : isNext
-                                                        ? "bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-blue-400/50 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
-                                                        : "bg-white/5 border-white/5 opacity-60 grayscale"
-                                            )}
-                                        >
-                                            <div className="flex items-start gap-3">
-                                                <div className={cn(
-                                                    "w-10 h-10 rounded-lg flex items-center justify-center text-xl shadow-inner shrink-0",
-                                                    isUnlocked ? "bg-emerald-500/20" : "bg-slate-800"
-                                                )}>
-                                                    {reward.icon}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 mb-0.5">
-                                                        <span className={cn(
-                                                            "text-xs font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md",
-                                                            isUnlocked ? "bg-emerald-500 text-emerald-950" : "bg-slate-700 text-slate-300"
-                                                        )}>
-                                                            Niveau {reward.level}
-                                                        </span>
-                                                        {isUnlocked ? (
-                                                            <Check className="w-3.5 h-3.5 text-emerald-500" />
-                                                        ) : (
-                                                            <Lock className="w-3.5 h-3.5 text-slate-500" />
-                                                        )}
-                                                    </div>
-                                                    <p className={cn(
-                                                        "text-sm font-medium leading-tight",
-                                                        isUnlocked ? "text-white" : "text-slate-300"
+                                        return (
+                                            <div
+                                                key={reward.level}
+                                                className={cn(
+                                                    "relative p-3 rounded-xl border transition-all",
+                                                    isUnlocked
+                                                        ? "bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/30"
+                                                        : isNext
+                                                            ? "bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-blue-400/50 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
+                                                            : "bg-white/5 border-white/5 opacity-60 grayscale"
+                                                )}
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    <div className={cn(
+                                                        "w-10 h-10 rounded-lg flex items-center justify-center text-xl shadow-inner shrink-0",
+                                                        isUnlocked ? "bg-emerald-500/20" : "bg-slate-800"
                                                     )}>
-                                                        {reward.name}
-                                                    </p>
+                                                        {reward.icon}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 mb-0.5">
+                                                            <span className={cn(
+                                                                "text-xs font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md",
+                                                                isUnlocked ? "bg-emerald-500 text-emerald-950" : "bg-slate-700 text-slate-300"
+                                                            )}>
+                                                                Niveau {reward.level}
+                                                            </span>
+                                                            {isUnlocked ? (
+                                                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                                            ) : (
+                                                                <Lock className="w-3.5 h-3.5 text-slate-500" />
+                                                            )}
+                                                        </div>
+                                                        <p className={cn(
+                                                            "text-sm font-medium leading-tight",
+                                                            isUnlocked ? "text-white" : "text-slate-300"
+                                                        )}>
+                                                            {reward.name}
+                                                        </p>
+                                                        <p className={cn(
+                                                            "text-[10px] italic mt-0.5 leading-tight",
+                                                            isUnlocked ? "text-slate-400" : "text-slate-500"
+                                                        )}>
+                                                            {reward.description}
+                                                        </p>
+                                                    </div>
                                                 </div>
+
+                                                {/* Progress bar specific to this level if it's the next one */}
+                                                {isNext && (
+                                                    <div className="mt-3">
+                                                        <div className="flex justify-between text-[10px] text-blue-300 mb-1">
+                                                            <span>Progression</span>
+                                                            <span>{currentXP}/10 XP</span>
+                                                        </div>
+                                                        <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                                            <div
+                                                                className="h-full bg-gradient-to-r from-blue-400 to-cyan-300 transition-all duration-500"
+                                                                style={{ width: `${(currentXP / 10) * 100}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
+                                        );
+                                    })}
+                                </div>
 
-                                            {/* Progress bar specific to this level if it's the next one */}
-                                            {isNext && (
-                                                <div className="mt-3">
-                                                    <div className="flex justify-between text-[10px] text-blue-300 mb-1">
-                                                        <span>Progression</span>
-                                                        <span>{currentXP}/10 XP</span>
-                                                    </div>
-                                                    <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                                                        <div
-                                                            className="h-full bg-gradient-to-r from-blue-400 to-cyan-300 transition-all duration-500"
-                                                            style={{ width: `${(currentXP / 10) * 100}%` }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            {/* Footer */}
-                            <div className="p-3 border-t border-white/5 bg-slate-900/50 text-center">
-                                <p className="text-[10px] text-slate-500">
-                                    Gagnez des parties pour monter en niveau et débloquer des récompenses !
-                                </p>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+                                {/* Footer */}
+                                <div className="p-3 border-t border-white/5 bg-slate-900/50 text-center">
+                                    <p className="text-[10px] text-slate-500">
+                                        Gagnez des parties pour monter en niveau et débloquer des récompenses !
+                                    </p>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
         </>
     );
 });
