@@ -24,6 +24,8 @@ import { useBackgroundMusic } from '../hooks/useBackgroundMusic';
 import { useNotifications } from '../hooks/useNotifications';
 import { cn } from '../lib/utils';
 import { Copy, Wifi, WifiOff, Share2, Music, Music2 } from 'lucide-react';
+import { AVATARS, getAvatarPath } from '../lib/avatars';
+import AvatarSelector from './AvatarSelector';
 
 // Player colors for avatars
 
@@ -38,9 +40,10 @@ const PLAYER_COLORS = ['🐱', '🐶', '🦊', '🐻', '🐼', '🦁', '🐸', '
 export default function VirtualGame() {
     const [screen, setScreen] = useState('menu'); // menu, setup, game, scores
     const [players, setPlayers] = useState([
-        { name: '', emoji: '🐱' },
-        { name: '', emoji: '🐶' },
+        { name: '', avatarId: 'cat' },
+        { name: '', avatarId: 'dog' },
     ]);
+    const [openAvatarSelector, setOpenAvatarSelector] = useState(null);
     const [localPlayerIndex, setLocalPlayerIndex] = useState(0);
     const [initialReveals, setInitialReveals] = useState({});
 
@@ -126,7 +129,7 @@ export default function VirtualGame() {
     // Local State for Lobby
     const [lobbyCode, setLobbyCode] = useState('');
     const [myPseudo, setMyPseudo] = useState(() => localStorage.getItem('skyjo_player_pseudo') || '');
-    const [myEmoji, setMyEmoji] = useState(() => localStorage.getItem('skyjo_player_emoji') || '🐱');
+    const [myAvatarId, setMyAvatarId] = useState(() => localStorage.getItem('skyjo_player_avatar_id') || 'cat');
     const [copyToast, setCopyToast] = useState(null);
     const [notification, setNotification] = useState(null);
     const [hasPlayedVictory, setHasPlayedVictory] = useState(false);
@@ -137,10 +140,10 @@ export default function VirtualGame() {
     // AI Config State - Load from localStorage for persistence
     const [aiConfig, setAIConfig] = useState(() => {
         const savedPseudo = localStorage.getItem('skyjo_player_pseudo') || '';
-        const savedEmoji = localStorage.getItem('skyjo_player_emoji') || '🐱';
+        const savedAvatarId = localStorage.getItem('skyjo_player_avatar_id') || 'cat';
         return {
             playerName: savedPseudo,
-            playerEmoji: savedEmoji,
+            playerAvatarId: savedAvatarId,
             aiCount: 1,
             difficulty: AI_DIFFICULTY.NORMAL,
         };
@@ -171,20 +174,20 @@ export default function VirtualGame() {
         if (aiConfig.playerName) {
             localStorage.setItem('skyjo_player_pseudo', aiConfig.playerName);
         }
-        if (aiConfig.playerEmoji) {
-            localStorage.setItem('skyjo_player_emoji', aiConfig.playerEmoji);
+        if (aiConfig.playerAvatarId) {
+            localStorage.setItem('skyjo_player_avatar_id', aiConfig.playerAvatarId);
         }
-    }, [aiConfig.playerName, aiConfig.playerEmoji]);
+    }, [aiConfig.playerName, aiConfig.playerAvatarId]);
 
     // Also save from online mode
     useEffect(() => {
         if (myPseudo) {
             localStorage.setItem('skyjo_player_pseudo', myPseudo);
         }
-        if (myEmoji) {
-            localStorage.setItem('skyjo_player_emoji', myEmoji);
+        if (myAvatarId) {
+            localStorage.setItem('skyjo_player_avatar_id', myAvatarId);
         }
-    }, [myPseudo, myEmoji]);
+    }, [myPseudo, myAvatarId]);
     // Sync notifications from store
     useEffect(() => {
         if (virtualLastNotification) {
@@ -533,6 +536,25 @@ export default function VirtualGame() {
     };
 
 
+    // Helper to update player avatar from selector
+    const updateAvatar = (indexOrKey, avatarId) => {
+        if (indexOrKey === 'ai-player') {
+            setAIConfig({ ...aiConfig, playerAvatarId: avatarId });
+            setMyAvatarId(avatarId); // Sync with online state
+            setOpenAvatarSelector(null);
+        } else if (indexOrKey === 'online-setup') {
+            setMyAvatarId(avatarId);
+            setAIConfig({ ...aiConfig, playerAvatarId: avatarId }); // Sync with AI state
+            setOpenAvatarSelector(null);
+        } else {
+            const index = Number(indexOrKey);
+            const newPlayers = [...players];
+            newPlayers[index] = { ...newPlayers[index], avatarId };
+            setPlayers(newPlayers);
+            setOpenAvatarSelector(null);
+        }
+    };
+
     // Back to menu
     // Back to menu
     const handleBackToMenu = () => {
@@ -598,6 +620,21 @@ export default function VirtualGame() {
         resetGame();
         setScreen('menu');
     };
+
+    const avatarSelectorComponent = (
+        <AvatarSelector
+            isOpen={openAvatarSelector !== null}
+            onClose={() => setOpenAvatarSelector(null)}
+            selectedId={
+                openAvatarSelector === 'ai-player'
+                    ? aiConfig.playerAvatarId
+                    : openAvatarSelector === 'online-setup'
+                        ? myAvatarId
+                        : (openAvatarSelector !== null && players[openAvatarSelector] ? players[openAvatarSelector].avatarId : null)
+            }
+            onSelect={(id) => updateAvatar(openAvatarSelector, id)}
+        />
+    );
 
     // Render menu screen
     if (screen === 'menu') {
@@ -860,13 +897,23 @@ export default function VirtualGame() {
                         <div className="space-y-2">
                             <label className="text-sm font-medium" style={{ color: '#cbd5e1' }}>Votre pseudo</label>
                             <div className="flex gap-2 items-center">
-                                <select
-                                    value={aiConfig.playerEmoji}
-                                    onChange={(e) => setAIConfig({ ...aiConfig, playerEmoji: e.target.value })}
-                                    className="h-10 w-14 text-2xl text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md cursor-pointer"
+                                {/* Avatar Button */}
+                                <button
+                                    onClick={() => setOpenAvatarSelector('ai-player')}
+                                    className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 border border-white/10 overflow-hidden relative group bg-slate-800 ring-2 ring-white/5 hover:ring-white/20"
                                 >
-                                    {PLAYER_EMOJIS.map(e => <option key={e} value={e}>{e}</option>)}
-                                </select>
+                                    <div className="absolute inset-0 bg-white">
+                                        <img
+                                            src={getAvatarPath(aiConfig.playerAvatarId)}
+                                            alt="Avatar"
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                            onError={(e) => { e.target.src = '/avatars/cat.png' }}
+                                        />
+                                        {/* Glossy Overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-tr from-black/0 via-white/20 to-white/0 opacity-50 pointer-events-none" />
+                                    </div>
+                                </button>
+
                                 <Input
                                     placeholder="Votre pseudo"
                                     value={aiConfig.playerName}
@@ -956,6 +1003,7 @@ export default function VirtualGame() {
                 >
                     🚀 Affronter l'IA
                 </Button>
+                {avatarSelectorComponent}
             </div>
         );
     }
@@ -984,20 +1032,22 @@ export default function VirtualGame() {
                     <CardContent className="space-y-3">
                         {players.map((player, index) => (
                             <div key={index} className="flex items-center gap-2">
-                                <select
-                                    value={player.emoji}
-                                    onChange={(e) => updatePlayer(index, 'emoji', e.target.value)}
-                                    className="h-10 w-14 text-2xl text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md cursor-pointer appearance-none"
-                                    style={{
-                                        backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23CBD5E1%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")`,
-                                        backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: 'right 0.3rem center',
-                                        backgroundSize: '0.65em auto',
-                                        paddingRight: '1rem'
-                                    }}
+                                {/* Avatar Button */}
+                                <button
+                                    onClick={() => setOpenAvatarSelector(index)}
+                                    className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 border border-white/10 overflow-hidden relative group bg-slate-800 ring-2 ring-white/5 hover:ring-white/20"
                                 >
-                                    {PLAYER_EMOJIS.map(e => <option key={e} value={e}>{e}</option>)}
-                                </select>
+                                    <div className="absolute inset-0 bg-white">
+                                        <img
+                                            src={getAvatarPath(player.avatarId)}
+                                            alt="Avatar"
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                            onError={(e) => { e.target.src = '/avatars/cat.png' }}
+                                        />
+                                        {/* Glossy Overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-tr from-black/0 via-white/20 to-white/0 opacity-50 pointer-events-none" />
+                                    </div>
+                                </button>
                                 <Input
                                     placeholder={`Joueur ${index + 1}`}
                                     value={player.name}
@@ -1039,6 +1089,7 @@ export default function VirtualGame() {
                 >
                     🚀 Lancer la partie
                 </Button>
+                {avatarSelectorComponent}
             </div>
         );
     }
@@ -1051,6 +1102,7 @@ export default function VirtualGame() {
         if (isRoomJoined) {
             return (
                 <div className="max-w-md mx-auto p-4 space-y-4 animate-in fade-in">
+                    {avatarSelectorComponent}
                     {/* Toast notifications */}
                     <Toast
                         notification={notification}
@@ -1138,7 +1190,25 @@ export default function VirtualGame() {
                                                 ? "bg-emerald-50 dark:bg-emerald-900/20 ring-2 ring-emerald-400/50"
                                                 : "bg-white/50 dark:bg-white/5"
                                         )}>
-                                            <span className="text-2xl">{p.emoji}</span>
+                                            <div className="w-10 h-10 rounded-full overflow-hidden relative ring-1 ring-white/10 shrink-0 bg-slate-800">
+                                                <img
+                                                    src={getAvatarPath(p.emoji)}
+                                                    alt="Avatar"
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        // Fallback mechanism: if p.emoji is not a path/ID but an actual emoji char, 
+                                                        // or if load fails, show legacy emoji text or default
+                                                        e.target.style.display = 'none';
+                                                        e.target.nextSibling.style.display = 'block';
+                                                    }}
+                                                />
+                                                {/* Fallback span for legacy emoji support */}
+                                                <span className="hidden absolute inset-0 flex items-center justify-center text-xl bg-slate-100 dark:bg-slate-700">
+                                                    {p.emoji || '👤'}
+                                                </span>
+                                                <div className="absolute inset-0 bg-gradient-to-tr from-black/0 via-white/20 to-white/0 opacity-50 pointer-events-none" />
+                                            </div>
+
                                             <span className="font-medium">
                                                 {p.name}
                                                 {p.id === socketId && (
@@ -1190,6 +1260,7 @@ export default function VirtualGame() {
                     <ArrowLeft className="h-4 w-4 mr-1" />
                     Retour
                 </Button>
+                {avatarSelectorComponent}
 
                 <Card className="glass-premium dark:glass-dark shadow-xl">
                     <CardHeader>
@@ -1209,13 +1280,22 @@ export default function VirtualGame() {
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Votre pseudo</label>
                             <div className="flex gap-2 items-center">
-                                <select
-                                    value={myEmoji}
-                                    onChange={(e) => setMyEmoji(e.target.value)}
-                                    className="h-10 w-14 text-2xl text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md cursor-pointer"
+                                {/* Avatar Button */}
+                                <button
+                                    onClick={() => setOpenAvatarSelector('online-setup')}
+                                    className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 border border-white/10 overflow-hidden relative group bg-slate-800 ring-2 ring-white/5 hover:ring-white/20"
                                 >
-                                    {PLAYER_EMOJIS.map(e => <option key={e} value={e}>{e}</option>)}
-                                </select>
+                                    <div className="absolute inset-0 bg-white">
+                                        <img
+                                            src={getAvatarPath(myAvatarId)}
+                                            alt="Avatar"
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                            onError={(e) => { e.target.src = '/avatars/cat.png' }}
+                                        />
+                                        {/* Glossy Overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-tr from-black/0 via-white/20 to-white/0 opacity-50 pointer-events-none" />
+                                    </div>
+                                </button>
                                 <Input
                                     placeholder="Votre pseudo"
                                     value={myPseudo}
@@ -1235,7 +1315,7 @@ export default function VirtualGame() {
                                 <Button
                                     className="w-full bg-blue-600 hover:bg-blue-700"
                                     onClick={() => {
-                                        setPlayerInfo(myPseudo || 'Joueur', myEmoji);
+                                        setPlayerInfo(myPseudo || 'Joueur', myAvatarId);
                                         createRoom();
                                         // Request notification permission when creating a room
                                         requestPermission();
@@ -1258,7 +1338,7 @@ export default function VirtualGame() {
                                     <Button
                                         variant="outline"
                                         onClick={() => {
-                                            setPlayerInfo(myPseudo || 'Joueur', myEmoji);
+                                            setPlayerInfo(myPseudo || 'Joueur', myAvatarId);
                                             joinRoom(lobbyCode);
                                         }}
                                     >
@@ -1288,7 +1368,7 @@ export default function VirtualGame() {
                                             key={room.code}
                                             className="flex items-center justify-between p-3 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-blue-500/50 rounded-xl transition-all cursor-pointer group"
                                             onClick={() => {
-                                                setPlayerInfo(myPseudo || 'Joueur', myEmoji);
+                                                setPlayerInfo(myPseudo || 'Joueur', myAvatarId);
                                                 joinRoom(room.code);
                                             }}
                                         >
@@ -1324,7 +1404,7 @@ export default function VirtualGame() {
                         </div>
                     </CardContent>
                 </Card>
-            </div>
+            </div >
         );
     }
 
@@ -2009,6 +2089,20 @@ export default function VirtualGame() {
             <CardAnimationLayer
                 pendingAnimation={onlineGameStarted ? onlinePendingAnimation : virtualPendingAnimation}
                 onClear={onlineGameStarted ? clearOnlinePendingAnimation : clearVirtualPendingAnimation}
+            />
+
+            {/* Avatar Selector Modal */}
+            <AvatarSelector
+                isOpen={openAvatarSelector !== null}
+                onClose={() => setOpenAvatarSelector(null)}
+                selectedId={
+                    openAvatarSelector === 'ai-player'
+                        ? aiConfig.playerAvatarId
+                        : openAvatarSelector === 'online-setup'
+                            ? myAvatarId
+                            : (openAvatarSelector !== null && players[openAvatarSelector] ? players[openAvatarSelector].avatarId : null)
+                }
+                onSelect={(id) => updateAvatar(openAvatarSelector, id)}
             />
         </div>
     );

@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import SkyjoCard from './SkyjoCard';
 import { cn } from '../../lib/utils';
+import { getAvatarPath } from '../../lib/avatars';
 
 /**
  * Player Hand Component
@@ -94,12 +95,34 @@ const PlayerHand = memo(function PlayerHand({
                 >
                     {isOpponent ? (
                         isOnlineOpponent ? (
-                            <span className="text-xs">{player.emoji} {player.name}</span>
+                            <div className="flex items-center gap-1.5">
+                                {getAvatarPath(player.avatarId || player.emoji) ? (
+                                    <img
+                                        src={getAvatarPath(player.avatarId || player.emoji)}
+                                        alt="Avatar"
+                                        className="w-5 h-5 object-contain"
+                                    />
+                                ) : (
+                                    <span className="text-xs">{player.emoji}</span>
+                                )}
+                                <span className="text-xs">{player.name}</span>
+                            </div>
                         ) : (
                             <span className="text-xs">🤖 IA</span>
                         )
                     ) : (
-                        <span className="text-xs">👤 VOUS</span>
+                        <div className="flex items-center gap-1.5">
+                            {getAvatarPath(player.avatarId || player.emoji) ? (
+                                <img
+                                    src={getAvatarPath(player.avatarId || player.emoji)}
+                                    alt="Avatar"
+                                    className="w-5 h-5 object-contain"
+                                />
+                            ) : (
+                                <span className="text-xs">👤</span> // Fallback icon for self if no emoji/avatar
+                            )}
+                            <span className="text-xs">VOUS</span>
+                        </div>
                     )}
                     {/* Score: 16pt minimum, bold */}
                     <span

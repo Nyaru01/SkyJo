@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, X, User, Sparkles, Gamepad2, RefreshCw, CheckCircle } from 'lucide-react';
+import { Plus, X, User, Sparkles, Gamepad2, RefreshCw, CheckCircle, Edit2 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 // Card imports removed as they are no longer used
@@ -7,9 +7,8 @@ import { useGameStore } from '../store/gameStore';
 import { useFeedback } from '../hooks/useFeedback';
 import { useUpdateCheck } from './UpdatePrompt';
 import { cn } from '../lib/utils';
-
-// Emojis disponibles pour les avatars
-const PLAYER_EMOJIS = ['🐱', '🐶', '🦊', '🐻', '🐼', '🦁', '🐸', '🐵', '🐰', '🐨', '🐯', '🦄', '🐲', '🎮', '⭐', '🔥'];
+import { AVATARS, getAvatarPath } from '../lib/avatars';
+import AvatarSelector from './AvatarSelector';
 
 // Couleurs uniques pour chaque joueur
 const PLAYER_COLORS = [
@@ -25,19 +24,19 @@ const PLAYER_COLORS = [
 
 export default function GameSetup({ onNavigate }) {
     const [players, setPlayers] = useState([
-        { name: '', emoji: '🐱' },
-        { name: '', emoji: '🐶' }
+        { name: '', avatarId: 'cat' },
+        { name: '', avatarId: 'dog' }
     ]);
-    // const [threshold, setThreshold] = useState(100); // Removed as per request
-    const [openEmojiPicker, setOpenEmojiPicker] = useState(null);
+    const [openAvatarSelector, setOpenAvatarSelector] = useState(null); // Index of player selecting
     const setConfiguration = useGameStore(state => state.setConfiguration);
     const { playStart } = useFeedback();
     const { checkForUpdates, isChecking, checkResult } = useUpdateCheck();
 
     const addPlayer = () => {
         if (players.length < 8) {
-            const nextEmoji = PLAYER_EMOJIS[players.length % PLAYER_EMOJIS.length];
-            setPlayers([...players, { name: '', emoji: nextEmoji }]);
+            // Cycle through available avatars
+            const nextAvatarId = AVATARS[players.length % AVATARS.length].id;
+            setPlayers([...players, { name: '', avatarId: nextAvatarId }]);
         }
     };
 
@@ -55,29 +54,25 @@ export default function GameSetup({ onNavigate }) {
         setPlayers(newPlayers);
     };
 
-    const updateEmoji = (index, emoji) => {
+    const updateAvatar = (index, avatarId) => {
         const newPlayers = [...players];
-        newPlayers[index] = { ...newPlayers[index], emoji };
+        newPlayers[index] = { ...newPlayers[index], avatarId };
         setPlayers(newPlayers);
-        setOpenEmojiPicker(null);
+        setOpenAvatarSelector(null);
     };
 
     const handleStart = () => {
         const finalPlayers = players.map((p, i) => ({
             name: p.name.trim() || `Joueur ${i + 1}`,
-            emoji: p.emoji
+            avatarId: p.avatarId
         }));
         playStart();
         setConfiguration(finalPlayers, 100); // Default threshold 100
     };
 
-    // Récupérer le joueur pour lequel le picker est ouvert
-    const selectedPlayerForPicker = openEmojiPicker !== null ? players[openEmojiPicker] : null;
-
     return (
         <div className="max-w-md mx-auto p-2 space-y-2 animate-in fade-in zoom-in duration-300 h-[calc(100vh-5rem)] flex flex-col justify-center overflow-hidden">
             {/* Header Premium */}
-            {/* Header Premium - Uniformisé avec le bouton Virtuel */}
             {/* Unified Skyjo Score Container - Premium Redesign */}
             <div className="w-full relative group overflow-hidden rounded-[24px] shadow-2xl transition-all">
                 {/* Rotating Beam Border (Preserved) */}
@@ -135,16 +130,29 @@ export default function GameSetup({ onNavigate }) {
                                     className="flex gap-3 animate-scale-in"
                                     style={{ animationDelay: `${index * 80}ms` }}
                                 >
-                                    {/* Emoji Selector Button */}
+                                    {/* Avatar Selector Button */}
                                     <button
                                         type="button"
-                                        onClick={() => setOpenEmojiPicker(openEmojiPicker === index ? null : index)}
+                                        onClick={() => setOpenAvatarSelector(index)}
                                         className={cn(
-                                            "w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-lg transition-all hover:scale-105 border border-white/10",
-                                            "bg-slate-800 text-white hover:bg-slate-700 hover:border-sky-500/50"
+                                            "w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 border border-white/10 overflow-hidden relative group",
+                                            "bg-slate-800 ring-2 ring-white/5 hover:ring-white/20"
                                         )}
                                     >
-                                        {player.emoji}
+                                        <div className="absolute inset-0 bg-white">
+                                            <img
+                                                src={getAvatarPath(player.avatarId)}
+                                                alt="Avatar"
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                onError={(e) => { e.target.src = '/avatars/cat.png' }} // Fallback
+                                            />
+                                            {/* Glossy Overlay */}
+                                            <div className="absolute inset-0 bg-gradient-to-tr from-black/0 via-white/20 to-white/0 opacity-50 pointer-events-none" />
+                                        </div>
+
+                                        <div className="absolute bottom-0 right-0 p-1 bg-black/60 rounded-tl-lg backdrop-blur-[2px]">
+                                            <Edit2 className="w-2 h-2 text-white/90" />
+                                        </div>
                                     </button>
 
                                     {/* Name Input */}
@@ -273,35 +281,14 @@ export default function GameSetup({ onNavigate }) {
             </button>
 
 
-            {/* Modal Emoji Picker - RENDU EN DEHORS DE LA BOUCLE */}
-            {openEmojiPicker !== null && selectedPlayerForPicker && (
-                <>
-                    {/* Backdrop */}
-                    <div
-                        className="fixed inset-0 bg-black/40 z-[100] backdrop-blur-sm"
-                        onClick={() => setOpenEmojiPicker(null)}
-                    />
-                    {/* Modal centré */}
-                    <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-600 p-4 animate-in zoom-in-95 duration-150 w-[200px]">
-                        <h3 className="text-center text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Choisis ton avatar</h3>
-                        <div className="grid grid-cols-4 gap-2">
-                            {PLAYER_EMOJIS.map((emoji) => (
-                                <button
-                                    key={emoji}
-                                    type="button"
-                                    onClick={() => updateEmoji(openEmojiPicker, emoji)}
-                                    className={cn(
-                                        "w-10 h-10 rounded-xl flex items-center justify-center text-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all hover:scale-110",
-                                        selectedPlayerForPicker.emoji === emoji && "bg-emerald-100 dark:bg-emerald-900 ring-2 ring-emerald-500"
-                                    )}
-                                >
-                                    {emoji}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </>
-            )}
+
+            {/* Avatar Selector Modal */}
+            <AvatarSelector
+                isOpen={openAvatarSelector !== null}
+                onClose={() => setOpenAvatarSelector(null)}
+                selectedId={openAvatarSelector !== null ? players[openAvatarSelector].avatarId : null}
+                onSelect={(id) => updateAvatar(openAvatarSelector, id)}
+            />
         </div>
     );
 }
