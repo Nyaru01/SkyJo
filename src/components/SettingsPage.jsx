@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Volume2, VolumeX, Music, Music2, Trash2, MessageSquare, ExternalLink, AlertTriangle } from 'lucide-react';
+import { Volume2, VolumeX, Music, Music2, Trash2, MessageSquare, ExternalLink, AlertTriangle, Smartphone, Settings } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Button } from './ui/Button';
 import { useGameStore } from '../store/gameStore';
@@ -8,8 +8,10 @@ import { cn } from '../lib/utils';
 export default function SettingsPage() {
     const soundEnabled = useGameStore(state => state.soundEnabled);
     const musicEnabled = useGameStore(state => state.musicEnabled);
+    const vibrationEnabled = useGameStore(state => state.vibrationEnabled);
     const toggleSound = useGameStore(state => state.toggleSound);
     const toggleMusic = useGameStore(state => state.toggleMusic);
+    const toggleVibration = useGameStore(state => state.toggleVibration);
     const clearArchivedGames = useGameStore(state => state.clearArchivedGames);
 
     const [showConfirmReset, setShowConfirmReset] = useState(false);
@@ -35,8 +37,8 @@ export default function SettingsPage() {
             <Card className="glass-premium dark:glass-dark shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-slate-100">
-                        <Volume2 className="h-5 w-5 text-blue-400" />
-                        Audio
+                        <Settings className="h-5 w-5 text-blue-400" />
+                        Paramètres généraux
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -97,6 +99,32 @@ export default function SettingsPage() {
                                 className={cn(
                                     "absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300",
                                     soundEnabled ? "left-7" : "left-1"
+                                )}
+                            />
+                        </button>
+                    </div>
+                    {/* Vibration Toggle */}
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <Smartphone className={cn("h-5 w-5", vibrationEnabled ? "text-emerald-400" : "text-slate-500")} />
+                            <div>
+                                <p className="font-medium text-slate-200">Vibrations</p>
+                                <p className="text-xs text-slate-400">Retour haptique lors des actions</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={toggleVibration}
+                            className={cn(
+                                "relative w-14 h-8 rounded-full transition-all duration-300",
+                                vibrationEnabled
+                                    ? "bg-gradient-to-r from-emerald-500 to-teal-500"
+                                    : "bg-slate-600"
+                            )}
+                        >
+                            <span
+                                className={cn(
+                                    "absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300",
+                                    vibrationEnabled ? "left-7" : "left-1"
                                 )}
                             />
                         </button>

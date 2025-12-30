@@ -220,6 +220,7 @@ const vibrate = (pattern = 50) => {
  */
 export const useFeedback = () => {
     const soundEnabled = useGameStore(state => state.soundEnabled);
+    const vibrationEnabled = useGameStore(state => state.vibrationEnabled);
 
     // Ensure audio unlock listener is set up
     useEffect(() => {
@@ -318,7 +319,11 @@ export const useFeedback = () => {
         playCardFlip,
         playCardDraw,
         playCardPlace,
-        vibrate
+        vibrate: (pattern) => {
+            if (vibrationEnabled && navigator.vibrate) {
+                navigator.vibrate(pattern);
+            }
+        }
     };
 };
 

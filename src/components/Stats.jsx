@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { Trophy, TrendingUp, TrendingDown, Target, Award, Zap, Crown, Flame, Users, Download, Upload, Save, Star } from 'lucide-react';
+import { Trophy, TrendingUp, TrendingDown, Target, Award, Zap, Crown, Flame, Users, Download, Upload, Save, Star, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useGameStore, selectGameHistory } from '../store/gameStore';
 import { Card, CardContent } from './ui/Card';
@@ -203,25 +203,32 @@ export default function Stats() {
                 }
 
                 // Analyse des manches
-                game.rounds.forEach(round => {
-                    const score = round.scores[player.id];
-                    const rawScore = round.rawScores[player.id];
+                const gameRoundsCount = game.rounds ? game.rounds.length : 0;
 
-                    if (score !== undefined) {
-                        ps.roundsPlayed++;
-                        ps.bestRound = Math.min(ps.bestRound, score);
-                        ps.worstRound = Math.max(ps.worstRound, score);
+                if (gameRoundsCount > 0) {
+                    game.rounds.forEach(round => {
+                        const score = round.scores[player.id];
+                        const rawScore = round.rawScores[player.id];
 
-                        if (score < 0) ps.negativeRounds++;
+                        if (score !== undefined) {
+                            ps.roundsPlayed++;
+                            ps.bestRound = Math.min(ps.bestRound, score);
+                            ps.worstRound = Math.max(ps.worstRound, score);
 
-                        if (round.finisherId === player.id) {
-                            ps.finishes++;
-                            if (score !== rawScore) {
-                                ps.doubledFinishes++;
+                            if (score < 0) ps.negativeRounds++;
+
+                            if (round.finisherId === player.id) {
+                                ps.finishes++;
+                                if (score !== rawScore) {
+                                    ps.doubledFinishes++;
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                } else if (game.roundsPlayed) {
+                    // Fallback for online/virtual games without detailed round history
+                    ps.roundsPlayed += game.roundsPlayed;
+                }
             });
         });
 
@@ -462,7 +469,15 @@ export default function Stats() {
                                         <th className="pb-2 font-semibold text-center">Parties</th>
                                         <th className="pb-2 font-semibold text-center">%Win</th>
                                         <th className="pb-2 font-semibold text-center">Moy.</th>
-                                        <th className="pb-2 font-semibold text-center">Finish</th>
+                                        <th className="pb-2 font-semibold text-center group cursor-help relative">
+                                            <div className="flex items-center justify-center gap-1">
+                                                Finish
+                                                <Info className="w-3 h-3 text-slate-400" />
+                                            </div>
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                                                % de manches fermées par le joueur
+                                            </div>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">

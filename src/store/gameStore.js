@@ -38,6 +38,7 @@ export const useGameStore = create(
             darkMode: true, // Always default to dark mode
             soundEnabled: true,
             musicEnabled: true,
+            vibrationEnabled: true,
             cardSkin: 'classic', // classic, papyrus
 
             setCardSkin: (skin) => set({ cardSkin: skin }),
@@ -95,6 +96,8 @@ export const useGameStore = create(
             toggleSound: () => set({ soundEnabled: !get().soundEnabled }),
 
             toggleMusic: () => set({ musicEnabled: !get().musicEnabled }),
+
+            toggleVibration: () => set({ vibrationEnabled: !get().vibrationEnabled }),
 
             setConfiguration: (playerData, threshold) => {
                 const players = playerData.map((p, index) => ({

@@ -196,7 +196,10 @@ export default function GameSetup({ onNavigate }) {
             </div>
 
             <button
-                onClick={() => onNavigate?.('virtual')}
+                onClick={() => {
+                    playStart();
+                    onNavigate?.('virtual');
+                }}
                 className="w-full relative group cursor-pointer overflow-hidden rounded-[20px] transition-all hover:scale-[1.02] shadow-xl"
             >
                 {/* Rotating Beam Border - Pseudo-element simulation */}
