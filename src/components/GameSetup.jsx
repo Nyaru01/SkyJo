@@ -78,43 +78,53 @@ export default function GameSetup({ onNavigate }) {
         <div className="max-w-md mx-auto p-2 space-y-2 animate-in fade-in zoom-in duration-300 h-[calc(100vh-5rem)] flex flex-col justify-center overflow-hidden">
             {/* Header Premium */}
             {/* Header Premium - Uniformisé avec le bouton Virtuel */}
-            {/* Unified Skyjo Score Container */}
-            <div className="w-full relative group overflow-hidden rounded-[20px] shadow-xl transition-all">
-                {/* Rotating Beam Border */}
-                <div className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0_300deg,#184766_360deg)] animate-border-spin opacity-100" />
+            {/* Unified Skyjo Score Container - Premium Redesign */}
+            <div className="w-full relative group overflow-hidden rounded-[24px] shadow-2xl transition-all">
+                {/* Rotating Beam Border (Preserved) */}
+                <div className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0_300deg,#0ea5e9_360deg)] animate-border-spin opacity-100" />
 
-                {/* Opaque Center - Masks the center to create 2px border */}
-                <div className="absolute inset-[2px] bg-[#1e2235] rounded-[18px] z-10" />
+                {/* Glass Background (Premium) */}
+                <div className="absolute inset-[1px] bg-slate-900/90 backdrop-blur-xl rounded-[23px] z-10" />
+
+                {/* Internal Ambient Gradient (Blue/Cyan for Score) */}
+                <div className="absolute inset-0 bg-gradient-to-br from-sky-500 via-cyan-500 to-blue-500 opacity-10 z-10 pointer-events-none rounded-[24px]" />
+
+                {/* Decorative Top Beam */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-sky-400 to-transparent z-20 opacity-60" />
 
                 {/* Content Layer */}
                 <div className="relative z-20 flex flex-col">
-                    {/* Background Effect - changed to simple pulse to avoid green shadow */}
-
                     {/* Header Section */}
-                    <div className="relative p-4 flex items-center gap-4 border-b border-white/5">
-                        <div className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-lg overflow-hidden border border-white/20 bg-slate-900 shrink-0">
+                    <div className="relative p-5 flex items-center gap-5 border-b border-white/5">
+                        <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden border border-white/10 bg-slate-900 shrink-0 relative z-30">
+                            <div className="absolute inset-0 bg-sky-500/20 mix-blend-overlay" />
                             <img
                                 src="/logo.jpg"
                                 alt="Skyjo Logo"
                                 className="w-full h-full object-cover scale-110"
                             />
                         </div>
-                        <div className="text-left flex-1">
-                            <h1 className="text-2xl font-extrabold text-skyjo-blue drops-shadow-sm dark:text-sky-300">
+                        <div className="text-left flex-1 relative z-30">
+                            <h1 className="text-2xl font-black text-white drop-shadow-md tracking-tight">
                                 Skyjo Score
                             </h1>
-                            <p className="text-slate-400 font-medium text-sm mt-1">Compteur de points</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-500 mt-2 flex items-center gap-1">
-                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-skyjo-blue animate-pulse"></span>
-                                Pour vos vraies parties
-                            </p>
+                            <p className="text-sky-400 font-bold text-sm mt-0.5">Compteur de points</p>
+                            <div className="flex items-center gap-2 mt-2">
+                                <span className="flex h-2 w-2 relative">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                                </span>
+                                <p className="text-xs text-slate-400 font-medium">
+                                    Pour vos vraies parties
+                                </p>
+                            </div>
                         </div>
                     </div>
 
                     {/* Players Section */}
-                    <div className="relative p-3 space-y-2 flex-1">
-                        <div className="flex items-center gap-2 text-base font-bold text-slate-800 dark:text-slate-100 mb-1 px-1">
-                            <User className="h-4 w-4 text-skyjo-blue dark:text-sky-400" />
+                    <div className="relative p-4 space-y-3 flex-1">
+                        <div className="flex items-center gap-2 text-sm font-bold text-slate-400 uppercase tracking-wider px-1 mb-2">
+                            <User className="h-3.5 w-3.5 text-sky-500" />
                             Joueurs
                         </div>
                         {players.map((player, index) => {
@@ -122,7 +132,7 @@ export default function GameSetup({ onNavigate }) {
                             return (
                                 <div
                                     key={index}
-                                    className="flex gap-2 animate-scale-in"
+                                    className="flex gap-3 animate-scale-in"
                                     style={{ animationDelay: `${index * 80}ms` }}
                                 >
                                     {/* Emoji Selector Button */}
@@ -130,8 +140,8 @@ export default function GameSetup({ onNavigate }) {
                                         type="button"
                                         onClick={() => setOpenEmojiPicker(openEmojiPicker === index ? null : index)}
                                         className={cn(
-                                            "w-9 h-9 rounded-lg flex items-center justify-center text-lg shadow-lg transition-all hover:scale-110 border border-white/10",
-                                            "bg-skyjo-blue text-white shadow-skyjo-blue/30"
+                                            "w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-lg transition-all hover:scale-105 border border-white/10",
+                                            "bg-slate-800 text-white hover:bg-slate-700 hover:border-sky-500/50"
                                         )}
                                     >
                                         {player.emoji}
@@ -144,7 +154,7 @@ export default function GameSetup({ onNavigate }) {
                                             value={player.name}
                                             onChange={(e) => updateName(index, e.target.value)}
                                             className={cn(
-                                                "h-9 bg-white/90 dark:bg-white/10 border-slate-300 dark:border-white/20 focus:bg-white dark:focus:bg-white/20 focus:border-emerald-400 transition-all shadow-sm text-sm text-slate-900 dark:text-white placeholder:text-slate-500",
+                                                "h-10 bg-slate-950/50 border-slate-800 focus:bg-slate-900 focus:border-sky-500 transition-all shadow-inner text-sm text-white placeholder:text-slate-600 rounded-xl",
                                                 player.name && "font-medium"
                                             )}
                                         />
@@ -153,10 +163,10 @@ export default function GameSetup({ onNavigate }) {
                                     {/* Remove Button */}
                                     {players.length > 2 && (
                                         <Button
-                                            variant="secondary"
+                                            variant="ghost"
                                             size="icon"
                                             onClick={() => removePlayer(index)}
-                                            className="shrink-0 h-9 w-9 text-red-600 hover:bg-red-100/70 hover:text-red-700 bg-white/60 dark:bg-white/10 border-white/40 dark:border-white/20 transition-all"
+                                            className="shrink-0 h-10 w-10 text-slate-500 hover:text-red-400 hover:bg-red-950/30 rounded-xl transition-colors"
                                         >
                                             <X className="h-4 w-4" />
                                         </Button>
@@ -169,19 +179,19 @@ export default function GameSetup({ onNavigate }) {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="w-full border-dashed border-emerald-400/60 text-emerald-800 dark:text-emerald-400 hover:bg-emerald-50/60 dark:hover:bg-emerald-900/30 hover:border-emerald-500 bg-white/30 dark:bg-white/5 transition-all"
+                                className="w-full h-9 border-dashed border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-sky-400 hover:border-sky-500/30 bg-transparent transition-all rounded-xl mt-2"
                                 onClick={addPlayer}
                             >
-                                <Plus className="mr-1 h-4 w-4" /> Ajouter
+                                <Plus className="mr-2 h-3.5 w-3.5" /> Ajouter un joueur
                             </Button>
                         )}
                     </div>
 
                     {/* Action Section */}
-                    <div className="relative p-3 pt-1">
+                    <div className="relative p-4 pt-2 pb-5">
                         <Button
                             size="lg"
-                            className="w-full bg-skyjo-blue hover:bg-skyjo-blue/90 text-white font-bold shadow-xl shadow-skyjo-blue/25 border border-white/20 h-12 text-base transition-all hover:scale-[1.02]"
+                            className="w-full bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold shadow-lg shadow-sky-500/20 border-t border-white/10 h-12 text-base transition-all hover:scale-[1.02] rounded-xl"
                             onClick={handleStart}
                         >
                             🚀 Commencer à compter
@@ -200,20 +210,27 @@ export default function GameSetup({ onNavigate }) {
                     playStart();
                     onNavigate?.('virtual');
                 }}
-                className="w-full relative group cursor-pointer overflow-hidden rounded-[20px] transition-all hover:scale-[1.02] shadow-xl"
+                className="w-full relative group cursor-pointer overflow-hidden rounded-[24px] transition-all hover:scale-[1.02] shadow-2xl mt-1"
             >
                 {/* Rotating Beam Border - Pseudo-element simulation */}
                 <div className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0_300deg,#9333ea_360deg)] animate-border-spin opacity-100" />
 
-                {/* Opaque Center - Masks the center to create 2px border */}
-                <div className="absolute inset-[2px] bg-[#1e2235] rounded-[18px] z-10" />
+                {/* Glass Background (Premium) */}
+                <div className="absolute inset-[1px] bg-slate-900/90 backdrop-blur-xl rounded-[23px] z-10" />
+
+                {/* Internal Ambient Gradient (Purple) */}
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-fuchsia-500 to-pink-500 opacity-10 z-10 pointer-events-none rounded-[24px]" />
+
+                {/* Decorative Top Beam */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-purple-400 to-transparent z-20 opacity-60" />
 
                 {/* Content Layer */}
-                <div className="relative z-20 p-4 flex items-center gap-6 h-full w-full">
+                <div className="relative z-20 p-5 flex items-center gap-6 h-full w-full">
                     {/* Halo effect on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-[18px]" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-[23px]" />
 
-                    <div className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden border border-white/10 bg-slate-900 shrink-0 relative z-30">
+                    <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden border border-white/10 bg-slate-900 shrink-0 relative z-30">
+                        <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay" />
                         <img
                             src="/virtual-logo.jpg"
                             alt="Skyjo Virtual"
@@ -221,10 +238,12 @@ export default function GameSetup({ onNavigate }) {
                         />
                     </div>
                     <div className="text-left flex-1 relative z-30">
-                        <p className="font-extrabold text-xl text-white drop-shadow-sm">Jouer en virtuel</p>
-                        <p className="text-sm text-slate-400 mt-1">Contre l'IA ou en ligne</p>
+                        <p className="font-black text-xl text-white drop-shadow-md">Jouer en virtuel</p>
+                        <p className="text-sm text-purple-300 font-medium mt-1">Contre l'IA ou en ligne</p>
                     </div>
-                    <span className="text-white/80 text-2xl group-hover:translate-x-1 transition-transform relative z-30">→</span>
+                    <div className="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center relative z-30 group-hover:bg-purple-500/20 transition-colors">
+                        <span className="text-purple-400 text-xl group-hover:translate-x-0.5 transition-transform">→</span>
+                    </div>
                 </div>
             </button>
 
