@@ -649,7 +649,7 @@ export default function VirtualGame() {
     // Render menu screen
     if (screen === 'menu') {
         return (
-            <div className="max-w-md mx-auto p-4 pt-8 pb-20 space-y-3 animate-in fade-in">
+            <div className="max-w-md mx-auto p-4 pt-8 pb-28 space-y-3 animate-in fade-in overflow-y-auto max-h-[calc(100vh-90px)] no-scrollbar">
                 <LevelUpReward />
                 <Card className="glass-premium dark:glass-dark shadow-xl relative">
                     <CardHeader className="text-center">
