@@ -1770,44 +1770,61 @@ export default function VirtualGame() {
                 activeGameState?.players?.length <= 2 ? "justify-between py-2 pb-16" : "justify-start gap-3 py-1 pb-24"
             )}
         >
-            {/* Header - ultra-thin single line */}
-            <div className="flex items-center justify-between px-2 py-0.5 shrink-0">
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleBackToMenu}
-                    className="h-9 px-4 text-sm font-medium"
+            {/* Header - ultra-thin single line with glass-style elements */}
+            <div className="flex items-center justify-between px-3 py-1.5 shrink-0 z-50">
+                <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                 >
-                    ← Quitter
-                </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleBackToMenu}
+                        className="h-8 px-3 text-[11px] font-black uppercase tracking-tighter bg-slate-800/40 hover:bg-slate-700/60 text-slate-300 border border-white/5 rounded-full backdrop-blur-md shadow-lg flex items-center gap-1"
+                    >
+                        <ArrowLeft className="h-3 w-3" />
+                        Quitter
+                    </Button>
+                </motion.div>
 
                 <div className="flex items-center gap-2">
+                    {/* Round Indicator Pill */}
+                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/40 border border-white/5 backdrop-blur-md shadow-lg">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            Manche
+                        </span>
+                        <span className="text-xs font-black text-white font-mono bg-indigo-500/30 px-1.5 py-0.5 rounded-md border border-indigo-400/30">
+                            {activeRoundNumber}
+                        </span>
+                    </div>
+
                     <Button
                         variant="ghost"
                         size="sm"
                         onClick={toggleMusic}
                         className={cn(
-                            "h-6 w-6 p-0 rounded-full transition-all duration-500 relative overflow-visible",
+                            "h-8 w-8 p-0 rounded-full transition-all duration-500 relative overflow-visible border border-white/5 backdrop-blur-md shadow-lg",
                             musicEnabled
-                                ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-400/50 shadow-[0_0_8px_rgba(52,211,153,0.4)]"
-                                : "text-slate-500 hover:bg-slate-800"
+                                ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-400/30"
+                                : "bg-slate-800/40 text-slate-500 hover:bg-slate-700/60"
                         )}
                         title={musicEnabled ? "Couper la musique" : "Activer la musique"}
                     >
                         {/* Ping effect behind the button */}
                         {musicEnabled && (
-                            <span className="absolute inset-0 rounded-full bg-emerald-400/30 animate-[ping_2s_ease-in-out_infinite] opacity-50" />
+                            <motion.span
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="absolute inset-0 rounded-full bg-emerald-400/20 animate-[ping_2s_ease-in-out_infinite]"
+                            />
                         )}
 
                         {musicEnabled ? (
-                            <Music className="h-3.5 w-3.5 relative z-10 animate-[bounce_2s_infinite]" />
+                            <Music className="h-3.5 w-3.5 relative z-10" />
                         ) : (
                             <Music2 className="h-3.5 w-3.5 opacity-50 relative z-10" />
                         )}
                     </Button>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        MANCHE {activeRoundNumber}
-                    </span>
                 </div>
             </div>
 
