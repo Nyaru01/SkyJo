@@ -250,9 +250,11 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                             {/* Label */}
                             <span className={cn(
                                 "font-bold text-white uppercase tracking-wide whitespace-nowrap",
-                                instructionText ? "text-[10px]" : "text-xs"
+                                instructionText?.includes('DERNIER TOUR') ? "text-sm animate-pulse" : (instructionText ? "text-[10px]" : "text-xs")
                             )}>
-                                {isDrawPhase && canInteract ? 'CHOISIR UNE CARTE' : (instructionText || 'Piocher')}
+                                {instructionText?.includes('DERNIER TOUR')
+                                    ? instructionText
+                                    : (isDrawPhase && canInteract ? 'CHOISIR UNE CARTE' : (instructionText || 'Piocher'))}
                             </span>
 
                             {/* Right Arrow - pointing to discard pile */}
