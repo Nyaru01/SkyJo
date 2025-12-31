@@ -38,6 +38,9 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
   /* iOS safe area insets for notch and home indicator */
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
@@ -641,15 +644,15 @@ body,
 
 /* Scale down the game layout on small viewport heights */
 @media (max-height: 750px) {
-    .skyjo-game-container {
-        transform: scale(0.95);
-        transform-origin: center top;
-    }
+  .skyjo-game-container {
+    transform: scale(0.92);
+    transform-origin: center top;
+  }
 }
 
 @media (max-height: 650px) {
-    .skyjo-game-container {
-        transform: scale(0.9);
-        transform-origin: center top;
-    }
+  .skyjo-game-container {
+    transform: scale(0.85);
+    transform-origin: center top;
+  }
 }

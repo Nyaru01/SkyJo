@@ -43,20 +43,38 @@ export default function ScoreInput({ players, onSave, onCancel, isEmbedded = fal
 
     const content = (
         <Card className={cn("w-full transition-all border-white/20 dark:border-white/10 bg-white/30 dark:bg-slate-800/80 backdrop-blur-xl shadow-2xl overflow-hidden", !isEmbedded && "max-w-lg")}>
-            <CardHeader className="border-b border-white/10 dark:border-white/5 pb-4 relative overflow-hidden">
-                {/* Decorative header glow */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1 bg-skyjo-blue/30 blur-md" />
+            {!isEmbedded && (
+                <CardHeader className="border-b border-white/10 dark:border-white/5 pb-4 relative overflow-hidden">
+                    {/* Decorative header glow */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1 bg-skyjo-blue/30 blur-md" />
 
-                <CardTitle className="text-center text-slate-900 dark:text-slate-100 font-black tracking-tight flex items-center justify-center gap-2">
-                    <Check className="h-5 w-5 text-skyjo-blue" />
-                    {isEmbedded ? "Nouvelle Manche" : "Fin de manche"}
-                </CardTitle>
-                <p className="text-center text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">
-                    Entrez les scores des cartes restantes
-                </p>
-            </CardHeader>
+                    <CardTitle className="text-center text-slate-900 dark:text-slate-100 font-black tracking-tight flex items-center justify-center gap-2">
+                        <Check className="h-5 w-5 text-skyjo-blue" />
+                        Fin de manche
+                    </CardTitle>
+                    <p className="text-center text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">
+                        Entrez les scores des cartes restantes
+                    </p>
+                </CardHeader>
+            )}
 
-            <CardContent className="space-y-4 pt-6 px-2 sm:px-4">
+            <CardContent className={cn("space-y-4 px-2 sm:px-4", isEmbedded ? "pt-6" : "pt-6")}>
+                {/* Badge Legend */}
+                <div className="flex justify-center gap-6 pb-4 border-b border-white/5 mx-2">
+                    <div className="flex items-center gap-2 group/legend">
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 group-hover/legend:scale-110 transition-transform">
+                            <Trophy className="h-3 w-3 text-amber-500" fill="currentColor" fillOpacity={0.2} />
+                        </div>
+                        <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight">Manche gagnée</span>
+                    </div>
+                    <div className="flex items-center gap-2 group/legend">
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 group-hover/legend:scale-110 transition-transform">
+                            <Zap className="h-3 w-3 text-blue-500" fill="currentColor" fillOpacity={0.2} />
+                        </div>
+                        <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight">Manche finie</span>
+                    </div>
+                </div>
+
                 {error && (
                     <div className="bg-red-500/10 text-red-600 dark:text-red-400 p-3 rounded-2xl flex items-center gap-2 text-sm font-bold animate-in zoom-in duration-300 border border-red-500/20">
                         <AlertCircle className="h-4 w-4 shrink-0" />
@@ -203,7 +221,7 @@ export default function ScoreInput({ players, onSave, onCancel, isEmbedded = fal
 
     if (isEmbedded) {
         return (
-            <div id="score-input-section" className="animate-in fade-in slide-in-from-bottom-8 duration-500 pb-8">
+            <div id="score-input-section" className="animate-in fade-in slide-in-from-bottom-8 duration-500 pt-2 pb-12">
                 {content}
             </div>
         );
