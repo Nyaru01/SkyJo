@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Trophy, Sparkles, History, Undo2, BarChart3 } from 'lucide-react';
+import { Settings, Trophy, Sparkles, History, Undo2, BarChart3, Play, LogOut, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore, selectPlayers, selectRounds, selectThreshold, selectGameStatus } from '../store/gameStore';
 import { useVirtualGameStore } from '../store/virtualGameStore';
@@ -101,20 +101,29 @@ export default function Dashboard() {
                                     <p>Partie en cours avec <strong>{players.length} joueurs</strong>.</p>
                                     <p>Seuil de fin : <strong>{threshold} points</strong>.</p>
                                 </div>
+                                <div className="grid gap-3">
+                                    <Button
+                                        onClick={() => setActiveTab('game')}
+                                        className="w-full bg-skyjo-blue hover:bg-skyjo-blue/90 h-14 rounded-2xl font-black text-lg shadow-xl shadow-skyjo-blue/20 transition-all active:scale-95 group"
+                                    >
+                                        <Play className="mr-2 h-6 w-6" />
+                                        Reprendre la partie
+                                    </Button>
 
-                                <Button
-                                    variant="danger"
-                                    onClick={() => setConfirmConfig({
-                                        isOpen: true,
-                                        title: "Quitter la partie ?",
-                                        message: "Voulez-vous vraiment quitter et réinitialiser la partie ?",
-                                        onConfirm: () => { resetGame(); setActiveTab('home'); },
-                                        variant: "danger"
-                                    })}
-                                    className="w-full justify-start"
-                                >
-                                    Arrêter la partie
-                                </Button>
+                                    <Button
+                                        variant="danger"
+                                        onClick={() => setConfirmConfig({
+                                            isOpen: true,
+                                            title: "Quitter la partie ?",
+                                            message: "Voulez-vous vraiment quitter et réinitialiser la partie ?",
+                                            onConfirm: () => { resetGame(); setActiveTab('home'); },
+                                            variant: "danger"
+                                        })}
+                                        className="w-full h-12 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 border-red-200 dark:border-red-900/50 justify-center font-bold"
+                                    >
+                                        Arrêter la partie
+                                    </Button>
+                                </div>
                             </CardContent>
                         </Card>
 
@@ -166,6 +175,22 @@ export default function Dashboard() {
                         exit="exit"
                         transition={pageTransition}
                     >
+                        {gameStatus === 'PLAYING' && (
+                            <div className="mb-4 p-4 bg-skyjo-blue/10 border border-skyjo-blue/30 rounded-2xl flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-skyjo-blue flex items-center justify-center shadow-lg">
+                                        <Play className="h-5 w-5 text-white" fill="white" />
+                                    </div>
+                                    <div>
+                                        <p className="font-black text-slate-900 dark:text-white text-sm">Partie en cours</p>
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Comptage manuel</p>
+                                    </div>
+                                </div>
+                                <Button size="sm" onClick={() => setActiveTab('game')} className="bg-skyjo-blue h-9 px-4 rounded-xl font-bold text-xs">
+                                    Reprendre
+                                </Button>
+                            </div>
+                        )}
                         <VirtualGame />
                     </motion.div>
                 );
@@ -319,7 +344,7 @@ export default function Dashboard() {
 
     return (
         <div className="min-h-screen">
-            <div className={`max-w-3xl mx-auto p-4 ${isVirtualGameActive ? 'pb-2' : 'pb-24'}`}>
+            <div className={`max - w - 3xl mx - auto p - 4 ${isVirtualGameActive ? 'pb-2' : 'pb-24'} `}>
                 <AnimatePresence mode="wait">
                     {renderContent()}
                 </AnimatePresence>
