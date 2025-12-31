@@ -57,10 +57,10 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                                         scale: [1, 1.15, 1.15, 1.1, 1.1, 1]
                                     }}
                                     transition={{
-                                        duration: 2.5,
+                                        duration: 3,
                                         repeat: Infinity,
-                                        repeatDelay: 1,
-                                        ease: "easeInOut"
+                                        repeatDelay: 2,
+                                        ease: "linear"
                                     }}
                                 >
                                     <Star className="w-4 h-4 text-white fill-white" />
@@ -100,10 +100,8 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                                     opacity: isFilled ? 1 : 0.4
                                 }}
                                 transition={{
-                                    type: "spring",
-                                    stiffness: 500,
-                                    damping: 25,
-                                    delay: isFilled ? index * 0.03 : 0
+                                    duration: 0.2,
+                                    delay: isFilled ? index * 0.02 : 0
                                 }}
                                 className={cn(
                                     "flex-1 h-2.5 rounded-full transition-colors duration-300",
@@ -137,17 +135,17 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="absolute inset-0 bg-slate-900/80 backdrop-blur-md"
+                                className="absolute inset-0 bg-slate-950/90"
                                 onClick={() => setShowRewards(false)}
                             />
 
                             {/* Modal */}
                             <motion.div
                                 key="modal"
-                                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                                animate={{ scale: 1, opacity: 1, y: 0 }}
-                                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 10 }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
                                 className="relative w-full max-w-sm bg-[#1e2235] rounded-2xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[80vh] z-10"
                             >
                                 {/* Header */}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
 const CRITICAL_IMAGES = [
-    '/card-back.png',
+    '/card-back.png?v=2',
     '/card-back-papyrus.jpg',
     '/bg-skyjo.png'
 ];

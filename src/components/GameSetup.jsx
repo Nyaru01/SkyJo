@@ -165,8 +165,7 @@ export default function GameSetup({ onNavigate }) {
                             return (
                                 <div
                                     key={index}
-                                    className="flex gap-3 items-center animate-scale-in"
-                                    style={{ animationDelay: `${index * 80}ms` }}
+                                    className="flex gap-3 items-center"
                                 >
                                     {/* Avatar Selector Button */}
                                     <button

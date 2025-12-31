@@ -305,7 +305,7 @@ const SkyjoCard = memo(function SkyjoCard({
                     }}
                 >
                     <img
-                        src={cardSkin === 'papyrus' ? "/card-back-papyrus.jpg" : "/card-back.png"}
+                        src={cardSkin === 'papyrus' ? "/card-back-papyrus.jpg" : "/card-back.png?v=2"}
                         alt="Card Back"
                         className="w-full h-full object-cover"
                     />

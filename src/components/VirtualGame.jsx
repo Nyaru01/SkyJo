@@ -1749,26 +1749,13 @@ export default function VirtualGame() {
         );
     }
 
-    // Determine vignette color based on whose turn it is
+    // Determine whose turn it is (for player hand indicators)
     const isMyTurn = !isInitialReveal && activeGameState.currentPlayerIndex === myPlayerIndex;
     const isOpponentTurn = !isInitialReveal && activeGameState.currentPlayerIndex === opponentIndex;
-    const vignetteColor = isMyTurn
-        ? 'radial-gradient(ellipse at center, transparent 50%, rgba(34, 197, 94, 0.15) 100%)'
-        : isOpponentTurn
-            ? 'radial-gradient(ellipse at center, transparent 50%, rgba(239, 68, 68, 0.15) 100%)'
-            : 'none';
 
     return (
         <div
-            className="skyjo-game-container max-w-3xl mx-auto p-0 py-1 animate-in fade-in relative h-screen supports-[height:100svh]:h-[100svh] flex flex-col justify-between overflow-hidden"
-            style={{
-                // Vignette effect around edges based on turn
-                boxShadow: isMyTurn
-                    ? 'inset 0 0 80px rgba(34, 197, 94, 0.2)'
-                    : isOpponentTurn
-                        ? 'inset 0 0 80px rgba(239, 68, 68, 0.2)'
-                        : 'none',
-            }}
+            className="skyjo-game-container max-w-3xl mx-auto p-0 py-1 animate-in fade-in relative min-h-screen supports-[min-height:100svh]:min-h-[100svh] flex flex-col justify-between overflow-y-auto"
         >
             {/* Header - ultra-thin single line */}
             <div className="flex items-center justify-between px-2 py-0.5 shrink-0">
