@@ -1569,96 +1569,124 @@ export default function VirtualGame() {
         // Regular end-of-round screen
         return (
             <div className="max-w-md mx-auto p-4 space-y-4 animate-in fade-in">
-                <Card className="glass-premium shadow-xl overflow-hidden">
+                <Card className="glass-premium shadow-xl overflow-hidden min-h-[500px] flex flex-col">
                     <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 to-orange-900/20" />
-                    <CardHeader className="text-center relative">
-                        <Trophy className="h-16 w-16 mx-auto text-amber-500 mb-2 animate-bounce" />
-                        <CardTitle className="text-2xl text-amber-400">
+                    <CardHeader className="text-center relative py-4">
+                        <Trophy className="h-10 w-10 mx-auto text-amber-500 mb-1" />
+                        <CardTitle className="text-xl text-amber-400">
                             Fin de la manche {roundNumber}
                         </CardTitle>
                         {gameEndsAfterThisRound && (
-                            <p className="text-red-500 text-sm font-medium mt-1">
+                            <p className="text-red-500 text-xs font-medium mt-0.5">
                                 ⚠️ Un joueur atteint 100 points !
                             </p>
                         )}
                     </CardHeader>
-                    <CardContent className="relative space-y-3">
+                    <CardContent className="relative space-y-4 flex-1 pb-8">
                         {/* Round scores with cumulative totals */}
-                        {scores?.map((score, index) => (
-                            <motion.div
-                                key={score.playerId}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className={cn(
-                                    "flex flex-col p-3 rounded-xl gap-3",
-                                    index === 0
-                                        ? "bg-gradient-to-r from-amber-900/50 to-yellow-900/50 border border-amber-500/20"
-                                        : "bg-white/5 border border-white/5"
-                                )}
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-2xl font-bold text-slate-400">
-                                            #{index + 1}
-                                        </span>
-                                        <span className="font-medium text-slate-200">
-                                            {score.playerName}
-                                        </span>
-                                        {score.isFinisher && (
-                                            <span className="text-xs bg-amber-900 text-amber-300 px-2 py-0.5 rounded-full">
-                                                🎯 A retourné
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="text-right">
-                                        <span className={cn(
-                                            "text-lg font-bold",
-                                            score.penalized ? "text-red-500" : "text-slate-200"
-                                        )}>
-                                            +{Number(score.finalScore) || 0}
-                                        </span>
-                                        {score.penalized && (
-                                            <span className="text-xs text-red-500 block">
-                                                (doublé!)
-                                            </span>
-                                        )}
-                                        <span className={cn(
-                                            "text-xs block",
-                                            projectedTotals[score.playerId] >= 100 ? "text-red-500 font-bold" : "text-slate-500"
-                                        )}>
-                                            Total: {projectedTotals[score.playerId]}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Mini grid of cards - arranged in 4 columns like the game board */}
-                                <div className="grid grid-cols-4 gap-1.5 p-2.5 bg-black/30 rounded-xl w-fit mx-auto">
-                                    {[0, 1, 2].map(row =>
-                                        [0, 1, 2, 3].map(col => {
-                                            const cardIdx = col * 3 + row;
-                                            const player = activeGameState.players.find(p => p.id === score.playerId);
-                                            const card = player?.hand[cardIdx];
-                                            return card ? (
-                                                <SkyjoCard
-                                                    key={`${score.playerId}-card-${cardIdx}`}
-                                                    card={{ ...card, isRevealed: true }}
-                                                    size="xs"
-                                                    className="opacity-95 shadow-lg"
-                                                />
-                                            ) : (
-                                                <div
-                                                    key={`${score.playerId}-card-${cardIdx}`}
-                                                    className="w-[1.5rem] h-[2.25rem] rounded-md border border-dashed border-white/5 bg-white/5"
-                                                />
-                                            );
-                                        })
+                        <div className="space-y-3">
+                            {scores?.map((score, index) => (
+                                <motion.div
+                                    key={score.playerId}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    className={cn(
+                                        "flex flex-col p-3 rounded-xl gap-2",
+                                        index === 0
+                                            ? "bg-gradient-to-r from-amber-900/40 to-yellow-900/40 border border-amber-500/10"
+                                            : "bg-white/5 border border-white/5"
                                     )}
-                                </div>
-                            </motion.div>
-                        ))}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-xl font-bold text-slate-400">
+                                                #{index + 1}
+                                            </span>
+                                            <span className="font-medium text-slate-200">
+                                                {score.playerName}
+                                            </span>
+                                            {score.isFinisher && (
+                                                <span className="text-[10px] bg-amber-900/60 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/20">
+                                                    🎯 A retourné
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="text-right">
+                                            <span className={cn(
+                                                "text-lg font-bold",
+                                                score.penalized ? "text-red-500" : "text-slate-200"
+                                            )}>
+                                                +{Number(score.finalScore) || 0}
+                                            </span>
+                                            {score.penalized && (
+                                                <span className="text-[10px] text-red-500 block leading-tight">
+                                                    (doublé!)
+                                                </span>
+                                            )}
+                                            <span className={cn(
+                                                "text-[10px] block opacity-60",
+                                                projectedTotals[score.playerId] >= 100 ? "text-red-500 font-bold opacity-100" : "text-slate-400"
+                                            )}>
+                                                Total: {projectedTotals[score.playerId]}
+                                            </span>
+                                        </div>
+                                    </div>
 
-                        <div className="flex gap-3 pt-4">
+                                    {/* Mini grid of cards - arranged in 4 columns like the game board */}
+                                    <div className="grid grid-cols-4 gap-1.5 p-2 w-fit mx-auto">
+                                        {[0, 1, 2].map(row =>
+                                            [0, 1, 2, 3].map(col => {
+                                                const cardIdx = col * 3 + row;
+                                                const player = activeGameState.players.find(p => p.id === score.playerId);
+                                                const card = player?.hand[cardIdx];
+                                                const isAutoRevealed = card && !card.isRevealed;
+
+                                                return card ? (
+                                                    <div key={`${score.playerId}-card-${cardIdx}`} className="relative">
+                                                        <SkyjoCard
+                                                            card={{ ...card, isRevealed: true }}
+                                                            size="xs"
+                                                            className={cn(
+                                                                "opacity-95 shadow-md transition-all duration-500",
+                                                                isAutoRevealed && "shadow-[0_0_12px_rgba(168,85,247,0.8)] scale-110 z-10 brightness-110"
+                                                            )}
+                                                        />
+                                                        {isAutoRevealed && (
+                                                            <div className="absolute -top-1 -right-1 flex items-center justify-center z-20">
+                                                                <div className="relative">
+                                                                    <div className="absolute inset-0 bg-purple-400 rounded-full animate-ping opacity-75" />
+                                                                    <div className="relative w-3.5 h-3.5 bg-gradient-to-tr from-purple-600 to-fuchsia-400 rounded-full border-2 border-slate-900 shadow-sm flex items-center justify-center">
+                                                                        <Sparkles className="w-2 h-2 text-white" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        key={`${score.playerId}-card-${cardIdx}`}
+                                                        className="w-[2.25rem] h-[2.25rem] opacity-0"
+                                                    />
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        {/* Legend for the auto-reveal cards */}
+                        <div className="flex items-center justify-center gap-2 pt-2 opacity-60">
+                            <div className="w-3 h-3 bg-gradient-to-tr from-purple-600 to-fuchsia-400 rounded-full flex items-center justify-center shadow-sm">
+                                <Sparkles className="w-2 h-2 text-white" />
+                            </div>
+                            <span className="text-[10px] text-purple-300 font-bold uppercase tracking-wider">
+                                Carte(s) révélée(s) en fin de manche
+                            </span>
+                        </div>
+
+                        <div className="flex gap-3 pt-6">
                             <Button
                                 variant="outline"
                                 className="flex-1"

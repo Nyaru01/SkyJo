@@ -119,9 +119,9 @@ const SkyjoCard = memo(function SkyjoCard({
     // Dynamic sizing - 2:3 ratio
     const sizeStyles = {
         xs: {
-            width: 'clamp(1.5rem, 5vw, 2.25rem)',
+            width: 'clamp(2.25rem, 7vw, 3.25rem)',
             height: 'clamp(2.25rem, 7.5vh, 3.375rem)',
-            fontSize: 'clamp(0.8rem, 2.4vw, 1.2rem)',
+            fontSize: 'clamp(0.85rem, 2.6vw, 1.3rem)',
             cornerSize: '0.4rem',
             cornerFont: '0.35rem',
         },
