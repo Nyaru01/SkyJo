@@ -2168,6 +2168,8 @@ export default function VirtualGame() {
                     playCardDraw();
                     if (isOnlineMode) {
                         emitGameAction('draw_pile');
+                        // Close popup immediately - player will see drawn card and decide from there
+                        setShowDrawDiscardPopup(false);
                     } else {
                         drawFromDrawPile();
                     }
@@ -2176,6 +2178,9 @@ export default function VirtualGame() {
                     playCardDraw();
                     if (isOnlineMode) {
                         emitGameAction('draw_discard');
+                        // Close popup immediately - don't wait for server response
+                        // Player will place the card on grid, no need to show popup during wait
+                        setShowDrawDiscardPopup(false);
                     } else {
                         takeFromDiscard();
                     }
