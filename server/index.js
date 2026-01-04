@@ -54,6 +54,69 @@ const generateRoomCode = () => {
     return Math.random().toString(36).substring(2, 6).toUpperCase();
 };
 
+/**
+ * Helper function to start the next round for a room
+ * Extracted for reuse with timeout and force-start logic
+ */
+const startNextRoundForRoom = (roomCode, room, ioInstance) => {
+    // Reset ready set and timeout
+    room.playersReadyForNextRound = new Set();
+    if (room.nextRoundTimeout) {
+        clearTimeout(room.nextRoundTimeout);
+        room.nextRoundTimeout = null;
+    }
+
+    // Calculate scores adding to total (only once per round)
+    if (!room.roundScored) {
+        const roundScores = calculateFinalScores(room.gameState);
+        roundScores.forEach(score => {
+            const currentTotal = room.totalScores[score.playerId] || 0;
+            const additional = score.finalScore || 0;
+            room.totalScores[score.playerId] = currentTotal + additional;
+            console.log(`[Score] ${score.playerName}: ${currentTotal} + ${additional} = ${room.totalScores[score.playerId]}`);
+        });
+        room.roundScored = true;
+    }
+
+    // Check 100 points threshold
+    const maxScore = Math.max(...Object.values(room.totalScores));
+    console.log(`[Game] Max score after round ${room.roundNumber}: ${maxScore}`);
+
+    if (maxScore >= 100) {
+        room.isGameOver = true;
+        const minScore = Math.min(...Object.values(room.totalScores));
+        const winnerId = Object.keys(room.totalScores).find(id => room.totalScores[id] === minScore);
+        const winnerPlayer = room.players.find(p => p.id === winnerId);
+        room.gameWinner = {
+            id: winnerId,
+            name: winnerPlayer?.name,
+            emoji: winnerPlayer?.emoji,
+            score: minScore
+        };
+
+        console.log(`[Game Over] Winner: ${room.gameWinner.name} with ${minScore} points`);
+        ioInstance.to(roomCode).emit('game_over', {
+            totalScores: room.totalScores,
+            winner: room.gameWinner
+        });
+    } else {
+        // Next Round
+        room.roundNumber++;
+        room.roundScored = false;
+        const gamePlayers = room.players.map(p => ({
+            id: p.id, name: p.name, emoji: p.emoji
+        }));
+        room.gameState = initializeGame(gamePlayers);
+
+        console.log(`[Game] Starting round ${room.roundNumber} for room ${roomCode}`);
+        ioInstance.to(roomCode).emit('game_started', {
+            gameState: room.gameState,
+            totalScores: room.totalScores,
+            roundNumber: room.roundNumber
+        });
+    }
+};
+
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
@@ -269,7 +332,7 @@ io.on('connection', (socket) => {
 
         // If game is already restarted (e.g. other player triggered it), sync this client
         if (room.gameState && (room.gameState.phase === 'INITIAL_REVEAL' || room.gameState.phase === 'PLAYING')) {
-            console.log(`Resyncing ${socket.id} to new round ${room.roundNumber}`);
+            console.log(`[next_round] Resyncing ${socket.id} to new round ${room.roundNumber}`);
             socket.emit('game_started', {
                 gameState: room.gameState,
                 totalScores: room.totalScores,
@@ -292,9 +355,11 @@ io.on('connection', (socket) => {
         const player = room.players.find(p => p.id === socket.id);
         if (!player) return;
 
+        const isHost = player.isHost;
+
         // Mark this player as ready
         room.playersReadyForNextRound.add(socket.id);
-        console.log(`${player.name} is ready for next round (${room.playersReadyForNextRound.size}/${room.players.length})`);
+        console.log(`[next_round] ${player.name} is ready (${room.playersReadyForNextRound.size}/${room.players.length}) - Host: ${isHost}`);
 
         // Notify all players about who is ready
         io.to(roomCode).emit('player_ready_next_round', {
@@ -302,56 +367,80 @@ io.on('connection', (socket) => {
             playerName: player.name,
             playerEmoji: player.emoji,
             readyCount: room.playersReadyForNextRound.size,
-            totalPlayers: room.players.length
+            totalPlayers: room.players.length,
+            isHost: isHost
         });
 
-        // Check if all players are ready
+        // Start 10-second timeout when first player clicks ready
+        if (room.playersReadyForNextRound.size === 1 && !room.nextRoundTimeout) {
+            console.log(`[next_round] Starting 10s timeout for room ${roomCode}`);
+            room.nextRoundTimeoutStart = Date.now();
+            room.nextRoundTimeout = setTimeout(() => {
+                console.log(`[next_round] 10s timeout reached for room ${roomCode}`);
+                // Check if host is ready, then auto-start
+                const hostPlayer = room.players.find(p => p.isHost);
+                if (hostPlayer && room.playersReadyForNextRound.has(hostPlayer.id)) {
+                    console.log(`[next_round] Host is ready - auto-starting next round`);
+                    startNextRoundForRoom(roomCode, room, io);
+                } else {
+                    console.log(`[next_round] Host not ready - waiting for host to start`);
+                    // Notify that timeout expired but host needs to start
+                    io.to(roomCode).emit('timeout_expired', {
+                        message: 'Délai expiré - En attente de l\'hôte',
+                        hostMustStart: true
+                    });
+                }
+                room.nextRoundTimeout = null;
+            }, 10000); // 10 seconds
+        }
+
+        // If ALL players are ready - start immediately
         if (room.playersReadyForNextRound.size >= room.players.length) {
-            console.log(`All players ready! Starting next round for room ${roomCode}`);
+            console.log(`[next_round] All ${room.players.length} players ready! Starting immediately`);
+            startNextRoundForRoom(roomCode, room, io);
+            return;
+        }
 
-            // Reset ready set
-            room.playersReadyForNextRound = new Set();
-
-            // Calculate scores adding to total (only once)
-            if (!room.roundScored) {
-                const roundScores = calculateFinalScores(room.gameState);
-                roundScores.forEach(score => {
-                    const currentTotal = room.totalScores[score.playerId] || 0;
-                    const additional = score.finalScore || 0;
-                    room.totalScores[score.playerId] = currentTotal + additional;
-                    console.log(`Score update for ${score.playerName}: ${currentTotal} + ${additional} = ${room.totalScores[score.playerId]}`);
-                });
-                room.roundScored = true;
-            }
-
-            // Check 100 points
-            const maxScore = Math.max(...Object.values(room.totalScores));
-            if (maxScore >= 100) {
-                room.isGameOver = true;
-                const minScore = Math.min(...Object.values(room.totalScores));
-                const winnerId = Object.keys(room.totalScores).find(id => room.totalScores[id] === minScore);
-                const winnerPlayer = room.players.find(p => p.id === winnerId);
-                room.gameWinner = { name: winnerPlayer?.name, emoji: winnerPlayer?.emoji, score: minScore };
-
-                io.to(roomCode).emit('game_over', {
-                    totalScores: room.totalScores,
-                    winner: room.gameWinner
-                });
-            } else {
-                // Next Round
-                room.roundNumber++;
-                room.roundScored = false;
-                const gamePlayers = room.players.map(p => ({
-                    id: p.id, name: p.name, emoji: p.emoji
-                }));
-                room.gameState = initializeGame(gamePlayers);
-                io.to(roomCode).emit('game_started', {
-                    gameState: room.gameState,
-                    totalScores: room.totalScores,
-                    roundNumber: room.roundNumber
-                });
+        // If this is the HOST clicking and timeout has elapsed OR only one player left
+        // Allow host to force start if they're ready and it's been at least 10 seconds
+        if (isHost && room.nextRoundTimeoutStart) {
+            const elapsed = Date.now() - room.nextRoundTimeoutStart;
+            if (elapsed >= 10000) {
+                console.log(`[next_round] Host clicked after timeout - forcing start`);
+                startNextRoundForRoom(roomCode, room, io);
             }
         }
+    });
+
+    // New event: Host can force start after timeout
+    socket.on('force_next_round', (roomCode) => {
+        const room = rooms.get(roomCode);
+        if (!room) {
+            socket.emit('error', 'Salle introuvable');
+            return;
+        }
+
+        const player = room.players.find(p => p.id === socket.id);
+        if (!player || !player.isHost) {
+            socket.emit('error', 'Seul l\'hôte peut forcer le démarrage');
+            return;
+        }
+
+        if (!room.playersReadyForNextRound?.has(socket.id)) {
+            socket.emit('error', 'Vous devez d\'abord être prêt');
+            return;
+        }
+
+        // Check if timeout has elapsed
+        const elapsed = room.nextRoundTimeoutStart ? Date.now() - room.nextRoundTimeoutStart : 0;
+        if (elapsed < 10000 && room.playersReadyForNextRound.size < room.players.length) {
+            const remaining = Math.ceil((10000 - elapsed) / 1000);
+            socket.emit('error', `Attendez encore ${remaining}s ou que tous soient prêts`);
+            return;
+        }
+
+        console.log(`[force_next_round] Host ${player.name} forcing start for room ${roomCode}`);
+        startNextRoundForRoom(roomCode, room, io);
     });
 
     socket.on('rematch', (roomCode) => {

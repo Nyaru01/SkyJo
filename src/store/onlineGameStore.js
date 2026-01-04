@@ -35,6 +35,7 @@ export const useOnlineGameStore = create((set, get) => ({
     isGameOver: false,
     gameWinner: null,
     readyStatus: { readyCount: 0, totalPlayers: 0 }, // Track ready players for next round
+    timeoutExpired: false, // True when 10s timeout has passed and host can force-start
 
     // UI Local State
     selectedCardIndex: null,
@@ -112,7 +113,8 @@ export const useOnlineGameStore = create((set, get) => ({
                     isGameOver: false,
                     gameWinner: null,
                     selectedCardIndex: null,
-                    readyStatus: { readyCount: 0, totalPlayers: 0 }
+                    readyStatus: { readyCount: 0, totalPlayers: 0 },
+                    timeoutExpired: false
                 });
             });
 
@@ -252,6 +254,24 @@ export const useOnlineGameStore = create((set, get) => ({
                     });
                 }
             });
+
+            // Handle timeout expired (host can now force start)
+            socket.on('timeout_expired', ({ message }) => {
+                console.log(`[Socket] Timeout expired: ${message}`);
+                const { isHost } = get();
+                set({
+                    timeoutExpired: true,
+                    lastNotification: isHost ? {
+                        type: 'info',
+                        message: 'Délai expiré - Vous pouvez lancer la manche suivante',
+                        timestamp: Date.now()
+                    } : {
+                        type: 'info',
+                        message: 'Délai expiré - En attente de l\'hôte',
+                        timestamp: Date.now()
+                    }
+                });
+            });
         }
 
         // Connect if not already connected
@@ -335,6 +355,11 @@ export const useOnlineGameStore = create((set, get) => ({
     rematch: () => {
         const { roomCode } = get();
         if (roomCode) socket.emit('rematch', roomCode);
+    },
+
+    forceNextRound: () => {
+        const { roomCode } = get();
+        if (roomCode) socket.emit('force_next_round', roomCode);
     },
 
     // In-Game Actions

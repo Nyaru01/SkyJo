@@ -133,6 +133,8 @@ export default function VirtualGame() {
     const joinRoom = useOnlineGameStore(s => s.joinRoom);
     const startOnlineGame = useOnlineGameStore(s => s.startGame);
     const startOnlineNextRound = useOnlineGameStore(s => s.startNextRound);
+    const forceOnlineNextRound = useOnlineGameStore(s => s.forceNextRound);
+    const onlineTimeoutExpired = useOnlineGameStore(s => s.timeoutExpired);
     const emitGameAction = useOnlineGameStore(s => s.emitGameAction);
     const selectOnlineCard = useOnlineGameStore(s => s.selectCard);
 
@@ -146,6 +148,13 @@ export default function VirtualGame() {
     const [showRulesModal, setShowRulesModal] = useState(false);
     const [showDrawDiscardPopup, setShowDrawDiscardPopup] = useState(false);
     const [isNextRoundPending, setIsNextRoundPending] = useState(false);
+
+    // Reset pending state when new round starts (phase becomes INITIAL_REVEAL)
+    useEffect(() => {
+        if (onlineGameState?.phase === 'INITIAL_REVEAL') {
+            setIsNextRoundPending(false);
+        }
+    }, [onlineGameState?.phase]);
 
     // AI Config State - Load from localStorage for persistence
     const [aiConfig, setAIConfig] = useState(() => {
@@ -1697,12 +1706,17 @@ export default function VirtualGame() {
                             </Button>
                             <Button
                                 className="flex-1 bg-skyjo-blue hover:bg-skyjo-blue/90 text-white"
-                                disabled={isOnlineMode && isNextRoundPending}
+                                disabled={isOnlineMode && isNextRoundPending && !(onlineTimeoutExpired && onlineIsHost)}
                                 onClick={() => {
                                     if (isOnlineMode) {
-                                        // Online mode: emit to server
-                                        setIsNextRoundPending(true);
-                                        startOnlineNextRound();
+                                        // If host and timeout expired, force start
+                                        if (isNextRoundPending && onlineTimeoutExpired && onlineIsHost) {
+                                            forceOnlineNextRound();
+                                        } else {
+                                            // Normal flow: emit ready status
+                                            setIsNextRoundPending(true);
+                                            startOnlineNextRound();
+                                        }
                                     } else {
                                         // Local mode: use local store
 
@@ -1769,8 +1783,17 @@ export default function VirtualGame() {
                                             <>
                                                 {isNextRoundPending ? (
                                                     <>
-                                                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1" />
-                                                        Attendez... ({onlineReadyStatus.readyCount}/{onlineReadyStatus.totalPlayers})
+                                                        {onlineTimeoutExpired && onlineIsHost ? (
+                                                            <>
+                                                                <Play className="h-4 w-4 mr-1" />
+                                                                Lancer maintenant ({onlineReadyStatus.readyCount}/{onlineReadyStatus.totalPlayers})
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1" />
+                                                                Attendez... ({onlineReadyStatus.readyCount}/{onlineReadyStatus.totalPlayers})
+                                                            </>
+                                                        )}
                                                     </>
                                                 ) : (
                                                     <>

@@ -80,13 +80,32 @@ const findHighestRevealedCard = (hand) => {
 
 /**
  * Check if placing a card at an index could complete a column
+ * IMPORTANT: We should NOT try to complete columns of low/negative values
+ * because eliminating 3x "-2" loses us -6 points!
+ * 
+ * @param {Array} hand - Player's hand
+ * @param {number} cardIndex - Index where card would be placed
+ * @param {number} cardValue - Value of the card being placed
+ * @param {boolean} forceCheck - If true, skip value threshold check (for finding positions only)
+ * @returns {boolean} True if column completion is beneficial
  */
-const checkColumnPotential = (hand, cardIndex, cardValue) => {
+const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false) => {
     // Cards are arranged in 4 columns of 3 rows
     // Column indices: [0,1,2], [3,4,5], [6,7,8], [9,10,11]
     const col = Math.floor(cardIndex / 3);
     const colStart = col * 3;
     const colIndices = [colStart, colStart + 1, colStart + 2];
+
+    // CRITICAL FIX: Don't try to complete columns with low/negative values!
+    // Eliminating 3x "-2" = losing -6 points (bad!)
+    // Eliminating 3x "0" = losing 0 points but removing 3 cards (neutral, but wastes opportunity)
+    // Eliminating 3x "1" or "2" = marginal benefit (only 3-6 points saved)
+    // Only actively pursue column completion for cards with value > 2
+    const MIN_VALUE_FOR_COLUMN_ELIMINATION = 3;
+
+    if (!forceCheck && cardValue < MIN_VALUE_FOR_COLUMN_ELIMINATION) {
+        return false; // Don't prioritize completing columns of low-value cards
+    }
 
     let matchCount = 0;
     let hiddenCount = 0;
