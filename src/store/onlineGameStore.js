@@ -250,10 +250,14 @@ export const useOnlineGameStore = create((set, get) => ({
                 // Only notify if someone else clicked ready
                 const isMe = playerId === socketId;
                 if (!isMe) {
+                    // Convert avatarId to real emoji
+                    const avatar = AVATARS.find(a => a.id === playerEmoji);
+                    const displayEmoji = avatar?.emoji || '👤';
+
                     set({
                         lastNotification: {
                             type: 'info',
-                            message: `${playerEmoji} ${playerName} veut continuer (${readyCount}/${totalPlayers})`,
+                            message: `${displayEmoji} ${playerName} veut continuer (${readyCount}/${totalPlayers})`,
                             timestamp: Date.now()
                         }
                     });

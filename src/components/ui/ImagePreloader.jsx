@@ -6,7 +6,16 @@ const CRITICAL_IMAGES = [
     '/card-back-papyrus.jpg',
     '/bg-skyjo.png',
     '/virtual-logo2.jpg',
-    '/logo.jpg'
+    '/logo.jpg',
+    // Avatar images
+    '/avatars/cat.png?v=2',
+    '/avatars/dog.png?v=2',
+    '/avatars/fox.png?v=2',
+    '/avatars/bear.png?v=2',
+    '/avatars/panda.png?v=2',
+    '/avatars/lion.png?v=2',
+    '/avatars/frog.png?v=2',
+    '/avatars/monkey.png?v=2'
 ];
 
 export default function ImagePreloader({ children }) {
