@@ -1594,6 +1594,11 @@ export default function VirtualGame() {
         // Regular end-of-round screen
         return (
             <div className="max-w-md mx-auto p-4 space-y-4 animate-in fade-in">
+                {/* Toast notifications for ready status */}
+                <Toast
+                    notification={notification}
+                    onDismiss={() => setNotification(null)}
+                />
                 <Card className="glass-premium shadow-xl overflow-hidden min-h-[450px] flex flex-col">
                     <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 to-orange-900/20" />
                     <CardHeader className="text-center relative py-4">
