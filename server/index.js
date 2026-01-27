@@ -115,7 +115,18 @@ app.get('/api/social/search', async (req, res) => {
             WHERE name ILIKE $1 OR vibe_id ILIKE $1
             LIMIT 10
         `, [`%${query}%`]);
-        res.json(result.rows);
+
+        // Inject real-time status
+        const searchResultsWithStatus = result.rows.map(u => {
+            const status = userStatus.get(String(u.id));
+            return {
+                ...u,
+                isOnline: !!status,
+                currentStatus: status?.status || 'OFFLINE'
+            };
+        });
+
+        res.json(searchResultsWithStatus);
     } catch (err) {
         res.status(500).json({ error: 'Search failed' });
     }
@@ -193,7 +204,18 @@ app.get('/api/social/leaderboard/global', async (req, res) => {
             SELECT id, name, avatar_id, vibe_id, level, xp FROM users
             ORDER BY level DESC, xp DESC LIMIT 20
         `);
-        res.json(result.rows);
+
+        // Inject real-time status
+        const usersWithStatus = result.rows.map(u => {
+            const status = userStatus.get(String(u.id));
+            return {
+                ...u,
+                isOnline: !!status,
+                currentStatus: status?.status || 'OFFLINE'
+            };
+        });
+
+        res.json(usersWithStatus);
     } catch (err) {
         res.status(500).json({ error: 'Leaderboard failed' });
     }
@@ -211,7 +233,18 @@ app.get('/api/social/leaderboard/:userId', async (req, res) => {
             )
             ORDER BY level DESC, xp DESC
         `, [userId]);
-        res.json(result.rows);
+
+        // Inject real-time status
+        const usersWithStatus = result.rows.map(u => {
+            const status = userStatus.get(String(u.id));
+            return {
+                ...u,
+                isOnline: !!status,
+                currentStatus: status?.status || 'OFFLINE'
+            };
+        });
+
+        res.json(usersWithStatus);
     } catch (err) {
         res.status(500).json({ error: 'Friend leaderboard failed' });
     }
