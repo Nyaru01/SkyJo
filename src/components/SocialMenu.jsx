@@ -307,7 +307,10 @@ export default function SocialDashboard(props) {
                                                                                 useOnlineGameStore.getState().createRoomAndInvite(f.id);
                                                                                 playSocialInvite();
                                                                             }
-                                                                            // Switch to game tab to see the room
+                                                                            // Switch to game tab and set it to lobby
+                                                                            if (props?.setVirtualScreen) {
+                                                                                props.setVirtualScreen('lobby');
+                                                                            }
                                                                             if (props?.setActiveTab) {
                                                                                 props.setActiveTab('virtual');
                                                                             }

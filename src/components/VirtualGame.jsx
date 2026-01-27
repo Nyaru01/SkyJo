@@ -129,6 +129,14 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         }, 100);
         return () => clearTimeout(timer);
     }, []);
+
+    // Sync internal screen state with initialScreen prop
+    // This allows parents (like Dashboard) to force a screen change even if VirtualGame stays mounted
+    useEffect(() => {
+        if (initialScreen && initialScreen !== screen) {
+            setScreen(initialScreen);
+        }
+    }, [initialScreen]);
     const setPlayerInfo = useOnlineGameStore(s => s.setPlayerInfo);
     const createRoom = useOnlineGameStore(s => s.createRoom);
     const joinRoom = useOnlineGameStore(s => s.joinRoom);

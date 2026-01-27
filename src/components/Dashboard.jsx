@@ -350,7 +350,10 @@ export default function Dashboard() {
                         exit="exit"
                         transition={pageTransition}
                     >
-                        <SocialDashboard setActiveTab={setActiveTab} />
+                        <SocialDashboard
+                            setActiveTab={setActiveTab}
+                            setVirtualScreen={setVirtualScreen}
+                        />
                     </motion.div>
                 );
 
