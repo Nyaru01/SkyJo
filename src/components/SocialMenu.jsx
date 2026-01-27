@@ -320,12 +320,31 @@ export default function SocialDashboard() {
                                                                             if (onlineRoomCode) {
                                                                                 inviteFriend(f.id, onlineRoomCode, userProfile.name);
                                                                                 playSocialInvite();
+                                                                            } else {
+                                                                                // Optional: Notify user they must be in a game
+                                                                                alert("Rejoins ou crée une partie en ligne pour inviter !");
                                                                             }
                                                                         }}
                                                                     >
                                                                         <Send className="w-5 h-5" />
                                                                     </Button>
                                                                 )}
+
+                                                                {/* Delete Button */}
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-10 w-10 p-0 text-slate-500 hover:bg-red-500/10 hover:text-red-500 rounded-full transition-colors"
+                                                                    onClick={async (e) => {
+                                                                        e.stopPropagation();
+                                                                        if (confirm('Supprimer cet ami ?')) {
+                                                                            await useSocialStore.getState().deleteFriend(userProfile.id, f.id);
+                                                                            playClick();
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <Trash2 className="w-5 h-5" />
+                                                                </Button>
                                                             </>
                                                         )}
                                                     </div>

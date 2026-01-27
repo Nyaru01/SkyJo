@@ -122,6 +122,25 @@ export const useSocialStore = create((set, get) => ({
                 f.id === userId ? { ...f, isOnline: status !== 'OFFLINE', currentStatus: status } : f
             )
         }));
+    },
+
+    deleteFriend: async (userId, friendId) => {
+        try {
+            const res = await fetch('/api/social/friends/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, friendId })
+            });
+            if (res.ok) {
+                set(state => ({
+                    friends: state.friends.filter(f => f.id !== friendId)
+                }));
+            }
+            return res.ok;
+        } catch (err) {
+            console.error('[SOCIAL] Delete error:', err);
+            return false;
+        }
     }
 }));
 

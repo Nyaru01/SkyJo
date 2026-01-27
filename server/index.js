@@ -130,7 +130,18 @@ app.get('/api/social/friends/:userId', async (req, res) => {
             JOIN friends f ON (f.user_id = $1 AND f.friend_id = u.id) OR (f.friend_id = $1 AND f.user_id = u.id)
             WHERE u.id != $1
         `, [userId]);
-        res.json(result.rows);
+
+        // Inject real-time status from memory
+        const friendsWithStatus = result.rows.map(f => {
+            const status = userStatus.get(f.id);
+            return {
+                ...f,
+                isOnline: !!status,
+                currentStatus: status?.status || 'OFFLINE'
+            };
+        });
+
+        res.json(friendsWithStatus);
     } catch (err) {
         res.status(500).json({ error: 'Fetch friends failed' });
     }
@@ -160,6 +171,19 @@ app.post('/api/social/friends/accept', async (req, res) => {
         res.json({ status: 'accepted' });
     } catch (err) {
         res.status(500).json({ error: 'Accept failed' });
+    }
+});
+
+app.post('/api/social/friends/delete', async (req, res) => {
+    const { userId, friendId } = req.body;
+    try {
+        await pool.query(`
+            DELETE FROM friends 
+            WHERE (user_id = $1 AND friend_id = $2) OR (user_id = $2 AND friend_id = $1)
+        `, [userId, friendId]);
+        res.json({ status: 'deleted' });
+    } catch (err) {
+        res.status(500).json({ error: 'Delete failed' });
     }
 });
 
