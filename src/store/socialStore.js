@@ -15,7 +15,12 @@ export const useSocialStore = create((set, get) => ({
     leaderboard: [],
     globalLeaderboard: [],
 
-    setSocialNotification: (val) => set({ socialNotification: val }),
+    setSocialNotification: (val) => {
+        set({ socialNotification: val });
+        if (val) {
+            setTimeout(() => set({ socialNotification: false }), 5000);
+        }
+    },
 
     registerUser: (id, name, emoji, vibeId) => {
         socket.emit('register_user', { id: String(id), name, emoji, vibeId });
