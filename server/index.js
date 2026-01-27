@@ -566,21 +566,24 @@ io.on('connection', (socket) => {
                 sockets.delete(socket.id);
                 console.log(`[USER] Socket detached: ${socket.id} from ${stringId}. Remaining: ${sockets.size}`);
                 if (sockets.size === 0) {
-                    // GRACE PERIOD: Wait 4 seconds before marking OFFLINE
-                    console.log(`[PRESENCE] Starting 4s grace period for ${stringId}`);
+                    // GRACE PERIOD: Wait 10 seconds before marking OFFLINE
+                    // This is long enough for most mobile micro-disconnects/reloads
+                    console.log(`[PRESENCE] Starting 10s grace period for ${stringId}`);
                     const timer = setTimeout(() => {
                         // ULTIMATE CHECK: Did they really stay disconnected?
+                        // We check the userStatus Map which is updated by any new socket registration
                         const currentSockets = userStatus.get(stringId);
+
                         if (!currentSockets || currentSockets.size === 0) {
                             userStatus.delete(stringId);
                             userMetadata.delete(stringId);
                             io.emit('user_presence_update', { userId: stringId, status: 'OFFLINE' });
                             console.log(`[USER] Offline (Confirmed): ${stringId}`);
                         } else {
-                            console.log(`[USER] Offline cancelled for ${stringId} (Active sockets: ${currentSockets.size})`);
+                            console.log(`[USER] Offline cancelled for ${stringId} (Active sockets found: ${currentSockets.size})`);
                         }
                         pendingDisconnections.delete(stringId);
-                    }, 4000);
+                    }, 10000); // 10s is safer for mobile
                     pendingDisconnections.set(stringId, timer);
                 }
             }
