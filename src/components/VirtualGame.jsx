@@ -806,7 +806,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                     onClick={handleStartAIGame}
                     disabled={!aiConfig.playerName.trim()}
                 >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out skew-y-12" />
+
                     <span className="relative flex items-center gap-2">
                         🚀 Affronter l'IA
                     </span>
@@ -1064,7 +1064,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                     onClick={startOnlineGame}
                                     disabled={onlinePlayers.length < 2}
                                 >
-                                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out skew-y-12" />
+
                                     <span className="relative flex items-center gap-2">
                                         <Play className="h-5 w-5 fill-current" />
                                         Lancer la partie
@@ -1155,7 +1155,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                     requestPermission();
                                 }}
                             >
-                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out skew-y-12" />
+
                                 <span className="relative flex items-center justify-center gap-2">
                                     <Plus className="h-5 w-5" />
                                     Créer une partie
