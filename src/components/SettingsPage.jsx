@@ -117,7 +117,7 @@ export default function SettingsPage({ onViewChangelog }) {
                 </CardHeader>
                 <CardContent className="space-y-3 relative z-10">
                     <PremiumToggle
-                        label="Musique Lofi"
+                        label="Musique"
                         subLabel="Ambiance chill pour se concentrer"
                         icon={musicEnabled ? Music : Music2}
                         value={musicEnabled}
