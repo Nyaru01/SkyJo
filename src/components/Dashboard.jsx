@@ -23,6 +23,7 @@ import LevelUpCelebration from './LevelUpCelebration';
 import Changelog from './Changelog';
 import GameMenu from './GameMenu';
 import { useBackgroundMusic } from '../hooks/useBackgroundMusic';
+import { useSocialStore } from '../store/socialStore';
 
 // Variants d'animation pour les transitions de pages
 const pageVariants = {
@@ -52,6 +53,7 @@ export default function Dashboard() {
     const setHasSeenTutorial = useGameStore(state => state.setHasSeenTutorial);
     const achievements = useGameStore(state => state.achievements);
     const syncProfileWithBackend = useGameStore(state => state.syncProfileWithBackend);
+    const userProfile = useGameStore(state => state.userProfile);
     const playerLevel = useGameStore(state => state.level);
     const playerCardSkin = useGameStore(state => state.cardSkin);
     const setCardSkin = useGameStore(state => state.setCardSkin);
@@ -101,36 +103,25 @@ export default function Dashboard() {
     // Global Presence Logic: Register user on socket connection
     useEffect(() => {
         const { socket } = useOnlineGameStore.getState();
-        const { registerUser } = import('../store/socialStore').then(m => m.useSocialStore.getState()).catch(() => ({})); // dynamic import tricky, better use store access
 
         const handleRegistration = () => {
             const profile = useGameStore.getState().userProfile;
-            const register = useGameStore.getState().registerUser || useOnlineGameStore.getState().registerUser || (async (id, name, emoji, vibeId) => {
-                try {
-                    // Direct socket emit if store function not easily accessible
-                    socket?.emit('register_user', { id, name, emoji, vibeId });
-                } catch (e) { }
-            });
+            const { registerUser } = useSocialStore.getState();
 
             if (profile?.id && socket?.connected) {
-                socket.emit('register_user', {
-                    id: profile.id,
-                    name: profile.name,
-                    emoji: profile.emoji,
-                    vibeId: profile.vibeId
-                });
+                registerUser(profile.id, profile.name, profile.emoji, profile.vibeId);
             }
         };
 
         if (socket) {
             socket.on('connect', handleRegistration);
-            handleRegistration(); // Initial check
+            handleRegistration();
         }
 
         return () => {
             if (socket) socket.off('connect', handleRegistration);
         };
-    }, []);
+    }, [userProfile?.id]); // Watch for profile ID changes too!
 
     // Auto-switch to 'game' tab when the game starts
     useEffect(() => {

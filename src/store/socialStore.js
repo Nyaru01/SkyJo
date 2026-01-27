@@ -18,7 +18,7 @@ export const useSocialStore = create((set, get) => ({
     setSocialNotification: (val) => set({ socialNotification: val }),
 
     registerUser: (id, name, emoji, vibeId) => {
-        socket.emit('register_user', { id, name, emoji, vibeId });
+        socket.emit('register_user', { id: String(id), name, emoji, vibeId });
     },
 
     fetchFriends: async (userId) => {
@@ -117,9 +117,10 @@ export const useSocialStore = create((set, get) => ({
     clearSearchResults: () => set({ searchResults: [] }),
 
     updatePresence: (userId, status) => {
+        const stringId = String(userId);
         set(state => ({
             friends: state.friends.map(f =>
-                f.id === userId ? { ...f, isOnline: status !== 'OFFLINE', currentStatus: status } : f
+                String(f.id) === stringId ? { ...f, isOnline: status !== 'OFFLINE', currentStatus: status } : f
             )
         }));
     },

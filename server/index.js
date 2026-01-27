@@ -133,7 +133,7 @@ app.get('/api/social/friends/:userId', async (req, res) => {
 
         // Inject real-time status from memory
         const friendsWithStatus = result.rows.map(f => {
-            const status = userStatus.get(f.id);
+            const status = userStatus.get(String(f.id));
             return {
                 ...f,
                 isOnline: !!status,
@@ -320,10 +320,11 @@ io.on('connection', (socket) => {
     socket.emit('room_list_update', getPublicRooms());
 
     socket.on('register_user', ({ id, name, emoji, vibeId }) => {
-        socket.dbId = id;
-        userStatus.set(id, { socketId: socket.id, status: 'ONLINE' });
-        io.emit('user_presence_update', { userId: id, status: 'ONLINE' });
-        console.log(`[USER] Registered: ${name} (${id})`);
+        const stringId = String(id);
+        socket.dbId = stringId;
+        userStatus.set(stringId, { socketId: socket.id, status: 'ONLINE' });
+        io.emit('user_presence_update', { userId: stringId, status: 'ONLINE' });
+        console.log(`[USER] Registered: ${name} (${stringId})`);
     });
 
     socket.on('create_room', ({ playerName, emoji, dbId }) => {
@@ -370,8 +371,9 @@ io.on('connection', (socket) => {
         // Update presence to IN_GAME
         room.players.forEach(p => {
             if (p.dbId) {
-                userStatus.set(p.dbId, { ...userStatus.get(p.dbId), status: 'IN_GAME' });
-                io.emit('user_presence_update', { userId: p.dbId, status: 'IN_GAME' });
+                const stringId = String(p.dbId);
+                userStatus.set(stringId, { ...userStatus.get(stringId), status: 'IN_GAME' });
+                io.emit('user_presence_update', { userId: stringId, status: 'IN_GAME' });
             }
         });
 
@@ -456,8 +458,9 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         if (socket.dbId) {
-            userStatus.delete(socket.dbId);
-            io.emit('user_presence_update', { userId: socket.dbId, status: 'OFFLINE' });
+            const stringId = String(socket.dbId);
+            userStatus.delete(stringId);
+            io.emit('user_presence_update', { userId: stringId, status: 'OFFLINE' });
         }
         for (const [roomCode, room] of rooms.entries()) {
             const playerIndex = room.players.findIndex(p => p.id === socket.id);

@@ -41,9 +41,10 @@ export default function SocialDashboard() {
             await useGameStore.getState().syncProfileWithBackend();
 
             const profile = useGameStore.getState().userProfile;
-            registerUser(profile.id, profile.name, profile.emoji, profile.vibeId);
-            fetchFriends(profile.id);
-            fetchLeaderboard(profile.id);
+            const profileId = String(profile.id);
+            registerUser(profileId, profile.name, profile.emoji, profile.vibeId);
+            fetchFriends(profileId);
+            fetchLeaderboard(profileId);
             fetchGlobalLeaderboard();
             setSocialNotification(false);
         };
@@ -51,15 +52,18 @@ export default function SocialDashboard() {
         initSocial();
 
         const interval = setInterval(() => {
-            fetchFriends(userProfile.id);
-            fetchLeaderboard(userProfile.id);
-            fetchGlobalLeaderboard();
+            if (userProfile?.id) {
+                const profileId = String(userProfile.id);
+                fetchFriends(profileId);
+                fetchLeaderboard(profileId);
+                fetchGlobalLeaderboard();
+            }
         }, 30000);
         // Listen for socket reconnection to re-register presence
         const onConnect = () => {
             const profile = useGameStore.getState().userProfile;
             if (profile?.id) {
-                registerUser(profile.id, profile.name, profile.emoji, profile.vibeId);
+                registerUser(String(profile.id), profile.name, profile.emoji, profile.vibeId);
             }
         };
 
