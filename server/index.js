@@ -392,7 +392,7 @@ io.on('connection', (socket) => {
 
         // Broadcast presence update
         io.emit('user_presence_update', { userId: stringId, status: 'ONLINE' });
-        console.log(`[USER] Registered: ${name} (${stringId}) with socket ${socket.id}`);
+        console.log(`[USER] Registered: ${name} (${stringId}) with socket ${socket.id}. Total users: ${userStatus.size}`);
     });
 
     socket.on('create_room', ({ playerName, emoji, dbId, isPublic = true }) => {
@@ -503,8 +503,10 @@ io.on('connection', (socket) => {
 
     socket.on('invite_friend', async ({ friendId, roomCode, fromName }) => {
         const stringFriendId = String(friendId);
+        console.log(`[INVITE] From ${fromName} to ${stringFriendId} for room ${roomCode}`);
         const sockets = userStatus.get(stringFriendId);
         if (sockets && sockets.size > 0) {
+            console.log(`[INVITE] Sending to ${sockets.size} sockets of ${stringFriendId}`);
             sockets.forEach(socketId => {
                 io.to(socketId).emit('game_invitation', { fromName, roomCode });
             });
@@ -524,6 +526,8 @@ io.on('connection', (socket) => {
             } catch (err) {
                 console.error('[PUSH] Invite error:', err);
             }
+        } else {
+            console.log(`[INVITE] Target ${stringFriendId} OFFLINE or not registered`);
         }
     });
 
