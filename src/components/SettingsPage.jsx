@@ -54,184 +54,138 @@ export default function SettingsPage({ onViewChangelog }) {
         window.open('https://forms.gle/hui2vDfc4XKpcbGt7', '_blank');
     };
 
-    return (
-        <div className="space-y-4 pb-20">
-            {/* Header */}
-            <div className="text-center mb-6">
-                <h1 className="text-2xl font-bold text-slate-100">⚙️ Réglages</h1>
-                <p className="text-sm text-slate-400 mt-1">Personnalisez votre expérience</p>
+    const PremiumToggle = ({ label, subLabel, icon: Icon, value, onChange, disabled, activeColor = "emerald" }) => (
+        <div className={cn(
+            "flex items-center justify-between p-4 rounded-xl transition-all duration-300 border border-transparent",
+            "bg-white/5 hover:bg-white/10",
+            value ? `border-${activeColor}-500/20 shadow-[0_0_15px_rgba(var(--${activeColor}-500),0.1)]` : "border-white/5"
+        )}>
+            <div className="flex items-center gap-4">
+                <div className={cn(
+                    "p-3 rounded-lg transition-colors",
+                    value ? `bg-${activeColor}-500/20 text-${activeColor}-400` : "bg-slate-800 text-slate-500"
+                )}>
+                    <Icon className="h-6 w-6" />
+                </div>
+                <div>
+                    <p className={cn("font-bold text-base transition-colors", value ? "text-white" : "text-slate-400")}>{label}</p>
+                    <p className="text-xs text-slate-500 font-medium">{subLabel}</p>
+                </div>
             </div>
 
-            {/* Audio Settings */}
-            <Card className="glass-premium dark:glass-dark shadow-xl">
+            <button
+                onClick={onChange}
+                disabled={disabled}
+                className={cn(
+                    "relative w-14 h-8 rounded-full transition-all duration-300 shadow-inner",
+                    value ? `bg-gradient-to-r from-${activeColor}-500 to-${activeColor}-400 shadow-[0_0_10px_rgba(var(--${activeColor}-500),0.5)]` : "bg-slate-700/50 border border-white/10",
+                    disabled && "opacity-50 cursor-not-allowed"
+                )}
+            >
+                <div className={cn(
+                    "absolute top-1 w-6 h-6 bg-white rounded-full shadow-lg transition-all duration-300 flex items-center justify-center",
+                    value ? "left-7 rotate-0" : "left-1 -rotate-180 bg-slate-400"
+                )}>
+                    {value && <div className={`w-1.5 h-1.5 rounded-full bg-${activeColor}-500 animate-pulse`} />}
+                </div>
+            </button>
+        </div>
+    );
+
+    return (
+        <div className="space-y-6 pb-32 animate-in fade-in zoom-in-95 duration-700">
+            {/* Hero Header */}
+            <div className="relative text-center py-8">
+                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-20 bg-blue-500/10 blur-3xl rounded-full pointer-events-none" />
+                <h1 className="relative text-4xl font-black text-white drop-shadow-lg tracking-tight flex items-center justify-center gap-3">
+                    <Settings className="w-8 h-8 text-skyjo-blue animate-spin-slow-reverse" />
+                    RÉGLAGES
+                </h1>
+                <p className="relative text-sm text-sky-200/60 font-medium uppercase tracking-widest mt-2">
+                    Personnalisez votre expérience
+                </p>
+            </div>
+
+            {/* Audio Section */}
+            <Card className="glass-premium border-white/10 overflow-hidden relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-slate-100">
-                        <Settings className="h-5 w-5 text-blue-400" />
-                        Paramètres généraux
+                    <CardTitle className="flex items-center gap-3 text-white text-xl">
+                        <div className="h-1 w-1 bg-blue-400 rounded-full shadow-[0_0_10px_#60a5fa]" />
+                        Immersion & Audio
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    {/* Music Toggle */}
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                        <div className="flex items-center gap-3">
-                            {musicEnabled ? (
-                                <Music className="h-5 w-5 text-emerald-400" />
-                            ) : (
-                                <Music2 className="h-5 w-5 text-slate-500" />
-                            )}
-                            <div>
-                                <p className="font-medium text-slate-200">Musique de fond</p>
-                                <p className="text-xs text-slate-400">Musique lofi pendant les parties</p>
-                            </div>
-                        </div>
+                <CardContent className="space-y-3 relative z-10">
+                    <PremiumToggle
+                        label="Musique Lofi"
+                        subLabel="Ambiance chill pour se concentrer"
+                        icon={musicEnabled ? Music : Music2}
+                        value={musicEnabled}
+                        onChange={toggleMusic}
+                        activeColor="emerald"
+                    />
+                    <PremiumToggle
+                        label="Effets Sonores"
+                        subLabel="Bruitages de cartes et victoires"
+                        icon={soundEnabled ? Volume2 : VolumeX}
+                        value={soundEnabled}
+                        onChange={toggleSound}
+                        activeColor="sky"
+                    />
+                    <PremiumToggle
+                        label="Vibrations"
+                        subLabel="Retours haptiques au toucher"
+                        icon={Smartphone}
+                        value={vibrationEnabled}
+                        onChange={toggleVibration}
+                        activeColor="purple"
+                    />
+                </CardContent>
+            </Card>
+
+            {/* Notifications & Social */}
+            <Card className="glass-premium border-white/10">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-3 text-white text-xl">
+                        <div className="h-1 w-1 bg-amber-400 rounded-full shadow-[0_0_10px_#fbbf24]" />
+                        Social & Système
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    <PremiumToggle
+                        label="Notifications Push"
+                        subLabel="Invitations et mises à jour"
+                        icon={pushSubscription ? Bell : BellOff}
+                        value={!!pushSubscription}
+                        onChange={handleTogglePush}
+                        disabled={isPushLoading}
+                        activeColor="amber"
+                    />
+
+                    {/* Buttons Grid */}
+                    <div className="grid grid-cols-2 gap-3 mt-2">
                         <button
-                            onClick={toggleMusic}
-                            className={cn(
-                                "relative w-14 h-8 rounded-full transition-all duration-300",
-                                musicEnabled
-                                    ? "bg-gradient-to-r from-emerald-500 to-teal-500"
-                                    : "bg-slate-600"
-                            )}
+                            onClick={onViewChangelog}
+                            className="flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 hover:border-emerald-500/40 active:scale-95 transition-all group relative overflow-hidden"
                         >
-                            <span
-                                className={cn(
-                                    "absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300",
-                                    musicEnabled ? "left-7" : "left-1"
-                                )}
-                            />
+                            <div className="p-3 bg-emerald-500/20 rounded-full mb-2 group-hover:scale-110 transition-transform">
+                                <Sparkles className="w-5 h-5 text-emerald-400" />
+                            </div>
+                            <span className="font-bold text-emerald-100">Nouveautés</span>
+                            <span className="text-[10px] text-emerald-400/60 uppercase tracking-widest mt-1">v2.0.0</span>
+                        </button>
+
+                        <button
+                            onClick={() => setIsTutorialOpen(true)}
+                            className="flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-sky-500/10 to-blue-500/10 border border-sky-500/20 hover:border-sky-500/40 active:scale-95 transition-all group"
+                        >
+                            <div className="p-3 bg-sky-500/20 rounded-full mb-2 group-hover:scale-110 transition-transform">
+                                <HelpCircle className="w-5 h-5 text-sky-400" />
+                            </div>
+                            <span className="font-bold text-sky-100">Guide Jeu</span>
+                            <span className="text-[10px] text-sky-400/60 uppercase tracking-widest mt-1">Relire</span>
                         </button>
                     </div>
-
-                    {/* Sound Effects Toggle */}
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                        <div className="flex items-center gap-3">
-                            {soundEnabled ? (
-                                <Volume2 className="h-5 w-5 text-emerald-400" />
-                            ) : (
-                                <VolumeX className="h-5 w-5 text-slate-500" />
-                            )}
-                            <div>
-                                <p className="font-medium text-slate-200">Bruitages</p>
-                                <p className="text-xs text-slate-400">Sons de jeu (victoire, cartes...)</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={toggleSound}
-                            className={cn(
-                                "relative w-14 h-8 rounded-full transition-all duration-300",
-                                soundEnabled
-                                    ? "bg-gradient-to-r from-emerald-500 to-teal-500"
-                                    : "bg-slate-600"
-                            )}
-                        >
-                            <span
-                                className={cn(
-                                    "absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300",
-                                    soundEnabled ? "left-7" : "left-1"
-                                )}
-                            />
-                        </button>
-                    </div>
-                    {/* Vibration Toggle */}
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                        <div className="flex items-center gap-3">
-                            <Smartphone className={cn("h-5 w-5", vibrationEnabled ? "text-emerald-400" : "text-slate-500")} />
-                            <div>
-                                <p className="font-medium text-slate-200">Vibrations</p>
-                                <p className="text-xs text-slate-400">Retour haptique lors des actions</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={toggleVibration}
-                            className={cn(
-                                "relative w-14 h-8 rounded-full transition-all duration-300",
-                                vibrationEnabled
-                                    ? "bg-gradient-to-r from-emerald-500 to-teal-500"
-                                    : "bg-slate-600"
-                            )}
-                        >
-                            <span
-                                className={cn(
-                                    "absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300",
-                                    vibrationEnabled ? "left-7" : "left-1"
-                                )}
-                            />
-                        </button>
-                    </div>
-
-                    {/* Notifications Push Toggle */}
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                        <div className="flex items-center gap-3">
-                            {pushSubscription ? (
-                                <Bell className="h-5 w-5 text-emerald-400" />
-                            ) : (
-                                <BellOff className="h-5 w-5 text-slate-500" />
-                            )}
-                            <div>
-                                <p className="font-medium text-slate-200">Notifications Push</p>
-                                <p className="text-xs text-slate-400">Invitations aux parties en ligne</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={handleTogglePush}
-                            disabled={isPushLoading}
-                            className={cn(
-                                "relative w-14 h-8 rounded-full transition-all duration-300",
-                                pushSubscription
-                                    ? "bg-gradient-to-r from-emerald-500 to-teal-500"
-                                    : "bg-slate-600",
-                                isPushLoading && "opacity-50 cursor-wait"
-                            )}
-                        >
-                            <span
-                                className={cn(
-                                    "absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300",
-                                    pushSubscription ? "left-7" : "left-1"
-                                )}
-                            />
-                        </button>
-                    </div>
-
-                    {/* Changelog */}
-                    <button
-                        onClick={onViewChangelog}
-                        className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 active:scale-[0.98] transition-all group border border-white/5 hover:border-emerald-500/30"
-                    >
-                        <div className="flex items-center gap-3 text-left">
-                            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
-                                <Sparkles className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <p className="font-bold text-slate-200">Nouveautés</p>
-                                <p className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">Découvrir les mises à jour</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                            <div className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-black tracking-widest uppercase border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white transition-all">
-                                Voir
-                            </div>
-                        </div>
-                    </button>
-
-                    {/* Tutorial Replay */}
-                    <button
-                        onClick={() => setIsTutorialOpen(true)}
-                        className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 active:scale-[0.98] transition-all group border border-white/5 hover:border-sky-500/30"
-                    >
-                        <div className="flex items-center gap-3 text-left">
-                            <div className="p-2 rounded-lg bg-sky-500/10 text-sky-400 group-hover:bg-sky-500/20 transition-colors">
-                                <HelpCircle className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <p className="font-bold text-slate-200">Règles du jeu</p>
-                                <p className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">Revoir le guide interactif</p>
-                            </div>
-                        </div>
-                        <div className="px-3 py-1 rounded-full bg-sky-500/10 text-sky-400 text-[10px] font-black tracking-widest uppercase border border-sky-500/20 group-hover:bg-sky-500 group-hover:text-white transition-all">
-                            Voir
-                        </div>
-                    </button>
                 </CardContent>
             </Card>
 

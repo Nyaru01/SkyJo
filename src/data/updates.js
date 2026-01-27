@@ -14,6 +14,8 @@ export const UPDATES = [
             { text: "Notifications push pour les invitations", type: "feat" },
             { text: "Nouveau mode 'En Ligne' ultra-stable avec PostgreSQL", type: "feat" },
             { text: "Refonte complète de l'écran d'accueil (Dashboard)", type: "improve" },
+            { text: "Nouvelle barre de navigation flottante style iOS", type: "improve" },
+            { text: "Page de réglages repensée avec nouveaux switchs", type: "improve" },
             { text: "Interface 'Glassmorphism' modernisée", type: "improve" },
             { text: "Ambiance sonore immersive & retours haptiques", type: "improve" },
             { text: "Tutoriel interactif corrigé et amélioré", type: "feat" }
