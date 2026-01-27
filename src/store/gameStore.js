@@ -379,6 +379,7 @@ export const useGameStore = create(
         }),
         {
             name: 'skyjo-storage',
+            version: 2, // Force migration to fix potential state issues
         }
     )
 );

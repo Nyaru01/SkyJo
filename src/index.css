@@ -71,9 +71,25 @@ body::before {
 }
 
 /* Mobile optimizations */
-button {
+button,
+a,
+label,
+input {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* PWA specific: Prevent selection by default */
+body.pwa {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Allow selection explicitly where needed */
+.allow-pwa-select,
+.allow-pwa-select * {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

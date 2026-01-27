@@ -92,10 +92,10 @@ export default function Dashboard() {
     }, [syncProfileWithBackend]);
 
     useEffect(() => {
-        if (achievements.length > 0) {
+        if (achievements && achievements.length > 0) {
             playAchievement();
         }
-    }, [achievements.length, playAchievement]);
+    }, [achievements?.length, playAchievement]);
 
     // Auto-switch to 'game' tab when the game starts
     useEffect(() => {
