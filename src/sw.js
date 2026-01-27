@@ -7,9 +7,15 @@ precacheAndRoute(self.__WB_MANIFEST);
 // Cleanup old caches
 cleanupOutdatedCaches();
 
-// Take control immediately
-self.skipWaiting();
+// Allow headers to take control immediately
 clientsClaim();
+
+// Handle SKIP_WAITING message for user-prompted updates
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
 
 /**
  * Handle Push Notifications

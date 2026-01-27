@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, ChevronLeft, HelpCircle, Info, Sparkles, Target, Zap } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, HelpCircle, Info, Sparkles, Target, Zap, ArrowRight } from 'lucide-react';
 import { Button } from './ui/Button';
 import SkyjoCard from './virtual/SkyjoCard';
 
@@ -79,7 +79,7 @@ const STEPS = [
     },
     {
         title: "Le Combo Parfait",
-        description: "Ma botte secrète : alignez 3 cartes identiques verticalement et toute la colonne disparaît (vaut 0 points).",
+        description: "Alignez 3 cartes identiques verticalement et toute la colonne disparaît (vaut 0 points).",
         icon: Zap,
         color: "text-emerald-400",
         bg: "bg-emerald-400/10",
@@ -109,26 +109,30 @@ const STEPS = [
     },
     {
         title: "Attention au Final",
-        description: "Dès qu'un joueur finit sa grille, la manche s'arrête. Si ce joueur n'a pas le score le plus bas, son score DOUBLERA ! Soyez prudent.",
+        description: "Dès qu'un joueur retourne sa dernière carte, les autres jouent un dernier tour, puis toutes les cartes sont révélées. Si le finisseur n'a pas le score le plus bas, son score DOUBLE !",
         icon: HelpCircle,
         color: "text-rose-500",
         bg: "bg-rose-500/10",
         content: (
             <div className="text-center py-4 space-y-4">
-                <div className="relative inline-block">
-                    <div className="text-4xl font-black text-white opacity-20">15</div>
-                    <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1.2 }}
-                        className="absolute inset-0 flex items-center justify-center text-red-500 font-black text-5xl"
-                    >
-                        30
-                    </motion.div>
-                    <div className="absolute -top-4 -right-8 bg-red-600 text-[8px] font-black px-2 py-1 rounded-full text-white animate-bounce tracking-tighter">
-                        X2 PENALTY
+                <div className="flex items-center justify-center gap-4">
+                    <div className="text-3xl font-bold text-slate-500 line-through decoration-red-500/50">15</div>
+                    <ArrowRight className="text-white opacity-50 w-6 h-6" />
+                    <div className="relative">
+                        <motion.div
+                            initial={{ scale: 0.5, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.2 }}
+                            className="text-5xl font-black text-red-500"
+                        >
+                            30
+                        </motion.div>
+                        <div className="absolute -top-4 -right-8 bg-black/50 text-[10px] font-bold px-2 py-0.5 rounded-full text-red-400 border border-red-500/30 tracking-tight whitespace-nowrap">
+                            x2 PENALTY
+                        </div>
                     </div>
                 </div>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Ne finissez pas trop vite !</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Ne finissez pas trop vite !</p>
             </div>
         )
     }
