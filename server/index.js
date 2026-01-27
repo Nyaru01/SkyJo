@@ -419,16 +419,22 @@ io.on('connection', (socket) => {
         socket.join(roomCode);
         socket.emit('room_created', roomCode);
 
-        // ATOMIC INVITE: If autoInviteFriendId is provided, send invitation immediately
+        // ATOMIC INVITE: If autoInviteFriendId is provided, send invitation after a short delay
         if (autoInviteFriendId) {
             const stringFriendId = String(autoInviteFriendId);
-            const sockets = userStatus.get(stringFriendId);
-            console.log(`[ATOMIC INVITE] Auto-inviting ${stringFriendId} to room ${roomCode}`);
-            if (sockets && sockets.size > 0) {
-                sockets.forEach(socketId => {
-                    io.to(socketId).emit('game_invitation', { fromName: playerName, roomCode });
-                });
-            }
+            setTimeout(() => {
+                const sockets = userStatus.get(stringFriendId);
+                if (sockets && sockets.size > 0) {
+                    console.log(`[ATOMIC INVITE] Sending to ${stringFriendId} (${sockets.size} sockets)`);
+                    sockets.forEach(socketId => {
+                        io.to(socketId).emit('game_invitation', { fromName: playerName, roomCode });
+                    });
+                    socket.emit('invitation_sent', { friendId: stringFriendId });
+                } else {
+                    console.log(`[ATOMIC INVITE] Failed: ${stringFriendId} is OFFLINE`);
+                    socket.emit('invitation_failed', { reason: 'OFFLINE', friendId: stringFriendId });
+                }
+            }, 500); // 500ms grace for recipient to be ready
         }
 
         io.to(roomCode).emit('player_list_update', rooms.get(roomCode).players);
@@ -563,10 +569,16 @@ io.on('connection', (socket) => {
                     // GRACE PERIOD: Wait 4 seconds before marking OFFLINE
                     console.log(`[PRESENCE] Starting 4s grace period for ${stringId}`);
                     const timer = setTimeout(() => {
-                        userStatus.delete(stringId);
-                        userMetadata.delete(stringId);
-                        io.emit('user_presence_update', { userId: stringId, status: 'OFFLINE' });
-                        console.log(`[USER] Offline (Timeout): ${stringId}`);
+                        // ULTIMATE CHECK: Did they really stay disconnected?
+                        const currentSockets = userStatus.get(stringId);
+                        if (!currentSockets || currentSockets.size === 0) {
+                            userStatus.delete(stringId);
+                            userMetadata.delete(stringId);
+                            io.emit('user_presence_update', { userId: stringId, status: 'OFFLINE' });
+                            console.log(`[USER] Offline (Confirmed): ${stringId}`);
+                        } else {
+                            console.log(`[USER] Offline cancelled for ${stringId} (Active sockets: ${currentSockets.size})`);
+                        }
                         pendingDisconnections.delete(stringId);
                     }, 4000);
                     pendingDisconnections.set(stringId, timer);

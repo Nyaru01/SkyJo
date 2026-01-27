@@ -101,6 +101,26 @@ export const useOnlineGameStore = create((set, get) => ({
                 });
             });
 
+            socket.on('invitation_sent', () => {
+                set({
+                    lastNotification: {
+                        type: 'success',
+                        message: "🚀 Invitation envoyée !",
+                        timestamp: Date.now()
+                    }
+                });
+            });
+
+            socket.on('invitation_failed', ({ reason }) => {
+                set({
+                    lastNotification: {
+                        type: 'error',
+                        message: reason === 'OFFLINE' ? "👤 L'ami est hors ligne" : "❌ Échec de l'invitation",
+                        timestamp: Date.now()
+                    }
+                });
+            });
+
             socket.on('player_list_update', (players) => {
                 console.log('[Socket] Player list update:', players);
                 // Check if we became host
