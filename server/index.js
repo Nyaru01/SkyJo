@@ -118,11 +118,12 @@ app.get('/api/social/search', async (req, res) => {
 
         // Inject real-time status
         const searchResultsWithStatus = result.rows.map(u => {
-            const status = userStatus.get(String(u.id));
+            const sockets = userStatus.get(String(u.id));
+            const metadata = userMetadata.get(String(u.id));
             return {
                 ...u,
-                isOnline: !!status,
-                currentStatus: status?.status || 'OFFLINE'
+                isOnline: sockets && sockets.size > 0,
+                currentStatus: metadata?.status || 'OFFLINE'
             };
         });
 
@@ -144,11 +145,12 @@ app.get('/api/social/friends/:userId', async (req, res) => {
 
         // Inject real-time status from memory
         const friendsWithStatus = result.rows.map(f => {
-            const status = userStatus.get(String(f.id));
+            const sockets = userStatus.get(String(f.id));
+            const metadata = userMetadata.get(String(f.id));
             return {
                 ...f,
-                isOnline: !!status,
-                currentStatus: status?.status || 'OFFLINE'
+                isOnline: sockets && sockets.size > 0,
+                currentStatus: metadata?.status || 'OFFLINE'
             };
         });
 
@@ -167,10 +169,13 @@ app.post('/api/social/friends/request', async (req, res) => {
             ON CONFLICT DO NOTHING
         `, [userId, friendId]);
 
-        // Real-time notification
-        const friend = userStatus.get(String(friendId));
-        if (friend) {
-            io.to(friend.socketId).emit('friend_request', { fromUserId: userId });
+        // Real-time notification for recipient
+        const friendSockets = userStatus.get(String(friendId));
+        if (friendSockets && friendSockets.size > 0) {
+            friendSockets.forEach(socketId => {
+                io.to(socketId).emit('friend_request', { fromUserId: userId });
+                io.to(socketId).emit('presence_refresh');
+            });
         }
 
         res.json({ status: 'sent' });
@@ -187,11 +192,11 @@ app.post('/api/social/friends/accept', async (req, res) => {
             WHERE (user_id = $1 AND friend_id = $2) OR (user_id = $2 AND friend_id = $1)
         `, [userId, friendId]);
 
-        // Refresh lists for both
+        // Refresh lists for both sides immediately
         [userId, friendId].forEach(id => {
-            const user = userStatus.get(String(id));
-            if (user) {
-                io.to(user.socketId).emit('presence_refresh');
+            const sockets = userStatus.get(String(id));
+            if (sockets) {
+                sockets.forEach(socketId => io.to(socketId).emit('presence_refresh'));
             }
         });
 
@@ -223,11 +228,13 @@ app.get('/api/social/leaderboard/global', async (req, res) => {
 
         // Inject real-time status
         const usersWithStatus = result.rows.map(u => {
-            const status = userStatus.get(String(u.id));
+            const userId = String(u.id);
+            const sockets = userStatus.get(userId);
+            const metadata = userMetadata.get(userId);
             return {
                 ...u,
-                isOnline: !!status,
-                currentStatus: status?.status || 'OFFLINE'
+                isOnline: sockets && sockets.size > 0,
+                currentStatus: metadata?.status || 'OFFLINE'
             };
         });
 
@@ -252,11 +259,13 @@ app.get('/api/social/leaderboard/:userId', async (req, res) => {
 
         // Inject real-time status
         const usersWithStatus = result.rows.map(u => {
-            const status = userStatus.get(String(u.id));
+            const userId = String(u.id);
+            const sockets = userStatus.get(userId);
+            const metadata = userMetadata.get(userId);
             return {
                 ...u,
-                isOnline: !!status,
-                currentStatus: status?.status || 'OFFLINE'
+                isOnline: sockets && sockets.size > 0,
+                currentStatus: metadata?.status || 'OFFLINE'
             };
         });
 
@@ -301,7 +310,8 @@ const io = new Server(httpServer, {
 });
 
 const rooms = new Map();
-const userStatus = new Map(); // userId -> { socketId, status: 'ONLINE' | 'IN_GAME' }
+const userStatus = new Map(); // userId -> Set of socketIds
+const userMetadata = new Map(); // userId -> { status: 'ONLINE' | 'IN_GAME' }
 
 const getPublicRooms = () => {
     const publicRooms = [];
@@ -351,10 +361,8 @@ const startNextRoundForRoom = (roomCode, room, ioInstance) => {
         // Return players to 'ONLINE' status
         room.players.forEach(p => {
             const stringId = String(p.dbId);
-            if (userStatus.has(stringId)) {
-                userStatus.set(stringId, { ...userStatus.get(stringId), status: 'ONLINE' });
-                io.emit('user_presence_update', { userId: stringId, status: 'ONLINE' });
-            }
+            userMetadata.set(stringId, { status: 'ONLINE' });
+            io.emit('user_presence_update', { userId: stringId, status: 'ONLINE' });
         });
     } else {
         room.roundNumber++;
@@ -372,9 +380,19 @@ io.on('connection', (socket) => {
     socket.on('register_user', ({ id, name, emoji, vibeId }) => {
         const stringId = String(id);
         socket.dbId = stringId;
-        userStatus.set(stringId, { socketId: socket.id, status: 'ONLINE' });
+
+        // Add current socket to user's socket pool
+        if (!userStatus.has(stringId)) {
+            userStatus.set(stringId, new Set());
+        }
+        userStatus.get(stringId).add(socket.id);
+
+        // Update metadata
+        userMetadata.set(stringId, { status: 'ONLINE' });
+
+        // Broadcast presence update
         io.emit('user_presence_update', { userId: stringId, status: 'ONLINE' });
-        console.log(`[USER] Registered: ${name} (${stringId})`);
+        console.log(`[USER] Registered: ${name} (${stringId}) with socket ${socket.id}`);
     });
 
     socket.on('create_room', ({ playerName, emoji, dbId }) => {
@@ -422,7 +440,7 @@ io.on('connection', (socket) => {
         room.players.forEach(p => {
             if (p.dbId) {
                 const stringId = String(p.dbId);
-                userStatus.set(stringId, { ...userStatus.get(stringId), status: 'IN_GAME' });
+                userMetadata.set(stringId, { status: 'IN_GAME' });
                 io.emit('user_presence_update', { userId: stringId, status: 'IN_GAME' });
             }
         });
@@ -485,9 +503,11 @@ io.on('connection', (socket) => {
 
     socket.on('invite_friend', async ({ friendId, roomCode, fromName }) => {
         const stringFriendId = String(friendId);
-        const friend = userStatus.get(stringFriendId);
-        if (friend) {
-            io.to(friend.socketId).emit('game_invitation', { fromName, roomCode });
+        const sockets = userStatus.get(stringFriendId);
+        if (sockets && sockets.size > 0) {
+            sockets.forEach(socketId => {
+                io.to(socketId).emit('game_invitation', { fromName, roomCode });
+            });
 
             // Try Push Notification
             try {
@@ -510,8 +530,17 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         if (socket.dbId) {
             const stringId = String(socket.dbId);
-            userStatus.delete(stringId);
-            io.emit('user_presence_update', { userId: stringId, status: 'OFFLINE' });
+            const sockets = userStatus.get(stringId);
+            if (sockets) {
+                sockets.delete(socket.id);
+                console.log(`[USER] Socket detached: ${socket.id} from ${stringId}. Remaining: ${sockets.size}`);
+                if (sockets.size === 0) {
+                    userStatus.delete(stringId);
+                    userMetadata.delete(stringId);
+                    io.emit('user_presence_update', { userId: stringId, status: 'OFFLINE' });
+                    console.log(`[USER] Offline: ${stringId}`);
+                }
+            }
         }
         for (const [roomCode, room] of rooms.entries()) {
             const playerIndex = room.players.findIndex(p => p.id === socket.id);

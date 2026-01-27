@@ -112,6 +112,7 @@ export default function Dashboard() {
             const { registerUser } = useSocialStore.getState();
 
             if (profile?.id && socket?.connected) {
+                console.log('[PRESENCE] Global registration triggered for:', profile.name);
                 registerUser(profile.id, profile.name, profile.emoji, profile.vibeId);
             }
         };
@@ -124,7 +125,16 @@ export default function Dashboard() {
         return () => {
             if (socket) socket.off('connect', handleRegistration);
         };
-    }, [userProfile?.id]); // Watch for profile ID changes too!
+    }, [userProfile?.id]); // Watch for profile ID changes!
+
+    // Extra safety: re-register if isConnected changes in store
+    const isConnected = useOnlineGameStore(state => state.isConnected);
+    useEffect(() => {
+        if (isConnected && userProfile?.id) {
+            const { registerUser } = useSocialStore.getState();
+            registerUser(userProfile.id, userProfile.name, userProfile.emoji, userProfile.vibeId);
+        }
+    }, [isConnected, userProfile?.id]);
 
     // Auto-switch to 'game' tab when the game starts
     useEffect(() => {

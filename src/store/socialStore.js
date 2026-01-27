@@ -62,6 +62,9 @@ export const useSocialStore = create((set, get) => ({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, friendId })
             });
+            if (res.ok) {
+                get().fetchFriends(userId);
+            }
             return res.ok;
         } catch (err) {
             console.error('[SOCIAL] Request error:', err);
