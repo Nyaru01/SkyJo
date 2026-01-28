@@ -10,7 +10,7 @@ export function VersionCheck() {
     useEffect(() => {
         const checkVersion = async () => {
             try {
-                const res = await fetch('/api/version');
+                const res = await fetch(`/api/version?t=${Date.now()}`);
                 if (!res.ok) return;
                 const data = await res.json();
 
