@@ -40,10 +40,23 @@ export const pushManager = {
             // Get VAPID public key from server or env
             // For now we'll try to get it from a global or a default if not provided
             // In a real app, you might fetch it from /api/push/key
-            const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+            let vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+
+            // Fallback: Fetch from server if not in env (e.g., in production via Railway)
+            if (!vapidPublicKey) {
+                try {
+                    const res = await fetch('/api/config/vapid');
+                    if (res.ok) {
+                        const data = await res.json();
+                        vapidPublicKey = data.key;
+                    }
+                } catch (err) {
+                    console.error('[PUSH] Failed to fetch VAPID key from server:', err);
+                }
+            }
 
             if (!vapidPublicKey) {
-                console.error('[PUSH] No VAPID public key found in environment');
+                console.error('[PUSH] No VAPID public key found in environment or server config');
                 return null;
             }
 

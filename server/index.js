@@ -141,6 +141,14 @@ initDb();
 const vapidPublic = process.env.VITE_VAPID_PUBLIC_KEY || process.env.VAPID_PUBLIC_KEY;
 const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
 
+// Endpoint to expose VAPID public key to client
+app.get('/api/config/vapid', (req, res) => {
+    if (!vapidPublic) {
+        return res.status(500).json({ error: 'VAPID public key not configured' });
+    }
+    res.json({ key: vapidPublic });
+});
+
 if (vapidPublic && vapidPrivate) {
     webpush.setVapidDetails(
         'mailto:nyaru@skyjo.offline',
@@ -288,7 +296,8 @@ app.get('/api/social/friends/:userId', async (req, res) => {
 
         res.json(friendsWithStatus);
     } catch (err) {
-        res.status(500).json({ error: 'Fetch friends failed' });
+        console.error('[API] Fetch friends failed:', err);
+        res.status(500).json({ error: 'Fetch friends failed', details: err.message });
     }
 });
 
@@ -372,7 +381,8 @@ app.get('/api/social/leaderboard/global', async (req, res) => {
 
         res.json(usersWithStatus);
     } catch (err) {
-        res.status(500).json({ error: 'Leaderboard failed' });
+        console.error('[API] Global Leaderboard failed:', err);
+        res.status(500).json({ error: 'Leaderboard failed', details: err.message });
     }
 });
 
@@ -403,7 +413,8 @@ app.get('/api/social/leaderboard/:userId', async (req, res) => {
 
         res.json(usersWithStatus);
     } catch (err) {
-        res.status(500).json({ error: 'Friend leaderboard failed' });
+        console.error('[API] Friend Leaderboard failed:', err);
+        res.status(500).json({ error: 'Friend leaderboard failed', details: err.message });
     }
 });
 
