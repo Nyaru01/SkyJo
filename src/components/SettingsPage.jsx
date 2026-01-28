@@ -25,12 +25,10 @@ export default function SettingsPage({ onViewChangelog }) {
     const [pushSubscription, setPushSubscription] = useState(null);
     const [isPushLoading, setIsPushLoading] = useState(false);
 
-    // New Feature States
-    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+    const userProfile = useGameStore(state => state.userProfile);
+    const setIsFeedbackOpen = useGameStore(state => state.setIsFeedbackOpen);
     const [isAdminOpen, setIsAdminOpen] = useState(false);
     const [adminAuthToken, setAdminAuthToken] = useState(null);
-
-    const userProfile = useGameStore(state => state.userProfile);
 
     // Initial check for push subscription
     useState(() => {
@@ -282,11 +280,6 @@ export default function SettingsPage({ onViewChangelog }) {
             />
 
             {/* Modals */}
-            <FeedbackModal
-                isOpen={isFeedbackOpen}
-                onClose={() => setIsFeedbackOpen(false)}
-                username={userProfile?.name}
-            />
 
             {isAdminOpen && (
                 <AdminDashboard

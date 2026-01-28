@@ -24,6 +24,7 @@ import Changelog from './Changelog';
 import GameMenu from './GameMenu';
 import { useBackgroundMusic } from '../hooks/useBackgroundMusic';
 import { useSocialStore } from '../store/socialStore';
+import { FeedbackModal } from './FeedbackModal';
 
 // Variants d'animation pour les transitions de pages
 const pageVariants = {
@@ -60,6 +61,8 @@ export default function Dashboard() {
     const generateSkyId = useGameStore(state => state.generateSkyId);
     const runMigration = useGameStore(state => state.runMigration);
     const migratedToV2 = useGameStore(state => state.migratedToV2);
+    const isFeedbackOpen = useGameStore(state => state.isFeedbackOpen);
+    const setIsFeedbackOpen = useGameStore(state => state.setIsFeedbackOpen);
     const { playAchievement } = useFeedback();
 
     const virtualGameState = useVirtualGameStore(state => state.gameState);
@@ -574,6 +577,12 @@ export default function Dashboard() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <FeedbackModal
+                isOpen={isFeedbackOpen}
+                onClose={() => setIsFeedbackOpen(false)}
+                username={userProfile?.name}
+            />
         </div >
     );
 }
