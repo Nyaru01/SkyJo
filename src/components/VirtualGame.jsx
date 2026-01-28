@@ -1065,7 +1065,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                 <div className="flex items-center justify-between mb-3 px-1">
                                     <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
                                         <Users className="h-4 w-4 text-blue-400" />
-                                        Joueurs ({onlinePlayers.length}/8)
+                                        Joueurs ({onlinePlayers.length}/2)
                                     </h3>
                                     {onlineIsHost && (
                                         <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-1 rounded-full border border-amber-500/30 font-bold">
@@ -1119,7 +1119,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                     ))}
 
                                     {/* Empty slots placeholders */}
-                                    {Array.from({ length: Math.max(0, 4 - onlinePlayers.length) }).map((_, i) => (
+                                    {Array.from({ length: Math.max(0, 2 - onlinePlayers.length) }).map((_, i) => (
                                         <div key={`empty-${i}`} className="p-3 rounded-xl border border-dashed border-white/5 bg-white/5 flex items-center gap-3 opacity-50">
                                             <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
                                                 <Users className="h-5 w-5 text-white/20" />
@@ -1311,7 +1311,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xs text-slate-500 flex items-center gap-1 bg-black/20 px-2 py-1 rounded-full">
                                                         <Users className="h-3 w-3" />
-                                                        {room.playerCount}/8
+                                                        {room.playerCount}/2
                                                     </span>
                                                     <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all" />
                                                 </div>
