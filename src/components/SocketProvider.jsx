@@ -1,14 +1,11 @@
 import React, { createContext, useContext, useEffect, useRef } from 'react';
-import { socket, useOnlineGameStore } from '../store/onlineGameStore';
+import { socket } from '../store/onlineGameStore';
 import { useGameStore } from '../store/gameStore';
 import { useSocialStore } from '../store/socialStore';
 
 const SocketContext = createContext(null);
 
 export function SocketProvider({ children }) {
-    const setSocketId = useOnlineGameStore(state => state.setSocketId);
-    const isConnected = useOnlineGameStore(state => state.isConnected);
-
     // Subscribe to profile changes
     const userProfile = useGameStore(state => state.userProfile);
 
@@ -29,18 +26,21 @@ export function SocketProvider({ children }) {
 
         const handleConnect = () => {
             console.log('[SOCKET] Global Connected:', socket.id);
-            if (socket.id) setSocketId(socket.id);
 
             // Try to register immediately if profile exists
-            const profile = useGameStore.getState().userProfile;
-            console.log('[SOCKET] Profile on connect:', profile?.id, profile?.name);
+            try {
+                const profile = useGameStore.getState().userProfile;
+                console.log('[SOCKET] Profile on connect:', profile?.id, profile?.name);
 
-            if (profile?.id) {
-                console.log('[SOCKET] Registering on connect:', profile.name);
-                useSocialStore.getState().registerUser(profile.id, profile.name, profile.emoji, profile.vibeId);
-                hasRegisteredRef.current = true;
-            } else {
-                console.log('[SOCKET] No profile.id, skipping registration');
+                if (profile?.id) {
+                    console.log('[SOCKET] Registering on connect:', profile.name);
+                    useSocialStore.getState().registerUser(profile.id, profile.name, profile.emoji, profile.vibeId);
+                    hasRegisteredRef.current = true;
+                } else {
+                    console.log('[SOCKET] No profile.id, skipping registration');
+                }
+            } catch (err) {
+                console.error('[SOCKET] Error in handleConnect:', err);
             }
         };
 
@@ -66,7 +66,7 @@ export function SocketProvider({ children }) {
             console.log('[SOCKET] Already connected, calling handleConnect');
             handleConnect();
         }
-    }, [setSocketId]);
+    }, []);
 
     // Effect 2: Register when profile becomes available (if not already registered)
     useEffect(() => {
@@ -79,15 +79,19 @@ export function SocketProvider({ children }) {
 
         if (userProfile?.id && socket.connected && !hasRegisteredRef.current) {
             console.log('[SOCKET] Late registration (profile loaded):', userProfile.name);
-            useSocialStore.getState().registerUser(
-                userProfile.id,
-                userProfile.name,
-                userProfile.emoji,
-                userProfile.vibeId
-            );
-            hasRegisteredRef.current = true;
+            try {
+                useSocialStore.getState().registerUser(
+                    userProfile.id,
+                    userProfile.name,
+                    userProfile.emoji,
+                    userProfile.vibeId
+                );
+                hasRegisteredRef.current = true;
+            } catch (err) {
+                console.error('[SOCKET] Error in late registration:', err);
+            }
         }
-    }, [userProfile?.id, userProfile?.vibeId, isConnected]);
+    }, [userProfile?.id, userProfile?.vibeId]);
 
     return (
         <SocketContext.Provider value={socket}>
