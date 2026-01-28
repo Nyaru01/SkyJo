@@ -122,11 +122,11 @@ export const useOnlineGameStore = create((set, get) => ({
             });
 
             socket.on('player_list_update', (players) => {
-                console.log('[Socket] Player list update:', players);
-                // Check if we became host
-                const { socketId } = get();
-                const me = players.find(p => p.id === socketId);
-                set({ players, isHost: me?.isHost || false });
+                console.log('[Socket] Player list update:', players.length, 'players, my socket.id:', socket.id);
+                // Use socket.id directly - more reliable than state.socketId which may be stale
+                const me = players.find(p => p.id === socket.id);
+                console.log('[Socket] Found me:', me?.name, 'isHost:', me?.isHost);
+                set({ players, isHost: me?.isHost === true });
             });
 
             socket.on('game_started', ({ gameState, totalScores, roundNumber }) => {
