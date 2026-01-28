@@ -603,6 +603,43 @@ io.on('connection', (socket) => {
         }
     });
 
+    const handlePlayerLeave = (socket) => {
+        for (const [roomCode, room] of rooms.entries()) {
+            const playerIndex = room.players.findIndex(p => p.id === socket.id);
+            if (playerIndex !== -1) {
+                const leavingPlayer = room.players[playerIndex];
+                room.players.splice(playerIndex, 1);
+
+                if (room.players.length === 0) {
+                    rooms.delete(roomCode);
+                } else {
+                    let newHostName = null;
+                    // If host left, assign new host
+                    if (leavingPlayer.isHost) {
+                        room.players[0].isHost = true;
+                        newHostName = room.players[0].name;
+                    }
+
+                    io.to(roomCode).emit('player_left', { playerId: socket.id, playerName: leavingPlayer.name, newHost: newHostName });
+                    io.to(roomCode).emit('player_list_update', room.players);
+
+                    if (room.gameStarted && room.players.length < 2) {
+                        room.gameStarted = false;
+                        room.gameState = null;
+                        io.to(roomCode).emit('game_cancelled', { reason: 'Pas assez de joueurs' });
+                    }
+                }
+                io.emit('room_list_update', getPublicRooms());
+                socket.leave(roomCode); // Ensure socket leaves the room channel
+                break;
+            }
+        }
+    };
+
+    socket.on('leave_room', (code) => {
+        handlePlayerLeave(socket);
+    });
+
     socket.on('disconnect', () => {
         if (socket.dbId) {
             const stringId = String(socket.dbId);
@@ -633,26 +670,7 @@ io.on('connection', (socket) => {
                 }
             }
         }
-        for (const [roomCode, room] of rooms.entries()) {
-            const playerIndex = room.players.findIndex(p => p.id === socket.id);
-            if (playerIndex !== -1) {
-                const leavingPlayer = room.players[playerIndex];
-                room.players.splice(playerIndex, 1);
-                if (room.players.length === 0) { rooms.delete(roomCode); }
-                else {
-                    let newHostName = null;
-                    if (leavingPlayer.isHost) { room.players[0].isHost = true; newHostName = room.players[0].name; }
-                    io.to(roomCode).emit('player_left', { playerId: socket.id, playerName: leavingPlayer.name, newHost: newHostName });
-                    io.to(roomCode).emit('player_list_update', room.players);
-                    if (room.gameStarted && room.players.length < 2) {
-                        room.gameStarted = false; room.gameState = null;
-                        io.to(roomCode).emit('game_cancelled', { reason: 'Pas assez de joueurs' });
-                    }
-                }
-                io.emit('room_list_update', getPublicRooms());
-                break;
-            }
-        }
+        handlePlayerLeave(socket);
     });
 });
 
