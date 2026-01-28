@@ -15,11 +15,22 @@ export const useSocialStore = create((set, get) => ({
     leaderboard: [],
     globalLeaderboard: [],
     gameInvitation: null, // { roomCode, fromName }
+    directMessages: {}, // { friendId: [messages] }
+    unreadMessages: {}, // { friendId: count }
+    typingStatus: {}, // { friendId: isTyping }
+    activeChatId: null, // Peer ID for the currently open chat
 
     setSocialNotification: (val) => {
         set({ socialNotification: val });
-        if (val) {
-            setTimeout(() => set({ socialNotification: false }), 5000);
+        // If we set it to false but still have unreads, it should probably stay true
+        // unless it's an explicit cleanup.
+        if (val && !Object.keys(get().unreadMessages).length) {
+            setTimeout(() => {
+                // Only hide if no new unreads came in during the timeout
+                if (!Object.keys(get().unreadMessages).length) {
+                    set({ socialNotification: false });
+                }
+            }, 5000);
         }
     },
     setGameInvitation: (val) => {
@@ -142,29 +153,54 @@ export const useSocialStore = create((set, get) => ({
         }));
     },
 
-    deleteFriend: async (userId, friendId) => {
-        // Optimistic update
-        const previousFriends = get().friends;
-        set(state => ({
-            friends: state.friends.filter(f => String(f.id) !== String(friendId))
-        }));
-
-        try {
-            const res = await fetch('/api/social/friends/delete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: String(userId), friendId: String(friendId) })
-            });
-            if (!res.ok) {
-                // Rollback on failure
-                set({ friends: previousFriends });
-            }
-            return res.ok;
-        } catch (err) {
-            console.error('[SOCIAL] Delete error:', err);
-            set({ friends: previousFriends });
-            return false;
+    setActiveChatId: (friendId) => {
+        set({ activeChatId: friendId });
+        if (friendId) {
+            get().markMessagesAsRead(friendId);
         }
+    },
+
+    markMessagesAsRead: (friendId) => {
+        set(state => {
+            const newUnread = { ...state.unreadMessages };
+            delete newUnread[friendId];
+
+            // Check if any unread messages remain to update global notification
+            const hasUnread = Object.keys(newUnread).length > 0;
+
+            return {
+                unreadMessages: newUnread,
+                socialNotification: hasUnread
+            };
+        });
+    },
+
+    sendPrivateMessage: (toId, text) => {
+        console.log('[CHAT] Sending message to:', toId, text);
+        socket.emit('private_message', { toId, text });
+        // Optimistically add to our own store
+        const fromId = useGameStore.getState().userProfile?.id;
+        if (!fromId) return;
+
+        const msg = {
+            id: Date.now() + Math.random().toString(36).substr(2, 9),
+            fromId,
+            toId: String(toId),
+            text,
+            timestamp: Date.now(),
+            isMe: true
+        };
+
+        set(state => ({
+            directMessages: {
+                ...state.directMessages,
+                [toId]: [...(state.directMessages[toId] || []), msg]
+            }
+        }));
+    },
+
+    setTyping: (toId, isTyping) => {
+        socket.emit('chat_typing', { toId, isTyping });
     }
 }));
 
@@ -186,4 +222,53 @@ socket.on('presence_refresh', () => {
     if (userId) {
         useSocialStore.getState().fetchFriends(userId);
     }
+});
+
+socket.on('private_message', (msg) => {
+    console.log('[CHAT] Received socket message:', msg);
+    const myId = useGameStore.getState().userProfile?.id;
+    const isFromMe = String(msg.fromId) === String(myId);
+    const peerId = isFromMe ? String(msg.toId) : String(msg.fromId);
+    const peerIdStr = String(peerId);
+
+    console.log('[CHAT] Processing message:', { peerIdStr, isFromMe, myId });
+
+    useSocialStore.setState(state => ({
+        directMessages: {
+            ...state.directMessages,
+            [peerIdStr]: [...(state.directMessages[peerIdStr] || []), { ...msg, isMe: isFromMe }]
+        }
+    }));
+
+    if (!isFromMe) {
+        const state = useSocialStore.getState();
+        // If chat with this person is not open, increment unread count
+        if (String(state.activeChatId) !== peerIdStr) {
+            console.log('[CHAT] Unread count increment for:', peerIdStr);
+            useSocialStore.setState(state => ({
+                unreadMessages: {
+                    ...state.unreadMessages,
+                    [peerIdStr]: (state.unreadMessages[peerIdStr] || 0) + 1
+                },
+                socialNotification: true
+            }));
+
+            // Play notification sound (from any component that has access to useFeedback, 
+            // but we can't call hooks here. We'll rely on the Dashboard or Navbar to react to socialNotification)
+            // Wait, I can try to find a way to play sound here or just ensure it's picked up by a component.
+        } else {
+            console.log('[CHAT] Marking as read:', peerIdStr);
+            state.markMessagesAsRead(peerIdStr);
+        }
+    }
+});
+
+socket.on('chat_typing', ({ fromId, isTyping }) => {
+    const state = useSocialStore.getState();
+    useSocialStore.setState({
+        typingStatus: {
+            ...state.typingStatus,
+            [fromId]: isTyping
+        }
+    });
 });

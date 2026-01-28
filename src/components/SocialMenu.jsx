@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, UserPlus, Users, Wifi, WifiOff, Loader2, Check, Edit2, Trash2, Play, Copy, Send, Trophy, Bell } from 'lucide-react';
+import { Search, UserPlus, Users, Wifi, WifiOff, Loader2, Check, Edit2, Trash2, Play, Copy, Send, Trophy, Bell, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { useSocialStore } from '../store/socialStore';
@@ -11,6 +11,7 @@ import { useFeedback } from '../hooks/useFeedback';
 import Leaderboard from './Leaderboard';
 import { useOnlineGameStore } from '../store/onlineGameStore';
 import { pushManager } from '../lib/pushManager';
+import ChatPopup from './ChatPopup';
 
 export default function SocialDashboard(props) {
     const { userProfile, updateUserProfile, generateSkyId } = useGameStore();
@@ -18,7 +19,8 @@ export default function SocialDashboard(props) {
         friends, fetchFriends, searchResults, isSearching,
         searchUsers, sendFriendRequest, acceptFriendRequest,
         clearSearchResults, socialNotification, setSocialNotification,
-        registerUser, inviteFriend, leaderboard, globalLeaderboard, fetchLeaderboard, fetchGlobalLeaderboard
+        registerUser, inviteFriend, leaderboard, globalLeaderboard, fetchLeaderboard, fetchGlobalLeaderboard,
+        activeChatId, setActiveChatId, unreadMessages
     } = useSocialStore();
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -343,31 +345,53 @@ export default function SocialDashboard(props) {
                                                         ) : (
                                                             <>
                                                                 {f.isOnline && f.status === 'ACCEPTED' && (
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        className="h-10 w-10 p-0 text-skyjo-blue hover:bg-skyjo-blue/10 bg-skyjo-blue/5 rounded-full"
-                                                                        onClick={() => {
-                                                                            const onlineRoomCode = useOnlineGameStore.getState().roomCode;
-                                                                            if (onlineRoomCode) {
-                                                                                inviteFriend(f.id, onlineRoomCode, userProfile.name);
-                                                                                playSocialInvite();
-                                                                            } else {
-                                                                                // Auto-create room and invite
-                                                                                useOnlineGameStore.getState().createRoomAndInvite(f.id);
-                                                                                playSocialInvite();
-                                                                            }
-                                                                            // Switch to game tab and set it to lobby
-                                                                            if (props?.setVirtualScreen) {
-                                                                                props.setVirtualScreen('lobby');
-                                                                            }
-                                                                            if (props?.setActiveTab) {
-                                                                                props.setActiveTab('virtual');
-                                                                            }
-                                                                        }}
-                                                                    >
-                                                                        <Send className="w-5 h-5" />
-                                                                    </Button>
+                                                                    <div className="flex gap-1.5">
+                                                                        {/* Chat Button */}
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            className="h-10 w-10 p-0 text-amber-500 hover:bg-amber-500/10 bg-amber-500/5 rounded-full"
+                                                                            onClick={() => {
+                                                                                setActiveChatId(f.id);
+                                                                                playClick();
+                                                                            }}
+                                                                        >
+                                                                            <div className="relative">
+                                                                                <MessageCircle className="w-5 h-5" />
+                                                                                {unreadMessages[f.id] > 0 && (
+                                                                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border border-slate-900 animate-bounce">
+                                                                                        {unreadMessages[f.id]}
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
+                                                                        </Button>
+
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            className="h-10 w-10 p-0 text-skyjo-blue hover:bg-skyjo-blue/10 bg-skyjo-blue/5 rounded-full"
+                                                                            onClick={() => {
+                                                                                const onlineRoomCode = useOnlineGameStore.getState().roomCode;
+                                                                                if (onlineRoomCode) {
+                                                                                    inviteFriend(f.id, onlineRoomCode, userProfile.name);
+                                                                                    playSocialInvite();
+                                                                                } else {
+                                                                                    // Auto-create room and invite
+                                                                                    useOnlineGameStore.getState().createRoomAndInvite(f.id);
+                                                                                    playSocialInvite();
+                                                                                }
+                                                                                // Switch to game tab and set it to lobby
+                                                                                if (props?.setVirtualScreen) {
+                                                                                    props.setVirtualScreen('lobby');
+                                                                                }
+                                                                                if (props?.setActiveTab) {
+                                                                                    props.setActiveTab('virtual');
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            <Send className="w-5 h-5" />
+                                                                        </Button>
+                                                                    </div>
                                                                 )}
 
                                                                 {/* Delete Button */}
@@ -430,6 +454,16 @@ export default function SocialDashboard(props) {
                     </div>
                 )
             }
+
+            {/* Private Chat Popup */}
+            <AnimatePresence>
+                {activeChatId && (
+                    <ChatPopup
+                        friend={friends.find(f => String(f.id) === String(activeChatId))}
+                        onClose={() => setActiveChatId(null)}
+                    />
+                )}
+            </AnimatePresence>
         </div >
     );
 }

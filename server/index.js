@@ -548,45 +548,30 @@ io.on('connection', (socket) => {
         connectionAttempts.set(stringId, attempt);
 
         socket.dbId = stringId;
-        socket.playerName = name; // Attacher le nom pour l'admin
+        socket.playerName = name;
 
-        // --- 2. ZOMBIE CLEANUP ---
-        // If this user already has active sockets, they might be zombies from a crash/refresh
-        const existingSockets = userStatus.get(stringId);
-        if (existingSockets && existingSockets.size > 0) {
-            console.log(`[CLEANUP] Found ${existingSockets.size} existing socket(s) for ${stringId}. Replacing...`);
-            existingSockets.forEach(oldSocketId => {
-                if (oldSocketId !== socket.id) {
-                    io.to(oldSocketId).emit('error', 'Connexion remplacée par un nouvel onglet.');
-                    // Note: We don't force disconnect here to avoid loops, 
-                    // but we'll remove them from our status map.
-                }
-            });
-            // Clear the set for a fresh start
-            existingSockets.clear();
-        }
-
-        socket.dbId = stringId;
-
-        // CLEAR GRACE PERIOD: If user was about to go offline, cancel it
+        // --- 2. MULTI-TAB PRESENCE ---
+        // Cancel any pending disconnection for this user
         if (pendingDisconnections.has(stringId)) {
-            console.log(`[PRESENCE] Cancelling offline timer for ${stringId} (Reconnected)`);
+            console.log(`[PRESENCE] Cancelling offline timer for ${stringId} (Active socket)`);
             clearTimeout(pendingDisconnections.get(stringId));
             pendingDisconnections.delete(stringId);
         }
 
-        // Add current socket to user's socket pool
+        // Ensure user has a socket pool
         if (!userStatus.has(stringId)) {
             userStatus.set(stringId, new Set());
         }
-        userStatus.get(stringId).add(socket.id);
+
+        const pool = userStatus.get(stringId);
+        pool.add(socket.id);
 
         // Update metadata
-        userMetadata.set(stringId, { status: 'ONLINE' });
+        userMetadata.set(stringId, { status: 'ONLINE', lastSeen: Date.now() });
 
         // Broadcast presence update
         io.emit('user_presence_update', { userId: stringId, status: 'ONLINE' });
-        console.log(`[USER] Registered: ${name} (${stringId}). Socket: ${socket.id}. Pool size: ${userStatus.get(stringId).size}`);
+        console.log(`[USER] Registered: ${name} (${stringId}). Socket: ${socket.id}. Pool size: ${pool.size}`);
     });
 
     socket.on('create_room', ({ playerName, emoji, dbId, isPublic = true, autoInviteFriendId }) => {
@@ -789,6 +774,52 @@ io.on('connection', (socket) => {
             }
         }
     };
+
+    socket.on('chat_typing', ({ toId, isTyping }) => {
+        const friendSockets = userStatus.get(String(toId));
+        if (friendSockets) {
+            friendSockets.forEach(socketId => {
+                io.to(socketId).emit('chat_typing', { fromId: socket.dbId, isTyping });
+            });
+        }
+    });
+
+    socket.on('private_message', ({ toId, text }) => {
+        if (!socket.dbId) {
+            console.warn('[CHAT] Message drop: No dbId for sender socket:', socket.id);
+            return;
+        }
+
+        console.log(`[CHAT] Private message from ${socket.dbId} (${socket.playerName}) to ${toId}: ${text}`);
+
+        const msg = {
+            id: Date.now() + Math.random().toString(36).substr(2, 9),
+            fromId: socket.dbId,
+            toId: String(toId),
+            text,
+            timestamp: Date.now()
+        };
+
+        // Send to recipient
+        const recipientSockets = userStatus.get(String(toId));
+        if (recipientSockets && recipientSockets.size > 0) {
+            console.log(`[CHAT] Sending to ${recipientSockets.size} sockets for recipient ${toId}`);
+            recipientSockets.forEach(sid => io.to(sid).emit('private_message', msg));
+        } else {
+            console.warn(`[CHAT] Recipient ${toId} has no active sockets!`);
+        }
+
+        // Send back to sender's other tabs
+        const senderSockets = userStatus.get(socket.dbId);
+        if (senderSockets) {
+            senderSockets.forEach(sid => {
+                if (sid !== socket.id) {
+                    console.log(`[CHAT] Syncing to sender other socket: ${sid}`);
+                    io.to(sid).emit('private_message', msg);
+                }
+            });
+        }
+    });
 
     socket.on('leave_room', (code) => {
         handlePlayerLeave(socket);

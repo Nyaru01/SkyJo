@@ -68,7 +68,6 @@ export default function Dashboard() {
     const setIsAdminOpen = useGameStore(state => state.setIsAdminOpen);
     const adminAuthToken = useGameStore(state => state.adminAuthToken);
     const setAdminAuthToken = useGameStore(state => state.setAdminAuthToken);
-    const { playAchievement } = useFeedback();
 
     const virtualGameState = useVirtualGameStore(state => state.gameState);
     const onlineGameStarted = useOnlineGameStore(state => state.gameStarted);
@@ -79,6 +78,9 @@ export default function Dashboard() {
     const gameInvitation = useSocialStore(state => state.gameInvitation);
     const setGameInvitation = useSocialStore(state => state.setGameInvitation);
     const fetchFriends = useSocialStore(state => state.fetchFriends);
+    const unreadCount = useSocialStore(state => Object.values(state.unreadMessages).reduce((a, b) => a + b, 0));
+    const friends = useSocialStore(state => state.friends);
+    const { playClick, playAchievement, playSocialNotify } = useFeedback();
 
     const [activeTab, setActiveTab] = useState('home');
     const [virtualScreen, setVirtualScreen] = useState('menu');
@@ -123,6 +125,12 @@ export default function Dashboard() {
             runMigration();
         }
     }, [syncProfileWithBackend, userProfile.vibeId, generateSkyId, migratedToV2, runMigration]);
+
+    useEffect(() => {
+        if (unreadCount > 0) {
+            playSocialNotify();
+        }
+    }, [unreadCount, playSocialNotify]);
 
     useEffect(() => {
         if (achievements && achievements.length > 0) {
@@ -584,6 +592,35 @@ export default function Dashboard() {
                             >
                                 <X className="h-5 w-5" />
                             </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Global Chat Notification Banner */}
+            <AnimatePresence>
+                {unreadCount > 0 && activeTab !== 'social' && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, scale: 0.9, x: '-50%' }}
+                        animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
+                        exit={{ opacity: 0, scale: 0.8, x: '-50%' }}
+                        onClick={() => setActiveTab('social')}
+                        className="fixed bottom-24 left-1/2 z-[100] bg-amber-500/90 backdrop-blur-xl border border-amber-400/50 rounded-3xl p-4 shadow-2xl flex items-center gap-4 min-w-[320px] max-w-[90vw] cursor-pointer"
+                    >
+                        <div className="w-12 h-12 rounded-2xl bg-amber-500 flex items-center justify-center shadow-lg animate-bounce shrink-0">
+                            <Users className="h-6 w-6 text-white" />
+                        </div>
+                        <div className="flex-1 overflow-hidden">
+                            <p className="text-[10px] text-amber-100 font-black uppercase tracking-widest truncate">Nouveau Message !</p>
+                            <p className="text-white font-bold text-sm">Tu as {unreadCount} message{unreadCount > 1 ? 's' : ''} non lu{unreadCount > 1 ? 's' : ''}</p>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                            <Button
+                                size="sm"
+                                className="rounded-xl bg-white text-amber-600 hover:bg-white/90 font-black text-xs px-4 h-10"
+                            >
+                                Voir
+                            </Button>
                         </div>
                     </motion.div>
                 )}
