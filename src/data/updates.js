@@ -1,58 +1,49 @@
 export const UPDATES = [
     {
-        id: 10,
-        version: "2.2.0",
-        date: "27 Janv. 2026",
-        title: "Social 100% Fiable",
-        description: "Optimisation majeure du système social et de la présence en temps réel.",
+        id: 11,
+        version: "2.0.0",
+        date: "28 Janv. 2026",
+        title: "Skyjo V2 : Le Grand Lancement",
+        description: "L'expérience Skyjo ultime est là. Mode social, persistance Cloud et design ultra-premium.",
         isNew: true,
+        type: "major",
+        changes: [
+            { text: "SkyID : Crée ton identité unique et retrouve tes amis", type: "feat" },
+            { text: "Cloud Sync : Tes niveaux et scores sont désormais sauvegardés en ligne", type: "feat" },
+            { text: "Hub Social : Liste d'amis, classement mondial et invitations en temps réel", type: "feat" },
+            { text: "Feedback Hub : Une nouvelle interface pour nous aider à améliorer le jeu", type: "feat" },
+            { text: "PWA v2 : Icônes modernisées et stabilité de l'application accrue", type: "improve" },
+            { text: "Design Glassmorphism : Une interface plus fluide, sombre et élégante", type: "improve" },
+            { text: "Règles du Jeu : Accès direct aux règles depuis le menu", type: "fix" }
+        ],
+        image: "/premium-bg.jpg"
+    },
+    {
+        id: 10,
+        version: "1.9.5",
+        date: "27 Janv. 2026",
+        title: "Optimisation Sociale",
+        description: "Amélioration de la fiabilité des invitations et de la présence en ligne.",
+        isNew: false,
         type: "minor",
         changes: [
-            { text: "Invitations Atomiques : Envoi instantané via le serveur (fini les invitations fantômes)", type: "feat" },
-            { text: "Gestion Multi-Appareils : Présence stable même avec plusieurs onglets ouverts", type: "improve" },
-            { text: "Auto-SkyID : Génération automatique de l'identifiant pour les nouveaux joueurs", type: "fix" },
-            { text: "Toast Global : Bouton 'Rejoindre' accessible depuis n'importe quel onglet", type: "feat" },
-            { text: "Notifications Sociales : Messages plus clairs et auto-fermeture automatique", type: "improve" }
+            { text: "Invitations Atomiques via serveur", type: "feat" },
+            { text: "Gestion multi-appareils stabilisée", type: "improve" },
+            { text: "Auto-SkyID pour les nouveaux joueurs", type: "fix" }
         ],
         image: "/premium-bg.jpg"
     },
     {
         id: 9,
-        version: "2.1.0",
-        date: "27 Janv. 2026",
+        version: "1.9.0",
+        date: "26 Janv. 2026",
         title: "Stats & UI Premium",
-        description: "Finalisation du design Glassmorphism et refonte complète des statistiques.",
+        description: "Refonte du design et ajout du podium des leaders.",
         isNew: false,
         type: "minor",
         changes: [
-            { text: "Nouvelle page Stats avec Podium interactif", type: "feat" },
-            { text: "Graphiques d'évolution des scores & victoires", type: "feat" },
-            { text: "Historique des parties unifié (Hero Header)", type: "improve" },
-            { text: "Popup de mise à jour style Premium", type: "improve" },
-            { text: "Correction de crashs sur les stats vides", type: "fix" }
-        ],
-        image: "/premium-bg.jpg"
-    },
-    {
-        id: 8,
-        version: "2.0.0",
-        date: "27 Janv. 2026",
-        title: "Skyjo V2 : La Révolution Sociale",
-        description: "Une refonte complète de l'expérience avec de nouvelles fonctionnalités sociales et un design premium.",
-        isNew: false,
-        type: "major",
-        changes: [
-            { text: "Système d'amis et recherche par SkyID", type: "feat" },
-            { text: "Profils personnalisables avec avatars", type: "feat" },
-            { text: "Classements mondiaux et entre amis", type: "feat" },
-            { text: "Notifications push pour les invitations", type: "feat" },
-            { text: "Nouveau mode 'En Ligne' ultra-stable avec PostgreSQL", type: "feat" },
-            { text: "Refonte complète de l'écran d'accueil (Dashboard)", type: "improve" },
-            { text: "Nouvelle barre de navigation flottante style iOS", type: "improve" },
-            { text: "Page de réglages repensée avec nouveaux switchs", type: "improve" },
-            { text: "Interface 'Glassmorphism' modernisée", type: "improve" },
-            { text: "Ambiance sonore immersive & retours haptiques", type: "improve" },
-            { text: "Tutoriel interactif corrigé et amélioré", type: "feat" }
+            { text: "Podium interactif et graphiques d'évolution", type: "feat" },
+            { text: "Historique unifié et Hero Header", type: "improve" }
         ],
         image: "/premium-bg.jpg"
     },

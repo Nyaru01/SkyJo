@@ -47,7 +47,8 @@ const initDb = async () => {
                 vibe_id TEXT UNIQUE,
                 level INTEGER DEFAULT 1,
                 xp INTEGER DEFAULT 0,
-                last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                migrated_to_v2 BOOLEAN DEFAULT FALSE
             );
 
             CREATE TABLE IF NOT EXISTS friends (
@@ -61,6 +62,13 @@ const initDb = async () => {
             CREATE TABLE IF NOT EXISTS push_subscriptions (
                 user_id TEXT PRIMARY KEY REFERENCES users(id),
                 subscription JSONB NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS game_history (
+                id TEXT PRIMARY KEY,
+                user_id TEXT REFERENCES users(id),
+                game_data JSONB NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
             -- Feedback System Tables
@@ -84,6 +92,9 @@ const initDb = async () => {
                 END IF;
                 IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE tablename = 'feedbacks' AND indexname = 'idx_created_at') THEN
                     CREATE INDEX idx_created_at ON feedbacks(created_at DESC);
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE tablename = 'game_history' AND indexname = 'idx_history_user') THEN
+                    CREATE INDEX idx_history_user ON game_history(user_id);
                 END IF;
             END$$;
         `);
@@ -155,6 +166,57 @@ app.get('/api/social/search', async (req, res) => {
         res.json(searchResultsWithStatus);
     } catch (err) {
         res.status(500).json({ error: 'Search failed' });
+    }
+});
+
+// --- Migration API (LocalStorage -> DB) ---
+
+app.post('/api/social/migrate', async (req, res) => {
+    const { userId, profile, history } = req.body;
+
+    if (!userId || !profile) {
+        return res.status(400).json({ error: 'Missing userId or profile' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // 1. Sync Profile & Mark as Migrated
+        await client.query(`
+            INSERT INTO users (id, name, emoji, avatar_id, vibe_id, level, xp, last_seen, migrated_to_v2)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, TRUE)
+            ON CONFLICT (id) DO UPDATE SET
+                name = EXCLUDED.name,
+                emoji = EXCLUDED.emoji,
+                avatar_id = EXCLUDED.avatar_id,
+                vibe_id = EXCLUDED.vibe_id,
+                level = EXCLUDED.level,
+                xp = EXCLUDED.xp,
+                last_seen = CURRENT_TIMESTAMP,
+                migrated_to_v2 = TRUE
+        `, [userId, profile.name, profile.emoji, profile.avatarId, profile.vibeId, profile.level, profile.currentXP]);
+
+        // 2. Sync History (if any)
+        if (history && Array.isArray(history) && history.length > 0) {
+            for (const game of history) {
+                await client.query(`
+                    INSERT INTO game_history (id, user_id, game_data, created_at)
+                    VALUES ($1, $2, $3, $4)
+                    ON CONFLICT (id) DO NOTHING
+                `, [game.id, userId, JSON.stringify(game), game.date]);
+            }
+        }
+
+        await client.query('COMMIT');
+        console.log(`[MIGRATION] User ${userId} successfully migrated (${history?.length || 0} games)`);
+        res.json({ status: 'ok', migratedCount: history?.length || 0 });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('[MIGRATION] Error:', err);
+        res.status(500).json({ error: 'Migration failed' });
+    } finally {
+        client.release();
     }
 });
 
@@ -421,6 +483,9 @@ io.on('connection', (socket) => {
         attempt.count++;
         attempt.lastAttempt = now;
         connectionAttempts.set(stringId, attempt);
+
+        socket.dbId = stringId;
+        socket.playerName = name; // Attacher le nom pour l'admin
 
         // --- 2. ZOMBIE CLEANUP ---
         // If this user already has active sockets, they might be zombies from a crash/refresh

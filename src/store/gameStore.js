@@ -41,6 +41,7 @@ export const useGameStore = create(
             musicEnabled: true,
             vibrationEnabled: true,
             hasSeenTutorial: false,
+            migratedToV2: false, // Flag for LocalStorage -> DB migration
             cardSkin: 'classic', // classic, papyrus
             userProfile: {
                 id: `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -50,6 +51,32 @@ export const useGameStore = create(
                 vibeId: '',
                 level: 1,
                 currentXP: 0
+            },
+
+            // Transition logic for V2
+            runMigration: async () => {
+                const state = get();
+                if (state.migratedToV2) return;
+
+                console.log('[MIGRATION] Starting migration to V2...');
+                try {
+                    const response = await fetch('/api/social/migrate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: state.userProfile.id,
+                            profile: state.userProfile,
+                            history: state.gameHistory
+                        })
+                    });
+
+                    if (response.ok) {
+                        set({ migratedToV2: true });
+                        console.log('[MIGRATION] Successfully moved local data to database.');
+                    }
+                } catch (err) {
+                    console.error('[MIGRATION] Failed to migrate:', err);
+                }
             },
 
             setCardSkin: (skin) => set({ cardSkin: skin }),

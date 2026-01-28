@@ -58,6 +58,8 @@ export default function Dashboard() {
     const playerCardSkin = useGameStore(state => state.cardSkin);
     const setCardSkin = useGameStore(state => state.setCardSkin);
     const generateSkyId = useGameStore(state => state.generateSkyId);
+    const runMigration = useGameStore(state => state.runMigration);
+    const migratedToV2 = useGameStore(state => state.migratedToV2);
     const { playAchievement } = useFeedback();
 
     const virtualGameState = useVirtualGameStore(state => state.gameState);
@@ -101,7 +103,12 @@ export default function Dashboard() {
             generateSkyId();
         }
         syncProfileWithBackend();
-    }, [syncProfileWithBackend, userProfile.vibeId, generateSkyId]);
+
+        // Migration Local -> DB pour la V2
+        if (!migratedToV2) {
+            runMigration();
+        }
+    }, [syncProfileWithBackend, userProfile.vibeId, generateSkyId, migratedToV2, runMigration]);
 
     useEffect(() => {
         if (achievements && achievements.length > 0) {

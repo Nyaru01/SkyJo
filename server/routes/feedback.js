@@ -123,7 +123,7 @@ router.get('/admin/online-users', adminAuth, (req, res) => {
             // In SkyJo implementation, dbId or playerName might be attached
             // Let's inspect what we typically attach
             dbId: socket.dbId || null,
-            username: socket.playerName || 'Anonymous', // We might need to check where we attach this
+            username: socket.playerName || 'Anonyme',
             connectedAt: socket.handshake.time,
             rooms: Array.from(socket.rooms), // List of rooms
         }));

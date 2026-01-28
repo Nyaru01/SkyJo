@@ -14,23 +14,24 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'bg-skyjo.png', 'info_premium.png'],
       manifest: {
-        name: 'Skyjo Score',
+        name: 'Skyjo Score V2',
         short_name: 'SkyjoScore',
-        description: 'Calculateur de score pour Skyjo',
-        theme_color: '#10b981',
+        description: 'Calculateur de score & Hub Social pour Skyjo',
+        version: '2.0.0',
+        theme_color: '#6366f1',
         background_color: '#0f172a',
         display: 'standalone',
         orientation: 'portrait',
         icons: [
           {
-            src: 'virtual-logo.jpg',
+            src: 'pwa-192-v2.png',
             sizes: '192x192',
-            type: 'image/jpeg'
+            type: 'image/png'
           },
           {
-            src: 'virtual-logo.jpg',
+            src: 'pwa-512-v2.png',
             sizes: '512x512',
-            type: 'image/jpeg'
+            type: 'image/png'
           }
         ]
       }

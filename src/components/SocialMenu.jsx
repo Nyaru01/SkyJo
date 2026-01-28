@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, UserPlus, Users, Wifi, WifiOff, Loader2, Check, Edit2, Trash2, Play, Copy, Send, Trophy } from 'lucide-react';
+import { Search, UserPlus, Users, Wifi, WifiOff, Loader2, Check, Edit2, Trash2, Play, Copy, Send, Trophy, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { useSocialStore } from '../store/socialStore';
@@ -10,6 +10,7 @@ import AvatarSelector from './AvatarSelector';
 import { useFeedback } from '../hooks/useFeedback';
 import Leaderboard from './Leaderboard';
 import { useOnlineGameStore } from '../store/onlineGameStore';
+import { pushManager } from '../lib/pushManager';
 
 export default function SocialDashboard(props) {
     const { userProfile, updateUserProfile, generateSkyId } = useGameStore();
@@ -27,7 +28,16 @@ export default function SocialDashboard(props) {
     const [copySuccess, setCopySuccess] = useState(false);
     const [activeTab, setActiveTab] = useState('friends');
     const [leaderboardType, setLeaderboardType] = useState('friends'); // 'friends' or 'global'
+    const [hasNotificationsEnabled, setHasNotificationsEnabled] = useState(true);
     const { playClick, playSocialNotify, playSocialInvite } = useFeedback();
+
+    useEffect(() => {
+        const checkNotifications = async () => {
+            const sub = await pushManager.getSubscription();
+            setHasNotificationsEnabled(!!sub);
+        };
+        checkNotifications();
+    }, []);
 
     useEffect(() => {
         const initSocial = async () => {
@@ -142,6 +152,46 @@ export default function SocialDashboard(props) {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Notification Onboarding Banner */}
+            {!hasNotificationsEnabled && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="relative overflow-hidden p-5 rounded-[24px] bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border border-amber-500/20 group cursor-pointer active:scale-95 transition-all"
+                    onClick={() => {
+                        props.setActiveTab('settings');
+                        playClick();
+                    }}
+                >
+                    {/* Background Glow */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-3xl pointer-events-none group-hover:bg-amber-500/20 transition-all" />
+
+                    <div className="relative flex items-center gap-5">
+                        <div className="p-3 bg-amber-500/20 rounded-2xl border border-amber-500/30 group-hover:scale-110 group-hover:bg-amber-500/30 transition-all">
+                            <Bell className="w-6 h-6 text-amber-400 group-hover:rotate-12 transition-transform" />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="text-sm font-black text-amber-100 uppercase tracking-widest mb-1">
+                                Active les invitations !
+                            </h4>
+                            <p className="text-xs text-amber-400/80 font-medium">
+                                Ne manque jamais un ami prêt à jouer.
+                            </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 px-2">
+                            <span className="text-[9px] font-black text-amber-500 uppercase tracking-[0.2em]">Go_Settings</span>
+                            <div className="h-1 w-8 bg-amber-500/30 rounded-full overflow-hidden">
+                                <motion.div
+                                    animate={{ x: [-32, 32] }}
+                                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                    className="h-full w-full bg-amber-400 shadow-[0_0_8px_#fbbf24]"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
 
             {/* Tabs Navigation */}
             <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/5">
