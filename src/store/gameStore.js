@@ -44,6 +44,8 @@ export const useGameStore = create(
             migratedToV2: false, // Flag for LocalStorage -> DB migration
             cardSkin: 'classic', // classic, papyrus
             isFeedbackOpen: false, // Global feedback status
+            isAdminOpen: false, // Global admin status
+            adminAuthToken: null, // Admin session token
             userProfile: {
                 id: `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 name: 'Joueur',
@@ -85,6 +87,10 @@ export const useGameStore = create(
             setIsFeedbackOpen: (open) => set({ isFeedbackOpen: open }),
 
             setHasSeenTutorial: (seen) => set({ hasSeenTutorial: seen }),
+
+            setIsAdminOpen: (open) => set({ isAdminOpen: open }),
+
+            setAdminAuthToken: (token) => set({ adminAuthToken: token }),
 
             // XP & Level System
             // Note: We'll keep these values in parallel with userProfile for backward compatibility 

@@ -9,7 +9,6 @@ import { pushManager } from '../lib/pushManager';
 import { Bell, BellOff } from 'lucide-react';
 import { FeedbackModal } from './FeedbackModal';
 import { AboutSection } from './AboutSection';
-import { AdminDashboard } from './AdminDashboard';
 
 export default function SettingsPage({ onViewChangelog }) {
     const soundEnabled = useGameStore(state => state.soundEnabled);
@@ -27,8 +26,8 @@ export default function SettingsPage({ onViewChangelog }) {
 
     const userProfile = useGameStore(state => state.userProfile);
     const setIsFeedbackOpen = useGameStore(state => state.setIsFeedbackOpen);
-    const [isAdminOpen, setIsAdminOpen] = useState(false);
-    const [adminAuthToken, setAdminAuthToken] = useState(null);
+    const setIsAdminOpen = useGameStore(state => state.setIsAdminOpen);
+    const setAdminAuthToken = useGameStore(state => state.setAdminAuthToken);
 
     // Initial check for push subscription
     useEffect(() => {
@@ -281,12 +280,6 @@ export default function SettingsPage({ onViewChangelog }) {
 
             {/* Modals */}
 
-            {isAdminOpen && (
-                <AdminDashboard
-                    adminPassword={adminAuthToken}
-                    onClose={() => setIsAdminOpen(false)}
-                />
-            )}
         </div>
     );
 }

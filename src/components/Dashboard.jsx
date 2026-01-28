@@ -25,6 +25,7 @@ import GameMenu from './GameMenu';
 import { useBackgroundMusic } from '../hooks/useBackgroundMusic';
 import { useSocialStore } from '../store/socialStore';
 import { FeedbackModal } from './FeedbackModal';
+import { AdminDashboard } from './AdminDashboard';
 
 // Variants d'animation pour les transitions de pages
 const pageVariants = {
@@ -63,6 +64,10 @@ export default function Dashboard() {
     const migratedToV2 = useGameStore(state => state.migratedToV2);
     const isFeedbackOpen = useGameStore(state => state.isFeedbackOpen);
     const setIsFeedbackOpen = useGameStore(state => state.setIsFeedbackOpen);
+    const isAdminOpen = useGameStore(state => state.isAdminOpen);
+    const setIsAdminOpen = useGameStore(state => state.setIsAdminOpen);
+    const adminAuthToken = useGameStore(state => state.adminAuthToken);
+    const setAdminAuthToken = useGameStore(state => state.setAdminAuthToken);
     const { playAchievement } = useFeedback();
 
     const virtualGameState = useVirtualGameStore(state => state.gameState);
@@ -583,6 +588,13 @@ export default function Dashboard() {
                 onClose={() => setIsFeedbackOpen(false)}
                 username={userProfile?.name}
             />
+
+            {isAdminOpen && (
+                <AdminDashboard
+                    adminPassword={adminAuthToken}
+                    onClose={() => setIsAdminOpen(false)}
+                />
+            )}
         </div >
     );
 }

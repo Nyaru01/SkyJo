@@ -116,6 +116,17 @@ const initDb = async () => {
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'migrated_to_v2') THEN
                     ALTER TABLE users ADD COLUMN migrated_to_v2 BOOLEAN DEFAULT FALSE;
                 END IF;
+
+                -- Feedback migrations
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'feedbacks' AND column_name = 'type') THEN
+                    ALTER TABLE feedbacks ADD COLUMN type VARCHAR(50) DEFAULT 'general';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'feedbacks' AND column_name = 'device_info') THEN
+                    ALTER TABLE feedbacks ADD COLUMN device_info JSONB;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'feedbacks' AND column_name = 'status') THEN
+                    ALTER TABLE feedbacks ADD COLUMN status VARCHAR(20) DEFAULT 'new';
+                END IF;
             END$$;
         `);
         console.log('[DB] Database initialized (Users, Friends, Push, Feedbacks)');
@@ -147,6 +158,9 @@ app.use('/api/feedback', feedbackRoutes);
 app.post('/api/social/profile', async (req, res) => {
     const { id, name, emoji, avatarId, vibeId, level, currentXP } = req.body;
     try {
+        // Sanitize vibeId: empty string -> null to prevent UNIQUE constraint violation
+        const sanitizedVibeId = vibeId && vibeId.trim() !== '' ? vibeId : null;
+
         await pool.query(`
             INSERT INTO users (id, name, emoji, avatar_id, vibe_id, level, xp, last_seen)
             VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
@@ -158,11 +172,11 @@ app.post('/api/social/profile', async (req, res) => {
                 level = EXCLUDED.level,
                 xp = EXCLUDED.xp,
                 last_seen = CURRENT_TIMESTAMP
-        `, [id, name, emoji, avatarId, vibeId, level, currentXP]);
+        `, [id, name, emoji, avatarId, sanitizedVibeId, level, currentXP]);
         res.json({ status: 'ok' });
     } catch (err) {
-        console.error('[API] Profile Sync error:', err);
-        res.status(500).json({ error: 'Sync failed' });
+        console.error('[API] Profile Sync Error (User ID:', id, '):', err);
+        res.status(500).json({ error: 'Sync failed', details: err.message });
     }
 });
 
