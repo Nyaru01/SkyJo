@@ -187,6 +187,30 @@ const STEPS = [
                 </div>
             </div>
         )
+    },
+    {
+        title: "Mise à jour sur Android",
+        description: "Si l'icône est ancienne sur votre écran d'accueil, voici comment la rafraîchir :",
+        icon: Info,
+        color: "text-orange-400",
+        bg: "bg-orange-400/10",
+        content: (
+            <div className="flex flex-col gap-3 py-2 text-left w-full max-w-[280px]">
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                    <div className="w-6 h-6 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs font-black shrink-0">1</div>
+                    <p className="text-xs text-slate-300">Appuyez longuement sur l'icône de l'app sur votre écran d'accueil</p>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                    <div className="w-6 h-6 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs font-black shrink-0">2</div>
+                    <p className="text-xs text-slate-300">Sélectionnez <span className="font-bold text-red-400">"Désinstaller"</span> ou <span className="font-bold text-red-400">"Supprimer"</span></p>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-black shrink-0">3</div>
+                    <p className="text-xs text-slate-300">Retournez sur le site dans Chrome et cliquez <span className="font-bold text-emerald-400">"Ajouter à l'écran d'accueil"</span></p>
+                </div>
+                <p className="text-[9px] text-center text-slate-500 uppercase tracking-widest mt-2">La nouvelle icône apparaîtra !</p>
+            </div>
+        )
     }
 ];
 
