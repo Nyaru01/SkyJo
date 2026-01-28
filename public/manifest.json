@@ -2,7 +2,7 @@
     "name": "Skyjo Score V2",
     "short_name": "SkyjoScore",
     "description": "Calculateur de points pour le jeu Skyjo",
-    "version": "2.0.3",
+    "version": "2.0.4",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#0f172a",
