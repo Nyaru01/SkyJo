@@ -21,23 +21,23 @@ export default defineConfig({
         name: 'Skyjo Score V2',
         short_name: 'SkyjoScore',
         description: 'Calculateur de score & Hub Social pour Skyjo',
-        version: '2.0.7',
+        version: '2.0.8',
         theme_color: '#6366f1',
         background_color: '#0f172a',
         display: 'standalone',
         orientation: 'portrait',
         icons: [
           {
-            src: '/pwa-192-v4.png?t=' + Date.now(),
+            src: '/pwa-192-v5.png?t=' + Date.now(),
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any'
+            purpose: 'any maskable'
           },
           {
-            src: '/pwa-512-v4.png?t=' + Date.now(),
+            src: '/pwa-512-v5.png?t=' + Date.now(),
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any'
+            purpose: 'any maskable'
           }
         ]
       }
