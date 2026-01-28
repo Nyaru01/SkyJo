@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Volume2, VolumeX, Music, Music2, Trash2, MessageSquare, ExternalLink, AlertTriangle, Smartphone, Settings, HelpCircle, Sparkles } from 'lucide-react';
+import { Volume2, VolumeX, Music, Music2, Trash2, MessageSquare, ExternalLink, AlertTriangle, Smartphone, Settings, HelpCircle, Sparkles, RefreshCw } from 'lucide-react';
 import Tutorial from './Tutorial';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Button } from './ui/Button';
@@ -9,8 +9,10 @@ import { pushManager } from '../lib/pushManager';
 import { Bell, BellOff } from 'lucide-react';
 import { FeedbackModal } from './FeedbackModal';
 import { AboutSection } from './AboutSection';
+import { useUpdateCheck } from './UpdatePrompt';
 
 export default function SettingsPage({ onViewChangelog }) {
+    const { checkForUpdates, isChecking, checkResult } = useUpdateCheck();
     const soundEnabled = useGameStore(state => state.soundEnabled);
     const musicEnabled = useGameStore(state => state.musicEnabled);
     const vibrationEnabled = useGameStore(state => state.vibrationEnabled);
@@ -178,18 +180,51 @@ export default function SettingsPage({ onViewChangelog }) {
                                 <Sparkles className="w-5 h-5 text-emerald-400" />
                             </div>
                             <span className="font-bold text-emerald-100">Nouveautés</span>
-                            <span className="text-[10px] text-emerald-400/60 uppercase tracking-widest mt-1">v2.0.0</span>
+                            <span className="text-[10px] text-emerald-400/60 uppercase tracking-widest mt-1">v2.0.5</span>
+                        </button>
+
+                        <button
+                            onClick={checkForUpdates}
+                            disabled={isChecking}
+                            className={cn(
+                                "flex flex-col items-center justify-center p-4 rounded-2xl border active:scale-95 transition-all group relative overflow-hidden",
+                                checkResult === 'update-available'
+                                    ? "bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/20 hover:border-amber-500/40"
+                                    : "bg-gradient-to-br from-sky-500/10 to-blue-500/10 border-sky-500/20 hover:border-sky-500/40"
+                            )}
+                        >
+                            <div className={cn(
+                                "p-3 rounded-full mb-2 group-hover:scale-110 transition-transform",
+                                checkResult === 'update-available' ? "bg-amber-500/20" : "bg-sky-500/20"
+                            )}>
+                                {isChecking ? (
+                                    <RefreshCw className="w-5 h-5 text-sky-400 animate-spin" />
+                                ) : checkResult === 'update-available' ? (
+                                    <Sparkles className="w-5 h-5 text-amber-400 animate-pulse" />
+                                ) : (
+                                    <RefreshCw className="w-5 h-5 text-sky-400" />
+                                )}
+                            </div>
+                            <span className={cn(
+                                "font-bold",
+                                checkResult === 'update-available' ? "text-amber-100" : "text-sky-100"
+                            )}>
+                                {isChecking ? 'Vérification...' : checkResult === 'update-available' ? 'Mettre à jour' : 'Mise à jour'}
+                            </span>
+                            <span className={cn(
+                                "text-[10px] uppercase tracking-widest mt-1",
+                                checkResult === 'update-available' ? "text-amber-400/60" : "text-sky-400/60"
+                            )}>
+                                {checkResult === 'up-to-date' ? 'À jour ✅' : checkResult === 'update-available' ? 'Disponible !' : 'Vérifier'}
+                            </span>
                         </button>
 
                         <button
                             onClick={() => setIsTutorialOpen(true)}
-                            className="flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-sky-500/10 to-blue-500/10 border border-sky-500/20 hover:border-sky-500/40 active:scale-95 transition-all group"
+                            className="col-span-2 flex flex-row items-center justify-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 active:scale-95 transition-all"
                         >
-                            <div className="p-3 bg-sky-500/20 rounded-full mb-2 group-hover:scale-110 transition-transform">
-                                <HelpCircle className="w-5 h-5 text-sky-400" />
-                            </div>
-                            <span className="font-bold text-sky-100">Guide Jeu</span>
-                            <span className="text-[10px] text-sky-400/60 uppercase tracking-widest mt-1">Relire</span>
+                            <HelpCircle className="w-5 h-5 text-slate-400" />
+                            <span className="font-bold text-slate-300">Relire le Tutoriel</span>
                         </button>
                     </div>
                 </CardContent>
