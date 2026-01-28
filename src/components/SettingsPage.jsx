@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Volume2, VolumeX, Music, Music2, Trash2, MessageSquare, ExternalLink, AlertTriangle, Smartphone, Settings, HelpCircle, Sparkles } from 'lucide-react';
 import Tutorial from './Tutorial';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
@@ -31,7 +31,7 @@ export default function SettingsPage({ onViewChangelog }) {
     const [adminAuthToken, setAdminAuthToken] = useState(null);
 
     // Initial check for push subscription
-    useState(() => {
+    useEffect(() => {
         const checkPush = async () => {
             const sub = await pushManager.getSubscription();
             setPushSubscription(sub);

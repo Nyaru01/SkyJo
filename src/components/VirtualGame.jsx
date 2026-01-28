@@ -39,9 +39,23 @@ const PLAYER_COLORS = ['🐱', '🐶', '🦊', '🐻', '🐼', '🦁', '🐸', '
  * Main component for playing virtual Skyjo locally
  */
 export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
+    // 1. Data Stores
+    const userProfile = useGameStore(state => state.userProfile);
+    const updateUserProfile = useGameStore(state => state.updateUserProfile);
+    const setPlayerInfo = useOnlineGameStore(s => s.setPlayerInfo);
+    const createRoom = useOnlineGameStore(s => s.createRoom);
+    const joinRoom = useOnlineGameStore(s => s.joinRoom);
+    const startOnlineGame = useOnlineGameStore(s => s.startGame);
+    const startOnlineNextRound = useOnlineGameStore(s => s.startNextRound);
+    const forceOnlineNextRound = useOnlineGameStore(s => s.forceNextRound);
+    const onlineTimeoutExpired = useOnlineGameStore(s => s.timeoutExpired);
+    const emitGameAction = useOnlineGameStore(s => s.emitGameAction);
+    const selectOnlineCard = useOnlineGameStore(s => s.selectCard);
+
+    // 2. Local State
     const [screen, setScreen] = useState(initialScreen); // menu, setup, game, scores
     const [players, setPlayers] = useState([
-        { name: '', avatarId: 'cat' },
+        { name: userProfile?.name || 'Joueur', avatarId: userProfile?.avatarId || 'cat' },
         { name: '', avatarId: 'dog' },
     ]);
     const [openAvatarSelector, setOpenAvatarSelector] = useState(null);
@@ -138,20 +152,11 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             setScreen(initialScreen);
         }
     }, [initialScreen]);
-    const setPlayerInfo = useOnlineGameStore(s => s.setPlayerInfo);
-    const createRoom = useOnlineGameStore(s => s.createRoom);
-    const joinRoom = useOnlineGameStore(s => s.joinRoom);
-    const startOnlineGame = useOnlineGameStore(s => s.startGame);
-    const startOnlineNextRound = useOnlineGameStore(s => s.startNextRound);
-    const forceOnlineNextRound = useOnlineGameStore(s => s.forceNextRound);
-    const onlineTimeoutExpired = useOnlineGameStore(s => s.timeoutExpired);
-    const emitGameAction = useOnlineGameStore(s => s.emitGameAction);
-    const selectOnlineCard = useOnlineGameStore(s => s.selectCard);
 
     // Local State for Lobby
     const [lobbyCode, setLobbyCode] = useState('');
-    const [myPseudo, setMyPseudo] = useState(() => localStorage.getItem('skyjo_player_pseudo') || '');
-    const [myAvatarId, setMyAvatarId] = useState(() => localStorage.getItem('skyjo_player_avatar_id') || 'cat');
+    const [myPseudo, setMyPseudo] = useState(() => userProfile?.name || localStorage.getItem('skyjo_player_pseudo') || '');
+    const [myAvatarId, setMyAvatarId] = useState(() => userProfile?.avatarId || localStorage.getItem('skyjo_player_avatar_id') || 'cat');
     const [copyToast, setCopyToast] = useState(null);
     const [notification, setNotification] = useState(null);
     const [hasPlayedVictory, setHasPlayedVictory] = useState(false);
@@ -214,6 +219,39 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             localStorage.setItem('skyjo_player_avatar_id', myAvatarId);
         }
     }, [myPseudo, myAvatarId]);
+
+    // Global Identity Sync: React to userProfile changes
+    useEffect(() => {
+        if (!userProfile) return;
+
+        // Sync Online Setup State
+        if (userProfile.name && userProfile.name !== myPseudo) {
+            setMyPseudo(userProfile.name);
+        }
+        if (userProfile.avatarId && userProfile.avatarId !== myAvatarId) {
+            setMyAvatarId(userProfile.avatarId);
+        }
+
+        // Sync Online Store directly
+        setPlayerInfo(userProfile.name, userProfile.avatarId);
+
+        // Sync Local Multiplayer/AI State (Player 0)
+        setPlayers(prev => {
+            if (prev[0].name === userProfile.name && prev[0].avatarId === userProfile.avatarId) {
+                return prev;
+            }
+            const newPlayers = [...prev];
+            newPlayers[0] = { ...newPlayers[0], name: userProfile.name, avatarId: userProfile.avatarId };
+            return newPlayers;
+        });
+
+        // Sync AI Config
+        setAIConfig(prev => ({
+            ...prev,
+            playerName: userProfile.name,
+            playerAvatarId: userProfile.avatarId
+        }));
+    }, [userProfile.name, userProfile.avatarId]);
     // Sync screen with initialScreen prop
     useEffect(() => {
         if (initialScreen) {
@@ -493,6 +531,11 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         const newPlayers = [...players];
         newPlayers[index] = { ...newPlayers[index], [field]: value };
         setPlayers(newPlayers);
+
+        // Sync local player 0 to global profile
+        if (index === 0 && field === 'name' && value.trim()) {
+            updateUserProfile({ name: value.trim() });
+        }
     };
 
     // Start game
@@ -583,10 +626,19 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         if (indexOrKey === 'ai-player') {
             setAIConfig({ ...aiConfig, playerAvatarId: avatarId });
             setMyAvatarId(avatarId); // Sync with online state
+            updateUserProfile({ avatarId }); // Global sync
             setOpenAvatarSelector(null);
         } else if (indexOrKey === 'online-setup') {
             setMyAvatarId(avatarId);
             setAIConfig({ ...aiConfig, playerAvatarId: avatarId }); // Sync with AI state
+            updateUserProfile({ avatarId }); // Global sync
+            setOpenAvatarSelector(null);
+        } else if (indexOrKey === '0') {
+            // Local player 0
+            const newPlayers = [...players];
+            newPlayers[0] = { ...newPlayers[0], avatarId };
+            setPlayers(newPlayers);
+            updateUserProfile({ avatarId }); // Global sync
             setOpenAvatarSelector(null);
         } else {
             const index = Number(indexOrKey);
@@ -754,7 +806,13 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                     <Input
                                         placeholder="Votre pseudo"
                                         value={aiConfig.playerName}
-                                        onChange={(e) => setAIConfig({ ...aiConfig, playerName: e.target.value })}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setAIConfig({ ...aiConfig, playerName: val });
+                                            if (val.trim()) {
+                                                updateUserProfile({ name: val.trim() });
+                                            }
+                                        }}
                                         className="h-12 bg-transparent border-0 text-lg font-bold text-white placeholder:text-slate-500 focus-visible:ring-0 px-2"
                                         required
                                     />
@@ -1151,7 +1209,15 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                     <Input
                                         placeholder="Votre pseudo"
                                         value={myPseudo}
-                                        onChange={(e) => setMyPseudo(e.target.value)}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setMyPseudo(val);
+                                            // Only sync to global if it's not empty
+                                            if (val.trim()) {
+                                                updateUserProfile({ name: val.trim() });
+                                                setPlayerInfo(val.trim(), myAvatarId);
+                                            }
+                                        }}
                                         className="h-12 bg-transparent border-0 text-lg font-bold text-white placeholder:text-slate-500 focus-visible:ring-0 px-2"
                                         required
                                     />

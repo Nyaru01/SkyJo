@@ -96,6 +96,26 @@ const initDb = async () => {
                 IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE tablename = 'game_history' AND indexname = 'idx_history_user') THEN
                     CREATE INDEX idx_history_user ON game_history(user_id);
                 END IF;
+
+                -- Column migrations for V2
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'emoji') THEN
+                    ALTER TABLE users ADD COLUMN emoji TEXT;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'avatar_id') THEN
+                    ALTER TABLE users ADD COLUMN avatar_id TEXT;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'vibe_id') THEN
+                    ALTER TABLE users ADD COLUMN vibe_id TEXT UNIQUE;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'level') THEN
+                    ALTER TABLE users ADD COLUMN level INTEGER DEFAULT 1;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'xp') THEN
+                    ALTER TABLE users ADD COLUMN xp INTEGER DEFAULT 0;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'migrated_to_v2') THEN
+                    ALTER TABLE users ADD COLUMN migrated_to_v2 BOOLEAN DEFAULT FALSE;
+                END IF;
             END$$;
         `);
         console.log('[DB] Database initialized (Users, Friends, Push, Feedbacks)');
@@ -107,11 +127,14 @@ const initDb = async () => {
 initDb();
 
 // --- Web Push Configuration ---
-if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+const vapidPublic = process.env.VITE_VAPID_PUBLIC_KEY || process.env.VAPID_PUBLIC_KEY;
+const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
+
+if (vapidPublic && vapidPrivate) {
     webpush.setVapidDetails(
         'mailto:nyaru@skyjo.offline',
-        process.env.VAPID_PUBLIC_KEY,
-        process.env.VAPID_PRIVATE_KEY
+        vapidPublic,
+        vapidPrivate
     );
     console.log('[PUSH] VAPID keys configured');
 }
