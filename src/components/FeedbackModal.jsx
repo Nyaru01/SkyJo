@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Send, Bug, Lightbulb, MessageSquare } from 'lucide-react';
+import { X, Send, Bug, Lightbulb, MessageSquare, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const FEEDBACK_TYPES = [

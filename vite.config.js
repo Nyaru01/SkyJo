@@ -17,19 +17,19 @@ export default defineConfig({
         name: 'Skyjo Score V2',
         short_name: 'SkyjoScore',
         description: 'Calculateur de score & Hub Social pour Skyjo',
-        version: '2.0.0',
+        version: '2.0.1',
         theme_color: '#6366f1',
         background_color: '#0f172a',
         display: 'standalone',
         orientation: 'portrait',
         icons: [
           {
-            src: 'pwa-192-v2.png',
+            src: 'pwa-192-v3.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'pwa-512-v2.png',
+            src: 'pwa-512-v3.png',
             sizes: '512x512',
             type: 'image/png'
           }

@@ -218,7 +218,15 @@ app.post('/api/social/migrate', async (req, res) => {
                 xp = EXCLUDED.xp,
                 last_seen = CURRENT_TIMESTAMP,
                 migrated_to_v2 = TRUE
-        `, [userId, profile.name, profile.emoji, profile.avatarId, profile.vibeId, profile.level, profile.currentXP]);
+        `, [
+            userId,
+            profile.name || 'Joueur',
+            profile.emoji || '🐱',
+            profile.avatarId || 'cat',
+            profile.vibeId && profile.vibeId.trim() !== '' ? profile.vibeId : null,
+            profile.level || 1,
+            profile.currentXP || 0
+        ]);
 
         // 2. Sync History (if any)
         if (history && Array.isArray(history) && history.length > 0) {
@@ -236,8 +244,8 @@ app.post('/api/social/migrate', async (req, res) => {
         res.json({ status: 'ok', migratedCount: history?.length || 0 });
     } catch (err) {
         await client.query('ROLLBACK');
-        console.error('[MIGRATION] Error:', err);
-        res.status(500).json({ error: 'Migration failed' });
+        console.error('[MIGRATION] Critical Error for user', userId, ':', err);
+        res.status(500).json({ error: 'Migration failed', details: err.message });
     } finally {
         client.release();
     }
