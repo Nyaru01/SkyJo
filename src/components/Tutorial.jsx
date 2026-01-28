@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, ChevronLeft, HelpCircle, Info, Sparkles, Target, Zap, ArrowRight } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, HelpCircle, Info, Sparkles, Target, Zap, ArrowRight, Users, Globe } from 'lucide-react';
 import { Button } from './ui/Button';
 import SkyjoCard from './virtual/SkyjoCard';
 
@@ -133,6 +133,58 @@ const STEPS = [
                     </div>
                 </div>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Ne finissez pas trop vite !</p>
+            </div>
+        )
+    },
+    {
+        title: "Le Hub Social",
+        description: "Connectez-vous avec vos amis ! Ajoutez-les via leur pseudo ou Code Vibe, et suivez qui est en ligne pour jouer.",
+        icon: Users,
+        color: "text-indigo-400",
+        bg: "bg-indigo-400/10",
+        content: (
+            <div className="flex flex-col gap-3 py-2 w-full max-w-[200px]">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-xs">
+                        🦊
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="h-2 w-16 bg-white/20 rounded mb-1.5" />
+                        <div className="h-1.5 w-10 bg-emerald-500/50 rounded-full" />
+                    </div>
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 opacity-60">
+                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs grayscale">
+                        🐱
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="h-2 w-12 bg-white/10 rounded" />
+                    </div>
+                </div>
+            </div>
+        )
+    },
+    {
+        title: "Multijoueur en Ligne",
+        description: "Deux façons de jouer : invitez directement un ami connecté depuis le Hub Social, ou créez une salle privée dans le Lobby et partagez le code !",
+        icon: Globe,
+        color: "text-purple-400",
+        bg: "bg-purple-400/10",
+        content: (
+            <div className="relative flex items-center justify-center py-4">
+                <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full" />
+                <div className="relative bg-slate-900 border border-purple-500/30 p-4 rounded-2xl flex flex-col items-center gap-2 shadow-xl">
+                    <div className="text-[10px] uppercase text-purple-400 font-bold tracking-widest">Code Salle</div>
+                    <div className="text-3xl font-black text-white tracking-widest font-mono">XK9L</div>
+                    <div className="flex -space-x-2 mt-2">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="w-6 h-6 rounded-full bg-slate-700 border-2 border-slate-900" />
+                        ))}
+                    </div>
+                </div>
             </div>
         )
     }
