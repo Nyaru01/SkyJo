@@ -16,6 +16,7 @@ import ExperienceBar from './ExperienceBar';
 import SkinCarousel from './SkinCarousel';
 import { useVirtualGameStore, selectAIMode, selectAIPlayers, selectIsCurrentPlayerAI, selectIsAIThinking } from '../store/virtualGameStore';
 import { useOnlineGameStore } from '../store/onlineGameStore';
+import { useSocialStore } from '../store/socialStore';
 import { useGameStore } from '../store/gameStore';
 import { calculateFinalScores } from '../lib/skyjoEngine';
 import { AI_DIFFICULTY, chooseInitialCardsToReveal } from '../lib/skyjoAI';
@@ -52,12 +53,21 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const emitGameAction = useOnlineGameStore(s => s.emitGameAction);
     const selectOnlineCard = useOnlineGameStore(s => s.selectCard);
 
+    const { friends, fetchFriends, inviteFriend } = useSocialStore();
+
     // 2. Local State
     const [screen, setScreen] = useState(initialScreen); // menu, setup, game, scores
     const [players, setPlayers] = useState([
         { name: userProfile?.name || 'Joueur', avatarId: userProfile?.avatarId || 'cat' },
         { name: '', avatarId: 'dog' },
     ]);
+
+    // Fetch friends when entering multiplayer lobby
+    useEffect(() => {
+        if (screen === 'setup' && userProfile?.id) {
+            fetchFriends(String(userProfile.id));
+        }
+    }, [screen, userProfile?.id, fetchFriends]);
     const [openAvatarSelector, setOpenAvatarSelector] = useState(null);
     const [localPlayerIndex, setLocalPlayerIndex] = useState(0);
     const [initialReveals, setInitialReveals] = useState({});
@@ -192,7 +202,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         playCardFlip,
         playCardDraw,
         playCardPlace,
-        playStart
+        playStart,
+        playSocialInvite
     } = useFeedback();
     const musicEnabled = useGameStore(state => state.musicEnabled);
     const toggleMusic = useGameStore(state => state.toggleMusic);
@@ -1321,19 +1332,61 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                 )}
                             </div>
 
-                            {/* Friends (Mock) */}
+                            {/* Friends List */}
                             <div className="space-y-2 pt-2">
                                 <div className="flex items-center justify-between">
                                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                                         <Users className="h-3 w-3 text-emerald-400" />
-                                        Amis en ligne
+                                        Amis en ligne ({friends.filter(f => f.isOnline).length})
                                     </h3>
-                                    <span className="text-[10px] bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full">Bientôt</span>
                                 </div>
-                                <div className="p-3 bg-slate-800/20 border border-white/5 rounded-xl flex items-center justify-center gap-2 opacity-60">
-                                    <div className="text-xs text-slate-500 text-center">
-                                        Invitez vos amis pour les voir ici !
-                                    </div>
+
+                                <div className="space-y-2">
+                                    {friends.filter(f => f.isOnline).length === 0 ? (
+                                        <div className="p-4 bg-slate-800/20 border border-dashed border-white/5 rounded-2xl flex flex-col items-center justify-center gap-2 opacity-60">
+                                            <Users className="h-5 w-5 text-slate-600" />
+                                            <div className="text-[10px] text-slate-500 text-center uppercase tracking-widest">
+                                                Aucun ami en ligne
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        friends.filter(f => f.isOnline).map(friend => (
+                                            <motion.div
+                                                key={friend.id}
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                className="p-2.5 bg-slate-800/40 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-emerald-500/30 transition-all shadow-lg"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="relative">
+                                                        <div className="w-10 h-10 rounded-full bg-slate-900 border border-white/10 overflow-hidden shadow-inner">
+                                                            <img src={getAvatarPath(friend.avatar_id)} alt="" className="w-full h-full object-cover" />
+                                                        </div>
+                                                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-black text-white">{friend.name}</p>
+                                                        <p className="text-[9px] text-emerald-400 font-bold uppercase tracking-widest">Disponible</p>
+                                                    </div>
+                                                </div>
+
+                                                <Button
+                                                    size="sm"
+                                                    className="h-8 px-4 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+                                                    onClick={() => {
+                                                        if (onlineRoomCode) {
+                                                            inviteFriend(friend.id, onlineRoomCode, userProfile.name);
+                                                        } else {
+                                                            useOnlineGameStore.getState().createRoomAndInvite(friend.id);
+                                                        }
+                                                        playSocialInvite();
+                                                    }}
+                                                >
+                                                    INVITER
+                                                </Button>
+                                            </motion.div>
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         </div>
