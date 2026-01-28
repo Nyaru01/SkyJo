@@ -28,8 +28,8 @@ router.post('/', feedbackLimiter, validateFeedback, async (req, res) => {
             id: result.rows[0].id
         });
     } catch (error) {
-        console.error('[FEEDBACK ERROR]', error);
-        res.status(500).json({ error: 'Failed to submit feedback' });
+        console.error('[FEEDBACK ERROR] Details:', error.message, 'Stack:', error.stack);
+        res.status(500).json({ error: 'Failed to submit feedback', details: error.message });
     }
 });
 
