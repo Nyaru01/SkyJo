@@ -3,14 +3,21 @@ const { Pool } = pkg;
 import dotenv from 'dotenv';
 dotenv.config();
 
-if (!process.env.DATABASE_URL) {
-    console.error('[DB ERROR] DATABASE_URL is not defined in .env');
+// Construct connection string if missing but individual vars exist (Railway/Postgres standard)
+const connectionString = process.env.DATABASE_URL ||
+    (process.env.PGHOST ? `postgresql://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT || 5432}/${process.env.PGDATABASE}` : null);
+
+if (!connectionString) {
+    console.error('❌ [DB CRITICAL] No DATABASE_URL or PG* variables found. App will crash or fail to connect.');
+    console.log('ℹ️  Available Env Vars:', Object.keys(process.env).filter(k => !k.includes('KEY') && !k.includes('SECRET')).join(', '));
 } else {
-    console.log('[DB] Connecting to:', process.env.DATABASE_URL.split('@')[1] || 'Unknown Host');
+    // Mask password for logging
+    const maskedUrl = connectionString.replace(/:([^:@]+)@/, ':****@');
+    console.log('✅ [DB] Connecting to:', maskedUrl.split('@')[1] || 'Unknown Host');
 }
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString,
     ssl: { rejectUnauthorized: false }
 });
 
