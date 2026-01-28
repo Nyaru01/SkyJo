@@ -344,8 +344,10 @@ export const useOnlineGameStore = create((set, get) => ({
             return;
         }
 
-        const dbId = useGameStore.getState().userProfile.id;
+        // CRITICAL: Ensure listeners are set up before emitting
+        get().connect();
 
+        const dbId = useGameStore.getState().userProfile.id;
         const payload = { playerName, emoji: playerEmoji, dbId, isPublic, autoInviteFriendId };
 
         if (!socket.connected) {
@@ -378,6 +380,10 @@ export const useOnlineGameStore = create((set, get) => ({
             set({ error: "Entrez un code de salle !" });
             return;
         }
+
+        // CRITICAL: Ensure listeners are set up before emitting
+        get().connect();
+
         const dbId = useGameStore.getState().userProfile.id;
 
         if (!socket.connected) {
@@ -388,7 +394,7 @@ export const useOnlineGameStore = create((set, get) => ({
         } else {
             socket.emit('join_room', { roomCode: code, playerName, emoji: playerEmoji, dbId });
         }
-        set({ roomCode: code }); // Set optimistically, validated by events
+        set({ roomCode: code });
     },
 
     startGame: () => {
