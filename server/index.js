@@ -1,6 +1,7 @@
 
 import express from 'express';
 import { createServer } from 'http';
+import fs from 'fs';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import path from 'path';
@@ -844,6 +845,17 @@ app.get('/api/health', async (req, res) => {
             error: error.message,
             env_db_url: !!process.env.DATABASE_URL
         });
+    }
+});
+
+// Version Check Endpoint
+app.get('/api/version', (req, res) => {
+    try {
+        const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
+        res.json({ version: packageJson.version, t: Date.now() });
+    } catch (error) {
+        console.error('[VERSION CHECK]', error);
+        res.status(500).json({ error: 'Version check failed' });
     }
 });
 

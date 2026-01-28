@@ -1,10 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { version } from './package.json'
 
 import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    '__APP_VERSION__': JSON.stringify(version)
+  },
   plugins: [
     react(),
     VitePWA({
@@ -17,7 +21,7 @@ export default defineConfig({
         name: 'Skyjo Score V2',
         short_name: 'SkyjoScore',
         description: 'Calculateur de score & Hub Social pour Skyjo',
-        version: '2.0.5',
+        version: '2.0.6',
         theme_color: '#6366f1',
         background_color: '#0f172a',
         display: 'standalone',
