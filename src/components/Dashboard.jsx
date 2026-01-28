@@ -78,6 +78,7 @@ export default function Dashboard() {
 
     const gameInvitation = useSocialStore(state => state.gameInvitation);
     const setGameInvitation = useSocialStore(state => state.setGameInvitation);
+    const fetchFriends = useSocialStore(state => state.fetchFriends);
 
     const [activeTab, setActiveTab] = useState('home');
     const [virtualScreen, setVirtualScreen] = useState('menu');
@@ -107,12 +108,17 @@ export default function Dashboard() {
     }, [hasSeenTutorial, setHasSeenTutorial]);
 
     useEffect(() => {
-        if (!userProfile.vibeId) {
+        if (!userProfile?.vibeId) {
             generateSkyId();
         }
-        syncProfileWithBackend();
+        if (userProfile?.id) {
+            syncProfileWithBackend(userProfile);
+            fetchFriends(String(userProfile.id));
+        }
+    }, [userProfile?.id, userProfile?.vibeId, syncProfileWithBackend, fetchFriends, generateSkyId]);
 
-        // Migration Local -> DB pour la V2
+    // Migration Local -> DB pour la V2
+    useEffect(() => {
         if (!migratedToV2) {
             runMigration();
         }

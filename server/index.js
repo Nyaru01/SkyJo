@@ -860,8 +860,21 @@ app.get('/api/version', (req, res) => {
 });
 
 app.get('*', (req, res) => {
+    // If it's an API request that didn't match anything, return 404 JSON instead of HTML
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'API route not found' });
+    }
+
     res.sendFile(path.join(__dirname, '../dist', 'index.html'), (err) => {
-        if (err) res.status(200).send('<h1>SkyJo Server Running</h1>');
+        if (err) {
+            // In dev mode, dist/index.html doesn't exist. 
+            // Return 200 with HTML only for root or frontend-y paths, 404 otherwise.
+            if (req.path === '/' || !req.path.includes('.')) {
+                res.status(200).send('<h1>SkyJo Server Running</h1>');
+            } else {
+                res.status(404).send('Not found');
+            }
+        }
     });
 });
 

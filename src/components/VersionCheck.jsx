@@ -12,6 +12,13 @@ export function VersionCheck() {
             try {
                 const res = await fetch(`/api/version?t=${Date.now()}`);
                 if (!res.ok) return;
+
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    console.warn('[VERSION] Non-JSON response received');
+                    return;
+                }
+
                 const data = await res.json();
 
                 // If versions differ, force update

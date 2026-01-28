@@ -64,7 +64,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     // Fetch friends when entering multiplayer lobby
     useEffect(() => {
-        if (screen === 'setup' && userProfile?.id) {
+        if (screen === 'lobby' && userProfile?.id) {
             fetchFriends(String(userProfile.id));
         }
     }, [screen, userProfile?.id, fetchFriends]);
