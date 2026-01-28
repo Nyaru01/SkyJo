@@ -299,12 +299,19 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     }, [onlineRoundNumber]);
 
     // Return to lobby when online game is cancelled (host quits)
+    // Return to lobby when online game is cancelled (host quits)
     useEffect(() => {
-        if (screen === 'game' && onlineRoomCode && !onlineGameStarted && !onlineIsGameOver) {
-            // Game was cancelled (host left or not enough players)
+        // Improved check: If we're on the game screen but have no online game AND no local game
+        // and no room code (meaning we fully disconnected), go back to menu.
+        if (screen === 'game' && !onlineGameStarted && !gameState && !onlineRoomCode) {
             setScreen('menu');
         }
-    }, [onlineGameStarted, onlineIsGameOver, onlineRoomCode, screen]);
+
+        // Also handle legacy case where we might still have roomCode but game stopped
+        if (screen === 'game' && onlineRoomCode && !onlineGameStarted && !onlineIsGameOver) {
+            setScreen('menu');
+        }
+    }, [onlineGameStarted, onlineIsGameOver, onlineRoomCode, screen, gameState]);
 
     // Determine if game is finished (for sound effect)
     const activeGameStateForEffect = onlineGameStarted ? onlineGameState : gameState;
