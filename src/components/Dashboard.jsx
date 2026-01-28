@@ -109,41 +109,7 @@ export default function Dashboard() {
         }
     }, [achievements?.length, playAchievement]);
 
-    // Global Presence Logic: Register user on socket connection
-    useEffect(() => {
-        const { socket, connect } = useOnlineGameStore.getState();
-
-        // Ensure global connection
-        connect();
-
-        const handleRegistration = () => {
-            const profile = useGameStore.getState().userProfile;
-            const { registerUser } = useSocialStore.getState();
-
-            if (profile?.id && socket?.connected) {
-                console.log('[PRESENCE] Global registration triggered for:', profile.name);
-                registerUser(profile.id, profile.name, profile.emoji, profile.vibeId);
-            }
-        };
-
-        if (socket) {
-            socket.on('connect', handleRegistration);
-            handleRegistration();
-        }
-
-        return () => {
-            if (socket) socket.off('connect', handleRegistration);
-        };
-    }, [userProfile?.id, userProfile?.vibeId]); // Watch for profile ID and VibeID changes!
-
-    // Extra safety: re-register if isConnected changes in store
-    const isConnected = useOnlineGameStore(state => state.isConnected);
-    useEffect(() => {
-        if (isConnected && userProfile?.id) {
-            const { registerUser } = useSocialStore.getState();
-            registerUser(userProfile.id, userProfile.name, userProfile.emoji, userProfile.vibeId);
-        }
-    }, [isConnected, userProfile?.id, userProfile?.vibeId]);
+    // Presence is now handled in SocketProvider - no duplicate logic here
 
     // Auto-switch to 'game' tab when the game starts
     useEffect(() => {
