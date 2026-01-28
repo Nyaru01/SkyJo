@@ -37,6 +37,9 @@ app.use(express.static(path.join(__dirname, '../dist')));
 // Pool is now imported from ./db.js
 
 const initDb = async () => {
+    console.log('[DB] Starting database initialization...');
+
+    // Step 1: Create users table
     try {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
@@ -44,95 +47,98 @@ const initDb = async () => {
                 name TEXT NOT NULL,
                 emoji TEXT,
                 avatar_id TEXT,
-                vibe_id TEXT UNIQUE,
+                vibe_id TEXT,
                 level INTEGER DEFAULT 1,
                 xp INTEGER DEFAULT 0,
                 last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 migrated_to_v2 BOOLEAN DEFAULT FALSE
             );
+        `);
+        console.log('[DB] ✓ Users table ready');
+    } catch (e) { console.error('[DB] Users table error:', e.message); }
 
+    // Step 2: Create friends table
+    try {
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS friends (
-                user_id TEXT REFERENCES users(id),
-                friend_id TEXT REFERENCES users(id),
+                user_id TEXT,
+                friend_id TEXT,
                 status TEXT DEFAULT 'PENDING',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (user_id, friend_id)
             );
+        `);
+        console.log('[DB] ✓ Friends table ready');
+    } catch (e) { console.error('[DB] Friends table error:', e.message); }
 
+    // Step 3: Create push_subscriptions table
+    try {
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS push_subscriptions (
-                user_id TEXT PRIMARY KEY REFERENCES users(id),
+                user_id TEXT PRIMARY KEY,
                 subscription JSONB NOT NULL
             );
+        `);
+        console.log('[DB] ✓ Push subscriptions table ready');
+    } catch (e) { console.error('[DB] Push subscriptions error:', e.message); }
 
+    // Step 4: Create game_history table
+    try {
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS game_history (
                 id TEXT PRIMARY KEY,
-                user_id TEXT REFERENCES users(id),
+                user_id TEXT,
                 game_data JSONB NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+        `);
+        console.log('[DB] ✓ Game history table ready');
+    } catch (e) { console.error('[DB] Game history error:', e.message); }
 
-            -- Feedback System Tables
+    // Step 5: Create feedbacks table
+    try {
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS feedbacks (
                 id SERIAL PRIMARY KEY,
-                user_id TEXT, -- NULL friendly
+                user_id TEXT,
                 username TEXT NOT NULL,
-                content TEXT NOT NULL, -- Validation in middleware
+                content TEXT NOT NULL,
                 type VARCHAR(50) DEFAULT 'general',
                 status VARCHAR(20) DEFAULT 'new',
                 device_info JSONB,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-            
-            -- Indexes if not exists (using manual check or IF NOT EXISTS syntax for indexes requires newer PG, 
-            -- but reliable simple create if not exists is: )
-            DO $$
-            BEGIN
-                IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE tablename = 'feedbacks' AND indexname = 'idx_status') THEN
-                    CREATE INDEX idx_status ON feedbacks(status);
-                END IF;
-                IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE tablename = 'feedbacks' AND indexname = 'idx_created_at') THEN
-                    CREATE INDEX idx_created_at ON feedbacks(created_at DESC);
-                END IF;
-                IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE tablename = 'game_history' AND indexname = 'idx_history_user') THEN
-                    CREATE INDEX idx_history_user ON game_history(user_id);
-                END IF;
-
-                -- Column migrations for V2
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'emoji') THEN
-                    ALTER TABLE users ADD COLUMN emoji TEXT;
-                END IF;
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'avatar_id') THEN
-                    ALTER TABLE users ADD COLUMN avatar_id TEXT;
-                END IF;
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'vibe_id') THEN
-                    ALTER TABLE users ADD COLUMN vibe_id TEXT UNIQUE;
-                END IF;
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'level') THEN
-                    ALTER TABLE users ADD COLUMN level INTEGER DEFAULT 1;
-                END IF;
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'xp') THEN
-                    ALTER TABLE users ADD COLUMN xp INTEGER DEFAULT 0;
-                END IF;
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'migrated_to_v2') THEN
-                    ALTER TABLE users ADD COLUMN migrated_to_v2 BOOLEAN DEFAULT FALSE;
-                END IF;
-
-                -- Feedback migrations
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'feedbacks' AND column_name = 'type') THEN
-                    ALTER TABLE feedbacks ADD COLUMN type VARCHAR(50) DEFAULT 'general';
-                END IF;
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'feedbacks' AND column_name = 'device_info') THEN
-                    ALTER TABLE feedbacks ADD COLUMN device_info JSONB;
-                END IF;
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'feedbacks' AND column_name = 'status') THEN
-                    ALTER TABLE feedbacks ADD COLUMN status VARCHAR(20) DEFAULT 'new';
-                END IF;
-            END$$;
         `);
-        console.log('[DB] Database initialized (Users, Friends, Push, Feedbacks)');
-    } catch (err) {
-        console.error('[DB] Init error:', err);
+        console.log('[DB] ✓ Feedbacks table ready');
+    } catch (e) { console.error('[DB] Feedbacks table error:', e.message); }
+
+    // Step 6: Add missing columns (individual migrations)
+    const migrations = [
+        { table: 'users', col: 'emoji', sql: 'ALTER TABLE users ADD COLUMN emoji TEXT' },
+        { table: 'users', col: 'avatar_id', sql: 'ALTER TABLE users ADD COLUMN avatar_id TEXT' },
+        { table: 'users', col: 'vibe_id', sql: 'ALTER TABLE users ADD COLUMN vibe_id TEXT' },
+        { table: 'users', col: 'level', sql: 'ALTER TABLE users ADD COLUMN level INTEGER DEFAULT 1' },
+        { table: 'users', col: 'xp', sql: 'ALTER TABLE users ADD COLUMN xp INTEGER DEFAULT 0' },
+        { table: 'users', col: 'migrated_to_v2', sql: 'ALTER TABLE users ADD COLUMN migrated_to_v2 BOOLEAN DEFAULT FALSE' },
+        { table: 'feedbacks', col: 'type', sql: "ALTER TABLE feedbacks ADD COLUMN type VARCHAR(50) DEFAULT 'general'" },
+        { table: 'feedbacks', col: 'status', sql: "ALTER TABLE feedbacks ADD COLUMN status VARCHAR(20) DEFAULT 'new'" },
+        { table: 'feedbacks', col: 'device_info', sql: 'ALTER TABLE feedbacks ADD COLUMN device_info JSONB' },
+    ];
+
+    for (const m of migrations) {
+        try {
+            const check = await pool.query(
+                `SELECT 1 FROM information_schema.columns WHERE table_name = $1 AND column_name = $2`,
+                [m.table, m.col]
+            );
+            if (check.rows.length === 0) {
+                await pool.query(m.sql);
+                console.log(`[DB] ✓ Added ${m.table}.${m.col}`);
+            }
+        } catch (e) { console.error(`[DB] Migration ${m.table}.${m.col} error:`, e.message); }
     }
+
+    console.log('[DB] Database initialization complete!');
 };
 
 initDb();
