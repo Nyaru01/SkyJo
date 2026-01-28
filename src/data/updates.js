@@ -10,7 +10,7 @@ export const UPDATES = [
         changes: [
             { text: "Invitations Atomiques : Envoi instantané via le serveur (fini les invitations fantômes)", type: "feat" },
             { text: "Gestion Multi-Appareils : Présence stable même avec plusieurs onglets ouverts", type: "improve" },
-            { text: "Auto-VibeID : Génération automatique de l'identifiant pour les nouveaux joueurs", type: "fix" },
+            { text: "Auto-SkyID : Génération automatique de l'identifiant pour les nouveaux joueurs", type: "fix" },
             { text: "Toast Global : Bouton 'Rejoindre' accessible depuis n'importe quel onglet", type: "feat" },
             { text: "Notifications Sociales : Messages plus clairs et auto-fermeture automatique", type: "improve" }
         ],
@@ -42,7 +42,7 @@ export const UPDATES = [
         isNew: false,
         type: "major",
         changes: [
-            { text: "Système d'amis et recherche par VibeID", type: "feat" },
+            { text: "Système d'amis et recherche par SkyID", type: "feat" },
             { text: "Profils personnalisables avec avatars", type: "feat" },
             { text: "Classements mondiaux et entre amis", type: "feat" },
             { text: "Notifications push pour les invitations", type: "feat" },

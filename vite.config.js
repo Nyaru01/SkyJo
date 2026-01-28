@@ -12,7 +12,7 @@ export default defineConfig({
       srcDir: 'src',
       filename: 'sw.js',
       registerType: 'prompt',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'bg-skyjo.png'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'bg-skyjo.png', 'info_premium.png'],
       manifest: {
         name: 'Skyjo Score',
         short_name: 'SkyjoScore',
@@ -36,5 +36,18 @@ export default defineConfig({
       }
     })
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      },
+      '/socket.io': {
+        target: 'http://localhost:3000',
+        ws: true,
+        changeOrigin: true
+      }
+    }
+  }
 })
 

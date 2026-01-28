@@ -5,8 +5,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import pkg from 'pg';
-const { Pool } = pkg;
+import pool from './db.js';
 import webpush from 'web-push';
 import dotenv from 'dotenv';
 import {
@@ -22,6 +21,8 @@ import {
 
 dotenv.config();
 
+import feedbackRoutes from './routes/feedback.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -33,10 +34,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // --- Database Configuration ---
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
-});
+// Pool is now imported from ./db.js
 
 const initDb = async () => {
     try {
@@ -64,8 +62,32 @@ const initDb = async () => {
                 user_id TEXT PRIMARY KEY REFERENCES users(id),
                 subscription JSONB NOT NULL
             );
+
+            -- Feedback System Tables
+            CREATE TABLE IF NOT EXISTS feedbacks (
+                id SERIAL PRIMARY KEY,
+                user_id TEXT, -- NULL friendly
+                username TEXT NOT NULL,
+                content TEXT NOT NULL, -- Validation in middleware
+                type VARCHAR(50) DEFAULT 'general',
+                status VARCHAR(20) DEFAULT 'new',
+                device_info JSONB,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            
+            -- Indexes if not exists (using manual check or IF NOT EXISTS syntax for indexes requires newer PG, 
+            -- but reliable simple create if not exists is: )
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE tablename = 'feedbacks' AND indexname = 'idx_status') THEN
+                    CREATE INDEX idx_status ON feedbacks(status);
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE tablename = 'feedbacks' AND indexname = 'idx_created_at') THEN
+                    CREATE INDEX idx_created_at ON feedbacks(created_at DESC);
+                END IF;
+            END$$;
         `);
-        console.log('[DB] Database initialized');
+        console.log('[DB] Database initialized (Users, Friends, Push, Feedbacks)');
     } catch (err) {
         console.error('[DB] Init error:', err);
     }
@@ -82,6 +104,9 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     );
     console.log('[PUSH] VAPID keys configured');
 }
+
+// --- Feedback API ---
+app.use('/api/feedback', feedbackRoutes);
 
 // --- Social & Profile API ---
 
@@ -308,6 +333,7 @@ const io = new Server(httpServer, {
         methods: ["GET", "POST"]
     }
 });
+app.locals.io = io;
 
 const rooms = new Map();
 const userStatus = new Map(); // userId -> Set of socketIds
@@ -674,7 +700,25 @@ io.on('connection', (socket) => {
     });
 });
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', db: 'connected' }));
+app.get('/api/health', async (req, res) => {
+    try {
+        await pool.query('SELECT NOW()');
+        res.json({
+            status: 'ok',
+            db: 'connected',
+            env_db_url: !!process.env.DATABASE_URL,
+            table_feedbacks: (await pool.query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'feedbacks')")).rows[0].exists
+        });
+    } catch (error) {
+        console.error('[HEALTH ERROR]', error);
+        res.status(500).json({
+            status: 'error',
+            db: 'disconnected',
+            error: error.message,
+            env_db_url: !!process.env.DATABASE_URL
+        });
+    }
+});
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist', 'index.html'), (err) => {

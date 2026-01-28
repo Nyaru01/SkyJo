@@ -257,8 +257,6 @@ export default function Dashboard() {
                                     setVirtualScreen(screen);
                                     setActiveTab('virtual');
                                 }}
-                                setShowRulesModal={setIsTutorialOpen}
-                                showRulesModal={isTutorialOpen}
                                 playerCardSkin={playerCardSkin}
                                 playerLevel={playerLevel}
                                 setCardSkin={setCardSkin}

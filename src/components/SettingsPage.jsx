@@ -7,6 +7,9 @@ import { useGameStore } from '../store/gameStore';
 import { cn } from '../lib/utils';
 import { pushManager } from '../lib/pushManager';
 import { Bell, BellOff } from 'lucide-react';
+import { FeedbackModal } from './FeedbackModal';
+import { AboutSection } from './AboutSection';
+import { AdminDashboard } from './AdminDashboard';
 
 export default function SettingsPage({ onViewChangelog }) {
     const soundEnabled = useGameStore(state => state.soundEnabled);
@@ -21,6 +24,11 @@ export default function SettingsPage({ onViewChangelog }) {
     const [isTutorialOpen, setIsTutorialOpen] = useState(false);
     const [pushSubscription, setPushSubscription] = useState(null);
     const [isPushLoading, setIsPushLoading] = useState(false);
+
+    // New Feature States
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+    const [isAdminOpen, setIsAdminOpen] = useState(false);
+    const [adminAuthToken, setAdminAuthToken] = useState(null);
 
     const userProfile = useGameStore(state => state.userProfile);
 
@@ -50,8 +58,9 @@ export default function SettingsPage({ onViewChangelog }) {
         setShowConfirmReset(false);
     };
 
-    const openFeedbackForm = () => {
-        window.open('https://forms.gle/hui2vDfc4XKpcbGt7', '_blank');
+    const handleAdminUnlock = (token) => {
+        setAdminAuthToken(token);
+        setIsAdminOpen(true);
     };
 
     const PremiumToggle = ({ label, subLabel, icon: Icon, value, onChange, disabled, activeColor = "emerald" }) => (
@@ -258,20 +267,33 @@ export default function SettingsPage({ onViewChangelog }) {
                     </p>
                     <Button
                         className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white"
-                        onClick={openFeedbackForm}
+                        onClick={() => setIsFeedbackOpen(true)}
                     >
                         <MessageSquare className="h-4 w-4 mr-2" />
                         Envoyer un commentaire
-                        <ExternalLink className="h-4 w-4 ml-2" />
                     </Button>
                 </CardContent>
             </Card>
 
-            {/* Version */}
-            <div className="text-center text-xs text-slate-500 pt-4">
-                <p>SkyJo Scoring v1.0.0</p>
-                <p className="mt-1">Made with ❤️</p>
-            </div>
+            {/* Version & About */}
+            <AboutSection
+                appVersion="v2.0.0"
+                onAdminUnlock={handleAdminUnlock}
+            />
+
+            {/* Modals */}
+            <FeedbackModal
+                isOpen={isFeedbackOpen}
+                onClose={() => setIsFeedbackOpen(false)}
+                username={userProfile?.name}
+            />
+
+            {isAdminOpen && (
+                <AdminDashboard
+                    adminPassword={adminAuthToken}
+                    onClose={() => setIsAdminOpen(false)}
+                />
+            )}
         </div>
     );
 }

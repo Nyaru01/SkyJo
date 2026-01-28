@@ -10,12 +10,11 @@ import { useOnlineGameStore } from '../store/onlineGameStore';
 
 export default function GameMenu({
     setScreen,
-    setShowRulesModal,
-    showRulesModal,
     playerCardSkin,
     playerLevel,
     setCardSkin
 }) {
+    const [showRulesModal, setShowRulesModal] = React.useState(false);
     const startAIGame = useVirtualGameStore(state => state.startAIGame);
     const userProfile = useGameStore(state => state.userProfile);
     const connectOnline = useOnlineGameStore(state => state.connect);

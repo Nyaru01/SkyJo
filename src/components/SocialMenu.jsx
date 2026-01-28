@@ -179,7 +179,7 @@ export default function SocialDashboard(props) {
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Rechercher un VibeID ou un nom..."
+                                placeholder="Rechercher un SkyID ou un nom..."
                                 className="w-full bg-slate-800/50 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white focus:outline-none focus:ring-2 focus:ring-skyjo-blue/30 transition-all backdrop-blur-md"
                             />
                             {isSearching && (
@@ -239,7 +239,7 @@ export default function SocialDashboard(props) {
                                         <div className="flex flex-col items-center gap-2">
                                             <Users className="w-8 h-8 text-slate-600 mb-2" />
                                             <p className="text-sm text-slate-400 font-medium">Pas encore d'amis à afficher.</p>
-                                            <p className="text-[10px] text-slate-600 uppercase">Partagez votre VibeID pour commencer !</p>
+                                            <p className="text-[10px] text-slate-600 uppercase">Partagez votre SkyID pour commencer !</p>
                                         </div>
                                     </Card>
                                 ) : (
