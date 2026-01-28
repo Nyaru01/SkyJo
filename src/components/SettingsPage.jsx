@@ -42,14 +42,24 @@ export default function SettingsPage({ onViewChangelog }) {
 
     const handleTogglePush = async () => {
         setIsPushLoading(true);
-        if (pushSubscription) {
-            await pushManager.unsubscribe(userProfile.id);
-            setPushSubscription(null);
-        } else {
-            const sub = await pushManager.subscribe(userProfile.id);
-            setPushSubscription(sub);
+        try {
+            if (pushSubscription) {
+                await pushManager.unsubscribe(userProfile.id);
+                setPushSubscription(null);
+            } else {
+                const sub = await pushManager.subscribe(userProfile.id);
+                setPushSubscription(sub);
+            }
+        } catch (error) {
+            console.error('[PUSH] Toggle Error:', error);
+            if (error.message.includes('permission denied') || error.name === 'NotAllowedError') {
+                alert("⚠️ Notifications bloquées par le navigateur.\n\nVeuillez cliquer sur l'icône de cadenas 🔒 ou de réglages dans la barre d'adresse pour autoriser les notifications.");
+            } else {
+                alert("Erreur lors de l'activation des notifications: " + error.message);
+            }
+        } finally {
+            setIsPushLoading(false);
         }
-        setIsPushLoading(false);
     };
 
     const handleResetHistory = () => {
