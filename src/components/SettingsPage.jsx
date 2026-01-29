@@ -190,7 +190,7 @@ export default function SettingsPage({ onViewChangelog }) {
                                 <Sparkles className="w-5 h-5 text-emerald-400" />
                             </div>
                             <span className="font-bold text-emerald-100">Nouveautés</span>
-                            <span className="text-[10px] text-emerald-400/60 uppercase tracking-widest mt-1">v2.0.5</span>
+                            <span className="text-[10px] text-emerald-400/60 uppercase tracking-widest mt-1">v2.0.9</span>
                         </button>
 
                         <button
@@ -319,7 +319,7 @@ export default function SettingsPage({ onViewChangelog }) {
 
             {/* Version & About */}
             <AboutSection
-                appVersion="v2.0.0"
+                appVersion="v2.0.9"
                 onAdminUnlock={handleAdminUnlock}
             />
 

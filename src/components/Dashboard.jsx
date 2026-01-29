@@ -150,6 +150,11 @@ export default function Dashboard() {
         }
     }, [gameStatus]);
 
+    // Reset scroll when switching tabs
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [activeTab]);
+
     // Calculate totals
     const playerTotals = players.map(p => ({
         ...p,

@@ -1,11 +1,27 @@
 export const UPDATES = [
     {
+        id: 12,
+        version: "2.0.9",
+        date: "29 Janv. 2026",
+        title: "Chat Privé & Notifications Premium",
+        description: "Communiquez en temps réel avec vos amis sans quitter votre partie.",
+        isNew: true,
+        type: "major",
+        changes: [
+            { text: "Chat Privé : Interface style WhatsApp pour discuter en direct", type: "feat" },
+            { text: "Chat In-Game : Lis et réponds aux messages sans quitter ta partie", type: "feat" },
+            { text: "Notifications Premium : Nouveau bandeau élégant et discret", type: "improve" },
+            { text: "Sync Multi-onglets : Synchronisation parfaite entre tes écrans", type: "improve" }
+        ],
+        image: "/premium-bg.jpg"
+    },
+    {
         id: 11,
         version: "2.0.0",
         date: "28 Janv. 2026",
         title: "Skyjo V2 : Le Grand Lancement",
         description: "L'expérience Skyjo ultime est là. Mode social, persistance Cloud et design ultra-premium.",
-        isNew: true,
+        isNew: false,
         type: "major",
         changes: [
             { text: "SkyID : Crée ton identité unique et retrouve tes amis", type: "feat" },
