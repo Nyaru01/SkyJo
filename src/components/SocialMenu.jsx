@@ -11,7 +11,6 @@ import { useFeedback } from '../hooks/useFeedback';
 import Leaderboard from './Leaderboard';
 import { useOnlineGameStore } from '../store/onlineGameStore';
 import { pushManager } from '../lib/pushManager';
-import ChatPopup from './ChatPopup';
 
 export default function SocialDashboard(props) {
     const { userProfile, updateUserProfile, generateSkyId } = useGameStore();
@@ -447,23 +446,7 @@ export default function SocialDashboard(props) {
                 }}
             />
 
-            {
-                socialNotification && (
-                    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-skyjo-blue text-white text-[10px] font-black px-4 py-2 rounded-full shadow-2xl animate-bounce z-50">
-                        SOCIAL : NOUVEAU !
-                    </div>
-                )
-            }
 
-            {/* Private Chat Popup */}
-            <AnimatePresence>
-                {activeChatId && (
-                    <ChatPopup
-                        friend={friends.find(f => String(f.id) === String(activeChatId))}
-                        onClose={() => setActiveChatId(null)}
-                    />
-                )}
-            </AnimatePresence>
         </div >
     );
 }

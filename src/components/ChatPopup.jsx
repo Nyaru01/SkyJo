@@ -61,10 +61,10 @@ export default function ChatPopup({ friend, onClose }) {
 
     return (
         <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.9, y: 50 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed inset-x-4 bottom-24 top-20 z-[60] bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-[32px] shadow-2xl flex flex-col overflow-hidden lg:max-w-md lg:left-auto lg:right-6 lg:bottom-10 lg:top-auto lg:h-[600px]"
+            exit={{ opacity: 0, scale: 0.9, y: 50, transition: { duration: 0.2 } }}
+            className="fixed inset-x-4 bottom-[108px] top-20 z-[100] bg-slate-950/80 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden lg:max-w-md lg:left-auto lg:right-6 lg:bottom-28 lg:top-auto lg:h-[600px]"
         >
             {/* Header */}
             <div className="p-4 border-b border-white/5 bg-white/5 flex items-center justify-between">

@@ -26,6 +26,7 @@ import { useBackgroundMusic } from '../hooks/useBackgroundMusic';
 import { useSocialStore } from '../store/socialStore';
 import { FeedbackModal } from './FeedbackModal';
 import { AdminDashboard } from './AdminDashboard';
+import ChatPopup from './ChatPopup';
 
 // Variants d'animation pour les transitions de pages
 const pageVariants = {
@@ -80,6 +81,8 @@ export default function Dashboard() {
     const fetchFriends = useSocialStore(state => state.fetchFriends);
     const unreadCount = useSocialStore(state => Object.values(state.unreadMessages).reduce((a, b) => a + b, 0));
     const friends = useSocialStore(state => state.friends);
+    const activeChatId = useSocialStore(state => state.activeChatId);
+    const setActiveChatId = useSocialStore(state => state.setActiveChatId);
     const { playClick, playAchievement, playSocialNotify } = useFeedback();
 
     const [activeTab, setActiveTab] = useState('home');
@@ -599,28 +602,51 @@ export default function Dashboard() {
 
             {/* Global Chat Notification Banner */}
             <AnimatePresence>
-                {unreadCount > 0 && activeTab !== 'social' && (
+                {unreadCount > 0 && activeTab !== 'social' && !activeChatId && (
                     <motion.div
-                        initial={{ opacity: 0, y: 50, scale: 0.9, x: '-50%' }}
-                        animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
-                        exit={{ opacity: 0, scale: 0.8, x: '-50%' }}
-                        onClick={() => setActiveTab('social')}
-                        className="fixed bottom-24 left-1/2 z-[100] bg-amber-500/90 backdrop-blur-xl border border-amber-400/50 rounded-3xl p-4 shadow-2xl flex items-center gap-4 min-w-[320px] max-w-[90vw] cursor-pointer"
+                        initial={{ opacity: 0, y: 100, x: '-50%' }}
+                        animate={{ opacity: 1, y: 0, x: '-50%' }}
+                        exit={{ opacity: 0, y: 50, transition: { duration: 0.2 } }}
+                        onClick={() => {
+                            // If only one friend has unread messages, open that chat directly
+                            const unreadEntries = Object.entries(useSocialStore.getState().unreadMessages).filter(([_, count]) => count > 0);
+                            if (unreadEntries.length === 1) {
+                                const [friendId] = unreadEntries[0];
+                                useSocialStore.getState().setActiveChatId(friendId);
+                            } else {
+                                setActiveTab('social');
+                            }
+                        }}
+                        className="fixed bottom-[88px] left-1/2 z-[90] w-[92%] max-w-sm cursor-pointer shadow-[0_20px_50px_rgba(245,158,11,0.3)]"
                     >
-                        <div className="w-12 h-12 rounded-2xl bg-amber-500 flex items-center justify-center shadow-lg animate-bounce shrink-0">
-                            <Users className="h-6 w-6 text-white" />
-                        </div>
-                        <div className="flex-1 overflow-hidden">
-                            <p className="text-[10px] text-amber-100 font-black uppercase tracking-widest truncate">Nouveau Message !</p>
-                            <p className="text-white font-bold text-sm">Tu as {unreadCount} message{unreadCount > 1 ? 's' : ''} non lu{unreadCount > 1 ? 's' : ''}</p>
-                        </div>
-                        <div className="flex gap-2 shrink-0">
-                            <Button
-                                size="sm"
-                                className="rounded-xl bg-white text-amber-600 hover:bg-white/90 font-black text-xs px-4 h-10"
-                            >
-                                Voir
-                            </Button>
+                        <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-amber-400 via-amber-500 to-orange-600 p-[1px]">
+                            <div className="flex items-center gap-4 bg-slate-950/40 backdrop-blur-3xl rounded-[2.45rem] p-4 pr-6">
+                                {/* Animated Glow Aspect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+
+                                <div className="relative h-14 w-14 flex-shrink-0">
+                                    <div className="absolute inset-0 bg-amber-500 blur-xl opacity-40 animate-pulse" />
+                                    <div className="relative h-full w-full rounded-2xl bg-gradient-to-br from-amber-300 to-amber-600 flex items-center justify-center shadow-inner">
+                                        <Users className="h-7 w-7 text-slate-900" />
+                                        <div className="absolute -top-1 -right-1 h-5 w-5 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-amber-500">
+                                            <span className="text-[10px] font-black text-amber-600">{unreadCount}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-amber-300 animate-ping" />
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400/80">Nouveauté Sociale</p>
+                                    </div>
+                                    <h4 className="text-white font-black text-base leading-tight">Nouveau Message !</h4>
+                                    <p className="text-amber-100/70 text-xs font-medium truncate">Appuie pour lire la conversation</p>
+                                </div>
+
+                                <div className="flex items-center justify-center h-10 w-10 rounded-2xl bg-white/10 text-white hover:bg-white/20 transition-colors">
+                                    <Play className="h-4 w-4 rotate-0 ml-0.5" fill="currentColor" />
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
                 )}
@@ -638,6 +664,15 @@ export default function Dashboard() {
                     onClose={() => setIsAdminOpen(false)}
                 />
             )}
+
+            <AnimatePresence>
+                {activeChatId && (
+                    <ChatPopup
+                        friend={friends.find(f => String(f.id) === String(activeChatId))}
+                        onClose={() => setActiveChatId(null)}
+                    />
+                )}
+            </AnimatePresence>
         </div >
     );
 }
