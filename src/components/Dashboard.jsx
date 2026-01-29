@@ -640,10 +640,6 @@ export default function Dashboard() {
                                 </div>
 
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-0.5">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-amber-300 animate-ping" />
-                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400/80">Nouveauté Sociale</p>
-                                    </div>
                                     <h4 className="text-white font-black text-base leading-tight">Nouveau Message !</h4>
                                     <p className="text-amber-100/70 text-xs font-medium truncate">Appuie pour lire la conversation</p>
                                 </div>
