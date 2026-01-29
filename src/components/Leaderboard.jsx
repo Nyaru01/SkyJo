@@ -61,7 +61,7 @@ export default function Leaderboard({ data, currentUserId, type, setType }) {
     const others = data.slice(3);
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-6 animate-in fade-in duration-500">
             {/* Type Toggle */}
             <div className="flex gap-1 p-1 bg-white/5 rounded-2xl border border-white/5 mx-auto w-fit">
                 <button

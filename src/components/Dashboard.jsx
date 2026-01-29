@@ -30,9 +30,9 @@ import ChatPopup from './ChatPopup';
 
 // Variants d'animation pour les transitions de pages
 const pageVariants = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -20 }
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 }
 };
 
 const pageTransition = {
@@ -599,7 +599,7 @@ export default function Dashboard() {
             )}
 
             <div className={`max-w-3xl mx-auto p-3 ${isVirtualGameActive ? 'pb-2' : 'pb-24'}`}>
-                <AnimatePresence>
+                <AnimatePresence mode="wait">
                     {renderContent()}
                 </AnimatePresence>
                 {gameStatus === 'FINISHED' && <GameOver />}

@@ -222,9 +222,9 @@ export default function SocialDashboard(props) {
                 {activeTab === 'friends' ? (
                     <motion.div
                         key="friends"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         className="space-y-6"
                     >
                         {/* Search Bar */}
@@ -250,9 +250,9 @@ export default function SocialDashboard(props) {
                         <AnimatePresence>
                             {searchResults.length > 0 && (
                                 <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
                                     className="space-y-3"
                                 >
                                     <div className="flex items-center justify-between px-2">
@@ -303,7 +303,6 @@ export default function SocialDashboard(props) {
                                     friends.map(f => (
                                         <motion.div
                                             key={f.id}
-                                            layout
                                             initial={{ opacity: 0, scale: 0.95 }}
                                             animate={{ opacity: 1, scale: 1 }}
                                         >
@@ -426,9 +425,9 @@ export default function SocialDashboard(props) {
                 ) : (
                     <motion.div
                         key="leaderboard"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                     >
                         <Leaderboard
                             data={leaderboardType === 'friends' ? leaderboard : globalLeaderboard}

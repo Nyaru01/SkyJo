@@ -93,7 +93,7 @@ export default function ScoreInput({ players, onSave, onCancel, isEmbedded = fal
                             <div
                                 key={p.id}
                                 className={cn(
-                                    "relative p-4 rounded-3xl border transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 shadow-sm group",
+                                    "relative p-4 rounded-3xl border transition-all duration-300 animate-in fade-in shadow-sm group",
                                     isFinisher
                                         ? "bg-skyjo-blue/10 border-skyjo-blue shadow-skyjo-blue/10 ring-1 ring-skyjo-blue/20"
                                         : "bg-white/40 dark:bg-slate-700/40 border-white/20 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/60"
@@ -221,7 +221,7 @@ export default function ScoreInput({ players, onSave, onCancel, isEmbedded = fal
 
     if (isEmbedded) {
         return (
-            <div id="score-input-section" className="animate-in fade-in slide-in-from-bottom-8 duration-500 pt-2 pb-12">
+            <div id="score-input-section" className="animate-in fade-in duration-500 pt-2 pb-12">
                 {content}
             </div>
         );
