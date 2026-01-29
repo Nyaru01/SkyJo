@@ -5,12 +5,14 @@ import { Button } from './ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Input } from './ui/Input';
 import { Toast } from './ui/Toast';
+import ConfirmModal from './ui/ConfirmModal';
 import PlayerHand from './virtual/PlayerHand';
 import DrawDiscard from './virtual/DrawDiscard';
 import DrawDiscardPopup from './virtual/DrawDiscardPopup';
 import DrawDiscardTrigger from './virtual/DrawDiscardTrigger';
 import CardAnimationLayer from './virtual/CardAnimationLayer';
 import SkyjoCard from './virtual/SkyjoCard';
+import HostLeftOverlay from './virtual/HostLeftOverlay';
 import LevelUpCelebration from './LevelUpCelebration';
 import ExperienceBar from './ExperienceBar';
 import SkinCarousel from './SkinCarousel';
@@ -57,6 +59,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     // 2. Local State
     const [screen, setScreen] = useState(initialScreen); // menu, setup, game, scores
+    const [showExitConfirm, setShowExitConfirm] = useState(false);
     const [players, setPlayers] = useState([
         { name: userProfile?.name || 'Joueur', avatarId: userProfile?.avatarId || 'cat' },
         { name: '', avatarId: 'dog' },
@@ -71,12 +74,14 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const [openAvatarSelector, setOpenAvatarSelector] = useState(null);
     const [localPlayerIndex, setLocalPlayerIndex] = useState(0);
     const [initialReveals, setInitialReveals] = useState({});
+    const hasArchivedOnlineRef = useRef(false);
 
     const gameState = useVirtualGameStore((s) => s.gameState);
     const totalScores = useVirtualGameStore((s) => s.totalScores);
     const roundNumber = useVirtualGameStore((s) => s.roundNumber);
     const isGameOver = useVirtualGameStore((s) => s.isGameOver);
     const gameWinner = useVirtualGameStore((s) => s.gameWinner);
+    const onlineRedirection = useOnlineGameStore(s => s.redirectionState);
     const startLocalGame = useVirtualGameStore((s) => s.startLocalGame);
     const revealInitial = useVirtualGameStore((s) => s.revealInitial);
     const drawFromDrawPile = useVirtualGameStore((s) => s.drawFromDrawPile);
@@ -121,21 +126,33 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const onlineIsHost = useOnlineGameStore(s => s.isHost);
     const publicRooms = useOnlineGameStore(s => s.publicRooms);
     const socketId = useOnlineGameStore(s => s.socketId);
-    const getSocketId = useOnlineGameStore(s => s.getSocketId); // Direct access to socket.id
     const onlineLastNotificationRaw = useOnlineGameStore(s => s.lastNotification);
     const lastAction = useOnlineGameStore(s => s.lastAction);
     const onlinePendingAnimation = useOnlineGameStore(s => s.pendingAnimation);
     const clearOnlinePendingAnimation = useOnlineGameStore(s => s.clearPendingAnimation);
     const onlineReadyStatus = useOnlineGameStore(s => s.readyStatus);
+    const getSocketId = useOnlineGameStore(s => s.getSocketId);
+
+    // 🔥 Aliases pour le plan de fix
+    const onlineStarted = useOnlineGameStore(s => s.onlineStarted);
+    const activeState = useOnlineGameStore(s => s.activeState);
+    const leaveRoom = useOnlineGameStore(s => s.leaveRoom);
 
     // Main game store for archiving
     const archiveOnlineGame = useGameStore(s => s.archiveOnlineGame);
     const playerLevel = useGameStore(s => s.level);
     const playerCardSkin = useGameStore(s => s.cardSkin);
 
+    // Derived game state (moved up to avoid TDZ)
+    const isOnlineMode = !!onlineGameStarted;
+    const activeGameState = isOnlineMode ? onlineGameState : gameState;
+    const activeTotalScores = isOnlineMode ? onlineTotalScores : totalScores;
+    const activeRoundNumber = isOnlineMode ? onlineRoundNumber : roundNumber;
+
     // Online Actions
     const connectOnline = useOnlineGameStore(s => s.connect);
     const disconnectOnline = useOnlineGameStore(s => s.disconnect);
+
 
     // Enforce Level Requirements for Skins
     useEffect(() => {
@@ -147,19 +164,27 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     // Force scroll to top on game mount to avoid 1-2mm shift
     useEffect(() => {
+        console.log("[VG] Component MOUNTED");
         const timer = setTimeout(() => {
             window.scrollTo(0, 0);
             document.body.scrollTop = 0;
             document.documentElement.scrollTop = 0;
         }, 100);
-        return () => clearTimeout(timer);
+        return () => {
+            console.log("[VG] Component UNMOUNTED");
+            clearTimeout(timer);
+        };
     }, []);
 
-    // Sync internal screen state with initialScreen prop
-    // This allows parents (like Dashboard) to force a screen change even if VirtualGame stays mounted
+    console.log(`[VG] Rendering... screen=${screen}, initialScreen=${initialScreen}`);
+
+    // Sync screen with initialScreen prop ONLY if not currently in an active game
     useEffect(() => {
         if (initialScreen && initialScreen !== screen) {
-            setScreen(initialScreen);
+            // Only force reset to lobby/menu if we are not actually in a game
+            if (!onlineGameStarted && !gameState) {
+                setScreen(initialScreen);
+            }
         }
     }, [initialScreen]);
 
@@ -263,22 +288,49 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             playerAvatarId: userProfile.avatarId
         }));
     }, [userProfile.name, userProfile.avatarId]);
-    // Sync screen with initialScreen prop
-    useEffect(() => {
-        if (initialScreen) {
-            setScreen(initialScreen);
-        }
-    }, [initialScreen]);
 
-    // Auto-navigate to game screen when any game starts
+    // 🔥 EFFET AMÉLIORÉ : Auto-navigation for online games
     useEffect(() => {
-        const activeState = onlineGameStarted ? onlineGameState : gameState;
+        // Only run auto-nav logic if we are IN ONLINE MODE (or trying to join one)
+        // If initialScreen is not lobby, we assume it's a local/AI game flow
+        if (initialScreen !== 'lobby') return;
 
-        if (activeState && activeState.phase !== 'FINISHED' && screen !== 'game') {
+        const hasActiveState = !!activeState && Object.keys(activeState).length > 0;
+        const gameIsStarted = !!onlineGameStarted;
+
+        console.log('[VG] Auto-nav check:', {
+            onlineStarted,
+            hasActiveState,
+            gameIsStarted,
+            currentScreen: screen,
+            roomId: onlineRoomCode
+        });
+
+        // Transition lobby → game when the game starts
+        if (onlineStarted && gameIsStarted && (screen === 'lobby' || screen === 'setup' || screen === 'menu')) {
+            console.log("[VG] ✅ Transitioning to game screen!");
             setScreen('game');
             setInitialReveals({});
         }
-    }, [onlineGameStarted, onlineGameState, gameState, screen]);
+
+        // Return to lobby ONLY if we are not in an active session anymore
+        // AND we are strictly in online mode context
+        // AND there is no pending error (like Host Left)
+        if (!onlineStarted && !onlineRoomCode && screen === 'game' && !onlineError) {
+            console.log("[VG] ⬅️ Session lost, returning to menu");
+            setScreen('menu');
+        }
+    }, [onlineStarted, onlineGameStarted, activeState, screen, onlineRoomCode, initialScreen, onlineError]);
+
+    useEffect(() => {
+        console.log(`[VG] Rendering... screen=${screen}, isOnline=${isOnlineMode}, hasState=${!!activeGameState}`);
+        // Avoid staying on game screen if state is lost unexpectedly
+        // Check if there is an error pending (e.g., Host Left), if so, DON'T redirect yet, let overlay show
+        if (initialScreen === 'lobby' && screen === 'game' && !activeGameState && !onlineGameStarted && !gameState && !onlineError) {
+            console.warn("[VG] Game screen active but no state found! Redirecting to menu.");
+            setScreen('menu');
+        }
+    }, [screen, activeGameState, onlineGameStarted, gameState, initialScreen]);
 
     // Sync notifications from store
     useEffect(() => {
@@ -319,7 +371,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     // Auto-archive online game on Game Over
     // We use a ref to prevent double-archiving in the same mounting cycle if store updates slowly
-    const hasArchivedOnlineRef = useRef(false);
+    // (hasArchivedOnlineRef is declared at the top of the component)
 
     // Reset ref when game starts
     useEffect(() => {
@@ -348,19 +400,21 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     }, [onlineRoundNumber]);
 
     // Return to lobby when online game is cancelled (host quits)
-    // Return to lobby when online game is cancelled (host quits)
     useEffect(() => {
         // Improved check: If we're on the game screen but have no online game AND no local game
         // and no room code (meaning we fully disconnected), go back to menu.
-        if (screen === 'game' && !onlineGameStarted && !gameState && !onlineRoomCode) {
+        // IMPORTANT: Do NOT redirect if there is an error pending (HostLeftOverlay needs to show)
+        if (screen === 'game' && !onlineGameStarted && !gameState && !onlineRoomCode && !onlineError) {
+            console.log("[VG] Resetting to menu (no game, no room)");
             setScreen('menu');
         }
 
         // Also handle legacy case where we might still have roomCode but game stopped
-        if (screen === 'game' && onlineRoomCode && !onlineGameStarted && !onlineIsGameOver) {
+        if (screen === 'game' && onlineRoomCode && !onlineGameStarted && !onlineIsGameOver && !onlineError) {
+            console.log("[VG] Resetting to menu (game stopped but room active)");
             setScreen('menu');
         }
-    }, [onlineGameStarted, onlineIsGameOver, onlineRoomCode, screen, gameState]);
+    }, [onlineGameStarted, onlineIsGameOver, onlineRoomCode, screen, gameState, onlineError]);
 
     // Determine if game is finished (for sound effect)
     const activeGameStateForEffect = onlineGameStarted ? onlineGameState : gameState;
@@ -635,34 +689,37 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     // Helper to update player avatar from selector
     const updateAvatar = (indexOrKey, avatarId) => {
         if (indexOrKey === 'ai-player') {
-            setAIConfig({ ...aiConfig, playerAvatarId: avatarId });
-            setMyAvatarId(avatarId); // Sync with online state
-            updateUserProfile({ avatarId }); // Global sync
-            setOpenAvatarSelector(null);
-        } else if (indexOrKey === 'online-setup') {
-            setMyAvatarId(avatarId);
-            setAIConfig({ ...aiConfig, playerAvatarId: avatarId }); // Sync with AI state
-            updateUserProfile({ avatarId }); // Global sync
-            setOpenAvatarSelector(null);
-        } else if (indexOrKey === '0') {
-            // Local player 0
-            const newPlayers = [...players];
-            newPlayers[0] = { ...newPlayers[0], avatarId };
-            setPlayers(newPlayers);
-            updateUserProfile({ avatarId }); // Global sync
-            setOpenAvatarSelector(null);
-        } else {
-            const index = Number(indexOrKey);
-            const newPlayers = [...players];
-            newPlayers[index] = { ...newPlayers[index], avatarId };
-            setPlayers(newPlayers);
-            setOpenAvatarSelector(null);
+            setAIConfig(prev => ({ ...prev, playerAvatarId: avatarId }));
+            return;
         }
+        if (indexOrKey === 'online-setup') {
+            setMyAvatarId(avatarId);
+            setPlayerInfo(myPseudo, avatarId);
+            updateUserProfile({ avatarId }); // Global sync
+            setOpenAvatarSelector(null);
+            return;
+        }
+        const index = Number(indexOrKey);
+        const newPlayers = [...players];
+        newPlayers[index] = { ...newPlayers[index], avatarId };
+        setPlayers(newPlayers);
+        if (index === 0) {
+            updateUserProfile({ avatarId }); // Global sync
+        }
+        setOpenAvatarSelector(null);
     };
 
     // Back to menu
-    // Back to menu
     const handleBackToMenu = () => {
+        if (screen === 'game' && !isGameOver) {
+            setShowExitConfirm(true);
+        } else {
+            confirmExit();
+        }
+    };
+
+    const confirmExit = () => {
+        setShowExitConfirm(false);
         // Archive online game if it was started and has data (avoid duplicates)
         // Check our ref to see if we already auto-archived
         if (onlineGameStarted && onlinePlayers.length > 0 && !hasArchivedOnlineRef.current) {
@@ -673,10 +730,10 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 winner: onlineGameWinner,
                 roundsPlayed: onlineRoundNumber
             });
-            disconnectOnline();
-        } else if (onlineGameStarted) {
-            // Just disconnect if already archived
-            disconnectOnline();
+            leaveRoom(); // 🔥 Use leaveRoom instead of disconnect
+        } else if (onlineGameStarted || onlineRoomCode) {
+            // Just leave if already archived or in lobby
+            leaveRoom();
         }
 
         // Archive AI/local game when quitting (only if at least one round is finished)
@@ -1396,14 +1453,14 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         );
     }
 
-    // Determine which game state to use based on mode
-    const isOnlineMode = !!onlineGameStarted;
-    const activeGameState = isOnlineMode ? onlineGameState : gameState;
-    const activeTotalScores = isOnlineMode ? onlineTotalScores : totalScores;
-    const activeRoundNumber = isOnlineMode ? onlineRoundNumber : roundNumber;
 
     // If no active game state and we're on game screen, show loading indicator
     if (!activeGameState && screen === 'game') {
+        // ERROR HANDLING: If there is an error (e.g. host left), show overlay instead of loading
+        if (onlineError) {
+            return <HostLeftOverlay />;
+        }
+
         return (
             <div className="flex flex-col items-center justify-center p-12 text-slate-400">
                 <Bot className="w-12 h-12 mb-4 opacity-20 animate-pulse" />
@@ -1418,12 +1475,35 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     }
 
     // Calculate the local player's index in the game state
-    // In online mode, find the player matching our socket.id using the direct getter
-    // In local/AI mode, player 0 is always the local player
+    // In online mode, try to find by socket.id first, then fallback to dbId (for reconnects)
     const currentSocketId = isOnlineMode ? (getSocketId?.() || socketId) : null;
-    const myPlayerIndex = isOnlineMode
-        ? activeGameState.players.findIndex(p => p.id === currentSocketId)
-        : 0;
+    let myPlayerIndex = 0;
+
+    if (isOnlineMode) {
+        const players = activeGameState?.players || [];
+        // 1. Try socket ID
+        myPlayerIndex = players.findIndex(p => p.id === currentSocketId);
+
+        // 2. Fallback to DB ID if available
+        if (myPlayerIndex === -1 && userProfile?.id) {
+            console.log(`[VG] Socket ID mismatch, trying fallback to dbId: ${userProfile.id}`);
+            myPlayerIndex = players.findIndex(p => String(p.dbId) === String(userProfile.id));
+        }
+
+        console.log(`[VG] Render: screen=${screen}, isOnline=${isOnlineMode}, myIdx=${myPlayerIndex}, socketId=${currentSocketId}, dbId=${userProfile?.id}`);
+
+        if (myPlayerIndex === -1 && activeGameState) {
+            console.warn("[VG] Player index not found even with fallback. Players:", players.map(p => ({ id: p.id, dbId: p.dbId })));
+            // Prevent crash by showing loading or error state instead of rendering undefined player
+            return (
+                <div className="flex flex-col items-center justify-center min-h-[50vh]">
+                    <SkyjoLoader progress={100} />
+                    <p className="mt-4 text-white font-bold animate-pulse">Synchronisation...</p>
+                    <p className="text-xs text-white/50 mt-2">ID: {currentSocketId?.substr(0, 4)}...</p>
+                </div>
+            );
+        }
+    }
 
     // Determine the opponent's index (for 2-player games)
     const opponentIndex = myPlayerIndex === 0 ? 1 : 0;
@@ -1494,8 +1574,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                 <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                                     Classement final
                                 </h3>
-                                {gameState.players
-                                    .map(p => ({ ...p, total: totalScores[p.id] || 0 }))
+                                {activeGameState.players
+                                    .map(p => ({ ...p, total: activeTotalScores[p.id] || 0 }))
                                     .sort((a, b) => a.total - b.total)
                                     .map((player, index) => (
                                         <div
@@ -1838,7 +1918,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                         variant="ghost"
                         size="sm"
                         onClick={handleBackToMenu}
-                        className="h-8 px-3 text-[11px] font-black uppercase tracking-tighter bg-slate-800/40 hover:bg-slate-700/60 text-slate-300 border border-white/5 rounded-full backdrop-blur-md shadow-lg flex items-center gap-1"
+                        className="h-8 px-3 text-[11px] font-black uppercase tracking-tighter bg-slate-800/40 hover:bg-slate-700/60 text-slate-300 border border-white/5 rounded-full backdrop-blur-md shadow-lg flex items-center gap-1 transition-all active:scale-95"
                     >
                         <ArrowLeft className="h-3 w-3" />
                         Quitter
@@ -2186,6 +2266,18 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 }
                 onSelect={(id) => updateAvatar(openAvatarSelector, id)}
             />
+
+            {/* Premium Modals */}
+            <ConfirmModal
+                isOpen={showExitConfirm}
+                onClose={() => setShowExitConfirm(false)}
+                onConfirm={confirmExit}
+                title="Quitter la partie ?"
+                message="Êtes-vous sûr de vouloir quitter ? Vous serez déconnecté de la partie en cours."
+                confirmText="Quitter"
+                variant="danger"
+            />
+            <HostLeftOverlay />
         </div>
     );
 }

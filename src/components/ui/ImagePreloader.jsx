@@ -81,9 +81,22 @@ export default function ImagePreloader({ children }) {
         };
     }, []);
 
-    if (isLoading) {
-        return <SkyjoLoader progress={progress} />;
-    }
-
-    return <>{children}</>;
+    return (
+        <>
+            {isLoading && (
+                <div className="fixed inset-0 z-[9999]">
+                    <SkyjoLoader progress={progress} />
+                </div>
+            )}
+            <div
+                style={{
+                    opacity: isLoading ? 0 : 1,
+                    transition: 'opacity 0.5s ease-in-out',
+                    visibility: isLoading ? 'hidden' : 'visible'
+                }}
+            >
+                {children}
+            </div>
+        </>
+    );
 }

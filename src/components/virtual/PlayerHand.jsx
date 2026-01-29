@@ -42,6 +42,11 @@ const PlayerHand = memo(function PlayerHand({
         visible: { opacity: 1, y: 0 },
     };
 
+    // Safety check for undefined player (e.g. during state transitions or sync issues)
+    if (!player || !player.hand) {
+        return null;
+    }
+
     // Calculate score for display
     const currentScore = player.hand
         .filter((c) => c?.isRevealed)

@@ -11,6 +11,7 @@ import { useFeedback } from '../hooks/useFeedback';
 import Leaderboard from './Leaderboard';
 import { useOnlineGameStore } from '../store/onlineGameStore';
 import { pushManager } from '../lib/pushManager';
+import ConfirmModal from './ui/ConfirmModal';
 
 export default function SocialDashboard(props) {
     const { userProfile, updateUserProfile, generateSkyId } = useGameStore();
@@ -28,6 +29,7 @@ export default function SocialDashboard(props) {
     const [newName, setNewName] = useState(userProfile.name);
     const [copySuccess, setCopySuccess] = useState(false);
     const [activeTab, setActiveTab] = useState('friends');
+    const [friendToDelete, setFriendToDelete] = useState(null);
     const [leaderboardType, setLeaderboardType] = useState('friends'); // 'friends' or 'global'
     const [hasNotificationsEnabled, setHasNotificationsEnabled] = useState(true);
     const { playClick, playSocialNotify, playSocialInvite } = useFeedback();
@@ -402,12 +404,10 @@ export default function SocialDashboard(props) {
                                                                     variant="ghost"
                                                                     size="sm"
                                                                     className="h-10 w-10 p-0 text-slate-500 hover:bg-red-500/10 hover:text-red-500 rounded-full transition-colors"
-                                                                    onClick={async (e) => {
+                                                                    onClick={(e) => {
                                                                         e.stopPropagation();
-                                                                        if (confirm('Supprimer cet ami ?')) {
-                                                                            await useSocialStore.getState().deleteFriend(userProfile.id, f.id);
-                                                                            playClick();
-                                                                        }
+                                                                        setFriendToDelete(f);
+                                                                        playClick();
                                                                     }}
                                                                 >
                                                                     <Trash2 className="w-5 h-5" />
@@ -448,6 +448,22 @@ export default function SocialDashboard(props) {
                     updateUserProfile({ avatarId });
                     setIsAvatarSelectorOpen(false);
                 }}
+            />
+
+            {/* Friend Delete Confirmation Modal */}
+            <ConfirmModal
+                isOpen={!!friendToDelete}
+                onClose={() => setFriendToDelete(null)}
+                onConfirm={async () => {
+                    if (friendToDelete) {
+                        await useSocialStore.getState().deleteFriend(userProfile.id, friendToDelete.id);
+                        playClick();
+                    }
+                }}
+                title="Supprimer cet ami ?"
+                message={`Êtes-vous sûr de vouloir retirer ${friendToDelete?.name} de votre liste d'amis ?`}
+                confirmText="Supprimer"
+                variant="danger"
             />
 
 

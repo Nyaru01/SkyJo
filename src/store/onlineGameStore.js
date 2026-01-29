@@ -34,10 +34,15 @@ export const useOnlineGameStore = create((set, get) => ({
     totalScores: {},
     roundNumber: 1,
     gameStarted: false,
+    onlineStarted: false, // Alias for isConnected/inSession
+    activeState: null,    // Alias for gameState
     isGameOver: false,
     gameWinner: null,
     readyStatus: { readyCount: 0, totalPlayers: 0 }, // Track ready players for next round
     timeoutExpired: false, // True when 10s timeout has passed and host can force-start
+
+    // Redirection State (when host leaves)
+    redirectionState: { active: false, timer: 5, reason: '' },
 
     // UI Local State
     selectedCardIndex: null,
@@ -133,9 +138,11 @@ export const useOnlineGameStore = create((set, get) => ({
                 console.log('[Socket] Game started, round:', roundNumber);
                 set({
                     gameState,
+                    activeState: gameState,
                     totalScores,
                     roundNumber,
                     gameStarted: true,
+                    onlineStarted: true,
                     isGameOver: false,
                     gameWinner: null,
                     selectedCardIndex: null,
@@ -216,7 +223,11 @@ export const useOnlineGameStore = create((set, get) => ({
                 }
 
                 // Default: just update if no animation
-                set({ gameState, lastAction: lastAction || null });
+                set({
+                    gameState,
+                    activeState: gameState,
+                    lastAction: lastAction || null
+                });
             });
 
             socket.on('game_over', ({ totalScores, winner }) => {
@@ -229,17 +240,22 @@ export const useOnlineGameStore = create((set, get) => ({
             });
 
             // Handle player leaving
-            socket.on('player_left', ({ playerName, playerEmoji, newHost }) => {
+            socket.on('player_left', ({ playerId, playerName, playerEmoji, newHost }) => {
+                const { players } = get();
+                const updatedPlayers = players.filter(p => p.id !== playerId);
+
                 set({
+                    players: updatedPlayers,
                     lastNotification: {
                         type: 'info',
-                        message: `${playerEmoji} ${playerName} a quitté la partie`,
+                        message: `${playerEmoji || '👤'} ${playerName} a quitté la partie`,
                         timestamp: Date.now()
                     }
                 });
+
                 // If we became host
-                const { socketId, players } = get();
-                const me = players.find(p => p.id === socketId);
+                const { socketId } = get();
+                const me = updatedPlayers.find(p => p.id === socketId);
                 if (me && newHost === me.name) {
                     set({ isHost: true });
                 }
@@ -247,18 +263,32 @@ export const useOnlineGameStore = create((set, get) => ({
 
             socket.on('game_cancelled', ({ reason }) => {
                 console.log('[Socket] Game cancelled:', reason);
+
+                // Set error to trigger HostLeftOverlay (if host left)
+                // We DO NOT clear roomCode/onlineStarted yet to allow the Overlay to show
                 set({
                     gameStarted: false,
                     gameState: null,
-                    roomCode: null,
-                    players: [],
+                    // roomCode: null, // REMOVED: Keep roomCode for overlay
+                    // players: [],    // REMOVED: Keep players for context
                     isHost: false,
+                    error: reason,     // Trigger Overlay
                     lastNotification: {
-                        type: 'warning',
-                        message: reason + ' - Retour au menu',
+                        type: 'error',
+                        message: reason,
                         timestamp: Date.now()
-                    }
+                    },
+                    // onlineStarted: false, // REMOVED: Keep True so VirtualGame stays mounted
+                    activeState: null
                 });
+
+                // Start countdown to cleanup
+                if (reason.includes('hôte') || reason.includes('Pas assez de joueurs')) {
+                    get().startRedirection(reason);
+                } else {
+                    // Immediate cleanup for other reasons
+                    get().disconnect();
+                }
             });
 
             // Handle player ready for next round
@@ -328,7 +358,27 @@ export const useOnlineGameStore = create((set, get) => ({
             isConnected: true, // Remain "Connected" to the server (presence), just not in a game
             roomCode: null,
             gameState: null,
+            activeState: null,
             gameStarted: false,
+            onlineStarted: false,
+            isGameOver: false,
+            gameWinner: null,
+            players: [],
+            roundNumber: 1
+        });
+    },
+
+    leaveRoom: () => {
+        const { roomCode } = get();
+        if (roomCode) {
+            socket.emit('leave_room', roomCode);
+        }
+        set({
+            roomCode: null,
+            gameState: null,
+            activeState: null,
+            gameStarted: false,
+            onlineStarted: false,
             isGameOver: false,
             gameWinner: null,
             players: [],
@@ -357,9 +407,11 @@ export const useOnlineGameStore = create((set, get) => ({
             socket.connect();
             socket.once('connect', () => {
                 socket.emit('create_room', payload);
+                set({ onlineStarted: true }); // We are now in a room session
             });
         } else {
             socket.emit('create_room', payload);
+            set({ onlineStarted: true });
         }
     },
 
@@ -393,12 +445,33 @@ export const useOnlineGameStore = create((set, get) => ({
             socket.connect();
             socket.once('connect', () => {
                 socket.emit('join_room', { roomCode: code, playerName, emoji: playerEmoji, dbId });
+                set({ onlineStarted: true });
             });
         } else {
             socket.emit('join_room', { roomCode: code, playerName, emoji: playerEmoji, dbId });
+            set({ onlineStarted: true });
         }
         set({ roomCode: code });
     },
+
+    leaveRoom: () => {
+        const { roomCode } = get();
+        if (roomCode) {
+            console.log('[Store] Leaving room:', roomCode);
+            socket.emit('leave_room', roomCode);
+        }
+        set({
+            gameStarted: false,
+            gameState: null,
+            roomCode: null,
+            players: [],
+            isHost: false,
+            onlineStarted: false,
+            activeState: null,
+            error: null
+        });
+    },
+
 
     startGame: () => {
         const { roomCode } = get();
@@ -439,4 +512,18 @@ export const useOnlineGameStore = create((set, get) => ({
     // UI Helpers
     selectCard: (index) => set({ selectedCardIndex: index }),
     clearError: () => set({ error: null }),
+
+    startRedirection: (reason) => {
+        set({ redirectionState: { active: true, timer: 5, reason } });
+        const interval = setInterval(() => {
+            const currentTimer = get().redirectionState.timer;
+            if (currentTimer <= 1) {
+                clearInterval(interval);
+                get().disconnect();
+                set({ redirectionState: { active: false, timer: 5, reason: '' } });
+            } else {
+                set({ redirectionState: { ...get().redirectionState, timer: currentTimer - 1 } });
+            }
+        }, 1000);
+    },
 }));

@@ -112,6 +112,23 @@ export const useSocialStore = create((set, get) => ({
         }
     },
 
+    deleteFriend: async (userId, friendId) => {
+        try {
+            const res = await fetch('/api/social/friends/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, friendId })
+            });
+            if (res.ok) {
+                get().fetchFriends(userId);
+            }
+            return res.ok;
+        } catch (err) {
+            console.error('[SOCIAL] Delete error:', err);
+            return false;
+        }
+    },
+
     inviteFriend: (friendId, roomCode, fromName) => {
         socket.emit('invite_friend', { friendId: String(friendId), roomCode, fromName });
     },

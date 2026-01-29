@@ -71,7 +71,14 @@ export default function Dashboard() {
     const setAdminAuthToken = useGameStore(state => state.setAdminAuthToken);
 
     const virtualGameState = useVirtualGameStore(state => state.gameState);
+
+    // 🔥 États du jeu en ligne (Store synchro avec le plan de fix)
     const onlineGameStarted = useOnlineGameStore(state => state.gameStarted);
+    const onlineStarted = useOnlineGameStore(state => state.onlineStarted);
+    const activeState = useOnlineGameStore(state => state.activeState);
+    const leaveRoom = useOnlineGameStore(state => state.leaveRoom);
+    const roomCode = useOnlineGameStore(state => state.roomCode);
+
     const disconnectOnline = useOnlineGameStore(state => state.disconnect);
     const joinRoom = useOnlineGameStore(state => state.joinRoom);
     const setOnlinePlayerInfo = useOnlineGameStore(state => state.setPlayerInfo);
@@ -89,9 +96,18 @@ export default function Dashboard() {
     const [virtualScreen, setVirtualScreen] = useState('menu');
     const [isTutorialOpen, setIsTutorialOpen] = useState(false);
 
+    // 🔥 LOGIQUE DE VERROUILLAGE (Fix Plan)
+    // On considère qu'on est en session si on a un code de room
+    const isGameInProgress = !!onlineGameStarted && !!activeState;
+    const isInLobby = !!roomCode && !onlineGameStarted;
+    const isInOnlineSession = isGameInProgress || isInLobby;
+
+    // 🔥 Tab effective : force 'virtual' pendant toute la session en ligne ou game local
+    const effectiveTab = isInOnlineSession ? 'virtual' : activeTab;
+
     // Activer la musique uniquement pendant une partie (virtuelle ou comptage manuel)
-    const isManualGameActive = gameStatus === 'PLAYING' && (activeTab === 'game' || activeTab === 'home');
-    const isVirtualGameActive = activeTab === 'virtual' && (!!virtualGameState || onlineGameStarted);
+    const isManualGameActive = gameStatus === 'PLAYING' && (effectiveTab === 'game' || effectiveTab === 'home');
+    const isVirtualGameActive = effectiveTab === 'virtual' && (!!virtualGameState || onlineGameStarted);
 
     useBackgroundMusic(isManualGameActive || isVirtualGameActive);
 
@@ -121,7 +137,6 @@ export default function Dashboard() {
             fetchFriends(String(userProfile.id));
         }
     }, [userProfile?.id, userProfile?.vibeId, syncProfileWithBackend, fetchFriends, generateSkyId]);
-
     // Migration Local -> DB pour la V2
     useEffect(() => {
         if (!migratedToV2) {
@@ -141,14 +156,52 @@ export default function Dashboard() {
         }
     }, [achievements?.length, playAchievement]);
 
+    // Debug logs pour le plan de fix
+    useEffect(() => {
+        if (isInOnlineSession) {
+            console.log('🔍 [DASH] Online Session Active:', {
+                isGameInProgress,
+                isInLobby,
+                roomCode,
+                effectiveTab,
+                activeTab
+            });
+        }
+    }, [isInOnlineSession, isGameInProgress, isInLobby, roomCode, effectiveTab, activeTab]);
+
+    const handleQuitOnlineGame = () => {
+        setConfirmConfig({
+            isOpen: true,
+            title: "Quitter la partie ?",
+            message: "Es-tu sûr de vouloir quitter la session en ligne ?",
+            variant: "danger",
+            onConfirm: () => {
+                leaveRoom();
+                setActiveTab('home');
+            }
+        });
+    };
+
     // Presence is now handled in SocketProvider - no duplicate logic here
 
-    // Auto-switch to 'game' tab when the game starts
     useEffect(() => {
-        if (gameStatus === 'PLAYING') {
+        console.log("[DASH] Dashboard MOUNTED");
+        return () => {
+            console.log("[DASH] Dashboard UNMOUNTED");
+        };
+    }, []);
+
+    useEffect(() => {
+        console.log(`[DASH] ActiveTab set to: ${activeTab}, effectiveTab: ${effectiveTab}`);
+    }, [activeTab, effectiveTab]);
+
+    // Auto-switch to 'game' tab when the game starts (but NOT if we are in virtual mode)
+    useEffect(() => {
+        if (gameStatus === 'PLAYING' && activeTab !== 'virtual' && !isInOnlineSession) {
+            console.log("[DASH] gameStatus is PLAYING and not in virtual tab, auto-switching to 'game' tab");
             setTimeout(() => setActiveTab('game'), 0);
         }
-    }, [gameStatus]);
+    }, [gameStatus, activeTab, isInOnlineSession]);
 
     // Reset scroll when switching tabs
     useEffect(() => {
@@ -164,7 +217,7 @@ export default function Dashboard() {
     const leadingPlayer = playerTotals[0];
 
     const renderContent = () => {
-        switch (activeTab) {
+        switch (effectiveTab) {
             case 'home':
                 if (gameStatus === 'SETUP') {
                     return (
@@ -329,8 +382,8 @@ export default function Dashboard() {
                         <VirtualGame
                             initialScreen={virtualScreen}
                             onBackToMenu={() => {
-                                setVirtualScreen('menu'); // Return to GameMenu
-                                disconnectOnline(); // Ensure clean disconnect
+                                setVirtualScreen('menu');
+                                if (!isInOnlineSession) setActiveTab('home');
                             }}
                         />
                     </motion.div>
@@ -530,13 +583,28 @@ export default function Dashboard() {
 
     return (
         <div className="min-h-screen">
+            {/* Bouton Quitter Spécifique au jeu en ligne (Fix Plan) */}
+            {isGameInProgress && (
+                <div className="fixed top-4 left-4 z-[100] animate-in fade-in zoom-in duration-300">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleQuitOnlineGame}
+                        className="bg-red-500/80 hover:bg-red-600 text-white font-black text-xs px-4 py-2 h-10 rounded-full backdrop-blur-md shadow-xl border border-red-400/30 flex items-center gap-2"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        QUITTER
+                    </Button>
+                </div>
+            )}
+
             <div className={`max-w-3xl mx-auto p-3 ${isVirtualGameActive ? 'pb-2' : 'pb-24'}`}>
-                <AnimatePresence mode="wait">
+                <AnimatePresence>
                     {renderContent()}
                 </AnimatePresence>
                 {gameStatus === 'FINISHED' && <GameOver />}
             </div>
-            {!isVirtualGameActive && (
+            {!isInOnlineSession && !isVirtualGameActive && (
                 <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
             )}
 

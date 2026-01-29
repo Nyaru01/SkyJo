@@ -643,7 +643,8 @@ io.on('connection', (socket) => {
     socket.on('start_game', (roomCode) => {
         const room = rooms.get(roomCode);
         if (!room) return;
-        const gamePlayers = room.players.map(p => ({ id: p.id, name: p.name, emoji: p.emoji }));
+        // Include dbId for robust player identification on client (reconnects)
+        const gamePlayers = room.players.map(p => ({ id: p.id, name: p.name, emoji: p.emoji, dbId: p.dbId }));
         room.gameState = initializeGame(gamePlayers);
         room.gameStarted = true;
 
@@ -765,7 +766,8 @@ io.on('connection', (socket) => {
                     if (room.gameStarted && room.players.length < 2) {
                         room.gameStarted = false;
                         room.gameState = null;
-                        io.to(roomCode).emit('game_cancelled', { reason: 'Pas assez de joueurs' });
+                        const reason = leavingPlayer.isHost ? "L'hôte a quitté la partie" : "Pas assez de joueurs";
+                        io.to(roomCode).emit('game_cancelled', { reason });
                     }
                 }
                 io.emit('room_list_update', getPublicRooms());
