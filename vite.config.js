@@ -21,7 +21,7 @@ export default defineConfig({
         name: 'Skyjo Score V2',
         short_name: 'SkyjoScore',
         description: 'Calculateur de score & Hub Social pour Skyjo',
-        version: '2.0.9',
+        version: '2.1.0',
         theme_color: '#6366f1',
         background_color: '#0f172a',
         display: 'standalone',

@@ -128,15 +128,19 @@ export default function SocialDashboard(props) {
                                         <Edit2 className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
                                     </div>
                                 )}
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-[10px] font-mono font-bold bg-skyjo-blue/20 text-skyjo-blue px-2 py-0.5 rounded-full tracking-wider border border-skyjo-blue/30">
-                                        {userProfile.vibeId}
-                                    </span>
+                                <div className="flex items-center gap-2 mt-1.5">
+                                    <div className="flex items-center bg-slate-900/80 border-2 border-skyjo-blue rounded-xl px-3 py-1.5 shadow-[0_0_15px_rgba(56,189,248,0.2)] group/id relative overflow-hidden">
+                                        <div className="absolute inset-0 bg-skyjo-blue/5 group-hover/id:bg-skyjo-blue/10 transition-colors" />
+                                        <span className="relative text-[12px] font-black text-white font-mono tracking-wider">
+                                            {userProfile.vibeId}
+                                        </span>
+                                    </div>
                                     <button
                                         onClick={handleCopyId}
-                                        className="text-slate-400 hover:text-white transition-colors"
+                                        className="p-2 rounded-xl bg-skyjo-blue/10 border border-skyjo-blue/20 text-skyjo-blue hover:bg-skyjo-blue hover:text-white transition-all active:scale-95 shadow-lg"
+                                        title="Copier mon SkyID"
                                     >
-                                        {copySuccess ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                                        {copySuccess ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                                     </button>
                                 </div>
                             </div>
