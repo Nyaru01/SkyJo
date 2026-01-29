@@ -22,27 +22,55 @@ export const LEVEL_REWARDS = {
         description: 'Tellement brillant que vous aurez besoin de lunettes de soleil.',
         rarity: 'rare'
     },
-    6: { type: 'emoji', content: '🎭', name: 'Double Jeu', description: 'Idéal pour bluffer... même contre une IA.', rarity: 'common' },
-    7: { type: 'generic', content: '🎰', name: 'Lucky Seven', description: 'Le chiffre porte-bonheur. Enfin, sauf si vous piochez un 12.', rarity: 'uncommon' },
-    8: { type: 'emoji', content: '🚀', name: 'Vers la Lune', description: 'Votre score décolle... on espère que c\'est vers le bas !', rarity: 'rare' },
-    9: { type: 'generic', content: '🦈', name: 'Card Shark', description: 'Vous ne jouez plus, vous chassez. *Musique des Dents de la Mer*', rarity: 'rare' },
-    10: {
+    6: {
+        type: 'skin',
+        image: '/card-back-cyberpunk.png',
+        name: 'Skin Cyberpunk',
+        description: 'Venu du futur pour optimiser vos scores. Haute technologie.',
+        rarity: 'rare'
+    },
+    7: { type: 'emoji', content: '🎭', name: 'Double Jeu', description: 'Idéal pour bluffer... même contre une IA.', rarity: 'common' },
+    8: {
+        type: 'skin',
+        image: '/card-back-carbon.png',
+        name: 'Skin Carbon',
+        description: 'Tactique, robuste et léger. Conçu pour la compétition pure.',
+        rarity: 'epic'
+    },
+    9: { type: 'generic', content: '🎰', name: 'Lucky Seven', description: 'Le chiffre porte-bonheur. Enfin, sauf si vous piochez un 12.', rarity: 'uncommon' },
+    10: { type: 'emoji', content: '🚀', name: 'Vers la Lune', description: 'Votre score décolle... on espère que c\'est vers le bas !', rarity: 'rare' },
+    11: { type: 'generic', content: '🦈', name: 'Card Shark', description: 'Vous ne jouez plus, vous chassez. *Musique des Dents de la Mer*', rarity: 'rare' },
+    12: {
+        type: 'skin',
+        image: '/card-back-obsidian.png',
+        name: 'Skin Obsidian',
+        description: 'Sorti tout droit du volcan. Brûlant de puissance.',
+        rarity: 'epic'
+    },
+    13: {
         type: 'skin',
         image: '/card-back-gold.png',
         name: 'Skin Gold',
         description: 'Si brillant que vos adversaires seront éblouis (littéralement).',
         rarity: 'epic'
     },
-    11: { type: 'emoji', content: '👑', name: 'Roi du Skyjo', description: 'Inclinez-vous, mortels. Le patron est dans la place.', rarity: 'epic' },
-    12: { type: 'generic', content: '🧙‍♂️', name: 'Grand Master', description: 'Vous voyez les chiffres en vert comme dans Matrix.', rarity: 'epic' },
-    13: { type: 'emoji', content: '💎', name: 'Précieux', description: 'Mon préééciiiieux... Ne le jetez pas dans la lave.', rarity: 'legendary' },
-    14: { type: 'generic', content: '🏆', name: 'Légende', description: 'On racontera vos exploits aux générations futures.', rarity: 'legendary' },
-    15: {
+    14: { type: 'emoji', content: '👑', name: 'Roi du Skyjo', description: 'Inclinez-vous, mortels. Le patron est dans la place.', rarity: 'epic' },
+    15: { type: 'generic', content: '🧙‍♂️', name: 'Grand Master', description: 'Vous voyez les chiffres en vert comme dans Matrix.', rarity: 'epic' },
+    16: { type: 'emoji', content: '💎', name: 'Précieux', description: 'Mon préééciiiieux... Ne le jetez pas dans la lave.', rarity: 'legendary' },
+    17: { type: 'generic', content: '🏆', name: 'Légende', description: 'On racontera vos exploits aux générations futures.', rarity: 'legendary' },
+    18: {
         type: 'skin',
         image: '/card-back-galaxy.png',
         name: 'Skin Galaxy',
         description: 'L\'univers entier dans votre main. Ne le faites pas tomber.',
         rarity: 'legendary'
+    },
+    19: {
+        type: 'generic',
+        content: '🥇',
+        name: 'Trophée de Légende',
+        description: 'L\'ultime récompense du maître absolu du Skyjo.',
+        rarity: 'mythic'
     },
 };
 

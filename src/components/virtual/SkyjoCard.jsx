@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import { CARD_COLORS } from '../../lib/skyjoEngine';
 import { useGameStore } from '../../store/gameStore';
+import { getCardSkinPath } from '../../lib/skinUtils';
 
 // Simple haptic feedback for card touches
 const triggerHaptic = () => {
@@ -305,13 +306,7 @@ const SkyjoCard = memo(function SkyjoCard({
                     }}
                 >
                     <img
-                        src={
-                            cardSkin === 'papyrus' ? "/card-back-papyrus.jpg" :
-                                cardSkin === 'neon' ? "/card-back-neon.png" :
-                                    cardSkin === 'gold' ? "/card-back-gold.png" :
-                                        cardSkin === 'galaxy' ? "/card-back-galaxy.png" :
-                                            "/card-back.png?v=2"
-                        }
+                        src={getCardSkinPath(cardSkin)}
                         alt="Card Back"
                         className="w-full h-full object-cover"
                     />

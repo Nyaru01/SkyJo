@@ -20,7 +20,7 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
 
     // Calculate global progress to level 11 (max)
     // Assuming each level takes 10 XP
-    const maxLevel = 16;
+    const maxLevel = 19;
     const totalLevels = maxLevel - 1;
     const progressPercent = Math.min(100, Math.max(0, ((level - 1) / totalLevels) * 100));
 

@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import SkyjoCard from './SkyjoCard';
 import { useGameStore } from '../../store/gameStore';
+import { getCardSkinPath } from '../../lib/skinUtils';
 import DiscardHistoryOverlay from './DiscardHistoryOverlay';
 
 // Simple haptic feedback for pile touches
@@ -188,13 +189,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                     >
                         {/* Card back design */}
                         <img
-                            src={
-                                cardSkin === 'papyrus' ? "/card-back-papyrus.jpg" :
-                                    cardSkin === 'neon' ? "/card-back-neon.png" :
-                                        cardSkin === 'gold' ? "/card-back-gold.png" :
-                                            cardSkin === 'galaxy' ? "/card-back-galaxy.png" :
-                                                "/card-back.png?v=2"
-                            }
+                            src={getCardSkinPath(cardSkin)}
                             alt="Deck"
                             className="w-full h-full object-cover"
                         />

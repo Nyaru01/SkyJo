@@ -101,8 +101,11 @@ export default function GameMenu({
                             { id: 'classic', name: 'Classique', img: '/card-back.png', level: 1 },
                             { id: 'papyrus', name: 'Papyrus', img: '/card-back-papyrus.jpg', level: 3 },
                             { id: 'neon', name: 'Neon', img: '/card-back-neon.png', level: 5 },
-                            { id: 'gold', name: 'Gold', img: '/card-back-gold.png', level: 10 },
-                            { id: 'galaxy', name: 'Galaxy', img: '/card-back-galaxy.png', level: 15 }
+                            { id: 'cyberpunk', name: 'Cyberpunk', img: '/card-back-cyberpunk.png', level: 6 },
+                            { id: 'carbon', name: 'Carbon', img: '/card-back-carbon.png', level: 8 },
+                            { id: 'obsidian', name: 'Obsidian', img: '/card-back-obsidian.png', level: 12 },
+                            { id: 'gold', name: 'Gold', img: '/card-back-gold.png', level: 13 },
+                            { id: 'galaxy', name: 'Galaxy', img: '/card-back-galaxy.png', level: 18 }
                         ]}
                         selectedSkinId={playerCardSkin}
                         onSelect={setCardSkin}
