@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Sparkles, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './ui/Button';
 
 export function VersionCheck() {
@@ -66,35 +67,43 @@ export function VersionCheck() {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-red-500/50 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-300">
-                <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center animate-bounce">
-                        <AlertTriangle className="w-8 h-8 text-red-500" />
-                    </div>
+        <AnimatePresence>
+            {isOutdated && (
+                <motion.div
+                    initial={{ opacity: 0, y: -50, x: '-50%' }}
+                    animate={{ opacity: 1, y: 0, x: '-50%' }}
+                    exit={{ opacity: 0, y: -50, x: '-50%' }}
+                    className="fixed top-6 left-1/2 z-[200] w-[90%] max-w-xs cursor-pointer"
+                    onClick={handleUpdate}
+                >
+                    <div className="relative group">
+                        {/* Outer Glow */}
+                        <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full group-hover:bg-emerald-500/30 transition-all animate-pulse" />
 
-                    <div className="space-y-2">
-                        <h2 className="text-xl font-black text-white uppercase tracking-wider">Mise à jour requise</h2>
-                        <p className="text-slate-400 text-sm">
-                            Une nouvelle version est disponible !<br />
-                            Pour corriger les icônes et problèmes d'affichage, une mise à jour est nécessaire.
-                        </p>
-                        <div className="flex items-center justify-center gap-4 text-xs font-mono bg-black/20 py-2 rounded-lg mt-2">
-                            <span className="text-red-400">v{clientVersion}</span>
-                            <span className="text-slate-600">➜</span>
-                            <span className="text-emerald-400">v{serverVersion}</span>
+                        <div className="relative flex items-center gap-3 bg-slate-950/80 backdrop-blur-2xl border border-emerald-500/30 rounded-full p-2 pl-3 pr-4 shadow-2xl overflow-hidden">
+                            {/* Shimmer Effect */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+
+                            <div className="relative flex items-center justify-center h-10 w-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 shrink-0">
+                                <Sparkles className="w-5 h-5 text-emerald-400 animate-pulse" />
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] leading-none mb-1">Update Ready</p>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-[11px] font-bold text-slate-400">v{clientVersion}</span>
+                                    <ArrowRight className="w-3 h-3 text-slate-600" />
+                                    <span className="text-[11px] font-black text-white">v{serverVersion}</span>
+                                </div>
+                            </div>
+
+                            <div className="h-8 w-8 rounded-full bg-emerald-500 flex items-center justify-center text-slate-900 group-hover:scale-110 transition-transform">
+                                <RefreshCw className="w-4 h-4" />
+                            </div>
                         </div>
                     </div>
-
-                    <Button
-                        onClick={handleUpdate}
-                        className="w-full bg-red-600 hover:bg-red-700 text-white font-bold h-12 shadow-lg hover:shadow-red-500/25 transition-all"
-                    >
-                        <RefreshCw className="mr-2 h-5 w-5 animate-spin-slow" />
-                        Mettre à jour maintenant
-                    </Button>
-                </div>
-            </div>
-        </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 }
