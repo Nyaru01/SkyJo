@@ -96,4 +96,29 @@ L'application est une Progressive Web App (PWA) :
 
 ---
 
-*Documentation mise à jour le 29 Janvier 2026.*
+---
+
+## 🔧 Gestion des Cas Limites et Correctifs
+
+Cette section documente les solutions techniques apportées aux problèmes complexes de synchronisation et d'UX.
+
+### 1. Gestion de la Déconnexion de l'Hôte (Host Quit)
+
+**Problème :** Lorsqu'un hôte quittait ou annulait une partie, les clients étaient redirigés vers le menu principal avant d'avoir pu lire le message d'erreur, car le nettoyage de l'état (`gameState = null`) déclenchait une redirection automatique dans `VirtualGame.jsx`.
+
+**Solution Technique :**
+- **Priorité à l'Erreur :** Dans `VirtualGame.jsx`, la redirection vers le menu est bloquée tant que `onlineError` est présent dans le store `onlineGameStore`.
+- **Overlay Persistant :** Le composant `HostLeftOverlay` est rendu explicitement si `!activeGameState` mais `onlineError` existe.
+- **Réinitialisation Explicite :** La fonction `leaveRoom` du store a été modifiée pour remettre `error` à `null`, permettant à l'utilisateur de cliquer sur "Retour au menu" pour débloquer la redirection.
+
+### 2. Suppression d'Ami Sécurisée
+
+**Problème :** L'utilisation de `window.confirm` bloquait le thread UI et offrait une expérience visuelle pauvre (popup navigateur).
+
+**Solution Technique :**
+- **UI Custom :** Intégration de `ConfirmModal` (design Néon/Glass) dans `SocialMenu.jsx`.
+- **Logique Serveur :** Ajout de la fonction `deleteFriend` manquante dans `socialStore.js` qui appelle la route API `/api/social/friends/delete`. La suppression est une action strictement **serveur** (requiert une mise à jour DB).
+
+---
+
+*Documentation mise à jour le 29 Janvier 2026 - Correctifs Host & Social.*

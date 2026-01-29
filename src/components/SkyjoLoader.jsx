@@ -19,6 +19,12 @@ const LoaderText = () => {
         return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+        const audio = new Audio('/Sounds/shuffling.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(e => console.log('Audio autoplay blocked:', e));
+    }, []);
+
     return (
         <div className="h-6 flex items-center justify-center overflow-hidden mb-2">
             <AnimatePresence mode="wait">

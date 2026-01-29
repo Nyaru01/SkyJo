@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useGameStore } from '../store/gameStore';
 
 const PLAYLIST = [
+    '/Music/stranger-things-124008.mp3', // New requested track
     '/Music/bathroom-chill-background-music-14977.mp3',
     '/Music/chill-lofi-347217.mp3',
     '/Music/reveil-239031.mp3',

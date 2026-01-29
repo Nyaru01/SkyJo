@@ -16,7 +16,19 @@ export default defineConfig({
       srcDir: 'src',
       filename: 'sw.js',
       registerType: 'prompt',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'bg-skyjo.png', 'info_premium.png'],
+      includeAssets: [
+        'favicon.ico',
+        'apple-touch-icon.png',
+        'mask-icon.svg',
+        'bg-skyjo.png',
+        'info_premium.png',
+        '*.png', // Logos and card backs in root/public
+        '*.jpg',
+        '*.svg',
+        'avatars/*.png', // Avatars
+        'Sounds/*.mp3',  // Game sounds
+        'Music/*.mp3'    // Background music
+      ],
       manifest: {
         name: 'Skyjo Score V2',
         short_name: 'SkyjoScore',
