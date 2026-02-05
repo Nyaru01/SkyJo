@@ -52,56 +52,44 @@ export default function GameMenu({
             <div className="grid gap-4">
                 {/* AI Battle */}
                 {/* AI Battle */}
-                <motion.div
-                    whileTap={{ scale: 0.96, y: 4 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                <PremiumTiltButton
+                    onClick={handleStartAIBattle}
+                    gradientFrom="from-purple-600"
+                    gradientTo="to-indigo-600"
+                    shadowColor="shadow-purple-500/20"
                     className="w-full"
+                    contentClassName="h-auto p-4"
                 >
-                    <PremiumTiltButton
-                        onClick={handleStartAIBattle}
-                        gradientFrom="from-purple-600"
-                        gradientTo="to-indigo-600"
-                        shadowColor="shadow-purple-500/20"
-                        className="w-full"
-                        contentClassName="h-auto p-4"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="flex items-center justify-between w-full relative z-10">
-                            <div className="text-left">
-                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                    Jouer contre l'IA
-                                </h3>
-                            </div>
-                            <div className="w-12 h-12 rounded-2xl bg-purple-500/30 border border-purple-400/50 flex items-center justify-center">
-                                <Bot className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
-                            </div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="flex items-center justify-between w-full relative z-10">
+                        <div className="text-left">
+                            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                Jouer contre l'IA
+                            </h3>
                         </div>
-                    </PremiumTiltButton>
-                </motion.div>
-                <motion.div
-                    whileTap={{ scale: 0.96, y: 4 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                        <div className="w-12 h-12 rounded-2xl bg-purple-500/30 border border-purple-400/50 flex items-center justify-center">
+                            <Bot className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
+                        </div>
+                    </div>
+                </PremiumTiltButton>
+                <PremiumTiltButton
+                    onClick={handleStartOnline}
+                    gradientFrom="from-sky-600"
+                    gradientTo="to-blue-600"
+                    shadowColor="shadow-sky-500/20"
                     className="w-full"
+                    contentClassName="h-auto p-4"
                 >
-                    <PremiumTiltButton
-                        onClick={handleStartOnline}
-                        gradientFrom="from-sky-600"
-                        gradientTo="to-blue-600"
-                        shadowColor="shadow-sky-500/20"
-                        className="w-full"
-                        contentClassName="h-auto p-4"
-                    >
-                        <div className="flex items-center justify-between w-full relative z-10">
-                            <div className="text-left">
-                                <h3 className="text-lg font-bold text-white">Jouer en ligne</h3>
-                                <p className="text-[10px] text-blue-100/90 font-bold uppercase mt-1">Affrontez vos amis à distance</p>
-                            </div>
-                            <div className="w-12 h-12 rounded-2xl bg-sky-500/30 border border-sky-400/50 flex items-center justify-center">
-                                <Wifi className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
-                            </div>
+                    <div className="flex items-center justify-between w-full relative z-10">
+                        <div className="text-left">
+                            <h3 className="text-lg font-bold text-white">Jouer en ligne</h3>
+                            <p className="text-[10px] text-blue-100/90 font-bold uppercase mt-1">Affrontez vos amis à distance</p>
                         </div>
-                    </PremiumTiltButton>
-                </motion.div>
+                        <div className="w-12 h-12 rounded-2xl bg-sky-500/30 border border-sky-400/50 flex items-center justify-center">
+                            <Wifi className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
+                        </div>
+                    </div>
+                </PremiumTiltButton>
 
                 {/* Rules Button */}
                 <button

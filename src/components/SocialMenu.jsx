@@ -32,12 +32,19 @@ export default function SocialDashboard(props) {
     const [friendToDelete, setFriendToDelete] = useState(null);
     const [leaderboardType, setLeaderboardType] = useState('friends'); // 'friends' or 'global'
     const [hasNotificationsEnabled, setHasNotificationsEnabled] = useState(true);
+    const [isCheckingNotifications, setIsCheckingNotifications] = useState(true);
     const { playClick, playSocialNotify, playSocialInvite } = useFeedback();
 
     useEffect(() => {
         const checkNotifications = async () => {
-            const sub = await pushManager.getSubscription();
-            setHasNotificationsEnabled(!!sub);
+            try {
+                const sub = await pushManager.getSubscription();
+                setHasNotificationsEnabled(!!sub);
+            } catch (e) {
+                console.warn('[SOCIAL] Push check error:', e);
+            } finally {
+                setIsCheckingNotifications(false);
+            }
         };
         checkNotifications();
     }, []);
@@ -68,8 +75,9 @@ export default function SocialDashboard(props) {
 
         return () => {
             clearInterval(interval);
+            clearSearchResults(); // Nettoyage au démontage pour éviter les flashs de résultats fantômes
         };
-    }, [userProfile.id]);
+    }, [userProfile.id, clearSearchResults]);
 
     const handleUpdateName = () => {
         if (!newName.trim()) {
@@ -160,8 +168,8 @@ export default function SocialDashboard(props) {
                 </CardContent>
             </Card>
 
-            {/* Notification Onboarding Banner */}
-            {!hasNotificationsEnabled && (
+            {/* Notification Onboarding Banner - Only show if check is finished and disabled */}
+            {!isCheckingNotifications && !hasNotificationsEnabled && (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -218,7 +226,7 @@ export default function SocialDashboard(props) {
                 </button>
             </div>
 
-            <AnimatePresence mode="wait" initial={false}>
+            <AnimatePresence mode="wait">
                 {activeTab === 'friends' ? (
                     <motion.div
                         key="friends"
