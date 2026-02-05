@@ -24,7 +24,11 @@ export const PremiumTiltButton = ({
                 disabled ? "cursor-not-allowed opacity-50 grayscale" : "cursor-pointer",
                 className
             )}
-            onClick={disabled ? undefined : onClick}
+            onClick={disabled ? undefined : (e) => {
+                // Haptic feedback
+                if (navigator.vibrate) navigator.vibrate(50);
+                onClick?.(e);
+            }}
             whileHover={disabled ? {} : { scale: 1.02 }}
             whileTap={disabled ? {} : { scale: 0.98 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}

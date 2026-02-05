@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Archive, Trophy, Calendar, Users, ChevronRight, Trash2, ArrowLeft, Download, Upload, Bot, Wifi, Gamepad2 } from 'lucide-react';
+import { Archive, Trophy, Calendar, Users, ChevronRight, ChevronDown, Trash2, ArrowLeft, Download, Upload, Bot, Wifi, Gamepad2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore, selectGameHistory } from '../store/gameStore';
 import { Card, CardContent } from './ui/Card';
@@ -200,8 +200,35 @@ function PastGameDetail({ game, onBack }) {
  */
 export default function GameHistory() {
     const gameHistory = useGameStore(selectGameHistory);
+    const userProfile = useGameStore(state => state.userProfile);
     const [selectedGame, setSelectedGame] = useState(null);
     const fileInputRef = useRef(null);
+    const [wonExpanded, setWonExpanded] = useState(false);
+    const [lostExpanded, setLostExpanded] = useState(false);
+
+    // Helper: Check if the current user won the game
+    const isPlayerWinner = (game) => {
+        if (!game.winner) return false;
+        const winnerId = game.winner.id;
+        const winnerName = game.winner.name?.toLowerCase();
+        const userName = userProfile?.name?.toLowerCase();
+
+        // Check by ID (human-1 for AI games, player-0 for local)
+        if (winnerId === 'human-1' || winnerId === 'player-0') return true;
+
+        // Check by name match
+        if (userName && winnerName === userName) return true;
+
+        // For online games, check if winner ID matches user's profile ID
+        if (userProfile?.id && winnerId === userProfile.id) return true;
+
+        return false;
+    };
+
+    // Sort by date (most recent first) and split into won/lost
+    const sortedHistory = [...gameHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const wonGames = sortedHistory.filter(game => isPlayerWinner(game));
+    const lostGames = sortedHistory.filter(game => !isPlayerWinner(game));
 
     // Export game history to JSON file
     const handleExport = () => {
@@ -318,82 +345,226 @@ export default function GameHistory() {
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="space-y-3">
-                        <AnimatePresence>
-                            {gameHistory.map((game, index) => (
+                    <div className="space-y-6">
+                        {/* Won Games Section - Collapsible */}
+                        <div className="rounded-xl overflow-hidden border border-emerald-500/20">
+                            <button
+                                onClick={() => setWonExpanded(!wonExpanded)}
+                                className="w-full flex items-center gap-2 p-3 bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors"
+                            >
+                                <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                    <Trophy className="h-4 w-4 text-emerald-400" />
+                                </div>
+                                <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-wider">
+                                    Parties Gagnées
+                                </h3>
+                                <span className="ml-auto text-xs font-bold text-emerald-400/70 bg-emerald-500/20 px-2 py-0.5 rounded-full">
+                                    {wonGames.length}
+                                </span>
                                 <motion.div
-                                    key={game.id}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    transition={{ delay: index * 0.05 }}
+                                    animate={{ rotate: wonExpanded ? 180 : 0 }}
+                                    transition={{ duration: 0.2 }}
                                 >
-                                    <button
-                                        onClick={() => setSelectedGame(game)}
-                                        className="w-full text-left"
-                                    >
-                                        <Card className="glass-premium dark:glass-dark shadow-md hover:shadow-lg transition-all card-hover-lift">
-                                            <CardContent className="p-4">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex-1 min-w-0">
-                                                        {/* Date + Game Type Badge */}
-                                                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                                            <Calendar className="h-3 w-3" />
-                                                            {formatDate(game.date)}
-                                                            {/* Game Type Badge */}
-                                                            {(() => {
-                                                                const badge = getGameTypeBadge(game);
-                                                                const BadgeIcon = badge.icon;
-                                                                return (
-                                                                    <span className={cn(
-                                                                        "ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border",
-                                                                        badge.bgClass,
-                                                                        badge.textClass,
-                                                                        badge.borderClass
-                                                                    )}>
-                                                                        <BadgeIcon className="h-3 w-3" />
-                                                                        {badge.label}
-                                                                    </span>
-                                                                );
-                                                            })()}
-                                                        </div>
-
-                                                        {/* Winner */}
-                                                        <div className="flex items-center gap-2">
-                                                            <Trophy className="h-4 w-4 text-yellow-500" />
-                                                            <span className="font-bold text-slate-800 dark:text-slate-200 truncate">
-                                                                {game.winner.name}
-                                                            </span>
-                                                            <span className="font-mono text-skyjo-blue dark:text-blue-400 font-bold">
-                                                                {game.winner.score} pts
-                                                            </span>
-                                                        </div>
-
-                                                        {/* Meta info */}
-                                                        <div className="flex items-center gap-3 mt-1 text-xs text-slate-400 dark:text-slate-500">
-                                                            <span className="flex items-center gap-1">
-                                                                <Users className="h-3 w-3" />
-                                                                {game.players.length} joueurs
-                                                            </span>
-                                                            <span>
-                                                                {game.rounds?.length > 0
-                                                                    ? `${game.rounds.length} manches`
-                                                                    : game.roundsPlayed
-                                                                        ? `${game.roundsPlayed} manches`
-                                                                        : '1 manche'
-                                                                }
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                    <ChevronRight className="h-5 w-5 text-slate-300 dark:text-slate-500 shrink-0" />
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    </button>
+                                    <ChevronDown className="h-5 w-5 text-emerald-400" />
                                 </motion.div>
-                            ))}
-                        </AnimatePresence>
+                            </button>
+
+                            <AnimatePresence>
+                                {wonExpanded && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="overflow-hidden"
+                                    >
+                                        {wonGames.length === 0 ? (
+                                            <div className="p-4 text-center bg-emerald-500/5">
+                                                <p className="text-sm text-slate-500">Aucune victoire pour le moment</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2 p-3 bg-slate-900/30">
+                                                {wonGames.map((game, index) => (
+                                                    <motion.div
+                                                        key={game.id}
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ delay: index * 0.03 }}
+                                                    >
+                                                        <button
+                                                            onClick={() => setSelectedGame(game)}
+                                                            className="w-full text-left"
+                                                        >
+                                                            <Card className="glass-premium dark:glass-dark shadow-md hover:shadow-lg transition-all card-hover-lift border-l-4 border-l-emerald-500">
+                                                                <CardContent className="p-4">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                                                                <Calendar className="h-3 w-3" />
+                                                                                {formatDate(game.date)}
+                                                                                {(() => {
+                                                                                    const badge = getGameTypeBadge(game);
+                                                                                    const BadgeIcon = badge.icon;
+                                                                                    return (
+                                                                                        <span className={cn(
+                                                                                            "ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border",
+                                                                                            badge.bgClass,
+                                                                                            badge.textClass,
+                                                                                            badge.borderClass
+                                                                                        )}>
+                                                                                            <BadgeIcon className="h-3 w-3" />
+                                                                                            {badge.label}
+                                                                                        </span>
+                                                                                    );
+                                                                                })()}
+                                                                            </div>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <Trophy className="h-4 w-4 text-yellow-500" />
+                                                                                <span className="font-bold text-slate-800 dark:text-slate-200 truncate">
+                                                                                    {game.winner.name}
+                                                                                </span>
+                                                                                <span className="font-mono text-emerald-500 font-bold">
+                                                                                    {game.winner.score} pts
+                                                                                </span>
+                                                                            </div>
+                                                                            <div className="flex items-center gap-3 mt-1 text-xs text-slate-400 dark:text-slate-500">
+                                                                                <span className="flex items-center gap-1">
+                                                                                    <Users className="h-3 w-3" />
+                                                                                    {game.players.length} joueurs
+                                                                                </span>
+                                                                                <span>
+                                                                                    {game.rounds?.length > 0
+                                                                                        ? `${game.rounds.length} manches`
+                                                                                        : game.roundsPlayed
+                                                                                            ? `${game.roundsPlayed} manches`
+                                                                                            : '1 manche'
+                                                                                    }
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <ChevronRight className="h-5 w-5 text-slate-300 dark:text-slate-500 shrink-0" />
+                                                                    </div>
+                                                                </CardContent>
+                                                            </Card>
+                                                        </button>
+                                                    </motion.div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Lost Games Section - Collapsible */}
+                        <div className="rounded-xl overflow-hidden border border-red-500/20">
+                            <button
+                                onClick={() => setLostExpanded(!lostExpanded)}
+                                className="w-full flex items-center gap-2 p-3 bg-red-500/10 hover:bg-red-500/20 transition-colors"
+                            >
+                                <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center">
+                                    <Archive className="h-4 w-4 text-red-400" />
+                                </div>
+                                <h3 className="text-sm font-bold text-red-400 uppercase tracking-wider">
+                                    Parties Perdues
+                                </h3>
+                                <span className="ml-auto text-xs font-bold text-red-400/70 bg-red-500/20 px-2 py-0.5 rounded-full">
+                                    {lostGames.length}
+                                </span>
+                                <motion.div
+                                    animate={{ rotate: lostExpanded ? 180 : 0 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <ChevronDown className="h-5 w-5 text-red-400" />
+                                </motion.div>
+                            </button>
+
+                            <AnimatePresence>
+                                {lostExpanded && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="overflow-hidden"
+                                    >
+                                        {lostGames.length === 0 ? (
+                                            <div className="p-4 text-center bg-red-500/5">
+                                                <p className="text-sm text-slate-500">Aucune défaite !</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2 p-3 bg-slate-900/30">
+                                                {lostGames.map((game, index) => (
+                                                    <motion.div
+                                                        key={game.id}
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ delay: index * 0.03 }}
+                                                    >
+                                                        <button
+                                                            onClick={() => setSelectedGame(game)}
+                                                            className="w-full text-left"
+                                                        >
+                                                            <Card className="glass-premium dark:glass-dark shadow-md hover:shadow-lg transition-all card-hover-lift border-l-4 border-l-red-500/50">
+                                                                <CardContent className="p-4">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                                                                <Calendar className="h-3 w-3" />
+                                                                                {formatDate(game.date)}
+                                                                                {(() => {
+                                                                                    const badge = getGameTypeBadge(game);
+                                                                                    const BadgeIcon = badge.icon;
+                                                                                    return (
+                                                                                        <span className={cn(
+                                                                                            "ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border",
+                                                                                            badge.bgClass,
+                                                                                            badge.textClass,
+                                                                                            badge.borderClass
+                                                                                        )}>
+                                                                                            <BadgeIcon className="h-3 w-3" />
+                                                                                            {badge.label}
+                                                                                        </span>
+                                                                                    );
+                                                                                })()}
+                                                                            </div>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <Trophy className="h-4 w-4 text-yellow-500/50" />
+                                                                                <span className="font-bold text-slate-800 dark:text-slate-200 truncate">
+                                                                                    {game.winner.name}
+                                                                                </span>
+                                                                                <span className="font-mono text-red-400 font-bold">
+                                                                                    {game.winner.score} pts
+                                                                                </span>
+                                                                            </div>
+                                                                            <div className="flex items-center gap-3 mt-1 text-xs text-slate-400 dark:text-slate-500">
+                                                                                <span className="flex items-center gap-1">
+                                                                                    <Users className="h-3 w-3" />
+                                                                                    {game.players.length} joueurs
+                                                                                </span>
+                                                                                <span>
+                                                                                    {game.rounds?.length > 0
+                                                                                        ? `${game.rounds.length} manches`
+                                                                                        : game.roundsPlayed
+                                                                                            ? `${game.roundsPlayed} manches`
+                                                                                            : '1 manche'
+                                                                                    }
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <ChevronRight className="h-5 w-5 text-slate-300 dark:text-slate-500 shrink-0" />
+                                                                    </div>
+                                                                </CardContent>
+                                                            </Card>
+                                                        </button>
+                                                    </motion.div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </div>
                 )
             }

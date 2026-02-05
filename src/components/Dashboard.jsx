@@ -299,9 +299,12 @@ export default function Dashboard() {
         }
     }, [gameStatus, activeTab, isInOnlineSession]);
 
-    // Reset scroll when switching tabs
+    // Reset scroll when switching tabs (delayed to avoid flash during animation)
     useEffect(() => {
-        window.scrollTo(0, 0);
+        const timer = setTimeout(() => {
+            window.scrollTo(0, 0);
+        }, 200);
+        return () => clearTimeout(timer);
     }, [activeTab]);
 
     // Calculate totals

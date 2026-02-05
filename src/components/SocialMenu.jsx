@@ -218,7 +218,7 @@ export default function SocialDashboard(props) {
                 </button>
             </div>
 
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
                 {activeTab === 'friends' ? (
                     <motion.div
                         key="friends"

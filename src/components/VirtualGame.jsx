@@ -948,10 +948,10 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                             <button
                                                 onClick={() => setAIConfig({ ...aiConfig, difficulty: mode.level })}
                                                 className={cn(
-                                                    "relative w-full p-3 rounded-xl border transition-all duration-300 flex flex-col items-center overflow-hidden h-full",
+                                                    "relative w-full p-3 rounded-xl border-2 transition-all duration-300 flex flex-col items-center overflow-hidden h-full",
                                                     aiConfig.difficulty === mode.level
-                                                        ? `border-white/20 bg-slate-800/80 ring-1 ring-white/20 shadow-lg`
-                                                        : "border-white/5 bg-slate-900/40 hover:bg-slate-800/60 hover:border-white/10"
+                                                        ? `border-purple-500 bg-slate-800/90 ring-2 ring-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.4)]`
+                                                        : "border-white/10 bg-slate-900/40 hover:bg-slate-800/60 hover:border-white/20"
                                                 )}
                                             >
                                                 {/* Main Content Area - Centered for alignment */}
@@ -995,9 +995,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                                     </div>
                                                 </div>
 
-                                                {/* Footer Area for Rules Button (Red Rectangle) */}
-                                                <div className="w-full flex items-center justify-center">
-                                                    {mode.level === AI_DIFFICULTY.BONUS && (
+                                                {/* Footer Area for Rules Button - Fixed height for alignment */}
+                                                <div className="w-full flex items-center justify-center min-h-[40px]">
+                                                    {mode.level === AI_DIFFICULTY.BONUS ? (
                                                         <div className="w-full pt-2 border-t border-white/5">
                                                             <div
                                                                 onClick={(e) => {
@@ -1009,6 +1009,11 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                                                 <Info className="w-3 h-3" />
                                                                 Règles
                                                             </div>
+                                                        </div>
+                                                    ) : (
+                                                        /* Invisible placeholder to maintain consistent card heights */
+                                                        <div className="w-full pt-2 invisible">
+                                                            <div className="w-full py-1.5 px-3 text-[9px]">&nbsp;</div>
                                                         </div>
                                                     )}
                                                 </div>

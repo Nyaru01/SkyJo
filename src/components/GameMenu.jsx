@@ -38,13 +38,16 @@ export default function GameMenu({
 
     return (
         <div className="max-w-md mx-auto p-4 space-y-4 min-h-screen flex flex-col pt-8">
-            {/* Header section can be even more minimal */}
-            <div className="text-center mb-6 space-y-1">
-                <h2 className="text-3xl font-black text-white tracking-tighter">MODE VIRTUEL</h2>
-                <div className="h-1 w-12 bg-skyjo-blue mx-auto rounded-full" />
-            </div>
+            {/* Sticky header + progression */}
+            <div className="sticky top-0 z-20 bg-gradient-to-b from-slate-950 via-slate-950/95 to-transparent pb-4 -mx-4 px-4 pt-4 -mt-4">
+                {/* Header section */}
+                <div className="text-center mb-4 space-y-1">
+                    <h2 className="text-3xl font-black text-white tracking-tighter">MODE VIRTUEL</h2>
+                    <div className="h-1 w-12 bg-skyjo-blue mx-auto rounded-full" />
+                </div>
 
-            <ExperienceBar className="mb-6" />
+                <ExperienceBar />
+            </div>
 
             <div className="grid gap-4">
                 {/* AI Battle */}

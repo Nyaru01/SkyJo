@@ -33,6 +33,8 @@ const CRITICAL_AUDIO = [
     '/Sounds/whoosh-radio-ready-219487.mp3',
     '/Music/track-344542.mp3',
     '/Music/scizzie - aquatic ambience.mp3',
+    '/Music/GW1.mp3',
+    '/Music/GW2.mp3',
     '/Music/reveil-239031.mp3'
 ];
 
