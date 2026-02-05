@@ -879,8 +879,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                     </div>
                 </div>
 
-                <Card className="glass-premium dark:glass-dark shadow-xl border-t border-white/10 flex-1 flex flex-col mb-4 overflow-hidden">
-                    <CardContent className="flex-1 flex flex-col gap-4 pt-6 p-4">
+                <Card className="glass-premium dark:glass-dark shadow-xl border-t border-white/10 mb-4 overflow-hidden">
+                    <CardContent className="flex flex-col gap-4 pt-6 p-4">
                         {/* Player Name */}
                         <div className="space-y-3">
                             <label className="text-xs font-bold uppercase tracking-wider text-purple-200 ml-1">Votre Profil</label>
@@ -929,10 +929,10 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                         </div>
 
                         {/* Difficulty */}
-                        <div className="flex-1 flex flex-col min-h-0 pt-2">
+                        <div className="flex flex-col pt-2">
 
                             <label className="text-xs font-bold uppercase tracking-wider text-purple-200 ml-1 mb-3 block">Niveau de difficulté</label>
-                            <div className="grid grid-cols-2 gap-4 flex-1">
+                            <div className="grid grid-cols-2 gap-4">
                                 {[
                                     { level: AI_DIFFICULTY.NORMAL, label: 'Normal', color: 'from-emerald-500 to-teal-500', shadow: 'shadow-emerald-500/50', icon: Leaf, desc: 'Idéal pour débuter' },
                                     { level: AI_DIFFICULTY.HARD, label: 'Difficile', color: 'from-amber-500 to-orange-500', shadow: 'shadow-amber-500/50', icon: Swords, desc: 'Défi stratégique' },
@@ -995,8 +995,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                                     </div>
                                                 </div>
 
-                                                {/* Fixed Height Footer Area for Rules Button (Red Rectangle) */}
-                                                <div className="w-full h-12 flex items-center justify-center">
+                                                {/* Footer Area for Rules Button (Red Rectangle) */}
+                                                <div className="w-full flex items-center justify-center">
                                                     {mode.level === AI_DIFFICULTY.BONUS && (
                                                         <div className="w-full pt-2 border-t border-white/5">
                                                             <div
