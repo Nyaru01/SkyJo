@@ -881,53 +881,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
                 <Card className="glass-premium dark:glass-dark shadow-xl border-t border-white/10 mb-4 overflow-hidden">
                     <CardContent className="flex flex-col gap-4 pt-6 p-4">
-                        {/* Player Name */}
-                        <div className="space-y-3">
-                            <label className="text-xs font-bold uppercase tracking-wider text-purple-200 ml-1">Votre Profil</label>
-                            <div className="flex gap-3 items-center bg-slate-900/40 p-2 rounded-2xl border border-white/5">
-                                {/* Avatar Button */}
-                                <button
-                                    onClick={() => setOpenAvatarSelector('ai-player')}
-                                    className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all hover:scale-105 border-2 border-purple-500/30 overflow-hidden relative group bg-slate-800"
-                                >
-                                    <div className="absolute inset-0 bg-white">
-                                        <img
-                                            src={getAvatarPath(aiConfig.playerAvatarId)}
-                                            alt="Avatar"
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                            onError={(e) => { e.target.src = '/avatars/cat.png' }}
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/20 to-transparent pointer-events-none" />
-                                    </div>
-                                    <div className="absolute bottom-0 inset-x-0 h-4 bg-black/60 flex items-center justify-center">
-                                        <Palette className="w-2 h-2 text-white/80" />
-                                    </div>
-                                </button>
-
-                                <div className="flex-1">
-                                    <Input
-                                        placeholder="Votre pseudo"
-                                        value={aiConfig.playerName}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            setAIConfig({ ...aiConfig, playerName: val });
-                                            if (val.trim()) {
-                                                updateUserProfile({ name: val.trim() });
-                                            }
-                                        }}
-                                        className="h-12 bg-transparent border-0 text-lg font-bold text-white placeholder:text-slate-500 focus-visible:ring-0 px-2"
-                                        required
-                                    />
-                                    <div className="h-0.5 w-full bg-gradient-to-r from-purple-500/50 to-transparent" />
-                                </div>
-                            </div>
-                            {!aiConfig.playerName.trim() && (
-                                <p className="text-xs text-red-400 pl-2 font-medium flex items-center gap-1">
-                                    <Info className="w-3 h-3" /> Pseudo obligatoire
-                                </p>
-                            )}
-                        </div>
-
                         {/* Difficulty */}
                         <div className="flex flex-col pt-2">
 

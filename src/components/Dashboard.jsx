@@ -685,7 +685,7 @@ export default function Dashboard() {
             {/* Bouton Quitter Spécifique au jeu en ligne (Fix Plan) */}
 
             <div className={`max-w-3xl mx-auto p-3 ${isVirtualGameActive ? 'pb-2' : 'pb-24'}`}>
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="wait" initial={false}>
                     {renderContent()}
                 </AnimatePresence>
                 {gameStatus === 'FINISHED' && <GameOver />}
