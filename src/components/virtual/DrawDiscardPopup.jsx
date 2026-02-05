@@ -65,7 +65,10 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                     className="fixed inset-0 z-50 flex items-center justify-center"
-                    onClick={onClose}
+                    onClick={() => {
+                        if (isBonusMode && drawnCard?.value === 20) return; // Prevent backdrop close
+                        onClose();
+                    }}
                 >
                     {/* Blur backdrop - lighter for better visibility of background cards */}
                     <div
@@ -95,7 +98,16 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                         {drawnCard ? (
                             <div className="flex flex-col items-center justify-center">
                                 {/* Header */}
-                                <h3 className="text-lg font-bold text-white mb-4">🃏 Carte en main</h3>
+                                <h3 className="text-lg font-bold text-white mb-4">
+                                    {isBonusMode && drawnCard?.value === 20 ? (
+                                        <span className="text-red-500 animate-pulse flex items-center gap-2">
+                                            <Skull className="w-5 h-5" />
+                                            OBLIGÉ DE POSER !
+                                        </span>
+                                    ) : (
+                                        "🃏 Carte en main"
+                                    )}
+                                </h3>
 
                                 {/* Drawn card + Discard history side by side */}
                                 <div className="flex items-center gap-6 mb-4">
@@ -260,13 +272,15 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                             </>
                         )}
 
-                        {/* Close button - always visible */}
-                        <button
-                            onClick={onClose}
-                            className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-white transition-colors"
-                        >
-                            ✕
-                        </button>
+                        {/* Close button - always visible unless cursed */}
+                        {!(isBonusMode && drawnCard?.value === 20) && (
+                            <button
+                                onClick={onClose}
+                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-white transition-colors"
+                            >
+                                ✕
+                            </button>
+                        )}
                     </motion.div>
                 </motion.div>
             )}

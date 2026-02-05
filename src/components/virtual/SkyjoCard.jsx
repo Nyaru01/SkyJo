@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { X, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import { CARD_COLORS } from '../../lib/skyjoEngine';
@@ -121,6 +122,7 @@ const SkyjoCard = memo(function SkyjoCard({
     isClickable = false,
     isHighlighted = false,
     isShaking = false,
+    isLocked = false,
     onClick,
     className,
 }) {
@@ -224,7 +226,11 @@ const SkyjoCard = memo(function SkyjoCard({
                 <div
                     className="absolute pointer-events-auto"
                     style={{ top: '-8px', left: '-8px', right: '-8px', bottom: '-8px', zIndex: 10 }}
-                    onClick={() => { triggerHaptic(); onClick?.(); }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        triggerHaptic();
+                        onClick?.();
+                    }}
                 />
             )}
 
@@ -314,6 +320,19 @@ const SkyjoCard = memo(function SkyjoCard({
                             background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 30%, transparent 50%)',
                         }}
                     />
+
+                    {/* Lock overlay */}
+                    {isLocked && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[1px] z-20">
+                            <motion.div
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="bg-slate-900/80 p-1.5 rounded-full border border-white/20 shadow-lg"
+                            >
+                                <Lock className="w-5 h-5 text-amber-400" />
+                            </motion.div>
+                        </div>
+                    )}
                 </div>
 
                 {/* BACK FACE */}

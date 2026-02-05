@@ -161,9 +161,16 @@ export const revealInitialCards = (gameState, playerIndex, cardIndices) => {
     newState.players = [...gameState.players];
     newState.players[playerIndex] = {
         ...gameState.players[playerIndex],
-        hand: gameState.players[playerIndex].hand.map((card, i) =>
-            cardIndices.includes(i) ? { ...card, isRevealed: true } : card
-        ),
+        hand: gameState.players[playerIndex].hand.map((card, i) => {
+            if (cardIndices.includes(i)) {
+                const revealedCard = { ...card, isRevealed: true };
+                if (revealedCard.value === 20) {
+                    revealedCard.lockCount = 3;
+                }
+                return revealedCard;
+            }
+            return card;
+        }),
     };
 
     // Check if all players have revealed their initial cards
@@ -247,8 +254,20 @@ export const drawFromDiscard = (gameState) => {
  */
 export const replaceCard = (gameState, cardIndex) => {
     const player = gameState.players[gameState.currentPlayerIndex];
-    const replacedCard = { ...player.hand[cardIndex], isRevealed: true };
+    const targetCard = player.hand[cardIndex];
+
+    // RULE: Cannot replace a locked card
+    if (targetCard && targetCard.lockCount > 0) {
+        throw new Error('Cette carte est verrouillée pour encore ' + targetCard.lockCount + ' rounds !');
+    }
+
+    const replacedCard = { ...targetCard, isRevealed: true, lockCount: 0 };
     const drawnCard = { ...gameState.drawnCard, isRevealed: true };
+
+    // NEW RULE: If placing a 20, lock it for 3 rounds
+    if (drawnCard.value === 20) {
+        drawnCard.lockCount = 3;
+    }
 
     const newHand = [...player.hand];
     newHand[cardIndex] = drawnCard;
@@ -274,13 +293,25 @@ export const replaceCard = (gameState, cardIndex) => {
 export const discardAndReveal = (gameState, cardIndex) => {
     const player = gameState.players[gameState.currentPlayerIndex];
 
+    // RULE: Cannot reveal a locked card (though usually lock is only on revealed 20s, let's be safe)
+    if (player.hand[cardIndex] && player.hand[cardIndex].lockCount > 0) {
+        throw new Error('Cette carte est verrouillée !');
+    }
+
     if (player.hand[cardIndex].isRevealed) {
         throw new Error('Cannot reveal an already revealed card');
     }
 
-    const newHand = player.hand.map((card, i) =>
-        i === cardIndex ? { ...card, isRevealed: true } : card
-    );
+    const newHand = player.hand.map((card, i) => {
+        if (i === cardIndex) {
+            const revealedCard = { ...card, isRevealed: true };
+            if (revealedCard.value === 20) {
+                revealedCard.lockCount = 3;
+            }
+            return revealedCard;
+        }
+        return card;
+    });
 
     const newPlayers = [...gameState.players];
     newPlayers[gameState.currentPlayerIndex] = {
@@ -355,8 +386,24 @@ export const checkAndRemoveColumns = (gameState) => {
 export const endTurn = (gameState) => {
     let newState = checkAndRemoveColumns(gameState);
 
-    // Check if current player has revealed all cards
+    // DECREMENT LOCKS for ALL players (or just current? rule says "3 round")
+    // If it's 3 rounds, it means 3 rotations of the table or 3 turns of the current player?
+    // User says: "IA pioche 20 -> Je joue -> Elle peut pas échanger -> Je joue -> Elle peut pas échanger -> Je joue -> Elle peut échanger"
+    // This looks like it counts every "round" (turn of anyone).
+    // Let's decrement for the current player at the end of their turn.
     const currentPlayer = newState.players[newState.currentPlayerIndex];
+    const updatedHand = currentPlayer.hand.map(card => {
+        if (card && card.lockCount > 0) {
+            return { ...card, lockCount: card.lockCount - 1 };
+        }
+        return card;
+    });
+
+    newState.players = [...newState.players];
+    newState.players[newState.currentPlayerIndex] = { ...currentPlayer, hand: updatedHand };
+
+    // Check if current player has revealed all cards
+    // const currentPlayer = newState.players[newState.currentPlayerIndex]; // REMOVED (already declared above)
     const allRevealed = currentPlayer.hand.every(c => c === null || c.isRevealed);
 
     if (allRevealed && newState.phase === 'PLAYING') {

@@ -691,16 +691,26 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         const currentPlayer = gameState.players[gameState.currentPlayerIndex];
         const card = currentPlayer.hand[cardIndex];
 
-        if (gameState.turnPhase === 'REPLACE_OR_DISCARD') {
-            playCardPlace();
-            replaceHandCard(cardIndex);
-        } else if (gameState.turnPhase === 'MUST_REPLACE') {
-            playCardPlace();
-            replaceHandCard(cardIndex);
+        if (gameState.turnPhase === 'REPLACE_OR_DISCARD' || gameState.turnPhase === 'MUST_REPLACE') {
+            try {
+                playCardPlace();
+                replaceHandCard(cardIndex);
+            } catch (error) {
+                console.error("Action interdite:", error.message);
+                setShakingCard({ playerIndex: myPlayerIndex, cardIndex });
+                toast.error(error.message || "Action impossible sur une carte verrouillée !");
+                setTimeout(() => setShakingCard(null), 500);
+            }
         } else if (gameState.turnPhase === 'MUST_REVEAL') {
-            if (!card?.isRevealed) {
-                playCardFlip();
-                revealHiddenCard(cardIndex);
+            try {
+                if (!card?.isRevealed) {
+                    playCardFlip();
+                    revealHiddenCard(cardIndex);
+                }
+            } catch (error) {
+                setShakingCard({ playerIndex: myPlayerIndex, cardIndex });
+                toast.error(error.message || "Carte verrouillée !");
+                setTimeout(() => setShakingCard(null), 500);
             }
         }
     };
@@ -841,7 +851,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             startAIGame(
                 { name: aiConfig.playerName || 'Joueur', avatarId: aiConfig.playerAvatarId },
                 1, // Forced to 1 AI opponent
-                isBonus ? AI_DIFFICULTY.HARDCORE : aiConfig.difficulty,
+                aiConfig.difficulty,
                 { isBonusMode: isBonus }
             );
             setInitialReveals({});
@@ -938,48 +948,69 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                             <button
                                                 onClick={() => setAIConfig({ ...aiConfig, difficulty: mode.level })}
                                                 className={cn(
-                                                    "relative w-full p-2 rounded-xl border transition-all duration-300 flex flex-col items-center justify-center text-center overflow-hidden h-full gap-2",
+                                                    "relative w-full p-3 rounded-xl border transition-all duration-300 flex flex-col items-center overflow-hidden h-full",
                                                     aiConfig.difficulty === mode.level
                                                         ? `border-white/20 bg-slate-800/80 ring-1 ring-white/20 shadow-lg`
                                                         : "border-white/5 bg-slate-900/40 hover:bg-slate-800/60 hover:border-white/10"
                                                 )}
                                             >
-                                                {/* Icon Container with Glass/Glow Effect */}
-                                                <div className={cn(
-                                                    "w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 overflow-hidden border border-white/20 shrink-0 relative",
-                                                    aiConfig.difficulty === mode.level
-                                                        ? "bg-slate-800"
-                                                        : "bg-slate-800/50 grayscale-[0.5] opacity-80"
-                                                )}>
-                                                    {/* Glowing Gradient Background */}
+                                                {/* Main Content Area - Centered for alignment */}
+                                                <div className="flex-1 flex flex-col items-center justify-center w-full gap-3 py-1">
+                                                    {/* Icon Container with Glass/Glow Effect */}
                                                     <div className={cn(
-                                                        "absolute inset-0 opacity-20 bg-gradient-to-br",
-                                                        mode.color
-                                                    )} />
+                                                        "w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 overflow-hidden border border-white/20 shrink-0 relative",
+                                                        aiConfig.difficulty === mode.level
+                                                            ? "bg-slate-800"
+                                                            : "bg-slate-800/50 grayscale-[0.5] opacity-80"
+                                                    )}>
+                                                        {/* Glowing Gradient Background */}
+                                                        <div className={cn(
+                                                            "absolute inset-0 opacity-20 bg-gradient-to-br",
+                                                            mode.color
+                                                        )} />
 
-                                                    {/* Central Icon */}
-                                                    <mode.icon
-                                                        className={cn(
-                                                            "w-8 h-8 relative z-10 drop-shadow-md",
-                                                            aiConfig.difficulty === mode.level
-                                                                ? "text-white"
-                                                                : "text-slate-300"
-                                                        )}
-                                                        strokeWidth={1.5}
-                                                    />
+                                                        {/* Central Icon */}
+                                                        <mode.icon
+                                                            className={cn(
+                                                                "w-8 h-8 relative z-10 drop-shadow-md",
+                                                                aiConfig.difficulty === mode.level
+                                                                    ? "text-white"
+                                                                    : "text-slate-300"
+                                                            )}
+                                                            strokeWidth={1.5}
+                                                        />
 
-                                                    {/* Glow reflection */}
-                                                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none" />
+                                                        {/* Glow reflection */}
+                                                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none" />
+                                                    </div>
+
+                                                    <div className="flex flex-col justify-center w-full text-center">
+                                                        <div className={cn(
+                                                            "font-black text-sm uppercase tracking-tight transition-colors",
+                                                            aiConfig.difficulty === mode.level ? "text-white" : "text-slate-300"
+                                                        )}>
+                                                            {mode.label}
+                                                        </div>
+                                                        <div className="text-[10px] text-slate-500 font-bold leading-tight mt-1">{mode.desc}</div>
+                                                    </div>
                                                 </div>
 
-                                                <div className="flex flex-col justify-center w-full">
-                                                    <div className={cn(
-                                                        "font-black text-sm uppercase tracking-tight transition-colors",
-                                                        aiConfig.difficulty === mode.level ? "text-white" : "text-slate-300"
-                                                    )}>
-                                                        {mode.label}
-                                                    </div>
-                                                    <div className="text-[10px] text-slate-500 font-bold leading-tight mt-0.5">{mode.desc}</div>
+                                                {/* Fixed Height Footer Area for Rules Button (Red Rectangle) */}
+                                                <div className="w-full h-12 flex items-center justify-center">
+                                                    {mode.level === AI_DIFFICULTY.BONUS && (
+                                                        <div className="w-full pt-2 border-t border-white/5">
+                                                            <div
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setShowBonusTutorial(true);
+                                                                }}
+                                                                className="w-full py-1.5 px-3 rounded-lg bg-slate-800/50 border border-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 hover:bg-slate-700 hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                                            >
+                                                                <Info className="w-3 h-3" />
+                                                                Règles
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 {aiConfig.difficulty === mode.level && (
                                                     <div className={cn(
@@ -991,18 +1022,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                             </button>
                                         </motion.div>
 
-                                        {mode.level === AI_DIFFICULTY.BONUS && (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setShowBonusTutorial(true);
-                                                }}
-                                                className="absolute -top-1.5 -right-1.5 p-1 bg-purple-500 text-white rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all z-20 border-2 border-slate-900"
-                                                title="Tutoriel Mode Bonus"
-                                            >
-                                                <HelpCircle className="w-3 h-3" />
-                                            </button>
-                                        )}
                                     </div>
                                 ))}
                             </div>

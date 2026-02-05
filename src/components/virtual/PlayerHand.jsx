@@ -253,6 +253,7 @@ const PlayerHand = memo(function PlayerHand({
                                     isClickable={canInteract && card !== null}
                                     isHighlighted={canInteract && card && !card.isRevealed && !isPendingReveal}
                                     isShaking={shakingCardIndex === cardIndex}
+                                    isLocked={card && card.lockCount > 0}
                                     onClick={() => onCardClick?.(cardIndex)}
                                 />
                             </motion.div>

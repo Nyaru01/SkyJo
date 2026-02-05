@@ -392,7 +392,11 @@ export const useVirtualGameStore = create((set, get) => ({
 
         // Reveal the card
         const newHand = [...player.hand];
-        newHand[cardIndex] = { ...newHand[cardIndex], isRevealed: true };
+        const revealedCard = { ...newHand[cardIndex], isRevealed: true };
+        if (revealedCard.value === 20) {
+            revealedCard.lockCount = 3;
+        }
+        newHand[cardIndex] = revealedCard;
 
         const newPlayers = [...gameState.players];
         newPlayers[gameState.currentPlayerIndex] = { ...player, hand: newHand };
@@ -434,9 +438,16 @@ export const useVirtualGameStore = create((set, get) => ({
         if (player.hand[cardIndex]?.isRevealed) return; // Can only reveal hidden cards
 
         // Reveal the card
-        const newHand = player.hand.map((card, i) =>
-            i === cardIndex ? { ...card, isRevealed: true } : card
-        );
+        const newHand = player.hand.map((card, i) => {
+            if (i === cardIndex) {
+                const revealedCard = { ...card, isRevealed: true };
+                if (revealedCard.value === 20) {
+                    revealedCard.lockCount = 3;
+                }
+                return revealedCard;
+            }
+            return card;
+        });
 
         const newPlayers = [...gameState.players];
         newPlayers[gameState.currentPlayerIndex] = {

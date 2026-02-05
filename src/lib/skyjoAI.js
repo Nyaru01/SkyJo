@@ -58,7 +58,7 @@ const getHiddenCardIndices = (hand) => {
  */
 const getRevealedCardIndices = (hand) => {
     return hand
-        .map((card, idx) => (card && card.isRevealed ? idx : -1))
+        .map((card, idx) => (card && card.isRevealed && !(card.lockCount > 0) ? idx : -1))
         .filter(idx => idx !== -1);
 };
 
@@ -70,7 +70,7 @@ const findHighestRevealedCard = (hand) => {
     let maxIndex = -1;
 
     hand.forEach((card, idx) => {
-        if (card && card.isRevealed && card.value > maxValue) {
+        if (card && card.isRevealed && !(card.lockCount > 0) && card.value > maxValue) {
             maxValue = card.value;
             maxIndex = idx;
         }
@@ -136,6 +136,8 @@ const findBestReplacementPosition = (hand, cardValue, difficulty) => {
     // Check for column completion opportunities first
     for (const idx of [...revealedIndices, ...hiddenIndices]) {
         if (hand[idx] === null) continue;
+        // RULE: Never replace a locked card
+        if (hand[idx].lockCount > 0) continue;
         // CRITICAL FIX: Never replace a card with the same value (waste of turn)
         if (hand[idx].isRevealed && hand[idx].value === cardValue) continue;
 
@@ -234,7 +236,7 @@ export const decideDrawSource = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
         // Also take if it can complete a column
         const hand = currentPlayer.hand;
         for (let i = 0; i < hand.length; i++) {
-            if (hand[i] && checkColumnPotential(hand, i, discardValue)) {
+            if (hand[i] && !(hand[i].lockCount > 0) && checkColumnPotential(hand, i, discardValue)) {
                 if (hand[i].isRevealed && hand[i].value === discardValue) continue;
                 return 'DISCARD_PILE';
             }
@@ -267,7 +269,7 @@ export const decideDrawSource = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
 
         // Check for column completion (Primary strat for Hardcore)
         for (let i = 0; i < currentPlayer.hand.length; i++) {
-            if (currentPlayer.hand[i] && checkColumnPotential(currentPlayer.hand, i, discardValue)) {
+            if (currentPlayer.hand[i] && !(currentPlayer.hand[i].lockCount > 0) && checkColumnPotential(currentPlayer.hand, i, discardValue)) {
                 // Fix: Don't take from discard if we would just replace same value
                 if (currentPlayer.hand[i].isRevealed && currentPlayer.hand[i].value === discardValue) continue;
                 return 'DISCARD_PILE';
@@ -301,8 +303,9 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
     if (gameState.turnPhase === 'MUST_REPLACE') {
         const replaceIndex = findBestReplacementPosition(hand, drawnValue, difficulty);
         // If no good position found, just replace a random card (should rarely happen for AI)
+        // CRITICAL: Must not pick a locked card
         const finalIndex = replaceIndex !== -1 ? replaceIndex : getRandomElement(
-            hand.map((c, i) => c !== null ? i : -1).filter(i => i !== -1)
+            hand.map((c, i) => (c !== null && !(c.lockCount > 0)) ? i : -1).filter(i => i !== -1)
         );
         return { action: 'REPLACE', cardIndex: finalIndex };
     }
@@ -406,7 +409,7 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
     }
 
     // No hidden cards left, must replace (Last Resort)
-    const validIndices = hand.map((c, i) => c !== null ? i : -1).filter(i => i !== -1);
+    const validIndices = hand.map((c, i) => (c !== null && !(c.lockCount > 0)) ? i : -1).filter(i => i !== -1);
     // Try to minimize damage
     let bestIdx = validIndices[0];
     let minDiff = Infinity; // We want minimum (new - old) which is negative or small positive
@@ -417,6 +420,13 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
     // So we just replace the highest value card to minimize the GAIN.
     bestIdx = findHighestRevealedCard(hand).index;
     if (bestIdx === -1) bestIdx = validIndices[0];
+
+    // Final safety: if for some reason we still have -1 or a locked card (should be impossible)
+    if (bestIdx === -1) {
+        // Fallback to any non-null, non-locked card
+        const fallbackIdx = hand.findIndex(c => c !== null && !(c.lockCount > 0));
+        bestIdx = fallbackIdx !== -1 ? fallbackIdx : 0;
+    }
 
     return { action: 'REPLACE', cardIndex: bestIdx };
 };

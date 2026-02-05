@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, ChevronLeft, Sparkles, Star, Skull, TrendingUp } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Sparkles, Star, Skull, TrendingUp, Swords } from 'lucide-react';
 import { Button } from './ui/Button';
 import SkyjoCard from './virtual/SkyjoCard';
 
@@ -8,25 +8,28 @@ const BONUS_STEPS = [
     {
         title: "Le Mode Bonus ✨",
         description: "Bienvenue dans la variante la plus extrême de Skyjo ! Ici, nous avons ajouté 12 cartes spéciales au deck original pour rendre les parties imprévisibles.",
-        icon: Sparkles,
-        color: "text-purple-400",
-        bg: "bg-purple-400/10",
+        icon: Swords,
+        color: "text-red-500",
+        bg: "bg-red-500/10",
         content: (
-            <div className="relative w-full h-40 rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-950" />
+            <div className="relative w-full h-44 rounded-3xl overflow-hidden shadow-2xl border border-red-500/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-red-950 via-slate-950 to-red-900" />
                 <div className="absolute inset-0 flex items-center justify-center">
                     <motion.div
                         animate={{
-                            scale: [1, 1.1, 1],
-                            rotate: [0, 5, -5, 0]
+                            scale: [1, 1.2, 1],
+                            rotate: [0, 10, -10, 0]
                         }}
-                        transition={{ repeat: Infinity, duration: 4 }}
+                        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
                     >
-                        <Sparkles className="w-16 h-16 text-purple-400 opacity-50" />
+                        <div className="relative">
+                            <div className="absolute inset-0 blur-2xl bg-red-600/40" />
+                            <Swords className="w-16 h-16 text-red-500 relative z-10" />
+                        </div>
                     </motion.div>
                 </div>
-                <div className="absolute bottom-4 left-4 right-4 text-xs font-black text-white uppercase tracking-widest text-center">
-                    Prêt pour le carnage ?
+                <div className="absolute bottom-6 left-0 right-0 text-sm font-black text-red-500 uppercase tracking-[0.2em] text-center italic">
+                    PRÊT POUR LE CARNAGE ?
                 </div>
             </div>
         )
@@ -59,7 +62,7 @@ const BONUS_STEPS = [
     },
     {
         title: "Le Crâne Maudit (20) 💀",
-        description: "ATTENTION ! Cette carte vaut 20 points. MALÉDICTION : Si vous la piochez, vous êtes OBLIGÉ de la placer dans votre jeu ! Vous ne pouvez pas la défausser. Il y en a 6 dans le jeu.",
+        description: "ATTENTION ! Cette carte vaut 20 points. MALÉDICTION : Si vous la piochez, vous êtes OBLIGÉ de la placer ! Une fois posée, elle est VERROUILLÉE pendant 3 rounds (impossible à échanger).",
         icon: Skull,
         color: "text-red-600",
         bg: "bg-red-600/10",
@@ -87,7 +90,7 @@ const BONUS_STEPS = [
         color: "text-amber-500",
         bg: "bg-amber-500/10",
         content: (
-            <div className="flex gap-2 py-4">
+            <div className="flex gap-2 py-4 justify-center">
                 {[20, 20, 20].map((n, i) => (
                     <motion.div
                         key={i}
