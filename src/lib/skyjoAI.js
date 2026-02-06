@@ -146,6 +146,30 @@ const findBestReplacementPosition = (hand, cardValue, difficulty) => {
         }
     }
 
+    // SPECIAL LOGIC FOR 20 (Cursed Skull)
+    if (cardValue === 20) {
+        // 1. Try to replace any high revealed card first (10, 11, 12)
+        // Since we MUST replace if we drawn a 20, replacing a 12 with a 20
+        // is better than replacing a -10, as we hope to clear the column later.
+        if (highest.index !== -1 && highest.value >= 10) {
+            return highest.index;
+        }
+
+        // 2. Prefer replacing a hidden card to "start" a column for elimination
+        // and avoid breaking known GOOD cards.
+        if (hiddenIndices.length > 0) {
+            // Prefer corners as usual
+            const cornerIndices = [0, 2, 9, 11].filter(i => hiddenIndices.includes(i));
+            if (cornerIndices.length > 0) return getRandomElement(cornerIndices);
+            return getRandomElement(hiddenIndices);
+        }
+
+        // 3. Last resort: highest revealed card even if it's "okay" (like a 5)
+        if (highest.index !== -1 && highest.value >= 5) {
+            return highest.index;
+        }
+    }
+
     const highest = findHighestRevealedCard(hand);
 
     // EXCELLENT CARDS (<= 0)
@@ -295,8 +319,26 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
     // BONUS MODE RULE: Forced replacement if drawn card is 20
     if (difficulty === AI_DIFFICULTY.BONUS && drawnValue === 20) {
         const replaceIndex = findBestReplacementPosition(hand, 20, difficulty);
-        const finalIdx = replaceIndex !== -1 ? replaceIndex : 0;
-        return { action: 'REPLACE', cardIndex: finalIdx };
+        if (replaceIndex !== -1) {
+            return { action: 'REPLACE', cardIndex: replaceIndex };
+        }
+
+        // Fallback if findBestReplacementPosition somehow failed or didn't want to replace
+        // We MUST find a non-locked card.
+        const validIndices = hand.map((c, i) => (c !== null && !(c.lockCount > 0)) ? i : -1).filter(i => i !== -1);
+
+        // Pick the absolute worst card to replace with a 20 (highest value)
+        let worstIdx = validIndices[0];
+        let maxVal = -Infinity;
+        validIndices.forEach(idx => {
+            const card = hand[idx];
+            if (card && card.isRevealed && card.value > maxVal) {
+                maxVal = card.value;
+                worstIdx = idx;
+            }
+        });
+
+        return { action: 'REPLACE', cardIndex: worstIdx };
     }
 
     // If came from discard, MUST replace

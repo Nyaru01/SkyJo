@@ -109,34 +109,35 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                     <AnimatePresence mode="wait">
                         {showRewards && (
                             <div className="fixed inset-0 z-[1000] flex items-center justify-center px-4 font-sans pointer-events-auto">
-                                {/* Backdrop with extreme blur */}
+                                {/* Backdrop with optimized blur */}
                                 <motion.div
                                     key="backdrop"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="absolute inset-0 bg-slate-950/95 backdrop-blur-[32px]"
+                                    className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl will-change-[opacity,backdrop-filter]"
                                     onClick={() => setShowRewards(false)}
                                 />
 
-                                {/* Modal - Ultra Premium Glass */}
+                                {/* Modal - Ultra Premium Glass - GPU Accelerated */}
                                 <motion.div
                                     key="modal"
                                     initial={{ opacity: 0, scale: 0.9, y: 30 }}
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.9, y: 30 }}
                                     transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                                    className="relative w-full max-w-lg bg-slate-900/60 rounded-[3rem] border border-white/20 shadow-[0_50px_100px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col max-h-[85vh] z-10"
+                                    style={{ transform: 'translateZ(0)' }}
+                                    className="relative w-full max-w-lg bg-slate-900/80 rounded-[3rem] border border-white/20 shadow-[0_50px_100px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col max-h-[85vh] z-10 will-change-transform"
                                 >
-                                    {/* Animated Inner Shine */}
+                                    {/* Animated Inner Shine - Optimized priority */}
                                     <motion.div
                                         animate={{ rotate: 360 }}
-                                        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                                        className="absolute inset-[-100%] bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none"
+                                        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+                                        className="absolute inset-[-100%] bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none opacity-50"
                                     />
 
                                     {/* Header */}
-                                    <div className="p-8 pb-6 border-b border-white/10 bg-gradient-to-br from-indigo-500/10 via-transparent to-purple-500/10 relative">
+                                    <div className="p-8 pb-6 border-b border-white/10 bg-slate-900/40 relative">
                                         <button
                                             onClick={() => setShowRewards(false)}
                                             className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 hover:scale-110 transition-all z-20"
@@ -195,7 +196,7 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                                     </div>
 
                                     {/* Content */}
-                                    <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-slate-950/20 backdrop-blur-md">
+                                    <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-slate-950/40">
                                         {REWARDS.map((reward) => {
                                             const isUnlocked = level >= reward.level;
                                             const isNext = level + 1 === reward.level;
