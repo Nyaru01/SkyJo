@@ -82,7 +82,8 @@ const preloadAudioFiles = async () => {
 
     const filesToPreload = [
         '/Sounds/victory.mp3',
-        '/Sounds/Start.mp3'
+        '/Sounds/Start.mp3',
+        '/Sounds/Start_game.mp3'
     ];
 
     for (const path of filesToPreload) {
@@ -260,6 +261,14 @@ export const useFeedback = () => {
         vibrate(50);
     }, [soundEnabled, vibrate]);
 
+    // Enhanced start game sound for AI battle
+    const playStartGame = useCallback(() => {
+        if (soundEnabled) {
+            playAudioBuffer('/Sounds/Start_game.mp3', 0.6);
+        }
+        vibrate([50, 30, 50]);
+    }, [soundEnabled, vibrate]);
+
     // Error sound - lower pitch
     const playError = useCallback(() => {
         if (soundEnabled) {
@@ -341,6 +350,7 @@ export const useFeedback = () => {
         playClick,
         playVictory,
         playStart,
+        playStartGame,
         playError,
         playUndo,
         playCardFlip,

@@ -237,6 +237,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         playCardDraw,
         playCardPlace,
         playStart,
+        playStartGame,
         playSocialInvite
     } = useFeedback();
     const musicEnabled = useGameStore(state => state.musicEnabled);
@@ -852,6 +853,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     // Render AI setup screen
     if (screen === 'ai-setup') {
         const handleStartAIGame = () => {
+            playStartGame();
             const isBonus = aiConfig.difficulty === AI_DIFFICULTY.BONUS;
             startAIGame(
                 { name: aiConfig.playerName || 'Joueur', avatarId: aiConfig.playerAvatarId },
