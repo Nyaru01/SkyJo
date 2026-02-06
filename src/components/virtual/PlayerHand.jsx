@@ -1,5 +1,6 @@
 import { memo, useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Bot } from 'lucide-react';
 import SkyjoCard from './SkyjoCard';
 import { cn } from '../../lib/utils';
 import { getAvatarPath } from '../../lib/avatars';
@@ -113,8 +114,8 @@ const PlayerHand = memo(function PlayerHand({
                 isLocalPlayer && !isCurrentPlayer && "border-2 border-amber-400/50" // Subtle highlight for self when not turn
             )}
             style={{
-                // 85% black overlay + 20px blur + proper styling
-                backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                // 55% black overlay + 20px blur + proper styling
+                backgroundColor: 'rgba(0, 0, 0, 0.55)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
                 padding: '16px 6px 2px 6px', // Reduced padding
@@ -181,7 +182,9 @@ const PlayerHand = memo(function PlayerHand({
                                 <span className="text-xs">{player.name}</span>
                             </div>
                         ) : (
-                            <span className="text-xs">🤖 IA</span>
+                            <span className="text-xs flex items-center gap-1 font-black">
+                                <Bot className="w-3.5 h-3.5 text-purple-400" /> IA
+                            </span>
                         )
                     ) : (
                         <div className="flex items-center gap-1.5">

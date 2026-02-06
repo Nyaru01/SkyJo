@@ -39,7 +39,7 @@ export default function GameMenu({
     return (
         <div className="max-w-md mx-auto p-4 space-y-4 min-h-[600px] flex flex-col pt-8">
             {/* Sticky header + progression */}
-            <div className="sticky top-0 z-20 bg-gradient-to-b from-slate-950 via-slate-950/95 to-transparent pb-4 -mx-4 px-4 pt-4 -mt-4">
+            <div className="sticky top-0 z-20 bg-gradient-to-b from-slate-950 via-slate-950/95 to-transparent pb-4 -mx-4 px-4 pt-4 -mt-4 rounded-t-[2.5rem]">
                 {/* Header section */}
                 <div className="text-center mb-4 space-y-1">
                     <h2 className="text-3xl font-black text-white tracking-tighter">MODE VIRTUEL</h2>

@@ -2201,7 +2201,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                     : (isInitialReveal ? `Retournez chacun 2 cartes ${selectedForReveal.length > 0 ? `(${selectedForReveal.length}/2)` : ''}` :
                                         // Only show action instructions when it's the human player's turn (virtual mode only)
                                         activeGameState.currentPlayerIndex !== myPlayerIndex && !isOnlineMode
-                                            ? (isAIThinking ? `🤖 ${currentPlayer?.name} réfléchit...` : `🤖 Tour de ${currentPlayer?.name}`)
+                                            ? (isAIThinking ? `${currentPlayer?.name} réfléchit...` : `Tour de ${currentPlayer?.name}`)
                                             : (activeGameState.turnPhase === 'DRAW' ? 'Piocher ou défausser' :
                                                 activeGameState.turnPhase === 'REPLACE_OR_DISCARD' ? 'Jouez dans votre grille ou défaussez' :
                                                     activeGameState.turnPhase === 'MUST_REPLACE' ? 'Remplacez une de vos cartes' :

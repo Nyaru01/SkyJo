@@ -8,14 +8,14 @@ export const CURRENT_NEWS_VERSION = 4;
 
 const FEATURES = [
     {
-        title: "Notifications & Deep-Links 📡",
+        title: "Notifications & Deep-Links",
         description: "Rejoignez une partie d'un simple tap sur la notification, même app fermée ! Plus besoin de chercher vos amis.",
         icon: Zap,
         color: "text-amber-400",
         bg: "bg-amber-400/10"
     },
     {
-        title: "Mode hors ligne contre l'IA 🤖",
+        title: "Mode hors ligne contre l'IA",
         description: "Jouez partout, même sans internet ! Le mode solo est désormais 100% fonctionnel hors ligne.",
         icon: Sparkles,
         color: "text-cyan-400",

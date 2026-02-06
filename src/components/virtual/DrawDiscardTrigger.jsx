@@ -242,57 +242,78 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                             onClick={onClick}
                             disabled={!canInteract}
                             className={cn(
-                                "flex items-center justify-center gap-3 w-full px-2 py-1.5 rounded-xl transition-all relative z-10",
+                                "flex items-center justify-center gap-3 w-full px-2 py-1.5 rounded-xl transition-all relative z-10 overflow-hidden",
                                 canInteract
-                                    ? (instructionText && turnPhase === 'MUST_REVEAL' ? "cursor-default bg-indigo-600 border border-indigo-400/50" : "cursor-pointer bg-slate-700 hover:bg-slate-600 border border-emerald-500/50")
-                                    : "cursor-not-allowed bg-slate-700/60 opacity-60 border border-slate-600/30"
+                                    ? (instructionText && turnPhase === 'MUST_REVEAL' ? "cursor-default bg-indigo-600/80 backdrop-blur-md border border-indigo-400/50" : "cursor-pointer bg-slate-800/80 backdrop-blur-md hover:bg-slate-700/80 border border-emerald-500/50")
+                                    : "cursor-not-allowed bg-slate-800/40 backdrop-blur-sm opacity-60 border border-slate-700/30"
                             )}
                             style={{
                                 boxShadow: canInteract
-                                    ? '0 4px 15px rgba(0, 0, 0, 0.3), 0 0 15px rgba(52, 211, 153, 0.2)'
+                                    ? '0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.05)'
                                     : '0 4px 15px rgba(0, 0, 0, 0.3)',
-                                maxWidth: '280px' // Limit button width so cards stay effective
+                                maxWidth: '280px'
                             }}
                             whileHover={canInteract ? { scale: 1.02, y: -2 } : undefined}
                             whileTap={canInteract ? { scale: 0.98 } : undefined}
                         >
+                            {/* Premium Shimmer Overlay */}
+                            <motion.div
+                                className="absolute inset-0 z-0 pointer-events-none"
+                                initial={{ x: '-100%' }}
+                                animate={{ x: '250%' }}
+                                transition={{
+                                    duration: 3,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                    repeatDelay: 2
+                                }}
+                                style={{
+                                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)',
+                                }}
+                            />
+
                             {/* Left Arrow - pointing to draw pile */}
                             {isDrawPhase && canInteract && (
                                 <motion.div
-                                    className="text-emerald-400 font-black flex items-center"
+                                    className="text-emerald-400 font-black flex items-center relative z-20"
                                     animate={{
-                                        x: [-4, 0, -4],
-                                        opacity: [0.6, 1, 0.6]
+                                        x: [-2, 2, -2],
+                                        opacity: [0.7, 1, 0.7],
+                                        filter: ["drop-shadow(0 0 2px rgba(52, 211, 153, 0.3))", "drop-shadow(0 0 8px rgba(52, 211, 153, 0.6))", "drop-shadow(0 0 2px rgba(52, 211, 153, 0.3))"]
                                     }}
-                                    transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                                 >
-                                    <ArrowLeft strokeWidth={4} className="h-8 w-8" />
+                                    <ArrowLeft strokeWidth={2.5} className="h-5 w-5" />
                                 </motion.div>
                             )}
 
-                            {/* Label */}
-                            <span className={cn(
-                                "font-black text-white uppercase tracking-wide whitespace-nowrap",
-                                (instructionText?.includes('DERNIER TOUR') || isAIThinking) ? "text-[11px] animate-pulse" : (instructionText ? "text-[11px]" : "text-[10px]")
-                            )}>
-                                {instructionText?.includes('DERNIER TOUR')
-                                    ? instructionText
-                                    : (isDrawPhase && canInteract ? 'CHOISIR UNE CARTE' : (instructionText || 'Piocher'))}
-                            </span>
+                            {/* Label area */}
+                            <div className="flex items-center justify-center relative z-20 mx-2">
+                                <span className={cn(
+                                    "font-black text-white uppercase tracking-[0.2em] whitespace-nowrap drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]",
+                                    (instructionText?.includes('DERNIER TOUR') || isAIThinking) ? "text-[11px] animate-pulse" : (instructionText ? "text-[11px]" : "text-[10px]")
+                                )}>
+                                    {instructionText?.includes('DERNIER TOUR')
+                                        ? instructionText
+                                        : (isDrawPhase && canInteract ? 'CHOISIR UNE CARTE' : (instructionText || 'Piocher'))}
+                                </span>
+                            </div>
 
                             {/* Right Arrow - pointing to discard pile */}
                             {isDrawPhase && canInteract && (
                                 <motion.div
-                                    className="text-amber-400 font-black flex items-center"
+                                    className="text-amber-400 font-black flex items-center relative z-20"
                                     animate={{
-                                        x: [4, 0, 4],
-                                        opacity: [0.6, 1, 0.6]
+                                        x: [2, -2, 2],
+                                        opacity: [0.7, 1, 0.7],
+                                        filter: ["drop-shadow(0 0 2px rgba(245, 158, 11, 0.3))", "drop-shadow(0 0 8px rgba(245, 158, 11, 0.6))", "drop-shadow(0 0 2px rgba(245, 158, 11, 0.3))"]
                                     }}
-                                    transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                                 >
-                                    <ArrowRight strokeWidth={4} className="h-8 w-8" />
+                                    <ArrowRight strokeWidth={2.5} className="h-5 w-5" />
                                 </motion.div>
-                            )}                        </motion.button>
+                            )}
+                        </motion.button>
                     )}
 
                     {/* Discard card preview - positioned to the right - CLICKABLE */}
@@ -377,10 +398,10 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                         </span>
                     </div>
                 )}
-            </div>
+            </div >
 
             {/* Discard History Overlay */}
-            <DiscardHistoryOverlay
+            < DiscardHistoryOverlay
                 cards={discardPile}
                 isVisible={showHistory}
                 onClose={handleDiscardPointerUp}

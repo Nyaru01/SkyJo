@@ -98,8 +98,8 @@ export const useVirtualGameStore = create((set, get) => ({
         for (let i = 0; i < aiCount; i++) {
             players.push({
                 id: `ai-${i + 1}`,
-                name: AI_NAMES[i] || `🤖 Bot ${i + 1}`,
-                emoji: '🤖',
+                name: AI_NAMES[i] || `IA ALPHA ${i + 1}`,
+                avatarId: 'bot',
             });
             aiPlayerIndices.push(i + 1); // AI players are at indices 1, 2, 3...
         }
@@ -162,7 +162,7 @@ export const useVirtualGameStore = create((set, get) => ({
                     isAIThinking: false,
                     lastNotification: {
                         type: 'info',
-                        message: `🤖 ${currentPlayer.name} a retourné 2 cartes`,
+                        message: `${currentPlayer.name} a retourné 2 cartes`,
                         timestamp: Date.now()
                     }
                 });
