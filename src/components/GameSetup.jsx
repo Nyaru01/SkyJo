@@ -48,8 +48,8 @@ const useSyncedAnimation = () => {
 
 export default function GameSetup({ onNavigate, onOpenTutorial }) {
     const [players, setPlayers] = useState([
-        { name: '', avatarId: 'cat' },
-        { name: '', avatarId: 'dog' }
+        { name: '', avatarId: 'frog' },
+        { name: '', avatarId: 'fox' }
     ]);
     const [openAvatarSelector, setOpenAvatarSelector] = useState(null); // Index of player selecting
     const setConfiguration = useGameStore(state => state.setConfiguration);
@@ -146,7 +146,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                 <div className="relative z-20 flex flex-col">
                     {/* Header Section */}
                     <div className="relative p-3 flex items-center gap-4 border-b border-white/5 bg-white/5">
-                        <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden border border-white/10 bg-slate-900 shrink-0 relative z-30 group-hover:scale-105 transition-transform duration-500 animate-breathing" style={{ transform: "translateZ(40px)" }}>
+                        <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden border border-sky-400/50 bg-slate-900 shrink-0 relative z-30 group-hover:scale-105 transition-transform duration-500 animate-breathing" style={{ transform: "translateZ(40px)" }}>
                             <div className="absolute inset-0 bg-sky-500/20 mix-blend-overlay" />
                             <img
                                 src="/Gemini_Generated_Image_auzhtfauzhtfauzh.png"
@@ -257,13 +257,14 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                     <div className="relative p-3 pt-2 pb-3 bg-gradient-to-t from-slate-900/80 to-transparent">
                         <PremiumTiltButton
                             onClick={handleStart}
-                            gradientFrom="from-sky-600"
-                            gradientTo="to-blue-600"
-                            shadowColor="shadow-sky-500/20"
+                            gradientFrom="from-slate-800"
+                            gradientTo="to-slate-950"
+                            shadowColor="shadow-sky-500/10"
+                            contentClassName="border border-sky-500/40 rounded-2xl"
                         >
-                            <span className="flex items-center gap-2">
-                                <Play className="h-5 w-5 fill-current" />
-                                C'est parti !
+                            <span className="flex items-center gap-2 text-sky-400 font-black tracking-[0.1em] uppercase text-sm">
+                                <Play className="h-4 w-4 fill-current" />
+                                C'est parti
                             </span>
                         </PremiumTiltButton>
                     </div>
@@ -278,7 +279,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                     playStart();
                     onNavigate?.('virtual');
                 }}
-                className="w-full relative group cursor-pointer overflow-hidden rounded-[24px] transition-all hover:scale-[1.02] shadow-2xl mt-1"
+                className="w-full relative group cursor-pointer overflow-hidden rounded-[24px] transition-all hover:scale-[1.02] shadow-[0_20px_50px_rgba(147,51,234,0.3)] mt-1"
                 whileTap={{ scale: 0.96, y: 6 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
@@ -294,17 +295,17 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                 <div className="absolute inset-[2px] bg-slate-900/90 backdrop-blur-xl rounded-[22px] z-10" />
 
                 {/* Internal Ambient Gradient (Purple) */}
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-fuchsia-500 to-pink-500 opacity-10 z-10 pointer-events-none rounded-[24px]" />
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-fuchsia-500 to-pink-500 opacity-20 z-10 pointer-events-none rounded-[24px]" />
 
                 {/* Decorative Top Beam */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-purple-400 to-transparent z-20 opacity-60" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-purple-400 to-transparent z-20 opacity-80" />
 
                 {/* Content Layer */}
                 <div className="relative z-20 p-4 flex items-center gap-5 h-full w-full">
                     {/* Halo effect on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-[22px]" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-purple-500/20 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-[22px]" />
 
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden border border-white/10 bg-slate-900 shrink-0 relative z-30 animate-breathing" style={{ transform: "translateZ(40px)" }}>
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden border border-purple-400/50 bg-slate-900 shrink-0 relative z-30 animate-breathing" style={{ transform: "translateZ(40px)" }}>
                         <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay" />
                         <img
                             src="/virtual-logo.jpg"
@@ -313,13 +314,13 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                         />
                     </div>
                     <div className="text-left flex-1 relative z-30">
-                        <p className="font-black text-lg text-white drop-shadow-md uppercase tracking-tight flex items-center gap-2">
-                            MOde Virtuel
+                        <p className="font-black text-xl text-white drop-shadow-md uppercase tracking-tight flex items-center gap-2">
+                            Mode Virtuel
                         </p>
-                        <p className="text-xs text-purple-300 font-medium">Contre l'IA ou en ligne</p>
+                        <p className="text-sm text-purple-300 font-bold tracking-wide">Contre l'IA ou en ligne</p>
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center relative z-30 group-hover:bg-purple-500/20 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.2)] animate-shimmer overflow-hidden">
-                        <ArrowRight strokeWidth={3} className="h-5 w-5 text-purple-400 group-hover:translate-x-0.5 transition-transform" />
+                    <div className="w-12 h-12 rounded-full bg-purple-500/20 border border-purple-500/40 flex items-center justify-center relative z-30 group-hover:bg-purple-500/30 transition-colors shadow-[0_0_20px_rgba(168,85,247,0.3)] animate-shimmer overflow-hidden">
+                        <ArrowRight strokeWidth={3} className="h-6 w-6 text-purple-300 group-hover:translate-x-1 transition-transform" />
                     </div>
                 </div>
             </motion.button>
