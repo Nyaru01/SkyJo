@@ -197,9 +197,9 @@ export const useSocialStore = create(
                 });
             },
 
-            sendPrivateMessage: (toId, text) => {
-                console.log('[CHAT] Sending message to:', toId, text);
-                socket.emit('private_message', { toId, text });
+            sendPrivateMessage: (toId, text, replyTo = null) => {
+                console.log('[CHAT] Sending message to:', toId, text, replyTo);
+                socket.emit('private_message', { toId, text, replyTo });
                 // Optimistically add to our own store
                 const fromId = useGameStore.getState().userProfile?.id;
                 if (!fromId) return;
@@ -210,7 +210,8 @@ export const useSocialStore = create(
                     toId: String(toId),
                     text,
                     timestamp: Date.now(),
-                    isMe: true
+                    isMe: true,
+                    replyTo
                 };
 
                 set(state => ({
@@ -227,6 +228,7 @@ export const useSocialStore = create(
         }),
         {
             name: 'skyjo-social-storage',
+            version: 1,
             partialize: (state) => ({
                 friends: state.friends,
                 directMessages: state.directMessages,

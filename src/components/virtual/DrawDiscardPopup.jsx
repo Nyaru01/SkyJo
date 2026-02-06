@@ -105,7 +105,7 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                                             OBLIGÉ DE POSER !
                                         </span>
                                     ) : (
-                                        "🃏 Carte en main"
+                                        "Carte en main"
                                     )}
                                 </h3>
 
@@ -121,14 +121,17 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                                 </div>
 
                                 {/* Two clear action buttons */}
-                                <div className="flex gap-4 mt-2">
+                                <div className={cn(
+                                    "grid gap-3 mt-6 w-full px-2",
+                                    canDiscardDrawn ? "grid-cols-2" : "grid-cols-1"
+                                )}>
                                     <motion.button
                                         onClick={handleConfirmPlacement}
-                                        className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-full transition-colors shadow-lg"
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
+                                        className="w-full px-2 py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-2xl transition-all shadow-[0_4px_0_0_#059669] active:shadow-none active:translate-y-1 border border-white/10 text-xs sm:text-sm uppercase tracking-widest whitespace-nowrap text-center"
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
                                     >
-                                        ✓ Placer sur grille
+                                        Placer
                                     </motion.button>
 
                                     {/* Only allow discarding if permitted (e.g. drawn from pile, not taken from discard) */}
@@ -136,22 +139,15 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                                         <motion.button
                                             onClick={handleDiscardDrawnCard}
                                             className={cn(
-                                                "px-5 py-2.5 font-semibold rounded-full transition-all shadow-lg flex items-center gap-2",
+                                                "w-full px-2 py-4 font-black rounded-2xl transition-all shadow-lg active:shadow-none active:translate-y-1 border text-xs sm:text-sm uppercase tracking-widest whitespace-nowrap text-center",
                                                 (isBonusMode && drawnCard?.value === 20)
-                                                    ? "bg-slate-800 text-slate-500 border border-red-500/50 cursor-not-allowed opacity-50 grayscale"
-                                                    : "bg-orange-600 hover:bg-orange-500 text-white"
+                                                    ? "bg-slate-800 text-slate-500 border-white/5 cursor-not-allowed opacity-50 grayscale"
+                                                    : "bg-orange-600 hover:bg-orange-500 text-white shadow-[0_4px_0_0_#9a3412] border-white/10"
                                             )}
-                                            whileHover={(isBonusMode && drawnCard?.value === 20) ? {} : { scale: 1.05 }}
-                                            whileTap={(isBonusMode && drawnCard?.value === 20) ? {} : { scale: 0.95 }}
+                                            whileHover={(isBonusMode && drawnCard?.value === 20) ? {} : { scale: 1.02 }}
+                                            whileTap={(isBonusMode && drawnCard?.value === 20) ? {} : { scale: 0.98 }}
                                         >
-                                            {isBonusMode && drawnCard?.value === 20 ? (
-                                                <>
-                                                    <Skull className="w-4 h-4 text-red-500" />
-                                                    MAUDIT
-                                                </>
-                                            ) : (
-                                                "✗ Défausser"
-                                            )}
+                                            Défausser
                                         </motion.button>
                                     )}
                                 </div>

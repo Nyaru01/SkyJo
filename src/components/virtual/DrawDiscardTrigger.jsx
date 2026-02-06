@@ -118,6 +118,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
     activeActionSource, // 'deck-pile' or 'discard-pile' when an animation is starting from here
     isDrawing = false,
     isAIThinking = false,
+    drawnCardSource = null,
 }) {
     const cardSkin = useGameStore(s => (s && s.cardSkin) ? s.cardSkin : 'classic');
     const gameMode = useGameStore(s => (s && s.gameMode) ? s.gameMode : 'normal');
@@ -363,12 +364,16 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                     // Helper text below the cards
                     <div className="whitespace-nowrap flex flex-col items-center gap-1 animate-in fade-in slide-in-from-top-2">
                         <span className={cn(
-                            "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border shadow-lg backdrop-blur-sm",
-                            turnPhase === 'MUST_REPLACE'
-                                ? "bg-amber-500/20 border-amber-500/50 text-amber-300"
-                                : "bg-emerald-500/20 border-emerald-500/50 text-emerald-300"
+                            "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border shadow-lg backdrop-blur-sm transition-colors duration-300",
+                            drawnCardSource === 'discard'
+                                ? "bg-amber-500/30 border-amber-500/50 text-amber-300 shadow-amber-500/10"
+                                : (drawnCardSource === 'pile'
+                                    ? "bg-emerald-500/30 border-emerald-500/50 text-emerald-300 shadow-emerald-500/10"
+                                    : (turnPhase === 'MUST_REPLACE'
+                                        ? "bg-amber-500/20 border-amber-500/50 text-amber-300"
+                                        : "bg-emerald-500/20 border-emerald-500/50 text-emerald-300"))
                         )}>
-                            {instructionText || (turnPhase === 'MUST_REPLACE' ? 'DÉFAUSSE' : 'PIOCHE')}
+                            {drawnCardSource === 'pile' ? 'Pris dans la pioche' : (drawnCardSource === 'discard' ? 'Pris dans la défausse' : (instructionText || (turnPhase === 'MUST_REPLACE' ? 'Pris dans la défausse' : 'Pris dans la pioche')))}
                         </span>
                     </div>
                 )}

@@ -15,18 +15,18 @@ const FEATURES = [
         bg: "bg-amber-400/10"
     },
     {
-        title: "Design Premium 'Alive' ✨",
-        description: "Une interface plus vivante avec des logos qui respirent, des effets shimmer et des badges dynamiques.",
+        title: "Mode hors ligne contre l'IA 🤖",
+        description: "Jouez partout, même sans internet ! Le mode solo est désormais 100% fonctionnel hors ligne.",
         icon: Sparkles,
         color: "text-cyan-400",
         bg: "bg-cyan-400/10"
     },
     {
-        title: "Navigation Fluide 🚀",
-        description: "Correction de l'écran vide au démarrage et transition instantanée de l'intro vers le lobby de jeu.",
-        icon: Layout,
-        color: "text-purple-400",
-        bg: "bg-purple-400/10"
+        title: "Optimisation des performances en ligne ⚡",
+        description: "Expérience multijoueur plus fluide et corrections des bugs de connexion pour des parties sans interruption.",
+        icon: Zap,
+        color: "text-emerald-400",
+        bg: "bg-emerald-400/10"
     }
 ];
 

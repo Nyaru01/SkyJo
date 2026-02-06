@@ -977,20 +977,22 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('private_message', ({ toId, text }) => {
+    socket.on('private_message', (data) => {
+        const { toId, text, replyTo } = data;
         if (!socket.dbId) {
             console.warn('[CHAT] Message drop: No dbId for sender socket:', socket.id);
             return;
         }
 
-        console.log(`[CHAT] Private message from ${socket.dbId} (${socket.playerName}) to ${toId}: ${text}`);
+        console.log(`[CHAT] Private message from ${socket.dbId} to ${toId}: ${text} (Reply to: ${replyTo ? replyTo.id : 'none'})`);
 
         const msg = {
             id: Date.now() + Math.random().toString(36).substr(2, 9),
             fromId: socket.dbId,
             toId: String(toId),
             text,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            replyTo: replyTo || null
         };
 
         // Send to recipient

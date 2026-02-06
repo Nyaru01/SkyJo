@@ -45,6 +45,7 @@ export const useVirtualGameStore = create((set, get) => ({
     aiPlayers: [], // Indices of AI players
     aiDifficulty: AI_DIFFICULTY.NORMAL,
     isAIThinking: false,
+    drawnCardSource: null, // 'pile' or 'discard'
 
     // Notifications
     lastNotification: null,
@@ -79,6 +80,7 @@ export const useVirtualGameStore = create((set, get) => ({
             showScores: false,
             aiMode: false,
             aiPlayers: [],
+            drawnCardSource: null,
         });
     },
 
@@ -123,6 +125,7 @@ export const useVirtualGameStore = create((set, get) => ({
             aiDifficulty: difficulty,
             isBonusMode: isBonusMode,
             isAIThinking: false,
+            drawnCardSource: null,
         });
     },
 
@@ -203,7 +206,10 @@ export const useVirtualGameStore = create((set, get) => ({
                             card: sourceCard || { value: '?', color: 'gray' }, // Provide dummy if deck
                             onComplete: () => {
                                 // 3. Commit State Change after animation
-                                set({ gameState: finalStateCalc() });
+                                set({
+                                    gameState: finalStateCalc(),
+                                    drawnCardSource: sourceId === 'deck-pile' ? 'pile' : 'discard'
+                                });
                             }
                         }
                     });
@@ -276,7 +282,12 @@ export const useVirtualGameStore = create((set, get) => ({
                                 // 3. Commit
                                 let ns = replaceCard(get().gameState, decision.cardIndex);
                                 ns = endTurn(ns);
-                                set({ gameState: ns, selectedCardIndex: null, isAIThinking: false });
+                                set({
+                                    gameState: ns,
+                                    selectedCardIndex: null,
+                                    isAIThinking: false,
+                                    drawnCardSource: null
+                                });
                             }
                         }
                     });
@@ -305,7 +316,12 @@ export const useVirtualGameStore = create((set, get) => ({
                                 // 3. Commit
                                 let ns = discardAndReveal(get().gameState, decision.cardIndex);
                                 ns = endTurn(ns);
-                                set({ gameState: ns, selectedCardIndex: null, isAIThinking: false });
+                                set({
+                                    gameState: ns,
+                                    selectedCardIndex: null,
+                                    isAIThinking: false,
+                                    drawnCardSource: null
+                                });
                             }
                         }
                     });
@@ -335,7 +351,7 @@ export const useVirtualGameStore = create((set, get) => ({
         if (!gameState || gameState.turnPhase !== 'DRAW') return;
 
         const newState = drawFromPile(gameState);
-        set({ gameState: newState });
+        set({ gameState: newState, drawnCardSource: 'pile' });
     },
 
     /**
@@ -347,7 +363,7 @@ export const useVirtualGameStore = create((set, get) => ({
         if (gameState.discardPile.length === 0) return;
 
         const newState = drawFromDiscard(gameState);
-        set({ gameState: newState });
+        set({ gameState: newState, drawnCardSource: 'discard' });
     },
 
     /**
@@ -360,7 +376,7 @@ export const useVirtualGameStore = create((set, get) => ({
 
         let newState = replaceCard(gameState, cardIndex);
         newState = endTurn(newState);
-        set({ gameState: newState, selectedCardIndex: null });
+        set({ gameState: newState, selectedCardIndex: null, drawnCardSource: null });
     },
 
     /**
@@ -375,7 +391,7 @@ export const useVirtualGameStore = create((set, get) => ({
 
         let newState = discardAndReveal(gameState, cardIndex);
         newState = endTurn(newState);
-        set({ gameState: newState, selectedCardIndex: null });
+        set({ gameState: newState, selectedCardIndex: null, drawnCardSource: null });
     },
 
 
@@ -461,7 +477,7 @@ export const useVirtualGameStore = create((set, get) => ({
             turnPhase: 'DRAW',
         };
         newState = endTurn(newState);
-        set({ gameState: newState, selectedCardIndex: null });
+        set({ gameState: newState, selectedCardIndex: null, drawnCardSource: null });
     },
 
     /**
@@ -507,7 +523,8 @@ export const useVirtualGameStore = create((set, get) => ({
                             ...gameState,
                             discardPile: newDiscardPile,
                             drawnCard: null,
-                            turnPhase: 'DRAW'
+                            turnPhase: 'DRAW',
+                            drawnCardSource: null
                         }
                     });
                 }

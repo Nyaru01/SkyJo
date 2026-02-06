@@ -12,6 +12,7 @@ const DrawDiscard = memo(function DrawDiscard({
     drawPileCount,
     discardTop,
     drawnCard,
+    drawnCardSource = null,
     canDraw = false,
     canTakeDiscard = false,
     canDiscardDrawn = false, // Can click discard pile to discard drawn card
@@ -159,8 +160,15 @@ const DrawDiscard = memo(function DrawDiscard({
                                 isHighlighted
                             />
                         </div>
-                        <span className="text-xs font-bold text-amber-600 dark:text-amber-400 animate-bounce">
-                            Carte piochée
+                        <span className={cn(
+                            "text-xs font-bold animate-pulse px-2 py-0.5 rounded-full border",
+                            drawnCardSource === 'discard'
+                                ? "text-amber-300 bg-amber-500/20 border-amber-500/30"
+                                : (drawnCardSource === 'pile'
+                                    ? "text-emerald-300 bg-emerald-500/20 border-emerald-500/30"
+                                    : "text-amber-400 bg-amber-500/10 border-amber-500/20")
+                        )}>
+                            {drawnCardSource === 'pile' ? 'Pris dans la pioche' : (drawnCardSource === 'discard' ? 'Pris dans la défausse' : 'Pris dans la pioche')}
                         </span>
                     </motion.div>
                 )}

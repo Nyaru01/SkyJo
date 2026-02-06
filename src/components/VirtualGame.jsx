@@ -115,6 +115,10 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const isAIThinking = useVirtualGameStore(selectIsAIThinking);
     const aiDifficulty = useVirtualGameStore((s) => s.aiDifficulty);
     const isBonusMode = useVirtualGameStore((s) => s.isBonusMode);
+    const drawnCardSource = useVirtualGameStore(s => s.drawnCardSource);
+    const onlineDrawnCardSource = useOnlineGameStore(s => s.drawnCardSource);
+
+
 
     // Online Store
     const isOnlineConnected = useOnlineGameStore(s => s.isConnected);
@@ -152,6 +156,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const activeGameState = isOnlineMode ? onlineGameState : gameState;
     const activeTotalScores = isOnlineMode ? onlineTotalScores : totalScores;
     const activeRoundNumber = isOnlineMode ? onlineRoundNumber : roundNumber;
+    const activeDrawnCardSource = isOnlineMode ? onlineDrawnCardSource : drawnCardSource;
 
     // Online Actions
     const connectOnline = useOnlineGameStore(s => s.connect);
@@ -2150,6 +2155,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                     <div style={{ width: '100%', maxWidth: '340px' }}>
                         <DrawDiscardTrigger
                             onClick={() => setShowDrawDiscardPopup(true)} // Default open
+                            drawnCardSource={activeDrawnCardSource}
                             onDrawAction={() => {
                                 // Direct draw action
                                 if (activeGameState.turnPhase === 'DRAW') {
@@ -2277,6 +2283,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                         discardTop={activeGameState?.discardPile[activeGameState.discardPile.length - 1] || null}
                                         discardHistory={activeGameState?.discardPile || []}
                                         drawnCard={activeGameState?.players[activeGameState.currentPlayerIndex]?.drawnCard}
+                                        drawnCardSource={activeDrawnCardSource}
                                         canDraw={false} // Assuming these are for display only for other players
                                         canTakeDiscard={false}
                                         canDiscardDrawn={false}

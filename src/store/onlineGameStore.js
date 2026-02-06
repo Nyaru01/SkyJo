@@ -35,6 +35,7 @@ export const useOnlineGameStore = create((set, get) => ({
     onlineStarted: false, // Alias for isConnected/inSession
     activeState: null,    // Alias for gameState
     isGameOver: false,
+    drawnCardSource: null, // 'pile' or 'discard'
     gameWinner: null,
     readyStatus: { readyCount: 0, totalPlayers: 0 }, // Track ready players for next round
     timeoutExpired: false, // True when 10s timeout has passed and host can force-start
@@ -174,6 +175,7 @@ export const useOnlineGameStore = create((set, get) => ({
                     if (type === 'draw_pile') {
                         sourceId = 'deck-pile';
                         targetId = 'drawn-card-slot';
+                        set({ drawnCardSource: 'pile' });
                         // For draw, we might not know the card if it's hidden, 
                         // but usually if I drew it, I know it? 
                         // Or if opponent drew, I assume it's face down?
@@ -182,22 +184,26 @@ export const useOnlineGameStore = create((set, get) => ({
                         sourceId = 'discard-pile';
                         targetId = 'drawn-card-slot';
                         cardToAnimate = { value: cardValue, isRevealed: true }; // We know value if from discard
+                        set({ drawnCardSource: 'discard' });
                     } else if (type === 'replace_card') {
                         // From center to slot
                         sourceId = 'drawn-card-slot';
                         targetId = `card-${playerId}-${cardIndex}`;
                         cardToAnimate = { value: cardValue, isRevealed: true };
+                        set({ drawnCardSource: null });
                     } else if (type === 'discard_drawn') {
                         // From center to discard
                         sourceId = 'drawn-card-slot';
                         targetId = 'discard-pile';
                         cardToAnimate = { value: cardValue, isRevealed: true };
+                        set({ drawnCardSource: null });
                     } else if (type === 'discard_and_reveal') {
                         // This is a complex one: Card goes to discard, AND another card is revealed.
                         // Animation: Drawn card -> Discard.
                         sourceId = 'drawn-card-slot';
                         targetId = 'discard-pile';
                         cardToAnimate = { value: cardValue, isRevealed: true };
+                        set({ drawnCardSource: null });
                     } else if (type === 'undo_draw_discard') {
                         // Undo: Drawn card (Center) -> Discard Pile
                         sourceId = 'drawn-card-slot';
@@ -207,6 +213,7 @@ export const useOnlineGameStore = create((set, get) => ({
                         // before we apply the update.
                         const currentDrawn = get().gameState?.drawnCard;
                         cardToAnimate = currentDrawn ? { ...currentDrawn, isRevealed: true } : { value: '?', isRevealed: true };
+                        set({ drawnCardSource: null });
                     }
 
                     if (sourceId && targetId) {
