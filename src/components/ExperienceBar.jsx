@@ -106,7 +106,7 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
 
                 {/* Progression Popup - Portalled to body to match z-index */}
                 {createPortal(
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence mode="wait" initial={false}>
                         {showRewards && (
                             <div className="fixed inset-0 z-[1000] flex items-center justify-center px-4 font-sans pointer-events-auto">
                                 {/* Backdrop with optimized blur */}
@@ -300,11 +300,11 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                                 </motion.div>
                             </div>
                         )}
-                    </AnimatePresence>
+                    </AnimatePresence >
                     ,
                     document.body
                 )}
-            </div>
+            </div >
         </>
     );
 });
