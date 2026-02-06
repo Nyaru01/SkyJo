@@ -159,6 +159,24 @@ sequenceDiagram
 2. **`src/App.jsx`** : Initialise `showIntro=false` si `?room=` est présent. Écoute les messages `DEEP_LINK` du SW.
 3. **`src/components/Dashboard.jsx`** : Appelle `setVirtualScreen('lobby')` lors du deep-link pour activer l'auto-navigation de VirtualGame.
 
+### 5. Indicateur de Source de Carte (v2.4.1)
+
+**Problème :** En ligne, les joueurs étaient parfois confus de savoir si leur adversaire avait pioché dans la pile ou dans la défausse sans regarder attentivement l'animation.
+
+**Solution Technique :**
+- **State tracking :** Ajout de `drawnCardSource` ('pile' vs 'discard') dans les stores `virtualGameStore.js` et `onlineGameStore.js`.
+- **Sync en temps réel :** Le serveur relaye l'origine de la carte via `game_update`.
+- **UI contextuelle :** Le badge s'affiche dynamiquement sur la carte tirée avec des couleurs distinctes (Émeraude pour Pioche, Ambre pour Défausse).
+
+### 6. Système de Citations & Réponses (Chat v2)
+
+**Problème :** Difficulté de suivre une conversation active dans le chat social, surtout sur mobile où le clavier masque la moitié de l'écran.
+
+**Solution Technique :**
+- **Relai de contexte :** Ajout d'un champ `replyTo` optionnel dans le payload socket `private_message`. Le serveur relaye cet objet au destinataire.
+- **Ergonomie Mobile :** Remplacement de l'UI par "hover" (Desktop) par un **clic direct** sur les bulles de message pour citer. 
+- **Persistance :** Versionnage du store social (`version: 1`) pour garantir une réhydratation correcte après mise à jour du schéma de données.
+
 ---
 
-*Documentation mise à jour le 04 Février 2026 (v2.4.0) - Push Notifications & Deep-Linking.*
+*Documentation mise à jour le 06 Février 2026 (v2.4.1) - UI/UX & Chat Enhancements.*

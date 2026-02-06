@@ -12,7 +12,7 @@ At the end of an online round, the score displayed for the opponent (and possibl
 - The "Next Round" functionality works, suggesting the game state itself progresses, but the cumulative score data is either:
     1. Not sent correctly in the `game_update` or `game_started` events.
     2. Not correctly reading the persistent `dbId` vs `socketId` when mapping scores to players on the client.
-    3. The cards are not fully "revealed" in the client's internal state logic at the exact moment of score calculation rendering.
+    3. The cards are not fully- [~] **Persistance du Chat** : L'historique des messages privés est stocké localement. Bien que renforcé en v2.4.1, un nettoyage manuel du cache navigateur entraînera toujours la perte des messages faute de stockage permanent côté serveur.
 
 ### Potential Leads
 - **Client-side ID Mismatch**: The client might be looking up scores using `socket.id` while the server sends them keyed by `dbId` (or vice versa), especially in the `VirtualGame.jsx` rendering logic.
