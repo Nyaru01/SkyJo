@@ -29,6 +29,8 @@ export const PremiumTiltButton = ({
                 if (navigator.vibrate) navigator.vibrate(50);
                 onClick?.(e);
             }}
+            initial={false}
+            animate={{ opacity: 1, y: 0 }}
             whileHover={disabled ? {} : { scale: 1.02 }}
             whileTap={disabled ? {} : { scale: 0.98 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
