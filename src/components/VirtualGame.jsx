@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Users, ArrowLeft, RotateCcw, Trophy, Info, HelpCircle, Sparkles, CheckCircle, BookOpen, X, Bot, Lock, Image as ImageIcon, Palette, Copy, Share2, Wifi, Globe, Plus, ChevronRight, WifiOff, Music, Music2, Leaf, Swords, Skull, Gem, SkipForward } from 'lucide-react';
+import { Play, Users, ArrowLeft, RotateCcw, Trophy, Info, HelpCircle, Sparkles, CheckCircle, BookOpen, X, Bot, Lock, Image as ImageIcon, Palette, Copy, Share2, Wifi, Globe, Plus, ChevronRight, WifiOff, Music, Music2, Leaf, Swords, Skull, Gem, SkipForward, Pause, PlayCircle } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Input } from './ui/Input';
@@ -99,6 +99,11 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const startNextRound = useVirtualGameStore((s) => s.startNextRound);
     const getFinalScores = useVirtualGameStore((s) => s.getFinalScores);
 
+    // Pause & Persistence state
+    const isPaused = useVirtualGameStore(s => s.isPaused);
+    const setPaused = useVirtualGameStore(s => s.setPaused);
+    const togglePause = useVirtualGameStore(s => s.togglePause);
+
     // Notifications
     const virtualLastNotification = useVirtualGameStore((s) => s.lastNotification);
     const clearNotification = useVirtualGameStore((s) => s.clearNotification);
@@ -190,8 +195,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     // Sync screen with initialScreen prop ONLY if not currently in an active game
     useEffect(() => {
         if (initialScreen && initialScreen !== screen) {
-            // Only force reset to lobby/menu if we are not actually in a game
-            if (!onlineGameStarted && !gameState) {
+            // Respect the parent's requested screen if it's a menu or setup screen,
+            // or if we are not currently in an active game.
+            if (initialScreen !== 'game' || (!onlineGameStarted && !gameState)) {
                 setScreen(initialScreen);
             }
         }
@@ -442,6 +448,19 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         }
     }, [onlineGameStarted, onlineIsGameOver, onlineRoomCode, screen, gameState, onlineError]);
 
+    // Handle Visibility Change for Auto-Pause (AI Games only)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden && screen === 'game' && aiMode && !isPaused && gameState && gameState.phase !== 'FINISHED') {
+                console.log("[VG] Tab hidden, auto-pausing game...");
+                setPaused(true);
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [screen, aiMode, isPaused, gameState, setPaused]);
+
     // Determine if game is finished (for sound effect)
     const activeGameStateForEffect = onlineGameStarted ? onlineGameState : gameState;
     const isGameFinished = activeGameStateForEffect?.phase === 'FINISHED';
@@ -541,7 +560,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     // AI Auto-play: Execute AI turns automatically with delay
     useEffect(() => {
-        if (!aiMode || !gameState) return;
+        if (!aiMode || !gameState || isPaused) return;
         if (gameState.phase === 'FINISHED') return;
 
         // During initial reveal, AI players should automatically reveal their cards
@@ -572,7 +591,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         }
 
         // Regular gameplay - only current AI player acts
-        if (!isCurrentPlayerAI) return;
+        if (!isCurrentPlayerAI || isPaused) return;
 
         setAIThinking(true);
         setAIThinking(true);
@@ -2093,6 +2112,24 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                 )}
                             </Button>
                         </div>
+
+                        {/* Pause Button (Local/AI only) */}
+                        {aiMode && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={togglePause}
+                                className={cn(
+                                    "h-9 w-9 p-0 rounded-xl transition-all active:scale-90 ml-1 border",
+                                    isPaused
+                                        ? "bg-amber-500/20 text-amber-500 border-amber-500/30"
+                                        : "bg-white/5 text-slate-400 border-white/10 hover:text-white"
+                                )}
+                                title={isPaused ? "Reprendre" : "Pause"}
+                            >
+                                {isPaused ? <PlayCircle className="h-5 w-5" /> : <Pause className="h-4 w-4" />}
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -2433,6 +2470,63 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 variant="danger"
             />
             <HostLeftOverlay />
+
+            {/* AI Pause Overlay */}
+            <AnimatePresence>
+                {isPaused && aiMode && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-6"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="w-full max-w-sm glass-premium p-8 rounded-[2.5rem] border-white/20 shadow-2xl text-center space-y-8 relative overflow-hidden"
+                        >
+                            {/* Ambient Glow */}
+                            <div className="absolute inset-0 bg-indigo-500/5 pointer-events-none" />
+
+                            <div className="relative">
+                                <div className="w-20 h-20 bg-indigo-500/10 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20">
+                                    <Pause className="h-10 w-10 text-indigo-400" />
+                                </div>
+                                <h2 className="text-3xl font-black text-white tracking-tight">PAUSE</h2>
+                                <p className="text-slate-400 text-sm font-medium mt-2">La partie est en attente</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                <PremiumTiltButton
+                                    onClick={() => setPaused(false)}
+                                    gradientFrom="from-emerald-500"
+                                    gradientTo="to-teal-500"
+                                    shadowColor="shadow-emerald-500/20"
+                                >
+                                    <Play className="h-5 w-5 fill-current mr-2" />
+                                    REPRENDRE
+                                </PremiumTiltButton>
+
+                                <Button
+                                    variant="outline"
+                                    onClick={handleBackToMenu}
+                                    className="h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold uppercase tracking-widest transition-all"
+                                >
+                                    QUITTER LA PARTIE
+                                </Button>
+                            </div>
+
+                            <div className="flex items-center justify-center gap-2 pt-4 opacity-50">
+                                <Bot className="w-4 h-4 text-indigo-400" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    Votre progression est sauvegardée
+                                </span>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

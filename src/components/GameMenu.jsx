@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bot, ChevronRight, Users, Wifi, HelpCircle, Palette, X, Sparkles } from 'lucide-react';
+import { Bot, ChevronRight, Users, Wifi, HelpCircle, Palette, X, Sparkles, RotateCcw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Button } from './ui/Button';
 import { PremiumTiltButton } from './ui/PremiumTiltButton';
@@ -18,6 +18,7 @@ export default function GameMenu({
     setCardSkin
 }) {
     const [showRulesModal, setShowRulesModal] = React.useState(false);
+    const virtualGameState = useVirtualGameStore(state => state.gameState);
     const startAIGame = useVirtualGameStore(state => state.startAIGame);
     const userProfile = useGameStore(state => state.userProfile);
     const connectOnline = useOnlineGameStore(state => state.connect);
@@ -50,6 +51,36 @@ export default function GameMenu({
             </div>
 
             <div className="grid gap-4">
+                {/* Resume local game if exists */}
+                {virtualGameState && (
+                    <PremiumTiltButton
+                        onClick={() => {
+                            playClick();
+                            setScreen('game');
+                        }}
+                        gradientFrom="from-emerald-600"
+                        gradientTo="to-teal-600"
+                        shadowColor="shadow-emerald-500/20"
+                        className="w-full mb-2"
+                        contentClassName="h-auto p-4"
+                    >
+                        <div className="flex items-center justify-between w-full relative z-10">
+                            <div className="text-left">
+                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                    <RotateCcw className="h-5 w-5 animate-spin-slow" />
+                                    REPRENDRE LA PARTIE
+                                </h3>
+                                <p className="text-[10px] text-emerald-100 font-medium uppercase tracking-wider mt-1">
+                                    Continuez votre combat contre l'IA
+                                </p>
+                            </div>
+                            <div className="w-12 h-12 rounded-2xl bg-emerald-500/30 border border-emerald-400/50 flex items-center justify-center">
+                                <ChevronRight className="h-6 w-6 text-white group-hover:translate-x-1 transition-transform" />
+                            </div>
+                        </div>
+                    </PremiumTiltButton>
+                )}
+
                 {/* AI Battle */}
                 {/* AI Battle */}
                 <PremiumTiltButton

@@ -104,10 +104,16 @@ export default function Dashboard() {
     const isInLobby = !!roomCode && !onlineGameStarted;
     const isInOnlineSession = isGameInProgress || isInLobby;
 
-    // 🔥 Tab effective : force 'virtual' pendant toute la session en ligne ou game local
+    // 🔥 Tab effective : force 'virtual' pendant toute la session en ligne uniquement
+    // Pour le jeu local, on laisse l'utilisateur naviguer vers home/menu pour pouvoir choisir "Reprendre"
     const effectiveTab = isInOnlineSession ? 'virtual' : activeTab;
 
-    // Logic for music moved to global MusicPlayer component
+    const setActiveTabGlobal = useGameStore(state => state.setActiveTab);
+
+    // Sync global activeTab for music control
+    useEffect(() => {
+        setActiveTabGlobal(activeTab);
+    }, [activeTab, setActiveTabGlobal]);
     // const isManualGameActive = gameStatus === 'PLAYING' && (effectiveTab === 'game' || effectiveTab === 'home');
     // const isVirtualGameActive = effectiveTab === 'virtual' && (!!virtualGameState || onlineGameStarted);
     const isVirtualGameActive = effectiveTab === 'virtual' && (!!virtualGameState || onlineGameStarted);
@@ -434,7 +440,9 @@ export default function Dashboard() {
 
 
             case 'virtual':
-                if (!virtualGameState && !onlineGameStarted && virtualScreen !== 'lobby' && virtualScreen !== 'ai-setup') {
+                // On affiche le menu si on n'est pas dans un écran spécifique (lobby/setup) et qu'aucune partie en ligne n'a commencé
+                // On ne vérifie plus !virtualGameState ici pour permettre d'accéder au bouton "Reprendre" dans GameMenu
+                if (!onlineGameStarted && virtualScreen !== 'lobby' && virtualScreen !== 'ai-setup') {
                     return (
                         <motion.div
                             key="game-menu"

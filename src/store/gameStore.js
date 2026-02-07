@@ -47,6 +47,8 @@ export const useGameStore = create(
             isAdminOpen: false, // Global admin status
             adminAuthToken: null, // Admin session token
             musicShuffleTrigger: 0, // Increment to trigger track shuffle
+            activeTab: 'home', // 'home', 'game', 'stats', 'community', 'virtual'
+            setActiveTab: (tab) => set({ activeTab: tab }),
             userProfile: {
                 id: `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 name: 'Joueur',

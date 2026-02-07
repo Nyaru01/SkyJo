@@ -15,13 +15,15 @@ export const MusicPlayer = () => {
     const onlineGameStarted = useOnlineGameStore(state => state.gameStarted);
     const musicShuffleTrigger = useGameStore(state => state.musicShuffleTrigger);
 
+    // 4. Global UI state
+    const activeTab = useGameStore(state => state.activeTab);
+    const isPaused = useVirtualGameStore(state => state.isPaused);
+
     // Consolidated "Is Playing" logic
-    // We play music if ANY game mode is active
-    // Note: We might want to refine this if the user is in the menu while a game is "technically" active in background,
-    // but usually "gameStatus === PLAYING" implies the user is in the game flow.
-    const isManualGamePlaying = gameStatus === 'PLAYING';
-    const isVirtualGamePlaying = !!virtualGameState; // If gameState exists, we are in a game (or setup finishes)
-    const isOnlineGamePlaying = !!onlineGameStarted;
+    // We play music if ANY game mode is active AND the user is on the relevant screen
+    const isManualGamePlaying = gameStatus === 'PLAYING' && (activeTab === 'game' || activeTab === 'home');
+    const isVirtualGamePlaying = !!virtualGameState && activeTab === 'virtual' && !isPaused;
+    const isOnlineGamePlaying = !!onlineGameStarted && activeTab === 'virtual';
 
     const shouldPlay = isManualGamePlaying || isVirtualGamePlaying || isOnlineGamePlaying;
 
