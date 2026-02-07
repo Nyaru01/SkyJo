@@ -1,15 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bot, ChevronRight, Users, Wifi, HelpCircle, Palette, X, Sparkles, RotateCcw } from 'lucide-react';
+import { Bot, ChevronRight, Users, Wifi, HelpCircle, Palette, X, Sparkles, RotateCcw, Zap } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Button } from './ui/Button';
 import { PremiumTiltButton } from './ui/PremiumTiltButton';
 import SkinCarousel from './SkinCarousel';
 import ExperienceBar from './ExperienceBar';
 import { useVirtualGameStore } from '../store/virtualGameStore';
-import { useGameStore } from '../store/gameStore';
+import { useGameStore, selectIsDailyAvailable } from '../store/gameStore';
 import { useOnlineGameStore } from '../store/onlineGameStore';
 import { useFeedback } from '../hooks/useFeedback';
+import { cn } from '../lib/utils';
 
 export default function GameMenu({
     setScreen,
@@ -23,6 +24,7 @@ export default function GameMenu({
     const userProfile = useGameStore(state => state.userProfile);
     const connectOnline = useOnlineGameStore(state => state.connect);
     const setPlayerInfo = useOnlineGameStore(state => state.setPlayerInfo);
+    const isDailyAvailable = useGameStore(selectIsDailyAvailable);
     const { playClick } = useFeedback();
 
     const handleStartAIBattle = () => {
@@ -103,6 +105,63 @@ export default function GameMenu({
                         </div>
                     </div>
                 </PremiumTiltButton>
+
+                {/* Défi Quotidien */}
+                <div className="relative group">
+                    <PremiumTiltButton
+                        onClick={() => {
+                            if (!isDailyAvailable) return;
+                            playClick();
+                            startAIGame({ name: userProfile.name, avatarId: userProfile.avatarId }, 1, 'NORMAL', { isDailyChallenge: true });
+                            setScreen('game');
+                        }}
+                        disabled={!isDailyAvailable}
+                        gradientFrom={isDailyAvailable ? "from-amber-400" : "from-slate-700"}
+                        gradientTo={isDailyAvailable ? "to-orange-500" : "to-slate-800"}
+                        shadowColor={isDailyAvailable ? "shadow-amber-500/20" : "shadow-transparent"}
+                        className={cn("w-full transition-all duration-500", !isDailyAvailable && "opacity-60 grayscale-[0.3]")}
+                        contentClassName="h-auto p-4"
+                    >
+                        <div className="flex items-center justify-between w-full relative z-10">
+                            <div className="text-left">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="text-lg font-bold text-white">Défi Quotidien</h3>
+                                    {isDailyAvailable && (
+                                        <span className="flex h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+                                    )}
+                                </div>
+                                <p className={cn(
+                                    "text-[10px] font-bold uppercase tracking-wider",
+                                    isDailyAvailable ? "text-amber-100" : "text-slate-400"
+                                )}>
+                                    {isDailyAvailable ? (
+                                        <>Gagnez une partie = <span className="text-white">+5 XP</span></>
+                                    ) : (
+                                        "Déjà complété ! À demain"
+                                    )}
+                                </p>
+                            </div>
+
+                            <div className="flex flex-col items-end gap-2">
+                                <div className={cn(
+                                    "w-12 h-12 rounded-2xl border flex items-center justify-center transition-all duration-500 relative overflow-hidden",
+                                    isDailyAvailable
+                                        ? "bg-amber-500/20 border-amber-400/30 shadow-[0_0_15px_rgba(251,191,36,0.2)]"
+                                        : "bg-slate-800/50 border-white/5"
+                                )}>
+                                    {isDailyAvailable && (
+                                        <div className="absolute inset-0 bg-gradient-to-tr from-amber-400/20 to-transparent animate-pulse" />
+                                    )}
+                                    <Zap className={cn(
+                                        "h-6 w-6 transition-all duration-500",
+                                        isDailyAvailable ? "text-white scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" : "text-slate-600"
+                                    )} />
+                                </div>
+                            </div>
+                        </div>
+                    </PremiumTiltButton>
+                </div>
+
                 <PremiumTiltButton
                     onClick={handleStartOnline}
                     gradientFrom="from-sky-600"

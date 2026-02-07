@@ -98,6 +98,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const endRound = useVirtualGameStore((s) => s.endRound);
     const startNextRound = useVirtualGameStore((s) => s.startNextRound);
     const getFinalScores = useVirtualGameStore((s) => s.getFinalScores);
+    const setShowingGame = useVirtualGameStore(s => s.setShowingGame);
 
     // Pause & Persistence state
     const isPaused = useVirtualGameStore(s => s.isPaused);
@@ -108,6 +109,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const virtualLastNotification = useVirtualGameStore((s) => s.lastNotification);
     const clearNotification = useVirtualGameStore((s) => s.clearNotification);
     const virtualPendingAnimation = useVirtualGameStore(s => s.pendingAnimation);
+    const isDailyChallenge = useVirtualGameStore(s => s.isDailyChallenge);
     const clearVirtualPendingAnimation = useVirtualGameStore(s => s.clearPendingAnimation);
 
     // AI Store
@@ -202,6 +204,11 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             }
         }
     }, [initialScreen]);
+
+    // Sync showing game state for Music Player
+    useEffect(() => {
+        setShowingGame(screen === 'game' || screen === 'scores');
+    }, [screen, setShowingGame]);
     // Handle Visibility Change for Auto-Pause (AI Games only)
     useEffect(() => {
         const handleVisibilityChange = () => {
@@ -2077,6 +2084,16 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                             <span className="text-sm font-black text-white font-mono bg-indigo-500/20 px-2 py-0.5 rounded border border-indigo-500/20 shadow-[0_0_10px_rgba(99,102,241,0.1)]">
                                 {activeRoundNumber}
                             </span>
+                            {aiMode && isDailyChallenge && (
+                                <motion.div
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    className="ml-2 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[9px] font-black text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.1)] flex items-center gap-1"
+                                >
+                                    <div className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
+                                    DÉFI
+                                </motion.div>
+                            )}
                         </div>
 
                         {/* Music Controls Group */}

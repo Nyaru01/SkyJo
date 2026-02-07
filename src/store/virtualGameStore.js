@@ -49,10 +49,13 @@ export const useVirtualGameStore = create(
             aiDifficulty: AI_DIFFICULTY.NORMAL,
             isAIThinking: false,
             drawnCardSource: null, // 'pile' or 'discard'
+            isDailyChallenge: false,
+            isShowingGame: false, // UI flag to indicate if we are on the game screen
 
             // Pause state
             isPaused: false,
             setPaused: (isPaused) => set({ isPaused }),
+            setShowingGame: (isShowing) => set({ isShowingGame: isShowing }),
             togglePause: () => set((state) => ({ isPaused: !state.isPaused })),
 
             // Notifications
@@ -136,6 +139,7 @@ export const useVirtualGameStore = create(
                     isAIThinking: false,
                     drawnCardSource: null,
                     isPaused: false,
+                    isDailyChallenge: options.isDailyChallenge || false,
                 });
             },
 
@@ -594,9 +598,20 @@ export const useVirtualGameStore = create(
                 const humanPlayer = gameState.players[humanPlayerIndex];
 
                 if (roundWinner && humanPlayer && roundWinner.playerId === humanPlayer.id) {
-                    // Human won this round! Grant 1 XP
+                    // Human won this round!
                     try {
-                        useGameStore.getState().addXP(1);
+                        const isDaily = get().isDailyChallenge;
+                        const isDailyAvailable = useGameStore.getState().lastDailyWinDate !== new Date().toISOString().split('T')[0];
+
+                        if (isDaily && isDailyAvailable) {
+                            // First win of the day in daily challenge mode
+                            useGameStore.getState().addXP(5);
+                            useGameStore.getState().markDailyWin();
+                            console.log("[VG] Daily Challenge Won! 5 XP Awarded.");
+                        } else {
+                            // Normal win or already won today
+                            useGameStore.getState().addXP(1);
+                        }
                     } catch (e) {
                         console.warn('Could not grant XP:', e);
                     }
@@ -694,6 +709,7 @@ export const useVirtualGameStore = create(
                 aiDifficulty: state.aiDifficulty,
                 isBonusMode: state.isBonusMode,
                 isPaused: state.isPaused,
+                isDailyChallenge: state.isDailyChallenge,
             }),
         }
     )

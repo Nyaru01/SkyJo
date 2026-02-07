@@ -18,12 +18,13 @@ export const MusicPlayer = () => {
     // 4. Global UI state
     const activeTab = useGameStore(state => state.activeTab);
     const isPaused = useVirtualGameStore(state => state.isPaused);
+    const isShowingVirtualGame = useVirtualGameStore(state => state.isShowingGame);
 
     // Consolidated "Is Playing" logic
     // We play music if ANY game mode is active AND the user is on the relevant screen
     const isManualGamePlaying = gameStatus === 'PLAYING' && (activeTab === 'game' || activeTab === 'home');
-    const isVirtualGamePlaying = !!virtualGameState && activeTab === 'virtual' && !isPaused;
-    const isOnlineGamePlaying = !!onlineGameStarted && activeTab === 'virtual';
+    const isVirtualGamePlaying = isShowingVirtualGame && activeTab === 'virtual' && !isPaused;
+    const isOnlineGamePlaying = isShowingVirtualGame && activeTab === 'virtual';
 
     const shouldPlay = isManualGamePlaying || isVirtualGamePlaying || isOnlineGamePlaying;
 

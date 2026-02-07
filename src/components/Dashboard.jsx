@@ -442,7 +442,7 @@ export default function Dashboard() {
             case 'virtual':
                 // On affiche le menu si on n'est pas dans un écran spécifique (lobby/setup) et qu'aucune partie en ligne n'a commencé
                 // On ne vérifie plus !virtualGameState ici pour permettre d'accéder au bouton "Reprendre" dans GameMenu
-                if (!onlineGameStarted && virtualScreen !== 'lobby' && virtualScreen !== 'ai-setup') {
+                if (!onlineGameStarted && virtualScreen === 'menu') {
                     return (
                         <motion.div
                             key="game-menu"

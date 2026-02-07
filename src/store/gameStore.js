@@ -49,6 +49,7 @@ export const useGameStore = create(
             musicShuffleTrigger: 0, // Increment to trigger track shuffle
             activeTab: 'home', // 'home', 'game', 'stats', 'community', 'virtual'
             setActiveTab: (tab) => set({ activeTab: tab }),
+            lastDailyWinDate: null, // ISO date string of last daily challenge win
             userProfile: {
                 id: `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 name: 'Joueur',
@@ -191,6 +192,13 @@ export const useGameStore = create(
 
                 // Sync XP/Level change
                 syncProfileWithBackend();
+            },
+
+            /**
+             * Mark daily challenge as completed for today
+             */
+            markDailyWin: () => {
+                set({ lastDailyWinDate: new Date().toISOString().split('T')[0] });
             },
 
             /**
@@ -449,8 +457,15 @@ export const useGameStore = create(
         }),
         {
             name: 'skyjo-storage',
-            version: 4,
+            version: 5,
             migrate: (persistedState, version) => {
+                // ... migration
+                if (version < 5) {
+                    persistedState = {
+                        ...persistedState,
+                        lastDailyWinDate: null
+                    };
+                }
                 // Ensure usedProfile exists and has an ID during migration
                 if (!persistedState.userProfile || !persistedState.userProfile.id) {
                     const newId = `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -496,6 +511,16 @@ export const selectRounds = (state) => state.rounds;
 export const selectThreshold = (state) => state.threshold;
 export const selectGameStatus = (state) => state.gameStatus;
 export const selectGameHistory = (state) => state.gameHistory;
+export const selectLastDailyWinDate = (state) => state.lastDailyWinDate;
+
+/**
+ * Check if the daily challenge is available for today
+ */
+export const selectIsDailyAvailable = (state) => {
+    if (!state.lastDailyWinDate) return true;
+    const today = new Date().toISOString().split('T')[0];
+    return state.lastDailyWinDate !== today;
+};
 
 /**
  * Selector for player totals - use with shallow comparison
