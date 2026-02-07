@@ -202,6 +202,18 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             }
         }
     }, [initialScreen]);
+    // Handle Visibility Change for Auto-Pause (AI Games only)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden && screen === 'game' && aiMode && !isPaused && gameState && gameState.phase !== 'FINISHED') {
+                console.log("[VG] Tab hidden, auto-pausing game...");
+                setPaused(true);
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [screen, aiMode, isPaused, gameState, setPaused]);
 
     // Local State for Lobby
     const [lobbyCode, setLobbyCode] = useState('');
@@ -617,7 +629,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         }, delay);
 
         return () => clearTimeout(timer);
-    }, [aiMode, gameState?.currentPlayerIndex, gameState?.phase, gameState?.turnPhase, isCurrentPlayerAI, aiPlayers, executeAITurn, setAIThinking, gameState, aiDifficulty, revealInitial]);
+    }, [aiMode, gameState?.currentPlayerIndex, gameState?.phase, gameState?.turnPhase, isCurrentPlayerAI, aiPlayers, executeAITurn, setAIThinking, gameState, aiDifficulty, revealInitial, isPaused]);
 
     // Add player
     const addPlayer = () => {
