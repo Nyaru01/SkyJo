@@ -4,7 +4,7 @@ import { X, Sparkles, Star, Zap, Layout } from 'lucide-react';
 import { Button } from './ui/Button';
 
 
-export const CURRENT_NEWS_VERSION = 4;
+export const CURRENT_NEWS_VERSION = 5;
 
 const FEATURES = [
     {
@@ -22,8 +22,8 @@ const FEATURES = [
         bg: "bg-cyan-400/10"
     },
     {
-        title: "Optimisation des performances en ligne ⚡",
-        description: "Expérience multijoueur plus fluide et corrections des bugs de connexion pour des parties sans interruption.",
+        title: "Pause & Persistance ⏸️",
+        description: "Vos parties IA sont désormais sauvegardées. Le jeu se met en pause automatiquement quand vous quittez l'app.",
         icon: Zap,
         color: "text-emerald-400",
         bg: "bg-emerald-400/10"
