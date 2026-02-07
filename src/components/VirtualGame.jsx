@@ -786,8 +786,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     };
 
     // Back to menu
-    const handleBackToMenu = () => {
-        if (screen === 'game' && !isGameOver) {
+    const handleBackToMenu = (force = false) => {
+        if (!force && screen === 'game' && !isGameOver) {
             setShowExitConfirm(true);
         } else {
             confirmExit();
@@ -2060,85 +2060,76 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         >
             {/* Header - ultra-thin single line with glass-style elements */}
             {/* Header - Unified Pill Container */}
-            <div className="flex items-center justify-between px-3 py-1.5 shrink-0 z-50">
-                {/* Visual Container for all controls */}
-                <div className="flex items-center w-full justify-between bg-slate-900/60 border border-white/10 backdrop-blur-xl rounded-2xl p-1 shadow-2xl relative overflow-hidden">
-                    {/* Quit Button (Left) */}
+            <div className="flex items-center justify-center px-1.5 sm:px-3 py-1.5 shrink-0 z-50">
+                {/* Visual Container for all controls - Robust Centered Pill */}
+                <div className="flex items-center justify-center gap-1.5 sm:gap-4 bg-slate-900/60 border border-white/10 backdrop-blur-xl rounded-2xl p-1 shadow-2xl relative px-1 sm:px-2">
+
+                    {/* Quit Button */}
                     <Button
                         variant="ghost"
                         size="sm"
-                        onClick={handleBackToMenu}
-                        className="relative h-9 px-4 text-[11px] font-black uppercase tracking-wider bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/10 rounded-xl transition-all active:scale-95 flex items-center gap-2"
+                        onClick={() => handleBackToMenu()}
+                        className="h-9 px-3 sm:px-5 text-[10px] sm:text-[11px] font-black uppercase tracking-widest bg-red-500/5 hover:bg-red-500/10 text-red-400 hover:text-red-300 border border-red-500/10 rounded-xl transition-all active:scale-95 flex items-center gap-1.5 group shadow-inner shrink-0"
                     >
-                        <ArrowLeft className="h-3.5 w-3.5" />
-                        Quitter
+                        <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+                        <span className="hidden xs:inline">Quitter</span>
                     </Button>
 
-                    {/* Stats & Tools (Right) */}
-                    <div className="flex items-center gap-2">
-                        {/* Round Counter */}
-                        <div className="flex items-center gap-2 px-3 h-9 rounded-xl bg-slate-800/50 border border-white/5 mx-1">
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                                Manche
-                            </span>
-                            <span className="text-sm font-black text-white font-mono bg-indigo-500/20 px-2 py-0.5 rounded border border-indigo-500/20 shadow-[0_0_10px_rgba(99,102,241,0.1)]">
-                                {activeRoundNumber}
-                            </span>
-                            {aiMode && isDailyChallenge && (
-                                <motion.div
-                                    initial={{ scale: 0.8, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    className="ml-2 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[9px] font-black text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.1)] flex items-center gap-1"
-                                >
-                                    <div className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
-                                    DÉFI
-                                </motion.div>
-                            )}
-                        </div>
-
-                        {/* Music Controls Group */}
-                        <div className="flex items-center gap-1.5 p-1 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md shadow-inner">
-                            {/* Skip Button */}
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                    useGameStore.getState().triggerMusicShuffle();
-                                    // Small haptic feedback if available
-                                    if (window.navigator.vibrate) window.navigator.vibrate(5);
-                                }}
-                                disabled={!musicEnabled}
-                                className="h-8 w-8 p-0 rounded-xl text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all active:scale-90 disabled:opacity-20"
-                                title="Musique suivante"
+                    {/* Round Counter */}
+                    <div className="flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-xl bg-slate-800/40 border border-white/5 px-2 sm:px-4 shadow-inner shrink-0">
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] hidden sm:block">Manche</span>
+                        <span className="text-base font-black text-white font-mono bg-indigo-500/20 px-2 sm:px-3 py-0.5 rounded border border-indigo-500/20">
+                            {activeRoundNumber}
+                        </span>
+                        {aiMode && isDailyChallenge && (
+                            <motion.div
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="px-1.5 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[9px] font-black text-amber-400 flex items-center gap-1 shrink-0 ml-1"
                             >
-                                <SkipForward className="h-4 w-4" />
-                            </Button>
+                                <div className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
+                                <span className="hidden xs:inline">DÉFI</span>
+                            </motion.div>
+                        )}
+                    </div>
 
-                            {/* Toggle Button */}
+                    {/* Music & Pause Group */}
+                    <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                        <div className="flex items-center gap-0.5 p-0.5 bg-white/5 rounded-xl border border-white/10 shrink-0 shadow-inner">
+                            {/* Toggle Button FIRST */}
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={toggleMusic}
                                 className={cn(
-                                    "h-8 w-8 p-0 rounded-xl transition-all duration-500 active:scale-90",
+                                    "h-8 w-8 sm:w-10 p-0 rounded-lg transition-all shrink-0 active:scale-95",
                                     musicEnabled
-                                        ? "bg-indigo-500/20 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.3)] ring-1 ring-indigo-500/30"
-                                        : "bg-white/5 text-slate-500 hover:text-slate-300"
+                                        ? "bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-500/30"
+                                        : "text-slate-500 hover:text-slate-300"
                                 )}
-                                title={musicEnabled ? "Couper la musique" : "Activer la musique"}
                             >
                                 {musicEnabled ? (
                                     <div className="relative">
-                                        <Music2 className="h-4 w-4 animate-pulse" />
-                                        <motion.div
-                                            animate={{ scale: [1, 1.2, 1] }}
-                                            transition={{ repeat: Infinity, duration: 2 }}
-                                            className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-indigo-400 rounded-full blur-[1px]"
-                                        />
+                                        <Music2 className="h-4 w-4 animate-pulse text-indigo-400" />
+                                        <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-indigo-400 rounded-full blur-[1px]" />
                                     </div>
                                 ) : (
                                     <Music className="h-4 w-4" />
                                 )}
+                            </Button>
+
+                            {/* Skip Button SECOND */}
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    useGameStore.getState().triggerMusicShuffle();
+                                    if (window.navigator.vibrate) window.navigator.vibrate(5);
+                                }}
+                                disabled={!musicEnabled}
+                                className="h-8 w-8 sm:w-10 p-0 rounded-lg text-slate-400 hover:text-indigo-400 transition-all active:scale-95 disabled:opacity-20 shrink-0"
+                            >
+                                <SkipForward className="h-4 w-4" />
                             </Button>
                         </div>
 
@@ -2149,14 +2140,14 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                 size="sm"
                                 onClick={togglePause}
                                 className={cn(
-                                    "h-9 w-9 p-0 rounded-xl transition-all active:scale-90 ml-1 border",
+                                    "h-9 sm:h-10 px-2 sm:px-4 rounded-xl transition-all active:scale-90 border shrink-0 flex items-center gap-1.5",
                                     isPaused
-                                        ? "bg-amber-500/20 text-amber-500 border-amber-500/30"
-                                        : "bg-white/5 text-slate-400 border-white/10 hover:text-white"
+                                        ? "bg-amber-500/20 text-amber-500 border-amber-500/30 shadow-lg"
+                                        : "bg-white/5 text-slate-400 border-white/10"
                                 )}
-                                title={isPaused ? "Reprendre" : "Pause"}
                             >
-                                {isPaused ? <PlayCircle className="h-5 w-5" /> : <Pause className="h-4 w-4" />}
+                                {isPaused ? <PlayCircle className="h-4.5 w-4.5 sm:h-5 sm:w-5" /> : <Pause className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+                                <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Pause</span>
                             </Button>
                         )}
                     </div>
@@ -2539,7 +2530,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
                                 <Button
                                     variant="outline"
-                                    onClick={handleBackToMenu}
+                                    onClick={() => confirmExit()}
                                     className="h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold uppercase tracking-widest transition-all"
                                 >
                                     QUITTER LA PARTIE
