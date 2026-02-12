@@ -151,8 +151,10 @@ export async function sendInvitationNotification(inviterId, inviterName, invited
         console.error('[FCM] Error sending message:', error);
 
         // Si le token est invalide, on le supprime (équivalent du 410 Gone)
-        if (error.code === 'messaging/registration-token-not-registered' || error.code === 'messaging/invalid-argument') {
-            console.log(`[FCM] Token invalid for user ${invitedUserId}, removing...`);
+        if (error.code === 'messaging/registration-token-not-registered' ||
+            error.code === 'messaging/invalid-argument' ||
+            error.code === 'messaging/mismatched-credential') {
+            console.log(`[FCM] Token invalid for user ${invitedUserId} (${error.code}), removing...`);
             await pool.query(
                 'DELETE FROM push_subscriptions WHERE user_id = $1',
                 [invitedUserId]
