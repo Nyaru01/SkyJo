@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { messaging } from '../lib/firebase';
-import { getToken, onMessage } from 'firebase/messaging';
+import { getToken, onMessage, deleteToken } from 'firebase/messaging';
 
 // Récupérer la clé publique VAPID pour Firebase
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+const SENDER_ID = import.meta.env.VITE_FIREBASE_SENDER_ID;
 
 export const usePushNotifications = () => {
     const [isSupported, setIsSupported] = useState(false);
@@ -12,6 +13,20 @@ export const usePushNotifications = () => {
     const [permission, setPermission] = useState('default');
 
     const userProfile = useGameStore(state => state.userProfile);
+
+    const checkConfigVersion = async () => {
+        const storedSenderId = localStorage.getItem('fcm_sender_id');
+        if (storedSenderId && storedSenderId !== SENDER_ID) {
+            console.log(`[FCM] Configuration mismatch detected (Old: ${storedSenderId}, New: ${SENDER_ID}). Forcing token refresh...`);
+            try {
+                await deleteToken(messaging);
+                localStorage.removeItem('fcm_token_verified'); // Force re-send to server
+            } catch (e) {
+                console.error('[FCM] Error deleting old token:', e);
+            }
+        }
+        localStorage.setItem('fcm_sender_id', SENDER_ID);
+    };
 
     useEffect(() => {
         // Log initializing every time to track in console
@@ -25,9 +40,11 @@ export const usePushNotifications = () => {
             // This ensures migration from Web-Push to FCM is seamless
             if (Notification.permission === 'granted' && userProfile?.id) {
                 console.log('[FCM] Permission granted & User loggé. Migration/Vérification en cours...');
-                subscribe().then(token => {
-                    if (token) console.log('[FCM] Auto-migration/verification successful');
-                    else console.log('[FCM] Auto-migration/verification did not return a token');
+                checkConfigVersion().then(() => {
+                    subscribe().then(token => {
+                        if (token) console.log('[FCM] Auto-migration/verification successful');
+                        else console.log('[FCM] Auto-migration/verification did not return a token');
+                    });
                 });
             } else if (Notification.permission === 'granted') {
                 console.log('[FCM] En attente du chargement du profil utilisateur pour migration...');
@@ -103,6 +120,14 @@ export const usePushNotifications = () => {
             if (token) {
                 console.log('✅ FCM Token generated:', token);
 
+                // Éviter l'envoi inutile si le token n'a pas changé (Optionnel mais recommandé)
+                const lastSentToken = localStorage.getItem('fcm_token_verified');
+                if (lastSentToken === token) {
+                    console.log('[FCM] Token already verified on server.');
+                    setIsSubscribed(true);
+                    return token;
+                }
+
                 // Envoyer le token au serveur
                 const response = await fetch('/api/push/subscribe', {
                     method: 'POST',
@@ -116,6 +141,7 @@ export const usePushNotifications = () => {
 
                 if (response.ok) {
                     console.log('✅ FCM Token sent to server successfully');
+                    localStorage.setItem('fcm_token_verified', token);
                     setIsSubscribed(true);
                 } else {
                     console.error('❌ Failed to send FCM token to server');
