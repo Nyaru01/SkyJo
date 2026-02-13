@@ -172,7 +172,10 @@ export const usePushNotifications = () => {
                 await fetch('/api/push/unsubscribe', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: userProfile.id })
+                    body: JSON.stringify({
+                        userId: userProfile.id,
+                        reason: 'usePushNotifications_manual'
+                    })
                 });
             }
             setIsSubscribed(false);

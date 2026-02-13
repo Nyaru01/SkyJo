@@ -39,7 +39,7 @@ router.post('/subscribe', async (req, res) => {
 // Se désabonner
 router.post('/unsubscribe', async (req, res) => {
     try {
-        const { userId } = req.body;
+        const { userId, reason } = req.body;
 
         if (!userId) {
             return res.status(400).json({ error: 'Missing userId' });
@@ -50,7 +50,7 @@ router.post('/unsubscribe', async (req, res) => {
             [userId]
         );
 
-        console.log(`✅ User ${userId} unsubscribed from push`);
+        console.log(`✅ User ${userId} unsubscribed from push. Reason: ${reason || 'Not specified'}`);
         res.json({ success: true, message: 'Unsubscribed' });
     } catch (error) {
         console.error('Error unsubscribing:', error);
