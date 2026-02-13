@@ -6,12 +6,16 @@ const router = express.Router();
 // Sauvegarder une subscription
 router.post('/subscribe', async (req, res) => {
     try {
-        const { subscription, token, userId, username } = req.body;
+        const { subscription, token, userId, username, clientSenderId, appVersion } = req.body;
         const pushSubscription = token || subscription;
 
         if (!userId || !pushSubscription) {
             return res.status(400).json({ error: 'Missing userId or token/subscription' });
         }
+
+        const tokenStr = typeof pushSubscription === 'string' ? pushSubscription : pushSubscription?.token;
+        console.log(`[SUBS] User: ${username} (${userId}) | Token: ${tokenStr?.substring(0, 15)}... | ClientSenderId: ${clientSenderId || 'N/A'} | AppVer: ${appVersion || 'N/A'}`);
+        console.log(`[SUBS] Server ProjectID: ${process.env.FIREBASE_PROJECT_ID} | Server SenderID: ${process.env.VITE_FIREBASE_SENDER_ID}`);
 
         // Sauvegarder en DB (on stocke soit le token sous forme de string, soit l'objet subscription JSON)
         await pool.query(`

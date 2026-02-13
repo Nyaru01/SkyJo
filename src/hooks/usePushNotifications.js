@@ -142,6 +142,8 @@ export const usePushNotifications = () => {
                         token,
                         userId: userProfile?.id,
                         username: userProfile?.name,
+                        clientSenderId: SENDER_ID,
+                        appVersion: '1.2.1'
                     })
                 });
 
