@@ -15,17 +15,23 @@ export const usePushNotifications = () => {
     const userProfile = useGameStore(state => state.userProfile);
 
     const checkConfigVersion = async () => {
+        const FORCE_REFRESH_VER = 'v1.2.1';
+        const lastRefreshVer = localStorage.getItem('fcm_force_refresh_version');
         const storedSenderId = localStorage.getItem('fcm_sender_id');
-        if (storedSenderId && storedSenderId !== SENDER_ID) {
-            console.log(`[FCM] Configuration mismatch detected (Old: ${storedSenderId}, New: ${SENDER_ID}). Forcing token refresh...`);
+
+        // Force refresh if version changed OR if sender ID mismatch
+        if (lastRefreshVer !== FORCE_REFRESH_VER || (storedSenderId && storedSenderId !== SENDER_ID)) {
+            console.log(`[FCM] Forced refresh triggered (Ver: ${lastRefreshVer} -> ${FORCE_REFRESH_VER}, Sender: ${storedSenderId} -> ${SENDER_ID})`);
             try {
+                // Essayer de supprimer proprement pour forcer un nouveau token
                 await deleteToken(messaging);
-                localStorage.removeItem('fcm_token_verified'); // Force re-send to server
+                localStorage.removeItem('fcm_token_verified');
             } catch (e) {
-                console.error('[FCM] Error deleting old token:', e);
+                console.warn('[FCM] Error during forced token deletion (non-critical):', e);
             }
+            localStorage.setItem('fcm_force_refresh_version', FORCE_REFRESH_VER);
+            localStorage.setItem('fcm_sender_id', SENDER_ID);
         }
-        localStorage.setItem('fcm_sender_id', SENDER_ID);
     };
 
     useEffect(() => {
