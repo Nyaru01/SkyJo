@@ -36,6 +36,9 @@ C'est ici que l'IA montre son intelligence :
 - **Anticipation (Blocage)** : 
     - L'IA vérifie le tapis de l'adversaire (l'humain) avant chaque action.
     - Elle ne te donnera pas une carte dont tu as besoin pour finir une colonne. Si elle pioche une carte qui t'aiderait, elle la gardera pour elle (même si elle est un peu haute) ou la remplacera pour ne pas te la laisser en défausse.
+- **Protection Intelligente** : 
+    - L'IA ne refuse plus aveuglément de remplacer ses 0, 1 ou 2. 
+    - Si remplacer un **0** par un **3** permet d'éliminer une colonne entière (gain net de points), elle fera le sacrifice pour "nettoyer" son tapis.
 - **Gestion des cartes cachées** :
     - L'IA "Hardcore" calcule un score pour chaque emplacement caché.
     - Elle préfère révéler des cartes dans les colonnes où elle a déjà commencé à construire une paire.

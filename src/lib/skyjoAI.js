@@ -100,8 +100,8 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false) =>
     // CRITICAL FIX: Don't try to complete columns with low/negative values!
     // Eliminating 3x "-2" = losing -6 points (bad!)
     // Eliminating 3x "0" = losing 0 points but removing 3 cards (neutral, but wastes opportunity)
-    // Eliminating 3x "1" or "2" = marginal benefit (only 3-6 points saved)
     // Only actively pursue column completion for cards with value > 2
+    // UNLESS the total removal would be profitable (e.g. replacing a 0 with a 3 to delete [0, 3, 3])
     const MIN_VALUE_FOR_COLUMN_ELIMINATION = 3;
 
     if (!forceCheck && cardValue < MIN_VALUE_FOR_COLUMN_ELIMINATION) {
@@ -122,8 +122,27 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false) =>
         }
     });
 
-    // Return true if completing the column (2 matches) or high potential (1 match + 1 hidden)
-    return matchCount === 2 || (matchCount === 1 && hiddenCount >= 1);
+    // Check profitability for full completion (matchCount === 2)
+    if (matchCount === 2) {
+        let currentTotal = cardValue;
+        colIndices.forEach(idx => {
+            if (idx === cardIndex) return;
+            const card = hand[idx];
+            if (card && card.isRevealed) currentTotal += card.value;
+            else currentTotal += cardValue; // Assumption for hidden or newly placed
+        });
+
+        // If the column sum is > 0, removing it is ALWAYS better than keeping any card in it
+        if (currentTotal > 0) return true;
+        return false; // Not profitable to eliminate (e.g. column of -2s)
+    }
+
+    // Check potential for future completion (1 match + 1 hidden)
+    if (!forceCheck && cardValue < MIN_VALUE_FOR_COLUMN_ELIMINATION) {
+        return false;
+    }
+
+    return (matchCount === 1 && hiddenCount >= 1);
 };
 
 /**
@@ -166,16 +185,20 @@ const findBestReplacementPosition = (hand, cardValue, difficulty) => {
         // CRITICAL FIX: Never replace a card with the same value (waste of turn)
         if (hand[idx].isRevealed && hand[idx].value === cardValue) continue;
 
-        // PROTECTION: Don't replace a GOOD revealed card (<= 2) for a column completion of a WORSE card
-        // (Replacing a -10 with a 4 to complete a column of 4s is a net loss)
-        if (hand[idx].isRevealed && hand[idx].value < cardValue && hand[idx].value <= 2) continue;
+        // SMART PROTECTION: Only skip if column completion is NOT possible or NOT profitable
+        if (hand[idx].isRevealed && hand[idx].value <= 2) {
+            if (!checkColumnPotential(hand, idx, cardValue)) {
+                continue;
+            }
+            // If checkColumnPotential returns true, it means it's a profitable elimination!
+        }
 
         if (checkColumnPotential(hand, idx, cardValue)) {
             return idx;
         }
     }
 
-    // MULTI-COLUMN STRATEGY: Favor values already present on the board to prepare future columns
+    // MULTI-COLUMN STRATEGY (Lower priority than completion)
     if (difficulty === AI_DIFFICULTY.HARD || difficulty === AI_DIFFICULTY.HARDCORE || difficulty === AI_DIFFICULTY.BONUS) {
         const otherRevealedValues = hand
             .filter(c => c && c.isRevealed && c.value === cardValue)
