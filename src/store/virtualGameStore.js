@@ -863,7 +863,7 @@ export const useVirtualGameStore = create(
                         if (isDaily && isDailyAvailable) {
                             // XP depends on difficulty for daily challenge
                             const difficulty = get().aiDifficulty;
-                            xpAwardedValue = difficulty === 'bonus' ? 8 : 4;
+                            xpAwardedValue = difficulty === 'bonus' ? 6 : 3;
 
                             useGameStore.getState().addXP(xpAwardedValue);
                             useGameStore.getState().markDailyWin();

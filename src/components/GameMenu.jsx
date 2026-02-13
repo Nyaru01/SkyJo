@@ -424,7 +424,7 @@ export default function GameMenu({
                                                 ? "bg-amber-500 text-white animate-pulse"
                                                 : "bg-slate-700 text-slate-400"
                                         )}>
-                                            +4 XP
+                                            +3 XP
                                         </div>
                                         <div className="text-[10px] text-slate-500 font-medium group-hover:text-slate-400 mt-1">Défi corsé</div>
                                     </div>
@@ -462,7 +462,7 @@ export default function GameMenu({
                                                 ? "bg-rose-500 text-white animate-pulse"
                                                 : "bg-slate-700 text-slate-400"
                                         )}>
-                                            +8 XP
+                                            +6 XP
                                         </div>
                                         <div className="text-[10px] text-slate-500 font-medium group-hover:text-slate-400 mt-1">Extrême 🔥</div>
                                     </div>
