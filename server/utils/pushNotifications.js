@@ -18,6 +18,12 @@ const getFirebaseAdmin = () => {
         const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
         let privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
+        console.log('[FCM_INIT] Checking Env:', {
+            projectId: projectId || 'MISSING',
+            clientEmail: clientEmail ? 'PRESENT' : 'MISSING',
+            privateKey: privateKey ? `PRESENT (len: ${privateKey.length})` : 'MISSING'
+        });
+
         if (!privateKey || !clientEmail || !projectId) {
             console.error('[FCM_INIT] Missing credentials:', {
                 projectId: !!projectId,
@@ -30,15 +36,26 @@ const getFirebaseAdmin = () => {
 
         // Nettoyage de la clé privée (RAILWAY / ENV FIX)
         if (typeof privateKey === 'string') {
-            // 1. Enlever les guillemets si présents au début et à la fin
+            // Un nettoyage "Bulletproof" qui gère les échappements \n et les manques de sauts de ligne
+            privateKey = privateKey.trim();
+
+            // Enlever les guillemets si présents
             if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
                 privateKey = privateKey.substring(1, privateKey.length - 1);
             }
-            // 2. Transformer les \n littéraux en vrais sauts de ligne
-            privateKey = privateKey.replace(/\\n/g, '\n');
+
+            // Extraire le corps de la clé pour reconstruire un format PEM propre
+            // Cela résout les erreurs "Invalid PEM format" et "ASN.1 encoding"
+            let body = privateKey
+                .replace('-----BEGIN PRIVATE KEY-----', '')
+                .replace('-----END PRIVATE KEY-----', '')
+                .replace(/\\n/g, '') // Enlever les \n littéraux
+                .replace(/\s/g, ''); // Enlever tout espace ou vrai saut de ligne existant
+
+            privateKey = `-----BEGIN PRIVATE KEY-----\n${body}\n-----END PRIVATE KEY-----\n`;
         }
 
-        console.log(`[FCM_INIT] Key Diagnostic: Length=${privateKey?.length}, StartsWith=${privateKey?.substring(0, 20)}...`);
+        console.log(`[FCM_INIT] Final Key Check: Length=${privateKey?.length}`);
 
         const newApp = admin.initializeApp({
             credential: admin.credential.cert({
