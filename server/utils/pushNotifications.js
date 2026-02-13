@@ -57,10 +57,6 @@ const getFirebaseAdmin = () => {
             privateKey = `-----BEGIN PRIVATE KEY-----\n${body}\n-----END PRIVATE KEY-----\n`;
         }
 
-        console.log(`[FCM_INIT] Credentials found for project: ${projectId}`);
-        console.log(`[FCM_INIT] Client Email: ${clientEmail?.substring(0, 15)}...`);
-        console.log(`[FCM_INIT] Final Key Check: Length=${privateKey?.length}`);
-
         const newApp = admin.initializeApp({
             credential: admin.credential.cert({
                 projectId,
@@ -188,12 +184,11 @@ export async function sendInvitationNotification(inviterId, inviterName, invited
         if (error.code === 'messaging/registration-token-not-registered' ||
             error.code === 'messaging/invalid-argument' ||
             error.code === 'messaging/mismatched-credential') {
-            console.log(`[FCM] Token invalid or mismatched for user ${invitedUserId} (${error.code}). [DEBUG] Current Project: ${projectId}`);
-            // Temporairement désactivé pour debug : on ne supprime pas le token tout de suite
-            // await pool.query(
-            //     'DELETE FROM push_subscriptions WHERE user_id = $1',
-            //     [invitedUserId]
-            // );
+            console.log(`[FCM] Token invalid or mismatched for user ${invitedUserId} (${error.code}), removing...`);
+            await pool.query(
+                'DELETE FROM push_subscriptions WHERE user_id = $1',
+                [invitedUserId]
+            );
         }
 
         return { success: false, error: error.message };

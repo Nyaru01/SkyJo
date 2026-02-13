@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
-import { Settings, Trophy, Sparkles, History, Undo2, BarChart3, Play, LogOut, CheckCircle2, Users, HelpCircle, X, ArrowLeft } from 'lucide-react';
+import { Settings, Trophy, Sparkles, History, Undo2, BarChart3, Play, LogOut, CheckCircle2, Users, HelpCircle, X, ArrowLeft, Palette, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore, selectPlayers, selectRounds, selectThreshold, selectGameStatus } from '../store/gameStore';
 import { useVirtualGameStore } from '../store/virtualGameStore';
@@ -44,6 +44,14 @@ const pageTransition = {
     ease: [0.25, 0.46, 0.45, 0.94]
 };
 
+const WALLPAPERS = [
+    { id: 'skyjo', name: 'Original', url: '/Wallpapers/bg-skyjo.png', color: 'bg-emerald-500' },
+    { id: 'eau', name: 'Eau Calme', url: '/Wallpapers/Eau.png', color: 'bg-cyan-600' },
+    { id: 'mystique', name: 'Mystique', url: '/Wallpapers/Mystique.png', color: 'bg-purple-900' },
+    { id: 'noir', name: 'Noir premium', url: '/Wallpapers/Noir premium.png', color: 'bg-slate-900' },
+    { id: 'stellaire', name: 'Stellaire', url: '/Wallpapers/stellaire.png', color: 'bg-indigo-900' },
+];
+
 export default function Dashboard() {
     const players = useGameStore(selectPlayers);
     const rounds = useGameStore(selectRounds);
@@ -76,6 +84,9 @@ export default function Dashboard() {
     const hasSeenNewOnlineModeAnnouncement = useGameStore(state => state.hasSeenNewOnlineModeAnnouncement);
     const setHasSeenNewOnlineModeAnnouncement = useGameStore(state => state.setHasSeenNewOnlineModeAnnouncement);
     const background = useGameStore(state => state.background);
+    const setBackground = useGameStore(state => state.setBackground);
+    const isWallpaperModalOpen = useGameStore(state => state.isWallpaperModalOpen);
+    const setIsWallpaperModalOpen = useGameStore(state => state.setIsWallpaperModalOpen);
 
     const virtualGameState = useVirtualGameStore(state => state.gameState);
 
@@ -841,6 +852,75 @@ export default function Dashboard() {
                 isOpen={!hasSeenNewOnlineModeAnnouncement}
                 onClose={() => setHasSeenNewOnlineModeAnnouncement(true)}
             />
-        </div >
+            {/* Wallpaper Selection Modal - Accessible depuis partout */}
+            <AnimatePresence>
+                {isWallpaperModalOpen && (
+                    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+                            onClick={() => setIsWallpaperModalOpen(false)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="relative w-full max-w-2xl bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden"
+                        >
+                            <div className="p-6 border-b border-white/10 flex items-center justify-between">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                                    <Palette className="w-6 h-6 text-indigo-400" />
+                                    Choisir un fond d'écran
+                                </h3>
+                                <button
+                                    onClick={() => setIsWallpaperModalOpen(false)}
+                                    className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white"
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+                            <div className="p-6 overflow-y-auto max-h-[70vh]">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                    {WALLPAPERS.map((wp) => (
+                                        <button
+                                            key={wp.id}
+                                            onClick={() => setBackground(wp.url)}
+                                            className={`relative group flex flex-col items-center gap-2 p-3 rounded-2xl transition-all duration-300 border-2 hover:scale-[1.02] active:scale-95 ${background === wp.url
+                                                ? "bg-white/10 border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]"
+                                                : "bg-white/5 border-transparent hover:bg-white/8 hover:border-white/10"
+                                                }`}
+                                        >
+                                            <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg">
+                                                <div className={`absolute inset-0 opacity-40 ${wp.color}`} />
+                                                <img
+                                                    src={wp.url}
+                                                    alt={wp.name}
+                                                    onError={(e) => e.target.style.display = 'none'}
+                                                    className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${background === wp.url ? "scale-110" : "scale-100"
+                                                        }`}
+                                                />
+                                                {background === wp.url && (
+                                                    <div className="absolute inset-0 bg-indigo-600/20 backdrop-blur-[1px] flex items-center justify-center">
+                                                        <div className="bg-white rounded-full p-1.5 shadow-xl animate-bounce-in">
+                                                            <Check className="w-4 h-4 text-indigo-600 stroke-[4]" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <span className={`text-[11px] font-black uppercase tracking-widest transition-colors ${background === wp.url ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"
+                                                }`}>
+                                                {wp.name}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 }

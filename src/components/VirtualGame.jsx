@@ -1806,10 +1806,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                             <motion.div
                                                 key={friend.id}
                                                 whileHover={{ scale: 1.01, x: 4 }}
-                                                className={`p-3 border rounded-[20px] flex items-center justify-between group transition-all shadow-xl backdrop-blur-md ${friend.isOnline
-                                                    ? 'bg-slate-900/40 border-white/10 hover:border-emerald-500/40'
-                                                    : 'bg-slate-900/20 border-white/5 opacity-70 hover:opacity-100'
-                                                    }`}
+                                                className={`p-3 border rounded-[20px] flex items-center justify-between group transition-all shadow-xl backdrop-blur-md bg-slate-900/40 border-white/10 hover:border-indigo-500/40`}
                                             >
                                                 <div className="flex items-center gap-4">
                                                     <div className="relative">
@@ -1823,8 +1820,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                                         )}
                                                     </div>
                                                     <div>
-                                                        <p className={`text-sm font-black tracking-tight ${friend.isOnline ? 'text-white' : 'text-slate-400'}`}>{friend.name}</p>
-                                                        <div className={`text-[9px] font-black uppercase tracking-[0.15em] flex items-center gap-1.5 mt-0.5 ${friend.isOnline ? 'text-emerald-400' : 'text-slate-600'}`}>
+                                                        <p className={`text-sm font-black tracking-tight ${friend.isOnline ? 'text-white' : 'text-slate-200'}`}>{friend.name}</p>
+                                                        <div className={`text-[9px] font-black uppercase tracking-[0.15em] flex items-center gap-1.5 mt-0.5 ${friend.isOnline ? 'text-emerald-400' : 'text-slate-500'}`}>
                                                             {friend.isOnline ? (
                                                                 <>
                                                                     <span className="w-1 h-1 rounded-full bg-emerald-500" />
@@ -1837,10 +1834,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
                                                 <Button
                                                     size="sm"
-                                                    className={`h-9 px-5 rounded-xl text-[10px] font-black shadow-xl active:scale-95 transition-all tracking-wider ${friend.isOnline
-                                                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/30'
-                                                        : 'bg-gradient-to-br from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-slate-300 border border-white/5 shadow-black/20'
-                                                        }`}
+                                                    className={`h-9 px-4 rounded-xl text-[10px] font-black shadow-xl active:scale-95 transition-all tracking-wider flex items-center gap-2 group/invite bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-indigo-500/25`}
                                                     onClick={() => {
                                                         if (onlineRoomCode) {
                                                             inviteFriend(friend.id, onlineRoomCode, userProfile.name);
@@ -1850,7 +1844,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                                         playSocialInvite();
                                                     }}
                                                 >
-                                                    INVITER
+                                                    <span>DÉFIER</span>
+                                                    <Swords className="w-3.5 h-3.5 group-hover/invite:rotate-12 transition-transform" />
                                                 </Button>
                                             </motion.div>
                                         ))

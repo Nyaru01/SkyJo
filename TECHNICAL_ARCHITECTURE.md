@@ -123,11 +123,39 @@ Cette section documente les solutions techniques apportées aux problèmes compl
 - **Pill Header :** Unification des contrôles de jeu (Quitter, Son, Manche) dans un conteneur flottant "Pill" en verre dépoli.
 - **Hook Audio :** `useBackgroundMusic` a été refactorisé pour empêcher le lancement de plusieurs pistes simultanées (Race Condition) et restreint aux phases de jeu actives (pas de musique en lobby).
 
-### 4. Push Notifications & Deep-Linking (v2.4.0)
+### 4. Push Notifications & FCM (v2.5.1)
 
-**Contexte :** Permettre aux utilisateurs de rejoindre une partie depuis une notification push, même si l'application est fermée.
+Le système de notifications repose sur **Firebase Cloud Messaging (FCM)**.
 
-**Architecture :**
+**Architecture Backend (`server/utils/pushNotifications.js`) :**
+- **Initialisation Bulletproof** : La clé privée `FIREBASE_PRIVATE_KEY` est nettoyée et encapsulée dynamiquement dans un bloc PEM valide (support Windows/Linux).
+- **Gestion des Tokens** : Nettoyage automatique des tokens obsolètes ou mal configurés (`mismatched-credential`).
+- **Payload Data-Only** : Les notifications sont envoyées en mode `data` uniquement, permettant au Service Worker de décider de l'affichage (évite les doublons si l'app est ouverte).
+- **TTL Android** : Les invitations expirent après 1h pour garantir la pertinence.
+
+**Architecture Frontend (`src/hooks/usePushNotifications.js`) :**
+- **Isolation Multi-Compte** : Les flags de vérification sont stockés sous `fcm_token_verified_{userId}` pour permettre à plusieurs joueurs d'utiliser le même appareil.
+- **Forced Update** : Le changement de `FORCE_REFRESH_VER` (actuellement `v1.2.3`) déclenche un cycle complet de suppression/ré-inscription du token pour corriger les erreurs de configuration d'un clic.
+
+### 5. Système de Récupération Sociale
+
+En cas de perte d'accès (changement de navigateur sans exporter le SkyID), une procédure de fusion est disponible :
+- **Logique de Fusion** : Les statistiques (Niveau, XP), les Amis et l'Historique d'un ancien ID technique peuvent être migrés vers le nouvel ID actif de l'utilisateur.
+- **Intégrité** : Le script de fusion gère les doublons d'amitié et archive l'ancien compte pour préserver la cohérence du classements global.
+
+---
+
+## 🛠️ Variables d'Environnement (Firebase)
+
+Pour que les notifications fonctionnent, les variables suivantes doivent être configurées sur Railway :
+- `FIREBASE_PROJECT_ID` : L'ID du projet Firebase (`skyjo-b88ac`).
+- `FIREBASE_CLIENT_EMAIL` : L'email du compte de service.
+- `FIREBASE_PRIVATE_KEY` : La clé privée complète (formatée automatiqument par le serveur).
+- `VITE_FIREBASE_SENDER_ID` : L'ID de l'expéditeur (utilisé par le client).
+
+---
+
+*Documentation mise à jour le 13 Février 2026 (v2.5.1) - Stabilité FCM & Recovery.*
 
 ```mermaid
 sequenceDiagram

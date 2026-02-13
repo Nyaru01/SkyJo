@@ -204,15 +204,7 @@ export default function GameMenu({
                     <button
                         onClick={() => {
                             playClick();
-                            // Navigation to settings via Dashboard needs to be handled if Dashboard is the parent
-                            // However, we just need to trigger the tab change
-                            // Since Dashboard manages activeTab, we can use useGameStore to set it if we expose it
-                            // Or simpler: just let user go to Settings via Navbar as usual, 
-                            // OR we can use the prop setScreen if it supports 'settings'? 
-                            // Let's check Dashboard. 
-                            // Dashboard uses setActiveTab which is local to it.
-                            // But gameStore has setActiveTab(tab) which Dashboard syncs to!
-                            useGameStore.getState().setActiveTab('settings');
+                            useGameStore.getState().setIsWallpaperModalOpen(true);
                         }}
                         className="flex-1 flex items-center justify-center gap-3 p-4 rounded-2xl bg-slate-900/80 hover:bg-slate-900 border border-white/10 transition-all active:scale-95 group backdrop-blur-md"
                     >

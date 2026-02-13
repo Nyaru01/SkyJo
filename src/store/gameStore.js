@@ -104,6 +104,9 @@ export const useGameStore = create(
 
             setAdminAuthToken: (token) => set({ adminAuthToken: token }),
 
+            isWallpaperModalOpen: false,
+            setIsWallpaperModalOpen: (open) => set({ isWallpaperModalOpen: open }),
+
             // XP & Level System
             // Note: We'll keep these values in parallel with userProfile for backward compatibility 
             // but sync them to userProfile when they change
