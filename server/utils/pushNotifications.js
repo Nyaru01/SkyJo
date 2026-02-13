@@ -9,7 +9,9 @@ const getFirebaseAdmin = () => {
     try {
         // ESSAYER de récupérer l'app par défaut
         try {
-            return admin.app();
+            const app = admin.app();
+            console.log(`[FCM_INIT] Using existing app: ${app.name} | Project: ${app.options?.credential?.projectId || 'Unknown'}`);
+            return app;
         } catch (e) {
             // L'app n'existe pas encore, on continue l'init
         }

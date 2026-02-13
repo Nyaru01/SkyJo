@@ -170,12 +170,16 @@ app.get('/api/config/vapid', (req, res) => {
 
 app.get('/api/config/version', (req, res) => {
     res.json({
-        version: '1.2.1-debug-logs',
+        version: '1.2.2-env-debug',
         env: {
             node_env: process.env.NODE_ENV,
-            project_id: process.env.FIREBASE_PROJECT_ID,
-            sender_id: process.env.VITE_FIREBASE_SENDER_ID ? 'SET' : 'MISSING'
-        }
+            f_project_id: process.env.FIREBASE_PROJECT_ID ? 'SET' : 'MISSING',
+            v_project_id: process.env.VITE_FIREBASE_PROJECT_ID ? 'SET' : 'MISSING',
+            v_sender_id: process.env.VITE_FIREBASE_SENDER_ID ? 'SET' : 'MISSING',
+            f_client_email: process.env.FIREBASE_CLIENT_EMAIL ? 'SET' : 'MISSING',
+            f_private_key: process.env.FIREBASE_PRIVATE_KEY ? (process.env.FIREBASE_PRIVATE_KEY.length > 50 ? 'SET_VALID' : 'TOO_SHORT') : 'MISSING'
+        },
+        t: Date.now()
     });
 });
 

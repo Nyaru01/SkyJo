@@ -15,7 +15,7 @@ router.post('/subscribe', async (req, res) => {
 
         const tokenStr = typeof pushSubscription === 'string' ? pushSubscription : pushSubscription?.token;
         console.log(`[SUBS] User: ${username} (${userId}) | Token: ${tokenStr?.substring(0, 15)}... | ClientSenderId: ${clientSenderId || 'N/A'} | AppVer: ${appVersion || 'N/A'}`);
-        console.log(`[SUBS] Server ProjectID: ${process.env.FIREBASE_PROJECT_ID} | Server SenderID: ${process.env.VITE_FIREBASE_SENDER_ID}`);
+        console.log(`[SUBS] Env check: FIREBASE_PROJECT_ID=${process.env.FIREBASE_PROJECT_ID} | VITE_FIREBASE_PROJECT_ID=${process.env.VITE_FIREBASE_PROJECT_ID} | VITE_FIREBASE_SENDER_ID=${process.env.VITE_FIREBASE_SENDER_ID}`);
 
         // Sauvegarder en DB (on stocke soit le token sous forme de string, soit l'objet subscription JSON)
         await pool.query(`
