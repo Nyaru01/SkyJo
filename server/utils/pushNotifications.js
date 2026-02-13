@@ -121,15 +121,30 @@ export async function sendInvitationNotification(inviterId, inviterName, invited
             return { success: false, reason: 'No subscription' };
         }
 
-        // Dans la migration, on suppose que 'subscription' contient maintenant le token FCM
-        // (Soit une chaîne, soit un objet JSON selon comment on l'a enregistré)
-        let token = result.rows[0].subscription;
-        if (typeof token === 'object' && token.token) {
-            token = token.token;
-        } else if (typeof token === 'object' && token.endpoint) {
-            // C'est un ancien abonnement Web Push, on ne peut pas l'utiliser avec FCM Admin
-            console.warn(`[FCM] User ${invitedUserId} has an old Web Push subscription. Migration needed.`);
-            return { success: false, reason: 'Old subscription format' };
+        // Extraction robuste du token (gère les objets JSON stringifiés ou bruts)
+        let subscriptionData = result.rows[0].subscription;
+        let token;
+
+        if (typeof subscriptionData === 'string') {
+            try {
+                // Tenter de parser si c'est une string JSON
+                const parsed = JSON.parse(subscriptionData);
+                token = parsed.token || parsed; // Gère {token: "..."} ou juste le token
+            } catch (e) {
+                // Si le parse échoue, c'est probablement le token brut
+                token = subscriptionData;
+            }
+        } else if (typeof subscriptionData === 'object') {
+            token = subscriptionData.token || null;
+            if (!token && subscriptionData.endpoint) {
+                console.warn(`[FCM] User ${invitedUserId} has an old Web Push subscription. Migration needed.`);
+                return { success: false, reason: 'Old Web Push format' };
+            }
+        }
+
+        if (!token || typeof token !== 'string') {
+            console.error(`[FCM] Invalid token for user ${invitedUserId}:`, subscriptionData);
+            return { success: false, reason: 'Invalid token' };
         }
 
         const notificationTag = `game-invite-${roomId}-${now}`; // ✅ Tag unique par invitation
@@ -148,9 +163,7 @@ export async function sendInvitationNotification(inviterId, inviterName, invited
             },
             android: {
                 priority: 'high',
-                ttl: 0,
-                // On peut ajouter explicitement le channel pour Android ici si besoin, 
-                // mais sans l'objet 'notification' pour éviter le doublon système.
+                ttl: 3600 * 1000, // Expire après 1h si non délivré (pertinent pour un jeu)
             },
             webpush: {
                 headers: {

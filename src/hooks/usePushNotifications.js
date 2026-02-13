@@ -24,8 +24,12 @@ export const usePushNotifications = () => {
             console.log(`[FCM] Forced refresh triggered (Ver: ${lastRefreshVer} -> ${FORCE_REFRESH_VER}, Sender: ${storedSenderId} -> ${SENDER_ID})`);
             try {
                 // Essayer de supprimer proprement pour forcer un nouveau token
-                await deleteToken(messaging);
-                localStorage.removeItem('fcm_token_verified');
+                // On vide TOUT ce qui commence par fcm_token_verified pour être sûr (multi-comptes)
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('fcm_token_verified')) {
+                        localStorage.removeItem(key);
+                    }
+                });
             } catch (e) {
                 console.warn('[FCM] Error during forced token deletion (non-critical):', e);
             }
@@ -145,7 +149,7 @@ export const usePushNotifications = () => {
                         userId: userProfile?.id,
                         username: userProfile?.name,
                         clientSenderId: SENDER_ID,
-                        appVersion: '1.2.2' // Increment version
+                        appVersion: '1.2.3' // Consistent with FORCE_REFRESH_VER
                     })
                 });
 
