@@ -15,7 +15,7 @@ export const usePushNotifications = () => {
     const userProfile = useGameStore(state => state.userProfile);
 
     const checkConfigVersion = async () => {
-        const FORCE_REFRESH_VER = 'v1.2.2';
+        const FORCE_REFRESH_VER = 'v1.2.3';
         const lastRefreshVer = localStorage.getItem('fcm_force_refresh_version');
         const storedSenderId = localStorage.getItem('fcm_sender_id');
 
