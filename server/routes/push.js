@@ -84,4 +84,12 @@ router.post('/track', async (req, res) => {
     }
 });
 
+router.get('/debug-env', (req, res) => {
+    res.json({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        senderId: process.env.VITE_FIREBASE_SENDER_ID,
+        hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY
+    });
+});
+
 export default router;

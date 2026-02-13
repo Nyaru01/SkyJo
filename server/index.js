@@ -168,6 +168,17 @@ app.get('/api/config/vapid', (req, res) => {
     res.json({ key: vapidPublic });
 });
 
+app.get('/api/config/version', (req, res) => {
+    res.json({
+        version: '1.2.1-debug-logs',
+        env: {
+            node_env: process.env.NODE_ENV,
+            project_id: process.env.FIREBASE_PROJECT_ID,
+            sender_id: process.env.VITE_FIREBASE_SENDER_ID ? 'SET' : 'MISSING'
+        }
+    });
+});
+
 // --- Feedback API ---
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/push', pushRoutes);
