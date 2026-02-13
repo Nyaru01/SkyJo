@@ -15,7 +15,7 @@ export const usePushNotifications = () => {
     const userProfile = useGameStore(state => state.userProfile);
 
     const checkConfigVersion = async () => {
-        const FORCE_REFRESH_VER = 'v1.2.1';
+        const FORCE_REFRESH_VER = 'v1.2.2';
         const lastRefreshVer = localStorage.getItem('fcm_force_refresh_version');
         const storedSenderId = localStorage.getItem('fcm_sender_id');
 
@@ -126,10 +126,12 @@ export const usePushNotifications = () => {
             if (token) {
                 console.log('✅ FCM Token generated:', token);
 
-                // Éviter l'envoi inutile si le token n'a pas changé (Optionnel mais recommandé)
-                const lastSentToken = localStorage.getItem('fcm_token_verified');
+                // Éviter l'envoi inutile si le token n'a pas changé pour cet utilisateur
+                const verificationKey = `fcm_token_verified_${userProfile?.id}`;
+                const lastSentToken = localStorage.getItem(verificationKey);
+
                 if (lastSentToken === token) {
-                    console.log('[FCM] Token already verified on server.');
+                    console.log('[FCM] Token already verified on server for this user.');
                     setIsSubscribed(true);
                     return token;
                 }
@@ -143,13 +145,13 @@ export const usePushNotifications = () => {
                         userId: userProfile?.id,
                         username: userProfile?.name,
                         clientSenderId: SENDER_ID,
-                        appVersion: '1.2.1'
+                        appVersion: '1.2.2' // Increment version
                     })
                 });
 
                 if (response.ok) {
                     console.log('✅ FCM Token sent to server successfully');
-                    localStorage.setItem('fcm_token_verified', token);
+                    localStorage.setItem(verificationKey, token);
                     setIsSubscribed(true);
                 } else {
                     console.error('❌ Failed to send FCM token to server');
