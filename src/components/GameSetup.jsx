@@ -337,7 +337,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                         ) : checkResult === 'up-to-date' ? (
                             <>
                                 <CheckCircle className="w-4 h-4" />
-                                v2.5.1 ✓
+                                v{__APP_VERSION__} ✓
                             </>
                         ) : checkResult === 'update-available' ? (
                             <>
