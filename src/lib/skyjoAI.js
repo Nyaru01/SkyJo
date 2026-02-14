@@ -736,6 +736,11 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
             // Avoid ending game if losing
             if (slowDown && hiddenIndices.length === 1) {
                 if (highest.index !== -1 && highest.value > cardValue) return highest.index;
+                // If it's a very good card (<= -2), we MUST keep it even if it ends the game
+                if (cardValue <= -2) {
+                    if (highest.index !== -1) return highest.index;
+                    return getRandomElement(hiddenIndices);
+                }
                 return -1;
             }
             const cornerIndices = [0, 2, 9, 11].filter(i => hiddenIndices.includes(i));
@@ -1120,7 +1125,17 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
         if (drawnValue <= 3 && replaceIndex !== -1) {
             return { action: 'REPLACE', cardIndex: replaceIndex };
         }
-        const highest = findHighestRevealedCard(hand);
+
+        // [CRITICAL FIX] Never discard a very good negative card (<= -2)
+        if (drawnValue <= -2) {
+            const finalReplaceIdx = replaceIndex !== -1 ? replaceIndex : (
+                highest.index !== -1 ? highest.index : (
+                    getHiddenCardIndices(hand).length > 0 ? getHiddenCardIndices(hand)[0] : 0
+                )
+            );
+            return { action: 'REPLACE', cardIndex: finalReplaceIdx };
+        }
+
         if (highest.index !== -1 && drawnValue < highest.value - 2) {
             return { action: 'REPLACE', cardIndex: highest.index };
         }
