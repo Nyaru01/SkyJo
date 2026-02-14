@@ -111,11 +111,11 @@ export default function ImagePreloader({ children }) {
                     <motion.div
                         key="loader"
                         initial={{ opacity: 1 }}
-                        exit={{ opacity: 0, filter: "blur(20px)", scale: 1.05 }}
+                        exit={{ opacity: 0, scale: 1.1 }}
                         transition={{ duration: 0.8, ease: "easeInOut" }}
                         className="fixed inset-0 z-[9999]"
                     >
-                        <SkyjoLoader progress={displayProgress} />
+                        <SkyjoLoader progress={realProgress} />
                     </motion.div>
                 )}
             </AnimatePresence>
