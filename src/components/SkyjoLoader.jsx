@@ -1,28 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Layers, Sparkles, Command, Zap, Activity, Box, ShieldCheck } from 'lucide-react';
+import { Layers, Sparkles, Command, Zap, Activity, ShieldCheck } from 'lucide-react';
 
 // --- Configuration Premium ---
 const MESSAGES = [
-  { text: "Initialisation sécurisée", icon: <ShieldCheck strokeWidth={1.5} className="w-4 h-4" /> },
-  { text: "Calibrage de l'expérience", icon: <Command strokeWidth={1.5} className="w-4 h-4" /> },
-  { text: "Optimisation des atouts", icon: <Sparkles strokeWidth={1.5} className="w-4 h-4" /> },
-  { text: "Synchronisation cloud", icon: <Activity strokeWidth={1.5} className="w-4 h-4" /> },
-  { text: "Préparation de la table", icon: <Layers strokeWidth={1.5} className="w-4 h-4" /> },
-  { text: "Prêt", icon: <Zap strokeWidth={1.5} className="w-4 h-4" /> }
+  { text: "Initialisation sécurisée", icon: <ShieldCheck strokeWidth={1} className="w-4 h-4" /> },
+  { text: "Calibrage de l'expérience", icon: <Command strokeWidth={1} className="w-4 h-4" /> },
+  { text: "Optimisation des atouts", icon: <Sparkles strokeWidth={1} className="w-4 h-4" /> },
+  { text: "Synchronisation cloud", icon: <Activity strokeWidth={1} className="w-4 h-4" /> },
+  { text: "Préparation de la table", icon: <Layers strokeWidth={1} className="w-4 h-4" /> },
+  { text: "Prêt", icon: <Zap strokeWidth={1} className="w-4 h-4" /> }
 ];
 
-// --- Composant Particules Flottantes (Renforcé) ---
+// --- Composant Particules Flottantes ---
 const FloatingParticles = () => {
-  // Plus de particules
-  const particles = Array.from({ length: 35 });
+  const particles = useMemo(() => Array.from({ length: 30 }), []);
   
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
       {particles.map((_, i) => {
-        // Couleurs plus vibrantes
         const color = i % 3 === 0 ? '#ffffff' : i % 3 === 1 ? '#30eeff' : '#ff50ff';
-        
         return (
           <motion.div
             key={i}
@@ -34,23 +31,22 @@ const FloatingParticles = () => {
               scale: 0
             }}
             animate={{
-              y: [null, Math.random() * -100 - 50 + "%"], // Monte
-              x: [null, (Math.random() - 0.5) * 80 + "%"], // Dérive latérale plus large
-              opacity: [0, Math.random() * 0.7 + 0.3, 0], // Opacité augmentée (0.3 à 1.0)
-              scale: [0, Math.random() * 1.5 + 0.8, 0], // Échelle un peu plus grande
+              y: [null, Math.random() * -100 - 50 + "%"],
+              x: [null, (Math.random() - 0.5) * 60 + "%"],
+              opacity: [0, Math.random() * 0.4 + 0.2, 0],
+              scale: [0, Math.random() * 1.2 + 0.5, 0],
             }}
             transition={{
-              duration: Math.random() * 10 + 8, // Un peu plus rapide
+              duration: Math.random() * 12 + 10,
               repeat: Infinity,
               delay: Math.random() * 5,
               ease: "linear"
             }}
             style={{
-              width: Math.random() * 5 + 2 + "px", // Taille augmentée (2px à 7px)
-              height: Math.random() * 5 + 2 + "px",
+              width: Math.random() * 3 + 1 + "px",
+              height: Math.random() * 3 + 1 + "px",
               backgroundColor: color,
-              // Ombre portée brillante (Glow) sur TOUTES les particules
-              boxShadow: `0 0 ${Math.random() * 15 + 5}px ${color}`
+              boxShadow: `0 0 ${Math.random() * 8 + 4}px ${color}`
             }}
           />
         );
@@ -59,51 +55,54 @@ const FloatingParticles = () => {
   );
 };
 
-// --- Arrière-plan "Mesh Gradient" Subtil avec touches couleurs ---
-const PremiumBackground = () => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none bg-[#050505]">
-    {/* Glows d'ambiance Cyan (#30eeff) - Un peu plus forts */}
-    <motion.div 
-      animate={{ opacity: [0.15, 0.25, 0.15], scale: [1, 1.1, 1] }}
-      transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-      className="absolute -top-[20%] -left-[10%] w-[80%] h-[80%] bg-[#30eeff] rounded-full blur-[150px] opacity-25" 
-    />
-    {/* Glows d'ambiance Magenta (#ff50ff) - Un peu plus forts */}
-    <motion.div 
-      animate={{ opacity: [0.15, 0.25, 0.15], scale: [1, 1.2, 1] }}
-      transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-      className="absolute -bottom-[20%] -right-[10%] w-[80%] h-[80%] bg-[#ff50ff] rounded-full blur-[150px] opacity-25" 
-    />
-    
-    {/* Grain fin pour la texture "papier" */}
-    <div className="absolute inset-0 opacity-[0.04] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-  </div>
-);
+// --- Arrière-plan Dynamique ---
+const PremiumBackground = ({ progress }) => {
+  const cyanOpacity = Math.max(0.05, 0.25 - (progress / 100) * 0.2);
+  const magentaOpacity = Math.min(0.25, 0.05 + (progress / 100) * 0.2);
 
-// --- Typographie de chargement élégante ---
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none bg-[#030303]">
+      <motion.div 
+        style={{ opacity: cyanOpacity }}
+        animate={{ scale: [1, 1.1, 1] }}
+        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+        className="absolute -top-[20%] -left-[10%] w-[80%] h-[80%] bg-[#30eeff] rounded-full blur-[150px]" 
+      />
+      <motion.div 
+        style={{ opacity: magentaOpacity }}
+        animate={{ scale: [1, 1.2, 1] }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        className="absolute -bottom-[20%] -right-[10%] w-[80%] h-[80%] bg-[#ff50ff] rounded-full blur-[150px]" 
+      />
+      <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+    </div>
+  );
+};
+
+// --- Typographie de chargement ---
 const ElegantLoaderText = () => {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex(prev => (prev + 1) % MESSAGES.length);
-    }, 2000); // Plus lent pour le côté calme/luxe
+    }, 2200);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="h-10 flex items-center justify-center overflow-hidden">
+    <div className="h-12 flex items-center justify-center overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -20, opacity: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }} // Courbe de Bézier sophistiquée
-          className="flex flex-col items-center gap-2"
+          initial={{ y: 15, opacity: 0, filter: 'blur(8px)' }}
+          animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
+          exit={{ y: -15, opacity: 0, filter: 'blur(8px)' }}
+          transition={{ duration: 0.7, ease: [0.19, 1, 0.22, 1] }}
+          className="flex flex-col items-center gap-1.5"
         >
-          <div className="text-slate-400">{MESSAGES[index].icon}</div>
-          <span className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-medium">
+          <div className="text-slate-500/60">{MESSAGES[index].icon}</div>
+          <span className="text-[9px] uppercase tracking-[0.4em] text-slate-400 font-bold">
             {MESSAGES[index].text}
           </span>
         </motion.div>
@@ -111,6 +110,27 @@ const ElegantLoaderText = () => {
     </div>
   );
 };
+
+// --- Icône de carte avec Glare interne ---
+const CardSilhouette = () => (
+  <motion.div 
+    animate={{ 
+      rotateY: [0, 10, 0, -10, 0],
+      rotateX: [5, 0, 5],
+    }}
+    transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+    className="w-14 h-20 border border-white/10 rounded-lg relative flex items-center justify-center bg-white/[0.03] overflow-hidden"
+    style={{ perspective: '800px' }}
+  >
+    <motion.div 
+      animate={{ x: ['-200%', '200%'] }}
+      transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
+      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-20"
+    />
+    <div className="absolute inset-1.5 border border-white/5 rounded-[4px]" />
+    <div className="w-5 h-5 rounded-full border border-white/10 bg-white/[0.01]" />
+  </motion.div>
+);
 
 export default function SkyjoLoaderPremium({ progress = 0 }) {
   const [internalProgress, setInternalProgress] = useState(progress);
@@ -126,89 +146,107 @@ export default function SkyjoLoaderPremium({ progress = 0 }) {
           clearInterval(timer);
           return 100;
         }
-        // Progression très fluide
-        return Math.min(prev + (Math.random() * 2 + 0.5), 100);
+        const increment = prev > 85 ? 0.15 : (Math.random() * 1.2 + 0.4);
+        return Math.min(prev + increment, 100);
       });
     }, 50);
     return () => clearInterval(timer);
   }, [progress]);
 
   return (
-    <div className="fixed inset-0 w-full h-[100dvh] flex flex-col items-center justify-center z-[100] font-sans text-slate-200 overflow-hidden bg-black selection:bg-white/20">
+    <div className="fixed inset-0 w-full h-[100dvh] flex flex-col items-center justify-center z-[100] font-sans text-slate-200 overflow-hidden bg-[#030303] touch-none">
       
-      <PremiumBackground />
+      <PremiumBackground progress={internalProgress} />
       <FloatingParticles />
 
       <div className="relative z-10 w-full max-w-[320px] flex flex-col items-center">
         
-        {/* LOGO Minimaliste */}
+        {/* LOGO - Mélange de couleurs Cyan, Blanc et Magenta */}
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          className="mb-16 flex flex-col items-center"
+          transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
+          className="mb-12 flex flex-col items-center"
         >
-          <div className="w-px h-12 bg-gradient-to-b from-transparent via-slate-600 to-transparent mb-6" />
+          <div className="w-px h-10 bg-gradient-to-b from-transparent via-slate-700/50 to-transparent mb-8" />
           
-          <h1 className="text-4xl font-bold tracking-[0.25em] text-white/90">
-            SKYJO
-          </h1>
-          <span className="text-[9px] uppercase tracking-[0.4em] text-slate-500 mt-3 font-medium">
+          <div className="relative">
+            <motion.h1 
+              animate={{ 
+                letterSpacing: ["0.2em", "0.26em", "0.2em"],
+                backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"]
+              }}
+              transition={{ 
+                letterSpacing: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+                backgroundPosition: { duration: 10, repeat: Infinity, ease: "linear" }
+              }}
+              className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#30eeff] via-white to-[#ff50ff] bg-[length:200%_auto] drop-shadow-[0_0_20px_rgba(48,238,255,0.2)]"
+            >
+              SKYJO
+            </motion.h1>
+          </div>
+          
+          {/* Mot "Virtuel" agrandi et mis en valeur */}
+          <motion.span 
+            animate={{ 
+              opacity: [0.4, 0.8, 0.4],
+              letterSpacing: ["0.4em", "0.55em", "0.4em"]
+            }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="text-[14px] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#30eeff] via-white to-[#ff50ff] mt-6 font-black tracking-[0.5em]"
+          >
             Virtuel
-          </span>
+          </motion.span>
         </motion.div>
 
-        {/* CERCLE DE PROGRESSION CENTRAL (Style montre connectée luxe) */}
+        {/* CERCLE DE PROGRESSION */}
         <motion.div 
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1, delay: 0.2 }}
-          className="relative w-48 h-48 mb-12 flex items-center justify-center"
+          transition={{ duration: 1.2, delay: 0.2 }}
+          className="relative w-60 h-60 mb-12 flex items-center justify-center"
         >
-          {/* Cercle de fond */}
           <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
             <circle 
-              cx="50" cy="50" r="44" 
+              cx="50" cy="50" r="47" 
               fill="none" 
-              stroke="rgba(255,255,255,0.03)" 
-              strokeWidth="1" 
+              stroke="rgba(255,255,255,0.015)" 
+              strokeWidth="0.5" 
             />
-            {/* Cercle de progression */}
             <motion.circle 
-              cx="50" cy="50" r="44" 
+              cx="50" cy="50" r="47" 
               fill="none" 
-              stroke="url(#gradient)" 
+              stroke="url(#premiumGradient)" 
               strokeWidth="1.5"
               strokeLinecap="round"
-              strokeDasharray="276" // 2 * PI * 44
-              strokeDashoffset={276 - (276 * internalProgress) / 100}
-              initial={{ strokeDashoffset: 276 }}
-              animate={{ strokeDashoffset: 276 - (276 * internalProgress) / 100 }}
-              transition={{ ease: "linear", duration: 0.2 }} // Mise à jour fluide
+              strokeDasharray="295"
+              strokeDashoffset={295 - (295 * internalProgress) / 100}
+              transition={{ ease: "easeOut", duration: 0.4 }}
             />
-            {/* Définition du gradient Cyan/Magenta */}
             <defs>
-              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <linearGradient id="premiumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#30eeff" />
+                <stop offset="50%" stopColor="#9580ff" />
                 <stop offset="100%" stopColor="#ff50ff" />
               </linearGradient>
             </defs>
           </svg>
 
-          {/* Contenu central */}
-          <div className="flex flex-col items-center">
-            <span className="text-4xl font-thin tabular-nums tracking-tighter text-white">
-              {Math.round(internalProgress)}
-            </span>
+          <div className="absolute flex flex-col items-center">
+            <CardSilhouette />
+            <div className="mt-4 flex flex-col items-center">
+               <span className="text-3xl font-extralight tabular-nums tracking-tighter text-white">
+                {Math.round(internalProgress)}%
+              </span>
+              <div className="w-8 h-[1px] bg-white/10 mt-1" />
+            </div>
           </div>
 
-          {/* Particules orbitales décoratives */}
           <motion.div 
-            className="absolute inset-0 rounded-full border border-white/5"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 pointer-events-none"
+            style={{ rotate: `${(internalProgress / 100) * 360 - 90}deg` }}
           >
-             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-[1px] w-[3px] h-[3px] bg-white rounded-full shadow-[0_0_10px_white]" />
+             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-[2px] w-2 h-2 bg-white rounded-full shadow-[0_0_15px_white,0_0_5px_#30eeff]" />
           </motion.div>
         </motion.div>
 
@@ -216,14 +254,13 @@ export default function SkyjoLoaderPremium({ progress = 0 }) {
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.6 }}
           className="w-full text-center"
         >
           <ElegantLoaderText />
         </motion.div>
 
       </div>
-
     </div>
   );
 }

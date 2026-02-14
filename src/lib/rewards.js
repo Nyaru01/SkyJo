@@ -89,6 +89,16 @@ export const LEVEL_REWARDS = {
         description: 'Élu par les cieux pour régner sur les cartes. La défausse est son sanctuaire.',
         rarity: 'éternel'
     },
+    31: { type: 'emoji', content: '🎲', name: 'Dés de la Destinée', description: 'Même si c\'est un jeu de cartes, vous contrôlez le hasard.', rarity: 'mythic' },
+    32: { type: 'generic', content: '🕵️', name: 'Espion des Mains', description: 'On sait ce que vous faites, mais on ne sait pas comment.', rarity: 'mythic' },
+    33: { type: 'emoji', content: '⚡', name: 'Courant Alternatif', description: 'Vos scores passent du pire au meilleur en une seconde.', rarity: 'mythic' },
+    34: { type: 'generic', content: '🏛️', name: 'Gardien du Temple', description: 'Personne ne touche à votre colonne de -2 sans votre permission.', rarity: 'divine' },
+    35: { type: 'emoji', content: '🌌', name: 'Nébuleuse d\'Argent', description: 'Les points brillent avant de disparaître pour toujours.', rarity: 'divine' },
+    36: { type: 'generic', content: '🧠', name: 'Cerveau Galactique', description: 'Vos calculs mentaux dépassent la vitesse de la lumière.', rarity: 'divine' },
+    37: { type: 'emoji', content: '🧬', name: 'Alchimiste du SkyJo', description: 'Transformez le plomb (un 12) en or (un -2).', rarity: 'divine' },
+    38: { type: 'generic', content: '🔱', name: 'Poséidon de la Pioche', description: 'Vous maîtrisez les vagues de cartes avec autorité.', rarity: 'éternel' },
+    39: { type: 'emoji', content: '⏳', name: 'Maître du Temps', description: 'Vous finissez toujours la partie au moment exact où ça fait mal.', rarity: 'éternel' },
+    40: { type: 'ultime', content: '🌌', name: 'L\'Origine du Jeu', description: 'Vous ne jouez plus au SkyJo. Vous ÊTES le SkyJo.', rarity: 'transcendant' },
 };
 
 /**

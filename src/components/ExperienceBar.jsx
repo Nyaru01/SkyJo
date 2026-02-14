@@ -1,14 +1,9 @@
-import { memo, useState } from 'react';
+import { memo, useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Zap, Trophy, Lock, Check, X } from 'lucide-react';
+import { Zap, Trophy, Lock, Check, X } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { cn } from '../lib/utils';
-
-/**
- * Experience Bar Component (Compact version)
- * Displays a horizontal bar with 10 bubbles representing XP progress
- */
 import { getRewardsList } from '../lib/rewards';
 
 const REWARDS = getRewardsList();
@@ -18,16 +13,17 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
     const level = useGameStore(state => state.level);
     const [showRewards, setShowRewards] = useState(false);
 
-    // Calculate global progress to level 11 (max)
-    // Assuming each level takes 10 XP
-    const maxLevel = 30;
-    const totalLevels = maxLevel - 1;
-    const progressPercent = Math.min(100, Math.max(0, ((level - 1) / totalLevels) * 100));
+    // Calculate global progress
+    const maxLevel = 40;
+    const progressPercent = Math.min(100, Math.max(0, (currentXP / 10) * 100));
+
+    // Scroll animation for list
+    const containerRef = useRef(null);
 
     return (
         <>
             <div className={cn("w-full relative z-30", className)}>
-                {/* Header Container */}
+                {/* Header Container - Compact Bar */}
                 <div className="mb-4 min-h-[85px]">
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-3">
                         Progression de Carrière
@@ -48,246 +44,191 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                         {/* XP Counter - Ultra Pulsing Badge */}
                         <motion.button
                             onClick={() => setShowRewards(true)}
-                            animate={{
-                                boxShadow: ["0 0 0px rgba(245,158,11,0)", "0 0 25px rgba(245,158,11,0.4)", "0 0 0px rgba(245,158,11,0)"],
-                                scale: [1, 1.05, 1],
-                                border: ["1px solid rgba(255,255,255,0.1)", "1px solid rgba(245,158,11,0.5)", "1px solid rgba(255,255,255,0.1)"]
-                            }}
-                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                            className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-2xl cursor-pointer hover:bg-slate-800 transition-colors"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-slate-900 border border-white/10 shadow-xl cursor-pointer hover:bg-slate-800 transition-colors group"
                         >
                             <div className="relative">
-                                <Zap className="w-5 h-5 text-amber-400 relative z-10" />
-                                <motion.div
-                                    animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.6, 1] }}
-                                    transition={{ duration: 1.5, repeat: Infinity }}
-                                    className="absolute inset-0 bg-amber-400/30 blur-md rounded-full"
-                                />
+                                <Zap className="w-5 h-5 text-amber-400 relative z-10 group-hover:text-yellow-300" />
                             </div>
                             <div className="flex items-baseline gap-1">
-                                <span className="text-lg font-black text-amber-400 leading-none">{currentXP}</span>
+                                <span className="text-lg font-black text-amber-500 leading-none">{currentXP}</span>
                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">/ 10 XP</span>
                             </div>
                         </motion.button>
                     </div>
 
-                    {/* Modern Fluid XP Bar - Enhanced Visibility */}
-                    <div className="relative h-5 w-full rounded-2xl bg-white/[0.03] backdrop-blur-md border border-white/10 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] overflow-hidden flex items-center p-[4px]">
-                        {/* Tick marks for better estimation */}
-                        <div className="absolute inset-x-0 inset-y-0 flex justify-between pointer-events-none z-10 px-[4px]">
-                            {[...Array(11)].map((_, i) => (
-                                <div key={i} className="w-[1px] h-full bg-white/10" />
-                            ))}
-                        </div>
+                    {/* Modern Fluid XP Bar */}
+                    <motion.div
+                        className="relative h-5 w-full rounded-full bg-slate-900 border border-white/10 shadow-inner overflow-hidden flex items-center p-[3px] mt-1 cursor-pointer group"
+                        onClick={() => setShowRewards(true)}
+                        whileHover={{ scale: 1.01 }}
+                    >
+                        {/* Tick marks */}
+
 
                         <motion.div
                             initial={{ width: 0 }}
-                            animate={{ width: `${(currentXP / 10) * 100}%` }}
-                            transition={{ duration: 1.2, ease: [0.34, 1.56, 0.64, 1] }}
-                            className="relative h-full rounded-xl bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-200 shadow-[0_0_20px_rgba(245,158,11,0.4)] overflow-hidden"
+                            animate={{ width: `${progressPercent}%` }}
+                            transition={{ duration: 1.2, ease: "circOut" }}
+                            className="relative h-full rounded-full bg-gradient-to-r from-amber-600 via-orange-500 to-yellow-400 shadow-[0_0_15px_rgba(245,158,11,0.3)]"
                         >
-                            {/* Shimmer Effect */}
-                            <motion.div
-                                animate={{ x: ['-100%', '200%'] }}
-                                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg]"
-                            />
 
-                            {/* Internal Glow */}
-                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.4),transparent)]" />
+
                         </motion.div>
-                    </div>
+                    </motion.div>
 
-                    {/* Progress text - smaller */}
-                    <p className="text-center text-xs font-medium text-slate-400 mt-2">
+                    <p className="text-center text-xs font-medium text-slate-500 mt-2">
                         {10 - currentXP} victoire{10 - currentXP > 1 ? 's' : ''} avant le niveau {level + 1}
                     </p>
                 </div>
 
-                {/* Progression Popup - Portalled to body to match z-index */}
+                {/* --- MODALE REDESIGNED - SOLID STYLE --- */}
                 {createPortal(
-                    <AnimatePresence mode="wait" initial={false}>
+                    <AnimatePresence mode="wait">
                         {showRewards && (
                             <div className="fixed inset-0 z-[1000] flex items-center justify-center px-4 font-sans pointer-events-auto">
-                                {/* Backdrop with optimized blur */}
+                                {/* Backdrop Solid Dark */}
                                 <motion.div
                                     key="backdrop"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl will-change-[opacity,backdrop-filter]"
+                                    transition={{ duration: 0.2 }}
+                                    className="absolute inset-0 bg-black/80 backdrop-blur-sm"
                                     onClick={() => setShowRewards(false)}
                                 />
 
-                                {/* Modal - Ultra Premium Glass - GPU Accelerated */}
+                                {/* Modal Card - Solid Dark Theme */}
                                 <motion.div
                                     key="modal"
-                                    initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                                    style={{ transform: 'translateZ(0)' }}
-                                    className="relative w-full max-w-lg bg-slate-900/80 rounded-[3rem] border border-white/20 shadow-[0_50px_100px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col max-h-[85vh] z-10 will-change-transform"
+                                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                    className="relative w-full max-w-md h-[85vh] bg-[#0f172a] rounded-[24px] border border-slate-700 shadow-2xl flex flex-col overflow-hidden"
                                 >
-                                    {/* Animated Inner Shine - Optimized priority */}
-                                    <motion.div
-                                        animate={{ rotate: 360 }}
-                                        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-                                        className="absolute inset-[-100%] bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none opacity-50"
-                                    />
+                                    {/* --- HEADER SOLID --- */}
+                                    <div className="relative h-40 shrink-0 overflow-hidden bg-slate-900 border-b border-slate-800">
+                                        <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/20 to-transparent" />
 
-                                    {/* Header */}
-                                    <div className="p-8 pb-6 border-b border-white/10 bg-slate-900/40 relative">
+
+                                        {/* Close Button */}
                                         <button
                                             onClick={() => setShowRewards(false)}
-                                            className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 hover:scale-110 transition-all z-20"
+                                            className="absolute top-4 right-4 z-50 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-all border border-slate-700"
                                         >
-                                            <X className="w-5 h-5" />
+                                            <X size={20} />
                                         </button>
 
-                                        <div className="flex items-center gap-4 mb-6 relative">
-                                            <div className="relative group">
-                                                {/* Outer Glow Ring */}
-                                                <motion.div
-                                                    animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
-                                                    transition={{ duration: 3, repeat: Infinity }}
-                                                    className="absolute -inset-2 rounded-[24px] bg-amber-500/20 blur-xl"
-                                                />
+                                        {/* Contenu Header */}
+                                        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center pt-2">
+                                            <div className="p-3 bg-slate-800 rounded-2xl mb-3 border border-slate-700 shadow-lg">
+                                                <Trophy className="w-8 h-8 text-amber-400" />
+                                            </div>
 
-                                                <div className="w-16 h-16 rounded-[20px] bg-gradient-to-br from-amber-300 via-amber-500 to-orange-600 flex items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.5),inset_0_2px_5px_rgba(255,255,255,0.5)] border border-amber-200/50 relative z-10 overflow-hidden">
-                                                    {/* Shimmer on icon container */}
-                                                    <motion.div
-                                                        animate={{ x: ['-100%', '200%'] }}
-                                                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                                                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg]"
-                                                    />
-                                                    <Trophy className="w-9 h-9 text-white drop-shadow-[0_2px_5px_rgba(0,0,0,0.3)] relative z-10" />
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <h3 className="text-3xl font-black text-white tracking-tighter uppercase italic leading-none">
-                                                    Plan de Carrière
-                                                </h3>
-                                                <p className="text-[10px] font-black text-amber-500/80 uppercase tracking-[0.3em] mt-2 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 w-fit">
-                                                    L'élite du SkyJo
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em]">
-                                                <span className="text-slate-400">Niveau {level}</span>
-                                                <span className="text-amber-500">Objectif {maxLevel}</span>
-                                            </div>
-                                            <div className="h-3 w-full bg-slate-950/40 rounded-full border border-white/5 overflow-hidden p-[2px]">
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${progressPercent}%` }}
-                                                    className="h-full bg-gradient-to-r from-indigo-600 via-blue-400 to-cyan-300 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)] relative overflow-hidden"
-                                                >
-                                                    <motion.div
-                                                        animate={{ x: ['-200%', '300%'] }}
-                                                        transition={{ duration: 4, repeat: Infinity }}
-                                                        className="absolute inset-0 bg-white/30 skew-x-[-20deg]"
-                                                    />
-                                                </motion.div>
-                                            </div>
+                                            <h2 className="text-xl font-bold text-white uppercase tracking-tight text-center leading-none">
+                                                Plan de Carrière
+                                            </h2>
+                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-2">
+                                                L'élite du Skyjo
+                                            </p>
                                         </div>
                                     </div>
 
-                                    {/* Content */}
-                                    <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-slate-950/40">
-                                        {REWARDS.map((reward) => {
+                                    {/* --- PROGRESS BAR STICKY --- */}
+                                    <div className="bg-slate-900 border-b border-slate-800 px-6 py-4 shrink-0 z-20 sticky top-0 shadow-md">
+                                        <div className="flex justify-between items-end mb-2">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Niveau {level}</span>
+                                            <span className="text-[10px] font-bold text-white uppercase tracking-wider">{currentXP} / 10 XP</span>
+                                        </div>
+                                        <div className="h-2 w-full bg-slate-950 rounded-full overflow-hidden">
+                                            <motion.div
+                                                className="h-full bg-indigo-500 rounded-full"
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${progressPercent}%` }}
+                                                transition={{ duration: 1, ease: "circOut" }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* --- LISTE DES RÉCOMPENSES --- */}
+                                    <div
+                                        ref={containerRef}
+                                        className="flex-1 overflow-y-auto px-5 py-6 space-y-3 bg-[#0f172a]"
+                                    >
+                                        {REWARDS.map((reward, index) => {
                                             const isUnlocked = level >= reward.level;
                                             const isNext = level + 1 === reward.level;
+                                            const isLocked = !isUnlocked && !isNext;
 
                                             return (
                                                 <motion.div
                                                     key={reward.level}
-                                                    whileHover={isUnlocked || isNext ? { scale: 1.02, x: 5 } : {}}
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: index * 0.05 }}
                                                     className={cn(
-                                                        "relative p-5 rounded-3xl border transition-all duration-300 group overflow-hidden",
+                                                        "relative p-4 rounded-2xl border transition-all duration-200 select-none",
                                                         isUnlocked
-                                                            ? "bg-gradient-to-br from-emerald-500/10 to-teal-500/5 border-emerald-500/30 shadow-lg"
+                                                            ? "bg-slate-900 border-emerald-900/50 hover:border-emerald-700/50"
                                                             : isNext
-                                                                ? "bg-gradient-to-br from-blue-500/10 via-indigo-500/10 to-purple-500/10 border-blue-400/40 shadow-[0_0_30px_rgba(59,130,246,0.15)]"
-                                                                : "bg-white/[0.02] border-white/5 opacity-40 grayscale"
+                                                                ? "bg-slate-800 border-indigo-500/50 shadow-lg ring-1 ring-indigo-500/20"
+                                                                : "bg-slate-950 border-slate-800 opacity-60"
                                                     )}
                                                 >
-                                                    {/* Card Background Glow */}
-                                                    {(isUnlocked || isNext) && (
-                                                        <div className={cn(
-                                                            "absolute top-0 right-0 w-32 h-32 blur-3xl rounded-full opacity-10 pointer-events-none",
-                                                            isUnlocked ? "bg-emerald-500" : "bg-blue-500"
-                                                        )} />
-                                                    )}
+                                                    {/* Effets de fond */}
 
-                                                    <div className="flex items-center gap-5 relative z-10">
+
+                                                    <div className="flex items-center gap-4">
+                                                        {/* Icon Box */}
                                                         <div className={cn(
-                                                            "w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-2xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6",
-                                                            isUnlocked ? "bg-emerald-500/20" : "bg-slate-800"
+                                                            "w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 border",
+                                                            isUnlocked ? "bg-emerald-950 text-emerald-400 border-emerald-900" :
+                                                                isNext ? "bg-indigo-950 text-indigo-400 border-indigo-900" :
+                                                                    "bg-slate-900 text-slate-600 border-slate-800"
                                                         )}>
                                                             {reward.icon}
                                                         </div>
 
+                                                        {/* Texte */}
                                                         <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center justify-between mb-1">
+                                                            <div className="flex justify-between items-center mb-1">
                                                                 <span className={cn(
-                                                                    "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg",
-                                                                    isUnlocked
-                                                                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                                                                        : isNext
-                                                                            ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                                                                            : "bg-slate-800 text-slate-500"
+                                                                    "text-[9px] font-black uppercase tracking-widest",
+                                                                    isUnlocked ? "text-emerald-500" :
+                                                                        isNext ? "text-indigo-400" :
+                                                                            "text-slate-600"
                                                                 )}>
-                                                                    NIVEAU {reward.level}
+                                                                    Niveau {reward.level}
                                                                 </span>
-                                                                {isUnlocked ? (
-                                                                    <div className="flex items-center gap-1.5 text-emerald-400">
-                                                                        <Check className="w-4 h-4 shadow-sm" />
-                                                                        <span className="text-[10px] font-black uppercase tracking-widest">Acquis</span>
-                                                                    </div>
-                                                                ) : (
-                                                                    <Lock className="w-4 h-4 text-slate-500" />
-                                                                )}
+
+                                                                {isUnlocked && <Check size={14} className="text-emerald-500" />}
+                                                                {isLocked && <Lock size={12} className="text-slate-700" />}
                                                             </div>
 
-                                                            <div className="flex items-center gap-2">
-                                                                <h4 className={cn(
-                                                                    "text-2xl font-black tracking-tight",
-                                                                    isUnlocked ? "text-white" : "text-slate-400"
-                                                                )}>
-                                                                    {reward.name}
-                                                                </h4>
-                                                                {reward.type === 'ultime' && (
-                                                                    <span className="text-[10px] font-black bg-gradient-to-r from-cyan-400 to-blue-500 text-white px-2 py-0.5 rounded-full uppercase tracking-widest shadow-[0_0_10px_rgba(34,211,238,0.5)]">
-                                                                        Ultime
-                                                                    </span>
-                                                                )}
-                                                            </div>
-
-                                                            <p className={cn(
-                                                                "text-[13px] font-bold leading-relaxed mt-1.5",
-                                                                isUnlocked ? "text-slate-200" : "text-slate-500"
-                                                            )}>
+                                                            <h3 className={cn("text-base font-bold leading-tight", isUnlocked || isNext ? "text-white" : "text-slate-500")}>
+                                                                {reward.name}
+                                                            </h3>
+                                                            <p className="text-[11px] text-slate-400 mt-0.5 leading-snug line-clamp-2">
                                                                 {reward.description}
                                                             </p>
                                                         </div>
                                                     </div>
 
-                                                    {/* Level Progress Gauge */}
+                                                    {/* Barre de progression locale pour le prochain niveau */}
                                                     {isNext && (
-                                                        <div className="mt-5 p-3 rounded-2xl bg-black/20 border border-white/5">
-                                                            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-blue-400 mb-2">
-                                                                <span>Progression</span>
-                                                                <span className="bg-blue-400/20 px-2 py-0.5 rounded-md">{currentXP} / 10 XP</span>
+                                                        <div className="mt-3 pt-3 border-t border-slate-700/50">
+                                                            <div className="flex justify-between text-[9px] font-bold text-indigo-300 mb-1 uppercase tracking-wider">
+                                                                <span>En cours</span>
+                                                                <span>{Math.round(progressPercent)}%</span>
                                                             </div>
-                                                            <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden p-[2px]">
+                                                            <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden">
                                                                 <motion.div
-                                                                    className="h-full bg-gradient-to-r from-blue-500 to-cyan-300 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.3)]"
+                                                                    className="h-full bg-indigo-500 rounded-full"
                                                                     initial={{ width: 0 }}
-                                                                    animate={{ width: `${(currentXP / 10) * 100}%` }}
-                                                                    transition={{ duration: 1 }}
+                                                                    animate={{ width: `${progressPercent}%` }}
+                                                                    transition={{ duration: 1.5, ease: "easeOut" }}
                                                                 />
                                                             </div>
                                                         </div>
@@ -297,21 +238,15 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                                         })}
                                     </div>
 
-                                    {/* Footer */}
-                                    <div className="p-6 border-t border-white/10 bg-slate-950/40 text-center">
-                                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em] leading-relaxed">
-                                            Triomphez pour gravir les échelons et<br />
-                                            <span className="text-slate-300">Débloquer de nouvelles récompenses</span>
-                                        </p>
-                                    </div>
+                                    {/* Footer Gradient Fade */}
+                                    <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#0f172a] to-transparent pointer-events-none" />
                                 </motion.div>
                             </div>
                         )}
-                    </AnimatePresence >
-                    ,
+                    </AnimatePresence>,
                     document.body
                 )}
-            </div >
+            </div>
         </>
     );
 });
