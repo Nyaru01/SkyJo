@@ -445,7 +445,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         // If initialScreen is not lobby, we assume it's a local/AI game flow
         if (initialScreen !== 'lobby') return;
 
-        const hasActiveState = !!activeState && Object.keys(activeState).length > 0;
+        const hasActiveState = !!activeGameState && Object.keys(activeGameState).length > 0;
         const gameIsStarted = !!onlineGameStarted;
 
         console.log('[VG] Auto-nav check:', {
