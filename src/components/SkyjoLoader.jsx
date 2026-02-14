@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Layers, Sparkles, Command, Zap, Activity, ShieldCheck } from 'lucide-react';
 
@@ -12,75 +12,79 @@ const MESSAGES = [
   { text: "Prêt", icon: <Zap strokeWidth={1} className="w-4 h-4" /> }
 ];
 
-// --- Composant Particules Flottantes ---
-const FloatingParticles = () => {
-  const particles = useMemo(() => Array.from({ length: 30 }), []);
+// --- Composant Particules Flottantes (Optimisé avec memo) ---
+const FloatingParticles = memo(() => {
+  const particlesData = useMemo(() => Array.from({ length: 30 }).map((_, i) => ({
+    id: i,
+    x: Math.random() * 100 + "%",
+    y: Math.random() * 100 + "%",
+    targetY: Math.random() * -100 - 50 + "%",
+    targetX: (Math.random() - 0.5) * 60 + "%",
+    color: i % 3 === 0 ? '#ffffff' : i % 3 === 1 ? '#30eeff' : '#ff50ff',
+    duration: Math.random() * 12 + 10,
+    delay: Math.random() * 5,
+    size: Math.random() * 3 + 1,
+    glow: Math.random() * 8 + 4
+  })), []);
   
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {particles.map((_, i) => {
-        const color = i % 3 === 0 ? '#ffffff' : i % 3 === 1 ? '#30eeff' : '#ff50ff';
-        return (
-          <motion.div
-            key={i}
-            className="absolute rounded-full"
-            initial={{
-              x: Math.random() * 100 + "%",
-              y: Math.random() * 100 + "%",
-              opacity: 0,
-              scale: 0
-            }}
-            animate={{
-              y: [null, Math.random() * -100 - 50 + "%"],
-              x: [null, (Math.random() - 0.5) * 60 + "%"],
-              opacity: [0, Math.random() * 0.4 + 0.2, 0],
-              scale: [0, Math.random() * 1.2 + 0.5, 0],
-            }}
-            transition={{
-              duration: Math.random() * 12 + 10,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-              ease: "linear"
-            }}
-            style={{
-              width: Math.random() * 3 + 1 + "px",
-              height: Math.random() * 3 + 1 + "px",
-              backgroundColor: color,
-              boxShadow: `0 0 ${Math.random() * 8 + 4}px ${color}`
-            }}
-          />
-        );
-      })}
+      {particlesData.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute rounded-full"
+          initial={{ x: p.x, y: p.y, opacity: 0, scale: 0 }}
+          animate={{
+            y: [null, p.targetY],
+            x: [null, p.targetX],
+            opacity: [0, 0.4, 0],
+            scale: [0, 1, 0],
+          }}
+          transition={{
+            duration: p.duration,
+            repeat: Infinity,
+            delay: p.delay,
+            ease: "linear"
+          }}
+          style={{
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            backgroundColor: p.color,
+            boxShadow: `0 0 ${p.glow}px ${p.color}`,
+            willChange: 'transform, opacity'
+          }}
+        />
+      ))}
     </div>
   );
-};
+});
 
 // --- Arrière-plan Dynamique ---
-const PremiumBackground = ({ progress }) => {
+const PremiumBackground = memo(({ progress }) => {
   const cyanOpacity = Math.max(0.05, 0.25 - (progress / 100) * 0.2);
   const magentaOpacity = Math.min(0.25, 0.05 + (progress / 100) * 0.2);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none bg-[#030303]">
       <motion.div 
-        style={{ opacity: cyanOpacity }}
         animate={{ scale: [1, 1.1, 1] }}
         transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
         className="absolute -top-[20%] -left-[10%] w-[80%] h-[80%] bg-[#30eeff] rounded-full blur-[150px]" 
+        style={{ opacity: cyanOpacity, willChange: 'transform, opacity' }}
       />
       <motion.div 
-        style={{ opacity: magentaOpacity }}
         animate={{ scale: [1, 1.2, 1] }}
         transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
         className="absolute -bottom-[20%] -right-[10%] w-[80%] h-[80%] bg-[#ff50ff] rounded-full blur-[150px]" 
+        style={{ opacity: magentaOpacity, willChange: 'transform, opacity' }}
       />
       <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
     </div>
   );
-};
+});
 
-// --- Typographie de chargement ---
-const ElegantLoaderText = () => {
+// --- Typographie de chargement (Optimisé avec memo) ---
+const ElegantLoaderText = memo(() => {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -100,6 +104,7 @@ const ElegantLoaderText = () => {
           exit={{ y: -15, opacity: 0, filter: 'blur(8px)' }}
           transition={{ duration: 0.7, ease: [0.19, 1, 0.22, 1] }}
           className="flex flex-col items-center gap-1.5"
+          style={{ willChange: 'transform, opacity, filter' }}
         >
           <div className="text-slate-500/60">{MESSAGES[index].icon}</div>
           <span className="text-[9px] uppercase tracking-[0.4em] text-slate-400 font-bold">
@@ -109,10 +114,10 @@ const ElegantLoaderText = () => {
       </AnimatePresence>
     </div>
   );
-};
+});
 
 // --- Icône de carte avec Glare interne ---
-const CardSilhouette = () => (
+const CardSilhouette = memo(() => (
   <motion.div 
     animate={{ 
       rotateY: [0, 10, 0, -10, 0],
@@ -120,17 +125,18 @@ const CardSilhouette = () => (
     }}
     transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
     className="w-14 h-20 border border-white/10 rounded-lg relative flex items-center justify-center bg-white/[0.03] overflow-hidden"
-    style={{ perspective: '800px' }}
+    style={{ perspective: '800px', willChange: 'transform' }}
   >
     <motion.div 
       animate={{ x: ['-200%', '200%'] }}
       transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
       className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-20"
+      style={{ willChange: 'transform' }}
     />
     <div className="absolute inset-1.5 border border-white/5 rounded-[4px]" />
     <div className="w-5 h-5 rounded-full border border-white/10 bg-white/[0.01]" />
   </motion.div>
-);
+));
 
 export default function SkyjoLoaderPremium({ progress = 0 }) {
   const [internalProgress, setInternalProgress] = useState(progress);
@@ -153,6 +159,10 @@ export default function SkyjoLoaderPremium({ progress = 0 }) {
     return () => clearInterval(timer);
   }, [progress]);
 
+  // Rayon du cercle pour le calcul de l'offset
+  const radius = 47;
+  const circumference = 2 * Math.PI * radius;
+
   return (
     <div className="fixed inset-0 w-full h-[100dvh] flex flex-col items-center justify-center z-[100] font-sans text-slate-200 overflow-hidden bg-[#030303] touch-none">
       
@@ -161,7 +171,7 @@ export default function SkyjoLoaderPremium({ progress = 0 }) {
 
       <div className="relative z-10 w-full max-w-[320px] flex flex-col items-center">
         
-        {/* LOGO - Mélange de couleurs Cyan, Blanc et Magenta */}
+        {/* LOGO */}
         <motion.div 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -181,12 +191,12 @@ export default function SkyjoLoaderPremium({ progress = 0 }) {
                 backgroundPosition: { duration: 10, repeat: Infinity, ease: "linear" }
               }}
               className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#30eeff] via-white to-[#ff50ff] bg-[length:200%_auto] drop-shadow-[0_0_20px_rgba(48,238,255,0.2)]"
+              style={{ willChange: 'letter-spacing, background-position' }}
             >
               SKYJO
             </motion.h1>
           </div>
           
-          {/* Mot "Virtuel" agrandi et mis en valeur */}
           <motion.span 
             animate={{ 
               opacity: [0.4, 0.8, 0.4],
@@ -194,6 +204,7 @@ export default function SkyjoLoaderPremium({ progress = 0 }) {
             }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             className="text-[14px] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#30eeff] via-white to-[#ff50ff] mt-6 font-black tracking-[0.5em]"
+            style={{ willChange: 'opacity, letter-spacing' }}
           >
             Virtuel
           </motion.span>
@@ -208,20 +219,21 @@ export default function SkyjoLoaderPremium({ progress = 0 }) {
         >
           <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
             <circle 
-              cx="50" cy="50" r="47" 
+              cx="50" cy="50" r={radius} 
               fill="none" 
               stroke="rgba(255,255,255,0.015)" 
               strokeWidth="0.5" 
             />
             <motion.circle 
-              cx="50" cy="50" r="47" 
+              cx="50" cy="50" r={radius} 
               fill="none" 
               stroke="url(#premiumGradient)" 
               strokeWidth="1.5"
               strokeLinecap="round"
-              strokeDasharray="295"
-              strokeDashoffset={295 - (295 * internalProgress) / 100}
+              strokeDasharray={circumference}
+              strokeDashoffset={circumference - (circumference * internalProgress) / 100}
               transition={{ ease: "easeOut", duration: 0.4 }}
+              style={{ willChange: 'stroke-dashoffset' }}
             />
             <defs>
               <linearGradient id="premiumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -244,7 +256,10 @@ export default function SkyjoLoaderPremium({ progress = 0 }) {
 
           <motion.div 
             className="absolute inset-0 pointer-events-none"
-            style={{ rotate: `${(internalProgress / 100) * 360 - 90}deg` }}
+            style={{ 
+              rotate: `${(internalProgress / 100) * 360 - 90}deg`,
+              willChange: 'transform'
+            }}
           >
              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-[2px] w-2 h-2 bg-white rounded-full shadow-[0_0_15px_white,0_0_5px_#30eeff]" />
           </motion.div>
