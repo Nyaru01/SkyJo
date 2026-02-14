@@ -505,7 +505,7 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false, di
     const MIN_VALUE_FOR_COLUMN_ELIMINATION = 3;
     const isAdvanced = difficulty === AI_DIFFICULTY.HARDCORE || difficulty === AI_DIFFICULTY.BONUS;
 
-    if (!forceCheck && cardValue < MIN_VALUE_FOR_COLUMN_ELIMINATION) {
+    if (!forceCheck && cardValue < MIN_VALUE_FOR_COLUMN_ELIMINATION && cardValue !== 0) {
         return false;
     }
 
@@ -530,15 +530,29 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false, di
             if (idx === cardIndex) return;
             const card = hand[idx];
             if (card && card.isRevealed) currentTotal += card.value;
+            else if (card && !card.isRevealed) currentTotal += 5.3; // EV for hidden
             else currentTotal += cardValue;
         });
 
-        if (currentTotal > 0) return true;
+        // SPECIAL RULE: Don't eliminate a column if total is <= 0 (keeps negative advantage)
+        // Exception: eliminate columns of 0s if they don't have any negative cards
+        const hasNegative = colIndices.some(idx => hand[idx] && hand[idx].isRevealed && hand[idx].value < 0);
+        if (currentTotal > 0 || (currentTotal === 0 && !hasNegative)) return true;
         return false;
     }
 
     // Case 2: Potential (Waiting for 1 more card)
     if (matchCount === 1 && hiddenCount >= 1) {
+        // Only build potential if it's profitable or zero
+        let estimatedTotal = cardValue;
+        colIndices.forEach(idx => {
+            if (idx === cardIndex) return;
+            const card = hand[idx];
+            if (card && card.isRevealed) estimatedTotal += card.value;
+            else estimatedTotal += 5.3; // Hidden EV
+        });
+
+        if (estimatedTotal <= 0) return false;
         // STRATEGY REFINEMENT: In advanced mode, don't build potential with mediocre cards (5-9)
         // because it's better to keep searching for lower values.
         // We only build potential for cards <= 4.
@@ -595,6 +609,7 @@ const wouldHelpOpponent = (gameState, cardValue, difficulty = AI_DIFFICULTY.NORM
 const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = null) => {
     const revealedIndices = getRevealedCardIndices(hand);
     const hiddenIndices = getHiddenCardIndices(hand);
+    const highest = findHighestRevealedCard(hand);
 
     // Risk adjustment: if losing badly, be more aggressive. If winning, be more conservative.
     let riskAdjustment = 0;
@@ -637,6 +652,12 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
         }
     }
 
+    // --- URGENT REPLACEMENTS (High targets) ---
+    // If we have very bad revealed cards (>= 10), replace them before thinking about strategy
+    if (highest.index !== -1 && highest.value >= 10 && cardValue < highest.value) {
+        return highest.index;
+    }
+
     // MULTI-COLUMN STRATEGY (Lower priority than completion)
     if (isAdvancedLevel(difficulty) || difficulty === AI_DIFFICULTY.HARD) {
         const matchingRevealedCount = hand.filter(c => c && c.isRevealed && c.value === cardValue).length;
@@ -657,7 +678,12 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
                 const matchingInCol = revealedInCol.filter(c => c.value === cardValue);
 
                 let potential = 0;
-                if (matchingInCol.length > 0) potential = 10; // Already has it, keep filling!
+                if (matchingInCol.length > 0) {
+                    // PROTECTION: Don't expand if col has an excellent negative card (don't eliminate it!)
+                    const hasNegative = colCards.some(c => c && c.isRevealed && c.value < 0);
+                    if (!hasNegative) potential = 10;
+                    else potential = 1; // Low priority
+                }
                 else if (revealedInCol.length === 0) potential = 5; // Fresh column
                 else if (revealedInCol.length === 1 && revealedInCol[0].value > 8) potential = 2; // Can replace a bad card
 
@@ -673,8 +699,6 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
             }
         }
     }
-
-    const highest = findHighestRevealedCard(hand);
 
     // SPECIAL LOGIC FOR 20 (Cursed Skull)
     if (cardValue === 20) {
@@ -701,20 +725,32 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
     }
 
     // EXCELLENT CARDS (<= 0)
-    // Always replace highest revealed card if it's > cardValue, or reveal a hidden card
     if (cardValue <= 0) {
-        // If we have a high revealed card (5+ for Hardcore/Hard), replace it
+        // 1. Replace high cards first (even if just 5+)
         if (highest.index !== -1 && highest.value >= 5) {
             return highest.index;
         }
-        // Hardcore: Even if highest is low (e.g. 4), replacing with 0 is +4 diff, worth it
-        if ((difficulty === AI_DIFFICULTY.HARDCORE || difficulty === AI_DIFFICULTY.BONUS) && highest.index !== -1 && highest.value > cardValue) {
-            return highest.index;
+
+        // 2. Explore hidden cards before replacing good revealed cards
+        if (hiddenIndices.length > 0) {
+            // Avoid ending game if losing
+            if (slowDown && hiddenIndices.length === 1) {
+                if (highest.index !== -1 && highest.value > cardValue) return highest.index;
+                return -1;
+            }
+            const cornerIndices = [0, 2, 9, 11].filter(i => hiddenIndices.includes(i));
+            if (cornerIndices.length > 0) return getRandomElement(cornerIndices);
+            return getRandomElement(hiddenIndices);
         }
 
-        // If no high cards revealed, still prefer replacing ANY revealed card that's worse
+        // 3. Last resort: replace highest revealed if it's worse
         if (highest.index !== -1 && cardValue < highest.value) {
-            return highest.index;
+            // Gap check: if we are replacing a "good" card (<= 4) with 0 or -1,
+            // better gap of 4 required.
+            const gap = highest.value - cardValue;
+            if (highest.value > 4 || gap >= 3) {
+                return highest.index;
+            }
         }
     }
 

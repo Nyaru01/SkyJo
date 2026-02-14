@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Users, ArrowLeft, RotateCcw, Trophy, Info, HelpCircle, Sparkles, CheckCircle, BookOpen, X, Bot, Lock, Image as ImageIcon, Palette, Copy, Share2, Wifi, Globe, Plus, ChevronRight, WifiOff, Music, Music2, Leaf, Swords, Skull, Gem, SkipForward, Pause, PlayCircle, Star, Zap, Award, QrCode, Flame } from 'lucide-react';
+import { Play, Users, ArrowLeft, RotateCcw, RefreshCw, Trophy, Info, HelpCircle, Sparkles, CheckCircle, BookOpen, X, Bot, Lock, Image as ImageIcon, Palette, Copy, Share2, Wifi, Globe, Plus, ChevronRight, WifiOff, Music, Music2, Leaf, Swords, Skull, Gem, SkipForward, Pause, PlayCircle, Star, Zap, Award, QrCode, Flame } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Input } from './ui/Input';
@@ -1242,9 +1242,24 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 <PremiumTiltButton
                     onClick={handleStartAIGame}
                     disabled={!aiConfig.playerName.trim()}
-                    gradientFrom="from-purple-600"
-                    gradientTo="to-indigo-600"
-                    shadowColor="shadow-purple-500/25"
+                    gradientFrom={
+                        aiConfig.difficulty === AI_DIFFICULTY.NORMAL ? "from-emerald-500" :
+                            aiConfig.difficulty === AI_DIFFICULTY.HARD ? "from-amber-500" :
+                                aiConfig.difficulty === AI_DIFFICULTY.HARDCORE ? "from-red-600" :
+                                    "from-purple-600"
+                    }
+                    gradientTo={
+                        aiConfig.difficulty === AI_DIFFICULTY.NORMAL ? "to-teal-500" :
+                            aiConfig.difficulty === AI_DIFFICULTY.HARD ? "to-orange-500" :
+                                aiConfig.difficulty === AI_DIFFICULTY.HARDCORE ? "to-rose-600" :
+                                    "to-indigo-600"
+                    }
+                    shadowColor={
+                        aiConfig.difficulty === AI_DIFFICULTY.NORMAL ? "shadow-emerald-500/25" :
+                            aiConfig.difficulty === AI_DIFFICULTY.HARD ? "shadow-amber-500/25" :
+                                aiConfig.difficulty === AI_DIFFICULTY.HARDCORE ? "shadow-red-500/25" :
+                                    "shadow-purple-500/25"
+                    }
                 >
                     <span className="flex items-center justify-center gap-2">
                         <Play className="h-5 w-5 fill-current" />
@@ -2046,9 +2061,11 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
         // If game is already over (endRound was called), show final results
         if (isGameOver && gameWinner) {
+            const isUserWinner = gameWinner?.id === activeGameState?.players?.[myPlayerIndex]?.id;
+
             return (
                 <div className="max-w-md mx-auto p-4 space-y-4 animate-in fade-in">
-                    {/* Modals inserted at top */}
+                    {/* ... modals and overlays ... */}
                     <ConfirmModal
                         isOpen={showExitConfirm}
                         onClose={() => setShowExitConfirm(false)}
@@ -2080,8 +2097,15 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                         <CardHeader className="text-center relative">
                             <div className="relative py-4">
                             </div>
-                            <CardTitle className={cn("text-2xl", isDailyChallenge ? "text-amber-300 font-black tracking-tighter" : "text-amber-400")}>
-                                {isDailyChallenge ? "Défi Quotidien Terminé !" : "Fin de partie !"}
+                            <CardTitle className={cn(
+                                "text-2xl",
+                                isDailyChallenge
+                                    ? (isUserWinner ? "text-amber-300 font-black tracking-tighter" : "text-rose-400 font-black tracking-tighter")
+                                    : "text-amber-400"
+                            )}>
+                                {isDailyChallenge
+                                    ? (isUserWinner ? "Défi Quotidien Réussi !" : "Défi Quotidien Échoué")
+                                    : "Fin de partie !"}
                             </CardTitle>
                             <p className="text-slate-400 text-sm mt-1">
                                 Après {roundNumber} manche{roundNumber > 1 ? 's' : ''}
@@ -2154,6 +2178,29 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                     ))}
                             </div>
 
+                            {/* Daily Challenge Retry Button */}
+                            {isDailyChallenge && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="pt-2"
+                                >
+                                    <Button
+                                        onClick={rematch}
+                                        disabled={isUserWinner}
+                                        className={cn(
+                                            "w-full h-12 rounded-xl text-white font-black shadow-lg flex items-center justify-center gap-2 border-b-4 transition-all",
+                                            isUserWinner
+                                                ? "bg-slate-700/50 border-slate-800 text-slate-500 cursor-not-allowed opacity-50 shadow-none border-b-0 translate-y-1"
+                                                : "bg-gradient-to-r from-rose-500 to-pink-600 shadow-rose-500/20 border-rose-800 active:border-b-0 active:translate-y-1"
+                                        )}
+                                    >
+                                        <RefreshCw className={cn("w-5 h-5", !isUserWinner && "animate-spin-slow")} />
+                                        REJOUER LE DÉFI
+                                    </Button>
+                                </motion.div>
+                            )}
+
                             <div className="flex gap-3 pt-4">
                                 <Button
                                     variant="ghost"
@@ -2167,9 +2214,12 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                     className={cn(
                                         "flex-1 text-white font-bold",
                                         isDailyChallenge
-                                            ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 shadow-[0_0_15px_rgba(245,158,11,0.4)]"
+                                            ? (isUserWinner
+                                                ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 shadow-[0_0_15px_rgba(245,158,11,0.4)]"
+                                                : "bg-slate-700/50 border-slate-800 text-slate-500 cursor-not-allowed opacity-50 shadow-none")
                                             : "bg-gradient-to-r from-emerald-600 to-teal-600"
                                     )}
+                                    disabled={isDailyChallenge && !isUserWinner}
                                     onClick={isDailyChallenge ? handleBackToMenu : rematch}
                                 >
                                     {isDailyChallenge ? (
@@ -2510,8 +2560,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 activeGameState?.players?.length <= 2 ? "justify-start gap-2 py-2" : "justify-start gap-2 py-1 pb-6"
             )}
         >
-            {/* Instruction Banner - Top Floating (Special Actions Only) */}
-            <GameMessageBanner message={instruction} />
 
             {/* Header - ultra-thin single line with glass-style elements */}
             {/* Header - Unified Pill Container */}
@@ -2624,6 +2672,10 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
             {/* MIDDLE ACTION AREA - Centered between hands */}
             <div className="flex-1 flex flex-col justify-center items-center relative z-40 my-2">
+                {/* Instruction Banner - Moved here for precise central placement over piles */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
+                    <GameMessageBanner message={instruction} />
+                </div>
                 {/* Initial Reveal Instruction Banner */}
                 {isInitialReveal && (
                     <motion.div

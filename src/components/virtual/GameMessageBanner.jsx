@@ -28,17 +28,17 @@ const GameMessageBanner = ({ message, type = 'info' }) => {
     };
 
     return (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] w-full max-w-[90%] pointer-events-none px-4">
+        <div className="absolute inset-x-0 top-[55%] -translate-y-1/2 z-[60] w-full pointer-events-none px-4">
             <AnimatePresence>
                 {isVisible && (
                     <motion.div
-                        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: 5 }}
                         className={cn(
-                            "mx-auto flex items-center gap-3 px-6 py-3 rounded-2xl",
-                            "bg-slate-900/90 backdrop-blur-xl border border-white/10 shadow-2xl",
-                            "transition-all duration-300"
+                            "mx-auto flex flex-col items-center text-center gap-2 px-8 py-4 rounded-3xl",
+                            "bg-slate-900/90 backdrop-blur-2xl border border-white/20 shadow-[0_0_40px_rgba(0,0,0,0.5)]",
+                            "transition-all duration-300 ring-1 ring-white/10"
                         )}
                     >
                         <div className="shrink-0 p-1.5 bg-white/5 rounded-xl border border-white/5">

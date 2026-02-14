@@ -52,17 +52,20 @@ export function VersionCheck() {
     if (!isOutdated) return null;
 
     const handleUpdate = () => {
-        // Unregister SW to force fresh assets
+        // We no longer force a brutal reload. 
+        // We just inform the user or rely on the standard PWA UpdatePrompt which is more gentle.
+        toast.success("Mise à jour disponible ! Utilisez le bouton de mise à jour en bas de l'écran.", {
+            icon: '🚀',
+            duration: 5000
+        });
+
+        // Trigger SW update check again to make sure UpdatePrompt sees it
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function (registrations) {
                 for (let registration of registrations) {
-                    registration.unregister();
+                    registration.update();
                 }
-            }).then(() => {
-                window.location.reload(true);
             });
-        } else {
-            window.location.reload(true);
         }
     };
 

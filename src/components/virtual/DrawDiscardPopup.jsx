@@ -64,7 +64,7 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    exit={{ opacity: 0, pointerEvents: 'none' }}
                     transition={{ duration: 0.2 }}
                     className="fixed inset-0 z-50 flex items-center justify-center"
                     onClick={() => {

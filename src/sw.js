@@ -12,9 +12,11 @@ precacheAndRoute(self.__WB_MANIFEST, {
 });
 
 // Forcer la mise à jour immédiate pour appliquer les nouveaux SenderID
-self.addEventListener('install', () => {
-    self.skipWaiting();
-});
+// REMOVED (2024-02-14) : Cause un redémarrage forcé brutal pour l'utilisateur. 
+// On laisse le prompt PWA (UpdatePrompt.jsx) gérer l'activation via SKIP_WAITING message.
+// self.addEventListener('install', () => {
+//     self.skipWaiting();
+// });
 
 // Cleanup old caches
 cleanupOutdatedCaches();
