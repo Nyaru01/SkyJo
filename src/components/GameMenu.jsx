@@ -13,6 +13,7 @@ import { useOnlineGameStore } from '../store/onlineGameStore';
 import { useFeedback } from '../hooks/useFeedback';
 import { cn } from '../lib/utils';
 import { AI_DIFFICULTY } from '../lib/skyjoAI';
+import RobotAvatar from './ui/RobotAvatar';
 
 export default function GameMenu({
     setScreen,
@@ -370,17 +371,23 @@ export default function GameMenu({
                         <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#F43F5E]/20 via-rose-900/5 to-transparent pointer-events-none" />
                         <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#F43F5E]/50 to-transparent opacity-50" />
 
-                        {/* Header */}
-                        <div className="pt-6 pb-2 text-center relative z-10">
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tight flex flex-col items-center justify-center gap-3">
-                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#F43F5E] to-rose-600 shadow-lg shadow-[#F43F5E]/30 flex items-center justify-center mb-1 animate-pulse-slow">
-                                    <Zap className="w-7 h-7 text-white fill-white" />
-                                </div>
+                        {/* Header with Robot Avatar */}
+                        <div className="pt-2 pb-2 text-center relative z-10 flex flex-col items-center">
+
+                            {/* ROBOT AVATAR INTEGRATION */}
+                            <div className="scale-50 -my-20 pointer-events-none transform-gpu origin-center">
+                                <RobotAvatar
+                                    customMessage={selectedDifficulty === AI_DIFFICULTY.BONUS ? "Tu vas souffrir !" : selectedDifficulty === AI_DIFFICULTY.HARD ? "Ça va faire mal !" : "Choisis ton destin..."}
+                                    showBubble={!!selectedDifficulty}
+                                />
+                            </div>
+
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tight flex flex-col items-center justify-center gap-1 -mt-4">
                                 <span>Défi Quotidien</span>
                             </h2>
                             <button
                                 onClick={() => setShowDailyChallengeModal(false)}
-                                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/10 transition-colors"
+                                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/10 transition-colors z-50"
                             >
                                 <X className="w-5 h-5" />
                             </button>
