@@ -111,23 +111,24 @@ export default function ImagePreloader({ children }) {
                     <motion.div
                         key="loader"
                         initial={{ opacity: 1 }}
-                        exit={{ opacity: 0, scale: 1.1 }}
-                        transition={{ duration: 0.8, ease: "easeInOut" }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
                         className="fixed inset-0 z-[9999]"
+                        style={{ willChange: 'opacity' }}
                     >
-                        <SkyjoLoader progress={realProgress} />
+                        <SkyjoLoader progress={displayProgress} />
                     </motion.div>
                 )}
             </AnimatePresence>
 
             <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
+                initial={{ opacity: 0 }}
                 animate={{
                     opacity: isLoading ? 0 : 1,
-                    scale: isLoading ? 0.98 : 1
                 }}
-                transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
                 className="w-full h-full"
+                style={{ willChange: 'opacity' }}
             >
                 {children}
             </motion.div>
