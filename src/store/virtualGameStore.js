@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import toast from 'react-hot-toast';
 import {
     initializeGame,
     revealInitialCards,
@@ -91,8 +92,10 @@ export const useVirtualGameStore = create(
             setShowingGame: (isShowing) => set({ isShowingGame: isShowing }),
             togglePause: () => set((state) => ({ isPaused: !state.isPaused })),
 
-            // Notifications
+            // Notifications & Instructions
             lastNotification: null,
+            instruction: null, // Current game instruction (persistent)
+            setInstruction: (instruction) => set({ instruction }),
 
             /**
              * Perform a card swap (Special card 'S')
@@ -632,7 +635,7 @@ export const useVirtualGameStore = create(
                     drawnCardSource: null,
                     lastNotification: {
                         type: 'info',
-                        message: "🌀 Le Trou Noir a été englouti sous la pioche !",
+                        message: "🌀 Défausse aspirée sous la pioche !",
                         timestamp: Date.now()
                     }
                 });
@@ -951,6 +954,55 @@ export const useVirtualGameStore = create(
                     // Also trigger the notification logic? No, we removed it.
                     // The animation in PlayerHand.jsx relies on the transition from cards -> null.
                 }, 100);
+            },
+
+            /**
+             * Debug: Simulate a full game setup
+             * Initializes an AI game, reveals human cards, and switches tabs.
+             */
+            debugSimulateGame: () => {
+                const { startAIGame, revealInitial } = get();
+                const { userProfile, setActiveTab } = useGameStore.getState();
+
+                // 1. Start a Bonus mode game against 1 IA
+                startAIGame({ name: userProfile.name, avatarId: userProfile.avatarId }, 1, AI_DIFFICULTY.HARDCORE, { isBonusMode: true });
+
+                // 2. Automatically reveal 2 cards for human to get into PLAYING phase
+                setTimeout(() => {
+                    revealInitial(0, [0, 1]);
+                    // 3. Switch to game tab
+                    setActiveTab('virtual');
+                    toast.success('Simulation lancée : Mode Bonus vs IA Hardcore');
+                }, 100);
+            },
+
+            /**
+             * Debug: Force a special action card into the player's "drawn" slot
+             */
+            debugForceActionCard: (type = 'S') => {
+                const { gameState } = get();
+                if (!gameState) {
+                    toast.error("Lancez d'abord une partie !");
+                    return;
+                }
+
+                // Create a special card
+                const specialCard = {
+                    id: `debug-special-${Date.now()}`,
+                    value: 0,
+                    specialType: type, // 'S', 'H', 'C'
+                    color: type === 'S' || type === 'C' ? 'special' : (type === 'H' ? 'black' : 'gold'),
+                    isRevealed: true
+                };
+
+                const newState = {
+                    ...gameState,
+                    drawnCard: specialCard,
+                    turnPhase: 'REPLACE_OR_DISCARD'
+                };
+
+                set({ gameState: newState, drawnCardSource: 'pile' });
+                toast.success(`Action ${type} forcée !`);
             },
 
             /**

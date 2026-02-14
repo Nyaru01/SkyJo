@@ -32,7 +32,7 @@ export default function NewOnlineModePopup({ isOpen, onClose }) {
                     <div className="relative p-8 md:p-12 text-center flex flex-col items-center">
                         {/* Premium Border Beam */}
                         <div className="absolute inset-[1px] rounded-[2.45rem] p-[1px] overflow-hidden pointer-events-none">
-                            <div className="absolute inset-[-100%] bg-[conic-gradient(from_0deg,transparent_0deg,transparent_280deg,#f43f5e_360deg)] animate-[spin_4s_linear_infinite]" />
+                            <div className="absolute inset-0 rounded-full border-2 border-rose-500/20 animate-pulse pointer-events-none" />
                             <div className="absolute inset-[1px] rounded-[2.4rem] bg-slate-950/90 backdrop-blur-3xl" />
                         </div>
 

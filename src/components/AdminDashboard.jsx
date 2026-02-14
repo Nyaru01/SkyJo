@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, MessageSquare, Eye, Archive, Trash2, RefreshCw, X, Check, ArrowUpCircle, Sparkles, Trophy, Gift } from 'lucide-react';
+import { Users, MessageSquare, Eye, Archive, Trash2, RefreshCw, X, Check, ArrowUpCircle, Sparkles, Trophy, Gift, Play, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from './ui/ConfirmModal';
 import { useGameStore } from '../store/gameStore';
@@ -207,7 +207,7 @@ export function AdminDashboard({ adminPassword, onClose }) {
         return (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Stats Row */}
-                <div className="grid grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                     <StatCard
                         icon={MessageSquare} label="Total Feedbacks" value={stats.total} color="blue"
                     />
@@ -222,46 +222,67 @@ export function AdminDashboard({ adminPassword, onClose }) {
                     />
                 </div>
 
-                {/* TEST ACTIONS (Debug) */}
-                <div className="mb-6 p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl flex items-center justify-between relative overflow-hidden">
-                    <div className="relative z-10">
-                        <h3 className="text-white font-bold text-sm">Outils de Test</h3>
-                        <p className="text-white/40 text-[10px]">Déclencher des événements locaux pour vérification UI.</p>
+                {/* TEST ACTIONS (Debug Simulator) */}
+                <div className="mb-8 p-6 bg-indigo-500/10 border border-indigo-500/20 rounded-[2rem] flex flex-col lg:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-2xl">
+                    <div className="absolute top-0 left-0 w-32 h-32 bg-indigo-500/10 blur-[80px] -ml-16 -mt-16" />
+
+                    <div className="relative z-10 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center shadow-inner">
+                            <Sparkles className="w-6 h-6 text-indigo-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-white font-black text-xl uppercase tracking-tighter flex items-center gap-2">
+                                Simulateur de Jeu
+                            </h3>
+                            <p className="text-white/40 text-xs font-medium">Environnement de test complet : IA, Bonus Mode & Force Cards.</p>
+                        </div>
                     </div>
 
-                    {/* Preview Area for Column Clean */}
-                    {showColumnBeam && (
-                        <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none opacity-50">
-                            <div className="w-12 h-full relative">
-                                <ColumnBeam />
+                    <div className="flex flex-wrap items-center gap-3 relative z-10 w-full lg:w-auto justify-center lg:justify-end">
+                        <button
+                            onClick={() => {
+                                useVirtualGameStore.getState().debugSimulateGame();
+                                onClose();
+                            }}
+                            className="group flex items-center gap-3 px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-sm font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-500/30 active:scale-95 border border-white/10"
+                        >
+                            <div className="p-1.5 bg-white/20 rounded-lg group-hover:scale-110 transition-transform">
+                                <Play className="w-4 h-4 fill-current" />
                             </div>
+                            Démarrer Simulation
+                        </button>
+
+                        <div className="flex bg-white/5 rounded-2xl p-1.5 border border-white/10 backdrop-blur-md">
+                            <button
+                                onClick={() => useVirtualGameStore.getState().debugForceActionCard('S')}
+                                title="Forcer un Échange (S)"
+                                className="flex items-center gap-2 px-4 py-2.5 hover:bg-white/10 text-white/50 hover:text-purple-400 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider"
+                            >
+                                <RefreshCw className="w-4 h-4" />
+                                <span className="hidden sm:inline">Swap</span>
+                            </button>
+                            <div className="w-px h-8 bg-white/10 mx-1 self-center" />
+                            <button
+                                onClick={() => useVirtualGameStore.getState().debugForceActionCard('H')}
+                                title="Forcer un Trou Noir (H)"
+                                className="flex items-center gap-2 px-4 py-2.5 hover:bg-white/10 text-white/50 hover:text-amber-400 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider"
+                            >
+                                <Zap className="w-4 h-4" />
+                                <span className="hidden sm:inline">Black Hole</span>
+                            </button>
+                            <div className="w-px h-8 bg-white/10 mx-1 self-center" />
+                            <button
+                                onClick={() => {
+                                    useGameStore.getState().debugLevelUp();
+                                    toast.success('Level Up déclenché !');
+                                }}
+                                title="Tester Niveau Supérieur"
+                                className="flex items-center gap-2 px-4 py-2.5 hover:bg-white/10 text-white/50 hover:text-emerald-400 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider"
+                            >
+                                <Trophy className="w-4 h-4" />
+                                <span className="hidden sm:inline">Level</span>
+                            </button>
                         </div>
-                    )}
-
-                    <div className="flex gap-2 relative z-10">
-                        <button
-                            onClick={() => {
-                                useGameStore.getState().debugLevelUp();
-                                toast.success('Level Up déclenché !');
-                            }}
-                            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-lg active:scale-95"
-                        >
-                            <Trophy className="w-4 h-4" />
-                            Tester Level Up
-                        </button>
-
-
-
-                        <button
-                            onClick={() => {
-                                setShowChestTest(true);
-                                toast.success('Lancement Révélation Carte Mystère...');
-                            }}
-                            className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-lg active:scale-95"
-                        >
-                            <Gift className="w-4 h-4" />
-                            Test Carte Mystère
-                        </button>
                     </div>
                 </div>
 
@@ -339,7 +360,7 @@ export function AdminDashboard({ adminPassword, onClose }) {
                 <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-purple-500/5 blur-[100px] rounded-full" />
             </div>
 
-            <div className="max-w-7xl mx-auto p-4 md:p-10 relative z-10">
+            <div className="max-w-[1400px] mx-auto p-6 md:p-12 relative z-10">
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                     <div>
@@ -347,7 +368,7 @@ export function AdminDashboard({ adminPassword, onClose }) {
                             <div className="h-1 w-8 bg-indigo-500 rounded-full" />
                             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-400">System_Control_v2</span>
                         </div>
-                        <h1 className="text-5xl font-black text-white tracking-tighter">
+                        <h1 className="text-6xl font-black text-white tracking-tighter">
                             Admin <span className="text-indigo-500">Terminal</span>
                         </h1>
                         <p className="text-white/40 font-medium mt-2 tracking-wide">Monitoring en temps réel & Feedback Hub</p>

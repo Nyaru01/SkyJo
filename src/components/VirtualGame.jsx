@@ -15,6 +15,8 @@ import CardAnimationLayer from './virtual/CardAnimationLayer';
 import SkyjoCard from './virtual/SkyjoCard';
 import HostLeftOverlay from './virtual/HostLeftOverlay';
 import ChestRevelationOverlay from './virtual/ChestRevelationOverlay';
+import RobotAvatar from './virtual/RobotAvatar';
+import GameMessageBanner from './virtual/GameMessageBanner';
 import ExperienceBar from './ExperienceBar';
 import SkinCarousel from './SkinCarousel';
 import { useVirtualGameStore, selectAIMode, selectAIPlayers, selectIsCurrentPlayerAI, selectIsAIThinking } from '../store/virtualGameStore';
@@ -118,6 +120,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const virtualPendingAnimation = useVirtualGameStore(s => s.pendingAnimation);
     const isDailyChallenge = useVirtualGameStore(s => s.isDailyChallenge);
     const clearVirtualPendingAnimation = useVirtualGameStore(s => s.clearPendingAnimation);
+    const instruction = useVirtualGameStore(s => s.instruction);
+    const setInstruction = useVirtualGameStore(s => s.setInstruction);
 
     // AI Store
     const startAIGame = useVirtualGameStore((s) => s.startAIGame);
@@ -157,27 +161,58 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const onlineGameMode = useOnlineGameStore(s => s.gameMode);
     const setOnlineGameMode = useOnlineGameStore(s => s.setGameMode);
 
-    // 🔥 Aliases pour le plan de fix
-    const onlineStarted = useOnlineGameStore(s => s.onlineStarted);
-    const activeState = useOnlineGameStore(s => s.activeState);
-    const leaveRoom = useOnlineGameStore(s => s.leaveRoom);
 
     // Main game store for archiving
     const archiveOnlineGame = useGameStore(s => s.archiveOnlineGame);
     const playerLevel = useGameStore(s => s.level);
     const playerCardSkin = useGameStore(s => s.cardSkin);
 
-    // Derived game state (moved up to avoid TDZ)
-    const isOnlineMode = !!onlineStarted;
-    const activeGameState = isOnlineMode ? onlineGameState : gameState;
-    const activeTotalScores = isOnlineMode ? onlineTotalScores : totalScores;
-    const activeRoundNumber = isOnlineMode ? onlineRoundNumber : roundNumber;
-    const activeDrawnCardSource = isOnlineMode ? onlineDrawnCardSource : drawnCardSource;
-    const effectiveIsBonusMode = isOnlineMode ? (onlineGameMode === 'bonus') : virtualIsBonusMode;
+    // --- GAME LOGIC CONSOLIDATION (PRE-RENDER) ---
+    // Moved here to satisfy Rules of Hooks (must be before any early returns)
+
+    // 1. Identify active game state and basic properties
+    const activeGameState = onlineGameStarted ? onlineGameState : gameState;
+    const isOnlineMode = onlineGameStarted || screen === 'lobby';
+    const activeRoundNumber = onlineGameStarted ? onlineRoundNumber : roundNumber;
+    const isGameOverState = onlineGameStarted ? onlineIsGameOver : isGameOver;
+    const effectiveIsBonusMode = onlineGameStarted ? (onlineGameMode === 'bonus') : virtualIsBonusMode;
+    const activeDrawnCardSource = onlineGameStarted ? onlineDrawnCardSource : drawnCardSource;
+    const activeTotalScores = onlineGameStarted ? onlineTotalScores : totalScores;
+
+    // 2. Calculate the local player's index in the game state
+    // In online mode, try to find by socket.id first, then fallback to dbId (for reconnects)
+    const currentSocketId = (getSocketId?.() || socketId);
+    let myPlayerIndex = 0;
+    let showSyncIssue = false;
+
+    if (isOnlineMode && activeGameState) {
+        const playersList = activeGameState.players || [];
+        // 1. Try socket ID
+        myPlayerIndex = playersList.findIndex(p => p.id === currentSocketId);
+
+        // 2. Fallback to DB ID if available
+        if (myPlayerIndex === -1 && userProfile?.id) {
+            myPlayerIndex = playersList.findIndex(p => String(p.dbId) === String(userProfile.id));
+        }
+
+        if (myPlayerIndex === -1 && screen === 'game') {
+            showSyncIssue = true;
+        }
+    }
+
+    // 3. Derived indices and state flags
+    const opponentIndex = myPlayerIndex === 0 ? 1 : 0;
+    const currentPlayer = activeGameState?.players?.[activeGameState?.currentPlayerIndex];
+    const isInitialReveal = activeGameState?.phase === 'INITIAL_REVEAL';
+    const isFinished = activeGameState?.phase === 'FINISHED' || (activeGameState?.phase === 'REVEALING_CHESTS' && chestsRevealed);
+    const discardTop = activeGameState?.discardPile?.[activeGameState?.discardPile?.length - 1];
+    const isMyTurn = !isInitialReveal && activeGameState?.currentPlayerIndex === myPlayerIndex;
+    const isOpponentTurn = !isInitialReveal && activeGameState?.currentPlayerIndex === opponentIndex;
 
     // Online Actions
     const connectOnline = useOnlineGameStore(s => s.connect);
     const disconnectOnline = useOnlineGameStore(s => s.disconnect);
+    const leaveRoom = useOnlineGameStore(s => s.leaveRoom);
 
 
     // Enforce Level Requirements for Skins
@@ -304,6 +339,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     //    playRandomTrack
     // } = useBackgroundMusic(screen === 'game' && activeGameState?.phase !== 'FINISHED');
 
+
+    // 4. Automation & Sync Hooks (Must be before any EARLY RETURNS)
+
     // Save pseudo and emoji to localStorage when they change
     useEffect(() => {
         if (aiConfig.playerName) {
@@ -312,7 +350,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         if (aiConfig.playerAvatarId) {
             localStorage.setItem('skyjo_player_avatar_id', aiConfig.playerAvatarId);
         }
-    }, [aiConfig.playerName, aiConfig.playerAvatarId, userProfile.avatarId]); // Added userProfile.avatarId to dependency to ensure it reacts to global changes
+    }, [aiConfig.playerName, aiConfig.playerAvatarId, userProfile.avatarId]);
 
     // Also save from online mode
     useEffect(() => {
@@ -323,6 +361,49 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             localStorage.setItem('skyjo_player_avatar_id', myAvatarId);
         }
     }, [myPseudo, myAvatarId]);
+
+    // Phase-based instructions automation
+    useEffect(() => {
+        if (!activeGameState) return;
+
+        // ONLY show top banner for SPECIAL actions (Swap, Black Hole, etc.)
+        // Standard gameplay instructions are already shown in the center button
+
+        if (isMyTurn) {
+            switch (activeGameState.turnPhase) {
+                case 'SPECIAL_ACTION_SWAP':
+                    if (swapSelection.sourceIndex === null) {
+                        setInstruction("Sélectionnez une de VOS cartes à échanger.");
+                    } else {
+                        setInstruction("Choisissez maintenant une carte adverse à échanger.");
+                    }
+                    break;
+                case 'RESOLVE_BLACK_HOLE':
+                    setInstruction("Cliquez sur l'Action pour aspirer la défausse !");
+                    break;
+                // Add other special modes here if any
+                default:
+                    setInstruction(null); // Hide banner for standard phases (DRAW, REPLACE, REVEAL, etc.)
+                    break;
+            }
+        } else {
+            // Hide banner when it's not my turn or game finished
+            setInstruction(null);
+        }
+    }, [activeGameState?.turnPhase, activeGameState?.currentPlayerIndex, activeGameState?.phase, isMyTurn, swapSelection.sourceIndex, activeGameState, currentPlayer?.name, setInstruction]);
+
+    // 5. EARLY RETURNS SECTION
+    // These returns are safe now because all hooks have been declared.
+
+    if (showSyncIssue) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh]">
+                <SkyjoLoader progress={100} />
+                <p className="mt-4 text-white font-bold animate-pulse">Synchronisation...</p>
+                <p className="text-xs text-white/50 mt-2">ID: {currentSocketId?.substr(0, 4)}...</p>
+            </div>
+        );
+    }
 
     // Global Identity Sync: React to userProfile changes
     useEffect(() => {
@@ -368,7 +449,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         const gameIsStarted = !!onlineGameStarted;
 
         console.log('[VG] Auto-nav check:', {
-            onlineStarted,
+            onlineGameStarted,
             hasActiveState,
             gameIsStarted,
             currentScreen: screen,
@@ -376,7 +457,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         });
 
         // Transition lobby → game when the game starts (WITH PREMIUM COUNTDOWN)
-        if (onlineStarted && gameIsStarted && (screen === 'lobby' || screen === 'setup' || screen === 'menu')) {
+        if (onlineGameStarted && (screen === 'lobby' || screen === 'setup' || screen === 'menu')) {
             if (lobbyCountdown === null) {
                 console.log("[VG] ⏱ Starting Premium Countdown!");
                 setLobbyCountdown(3);
@@ -401,11 +482,11 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         }
 
         // Return to lobby ONLY if we are not in an active session anymore
-        if (!onlineStarted && !onlineRoomCode && screen === 'game' && !onlineError) {
+        if (!onlineGameStarted && !onlineRoomCode && screen === 'game' && !onlineError) {
             console.log("[VG] ⬅️ Session lost, returning to menu");
             setScreen('menu');
         }
-    }, [onlineStarted, onlineGameStarted, screen, onlineRoomCode, onlineError]); // Removed initialScreen check
+    }, [onlineGameStarted, screen, onlineRoomCode, onlineError]); // Removed initialScreen check
 
     useEffect(() => {
         console.log(`[VG] Rendering... screen=${screen}, isOnline=${isOnlineMode}, hasState=${!!activeGameState}`);
@@ -790,7 +871,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             // Step 1: Selection of my card
             if (targetPlayerIndex === activeState.currentPlayerIndex) {
                 setSwapSelection(prev => ({ ...prev, sourceIndex: cardIndex }));
-                toast.success("Carte source sélectionnée ! Choisissez maintenant une carte adverse.");
+                setInstruction("Choisissez maintenant une carte adverse à échanger.");
                 return;
             }
 
@@ -807,11 +888,12 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                             targetPlayerIndex,
                             targetCardIndex: cardIndex
                         });
-                        toast.success("Demande d'échange envoyée !");
+                        toast.success("Échange envoyé !", { id: "swap-action" });
                     } else {
                         performSwap(sourceIdx, targetPlayerIndex, cardIndex);
-                        toast.success("Échange effectué !");
+                        toast.success("Échange effectué !", { id: "swap-action" });
                     }
+                    setInstruction(null);
                 } catch (error) {
                     toast.error(error.message || "Échange impossible !");
                 }
@@ -930,14 +1012,12 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
             if (isAtLeastOneRoundDone) {
                 // Calculate current winner based on totalScores
-                let scores = { ...totalScores } || {};
-                let currentRoundScores = [];
+                let scores = { ...totalScores };
 
                 // If the current round is FINISHED but not yet committed to totalScores (e.g. user quits on result screen),
                 // we need to add these scores to the archive
                 if (gameState.phase === 'FINISHED' || gameState.phase === 'REVEALING_CHESTS') {
                     const roundResults = calculateFinalScores(gameState);
-                    currentRoundScores = roundResults;
                     roundResults.forEach(r => {
                         scores[r.playerId] = (scores[r.playerId] || 0) + r.finalScore;
                     });
@@ -989,6 +1069,16 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         if (onBackToMenu) onBackToMenu(wasDaily);
     };
 
+    if (showSyncIssue) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh]">
+                <SkyjoLoader progress={100} />
+                <p className="mt-4 text-white font-bold animate-pulse">Synchronisation...</p>
+                <p className="text-xs text-white/50 mt-2">ID: {currentSocketId?.substr(0, 4)}...</p>
+            </div>
+        );
+    }
+
     const avatarSelectorComponent = (
         <AvatarSelector
             isOpen={openAvatarSelector !== null}
@@ -1004,12 +1094,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         />
     );
 
-    // Redirect to main menu if screen is 'menu' (Legacy menu removal)
-    useEffect(() => {
-        if (screen === 'menu' && onBackToMenu) {
-            onBackToMenu();
-        }
-    }, [screen, onBackToMenu]);
 
     // Render AI setup screen
     if (screen === 'ai-setup') {
@@ -1038,16 +1122,15 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
 
-                    <div className="text-center space-y-0.5">
+                    <div className="text-center space-y-0.5 relative">
                         <h2 className="text-xl font-black text-white tracking-tighter flex items-center justify-center gap-2">
-                            <Bot className="h-6 w-6 text-purple-400" />
                             CONTRE L'IA
                         </h2>
                         <div className="h-1 w-10 bg-purple-500 mx-auto rounded-full" />
                     </div>
                 </div>
 
-                <Card className="glass-premium dark:glass-dark shadow-xl border-t border-white/10 mb-4 overflow-hidden">
+                <Card className="glass-premium dark:glass-dark shadow-xl border-t border-white/10 mb-4 overflow-hidden relative">
                     <CardContent className="flex flex-col gap-4 pt-6 p-4">
                         {/* Difficulty */}
                         <div className="flex flex-col pt-2">
@@ -1152,6 +1235,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                 ))}
                             </div>
                         </div>
+
                     </CardContent>
                 </Card>
 
@@ -1168,8 +1252,16 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                     </span>
                 </PremiumTiltButton>
 
-                {/* Safe Area for Bottom Navigation */}
-                <div className="h-24 w-full shrink-0" />
+                {/* Robot Avatar - Precision Placement (Red Box Area) */}
+                <div className="flex-1 flex items-end justify-end p-1 pr-1 pb-8 pointer-events-none">
+                    <div className="w-12 h-32 relative pointer-events-auto">
+                        <RobotAvatar
+                            size="lg"
+                            className="w-full h-full"
+                            isAngry={aiConfig.difficulty === AI_DIFFICULTY.HARDCORE || aiConfig.difficulty === AI_DIFFICULTY.BONUS}
+                        />
+                    </div>
+                </div>
 
                 {avatarSelectorComponent}
                 <BonusTutorial isOpen={showBonusTutorial} onClose={() => setShowBonusTutorial(false)} />
@@ -1912,42 +2004,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         return null;
     }
 
-    // Calculate the local player's index in the game state
-    // In online mode, try to find by socket.id first, then fallback to dbId (for reconnects)
-    const currentSocketId = isOnlineMode ? (getSocketId?.() || socketId) : null;
-    let myPlayerIndex = 0;
-
-    if (isOnlineMode) {
-        const players = activeGameState?.players || [];
-        // 1. Try socket ID
-        myPlayerIndex = players.findIndex(p => p.id === currentSocketId);
-
-        // 2. Fallback to DB ID if available
-        if (myPlayerIndex === -1 && userProfile?.id) {
-            console.log(`[VG] Socket ID mismatch, trying fallback to dbId: ${userProfile.id}`);
-            myPlayerIndex = players.findIndex(p => String(p.dbId) === String(userProfile.id));
-        }
-
-        console.log(`[VG] Render: screen=${screen}, isOnline=${isOnlineMode}, myIdx=${myPlayerIndex}, socketId=${currentSocketId}, dbId=${userProfile?.id}`);
-
-        if (myPlayerIndex === -1 && activeGameState) {
-            console.warn("[VG] Player index not found even with fallback. Players:", players.map(p => ({ id: p.id, dbId: p.dbId })));
-            // Prevent crash by showing loading or error state instead of rendering undefined player
-            return (
-                <div className="flex flex-col items-center justify-center min-h-[50vh]">
-                    <SkyjoLoader progress={100} />
-                    <p className="mt-4 text-white font-bold animate-pulse">Synchronisation...</p>
-                    <p className="text-xs text-white/50 mt-2">ID: {currentSocketId?.substr(0, 4)}...</p>
-                </div>
-            );
-        }
-    }
-
-    // Determine the opponent's index (for 2-player games)
-    const opponentIndex = myPlayerIndex === 0 ? 1 : 0;
-
-    const currentPlayer = activeGameState.players[activeGameState.currentPlayerIndex];
-    const isInitialReveal = activeGameState.phase === 'INITIAL_REVEAL';
     // Use a separate view for the sequential revelation phase
     if (activeGameState?.phase === 'REVEALING_CHESTS' && !chestsRevealed) {
         return (
@@ -1957,10 +2013,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             />
         );
     }
-
-    const isFinished = activeGameState.phase === 'FINISHED' || (activeGameState.phase === 'REVEALING_CHESTS' && chestsRevealed);
-    const discardTop =
-        activeGameState.discardPile[activeGameState.discardPile.length - 1];
 
     // Get number of cards already selected for initial reveal
     const currentPlayerKey = `player-${activeGameState.currentPlayerIndex}`;
@@ -2450,10 +2502,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         );
     }
 
-    // Determine whose turn it is (for player hand indicators)
-    const isMyTurn = !isInitialReveal && activeGameState.currentPlayerIndex === myPlayerIndex;
-    const isOpponentTurn = !isInitialReveal && activeGameState.currentPlayerIndex === opponentIndex;
-
 
     return (
         <div
@@ -2462,6 +2510,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 activeGameState?.players?.length <= 2 ? "justify-start gap-2 py-2" : "justify-start gap-2 py-1 pb-6"
             )}
         >
+            {/* Instruction Banner - Top Floating (Special Actions Only) */}
+            <GameMessageBanner message={instruction} />
+
             {/* Header - ultra-thin single line with glass-style elements */}
             {/* Header - Unified Pill Container */}
             <div className="flex items-center justify-center px-2 sm:px-4 py-1 shrink-0 z-50">
@@ -2871,7 +2922,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                             emitGameAction('activate_black_hole');
                         } else {
                             useVirtualGameStore.getState().activateBlackHole();
-                            toast.success("Défausse aspirée !");
                         }
                     } else {
                         // Existing logic for Swap card (S)
@@ -2881,7 +2931,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                         } else {
                             useVirtualGameStore.getState().playDrawnActionCard();
                         }
-                        toast("Sélectionnez une de VOS cartes à échanger", { icon: '🔄' });
+                        setInstruction("Sélectionnez une de VOS cartes à échanger");
                     }
                     setShowDrawDiscardPopup(false);
                 }}

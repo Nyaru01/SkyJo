@@ -15,6 +15,57 @@ export const AI_DIFFICULTY = {
 export const AI_NAMES = ['IA', 'IA 2', 'IA 3'];
 
 /**
+ * Check if the difficulty level is Hardcore or Bonus
+ */
+const isAdvancedLevel = (difficulty) => {
+    return difficulty === AI_DIFFICULTY.HARDCORE || difficulty === AI_DIFFICULTY.BONUS;
+};
+
+/**
+ * Structured AI logging
+ */
+const aiLog = (difficulty, message, data = null) => {
+    const prefix = `[AI-${difficulty.toUpperCase()}]`;
+    if (data) {
+        console.log(`${prefix} ${message}`, data);
+    } else {
+        console.log(`${prefix} ${message}`);
+    }
+};
+
+/**
+ * Estimate the average value of cards remaining in the deck.
+ */
+const getProbabilisticAverageValue = (gameState) => {
+    // Detect Bonus Mode by looking for 20s or special types in any player's hand or discard
+    const allKnownCards = [
+        ...gameState.players.flatMap(p => p.hand),
+        ...gameState.discardPile,
+        gameState.drawnCard
+    ].filter(Boolean);
+
+    const isBonusMode = allKnownCards.some(c => c.value === 20 || c.specialType === 'H' || c.specialType === 'S' || c.value === -10);
+
+    let totalSum = isBonusMode ? 820 : 760;
+    let totalCards = isBonusMode ? 156 : 150;
+
+    // Subtract all revealed cards to find the remaining pool
+    const seenCards = allKnownCards.filter(c => c.isRevealed);
+
+    seenCards.forEach(c => {
+        // S, H, C, CH are valued at 0 in engine for simplicity
+        totalSum -= c.value;
+        totalCards--;
+    });
+
+    if (totalCards <= 0) return isBonusMode ? 5.25 : 5.06;
+    const ev = totalSum / totalCards;
+
+    // Safety clamp (Skyjo average usually stays between 2 and 8)
+    return Math.max(2, Math.min(8, ev));
+};
+
+/**
  * Get a random element from an array
  */
 const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -42,6 +93,38 @@ const calculateVisibleScore = (hand) => {
         if (!card.isRevealed) return sum;
         return sum + card.value;
     }, 0);
+};
+
+/**
+ * Decision: Should the AI try to end the game quickly?
+ */
+const shouldAccelerateEndGame = (gameState, playerHand) => {
+    const opponent = gameState.players.find(p => p.id === 'human-1') ||
+        gameState.players[(gameState.currentPlayerIndex + 1) % gameState.players.length];
+
+    if (!opponent) return true;
+
+    const myScore = calculateVisibleScore(playerHand);
+    const opponentScore = calculateVisibleScore(opponent.hand);
+
+    // Strategy: Accelerate if leading, slow down if losing (unless forced)
+    if (myScore < opponentScore - 5) return true; // Leading: rush it!
+    if (myScore > opponentScore + 10) return false; // Losing: work on hand
+
+    return true; // Default
+};
+
+/**
+ * Calculate the score differential between AI and the human opponent.
+ * positive = AI is winning (lower score)
+ * negative = AI is losing
+ */
+const getScoreDifferential = (gameState, playerHand) => {
+    const opponent = gameState.players.find(p => p.id === 'human-1') ||
+        gameState.players[(gameState.currentPlayerIndex + 1) % gameState.players.length];
+    if (!opponent) return 0;
+
+    return calculateVisibleScore(opponent.hand) - calculateVisibleScore(playerHand);
 };
 
 /**
@@ -90,29 +173,23 @@ const findHighestRevealedCard = (hand) => {
  * @param {boolean} forceCheck - If true, skip value threshold check (for finding positions only)
  * @returns {boolean} True if column completion is beneficial
  */
-const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false) => {
-    // Cards are arranged in 4 columns of 3 rows
-    // Column indices: [0,1,2], [3,4,5], [6,7,8], [9,10,11]
+const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false, difficulty = 'normal') => {
     const col = Math.floor(cardIndex / 3);
     const colStart = col * 3;
     const colIndices = [colStart, colStart + 1, colStart + 2];
 
-    // CRITICAL FIX: Don't try to complete columns with low/negative values!
-    // Eliminating 3x "-2" = losing -6 points (bad!)
-    // Eliminating 3x "0" = losing 0 points but removing 3 cards (neutral, but wastes opportunity)
-    // Only actively pursue column completion for cards with value > 2
-    // UNLESS the total removal would be profitable (e.g. replacing a 0 with a 3 to delete [0, 3, 3])
     const MIN_VALUE_FOR_COLUMN_ELIMINATION = 3;
+    const isAdvanced = difficulty === AI_DIFFICULTY.HARDCORE || difficulty === AI_DIFFICULTY.BONUS;
 
     if (!forceCheck && cardValue < MIN_VALUE_FOR_COLUMN_ELIMINATION) {
-        return false; // Don't prioritize completing columns of low-value cards
+        return false;
     }
 
     let matchCount = 0;
     let hiddenCount = 0;
 
     colIndices.forEach(idx => {
-        if (idx === cardIndex) return; // Skip the target position
+        if (idx === cardIndex) return;
         const card = hand[idx];
         if (card === null) return;
         if (!card.isRevealed) {
@@ -122,34 +199,39 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false) =>
         }
     });
 
-    // Check profitability for full completion (matchCount === 2)
+    // Case 1: Completion (3 cards of same value)
     if (matchCount === 2) {
         let currentTotal = cardValue;
         colIndices.forEach(idx => {
             if (idx === cardIndex) return;
             const card = hand[idx];
             if (card && card.isRevealed) currentTotal += card.value;
-            else currentTotal += cardValue; // Assumption for hidden or newly placed
+            else currentTotal += cardValue;
         });
 
-        // If the column sum is > 0, removing it is ALWAYS better than keeping any card in it
         if (currentTotal > 0) return true;
-        return false; // Not profitable to eliminate (e.g. column of -2s)
-    }
-
-    // Check potential for future completion (1 match + 1 hidden)
-    if (!forceCheck && cardValue < MIN_VALUE_FOR_COLUMN_ELIMINATION) {
         return false;
     }
 
-    return (matchCount === 1 && hiddenCount >= 1);
+    // Case 2: Potential (Waiting for 1 more card)
+    if (matchCount === 1 && hiddenCount >= 1) {
+        // STRATEGY REFINEMENT: In advanced mode, don't build potential with mediocre cards (5-9)
+        // because it's better to keep searching for lower values.
+        // We only build potential for cards <= 4.
+        if (isAdvanced && cardValue > 4) {
+            return false;
+        }
+        return true;
+    }
+
+    return false;
 };
 
 /**
  * Check if a card would significantly help the opponent (human)
  * (Blocking logic)
  */
-const wouldHelpOpponent = (gameState, cardValue) => {
+const wouldHelpOpponent = (gameState, cardValue, difficulty = AI_DIFFICULTY.NORMAL) => {
     // Find first human player or next player
     const opponent = gameState.players.find(p => p.id === 'human-1') ||
         gameState.players[(gameState.currentPlayerIndex + 1) % gameState.players.length];
@@ -159,10 +241,23 @@ const wouldHelpOpponent = (gameState, cardValue) => {
     // A card "helps" if it completes a column of value >= 3 (beneficial elimination)
     // or if it completes ANY column regardless of value if opponent is close to ending/winning
     for (let i = 0; i < opponent.hand.length; i++) {
-        if (opponent.hand[i] && !opponent.hand[i].isRevealed) {
-            // Check if placing it here completes a column
-            // We force check because even if it's a low value, completion is usually good for opponent
-            if (checkColumnPotential(opponent.hand, i, cardValue, true)) {
+        const card = opponent.hand[i];
+        if (!card || card.lockCount > 0) continue;
+
+        // Check if placing it here completes a column
+        // We force check because column completion is usually good for opponent
+        if (checkColumnPotential(opponent.hand, i, cardValue, true, difficulty)) {
+            // If it's a revealed card we are replacing, make sure the elimination is profitable
+            if (card.isRevealed) {
+                // If the card being replaced is excellent (<= 2) and the elimination value 
+                // is mediocre, maybe it's not a huge "help". But for now, let's keep it simple:
+                // Elimination of >= 3 is always a target for blocking.
+                if (cardValue >= 3) return true;
+                // If opponent is winning, block even low value eliminations
+                const opponentScore = calculateVisibleScore(opponent.hand);
+                if (opponentScore < 20) return true;
+            } else {
+                // Replacing a hidden card to complete a column is always a huge help
                 return true;
             }
         }
@@ -173,9 +268,20 @@ const wouldHelpOpponent = (gameState, cardValue) => {
 /**
  * Find the best replacement position for a card
  */
-const findBestReplacementPosition = (hand, cardValue, difficulty) => {
+const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = null) => {
     const revealedIndices = getRevealedCardIndices(hand);
     const hiddenIndices = getHiddenCardIndices(hand);
+
+    // Risk adjustment: if losing badly, be more aggressive. If winning, be more conservative.
+    let riskAdjustment = 0;
+    let slowDown = false;
+    if (gameState && isAdvancedLevel(difficulty)) {
+        const diff = getScoreDifferential(gameState, hand);
+        if (diff < -15) riskAdjustment = -2; // Losing: a 6 is now "worse", more likely to replace
+        if (diff > 15) riskAdjustment = 2;   // Winning: a 4 is now "better", less likely to replace
+
+        slowDown = !shouldAccelerateEndGame(gameState, hand);
+    }
 
     // Check for column completion opportunities first
     for (const idx of [...revealedIndices, ...hiddenIndices]) {
@@ -187,28 +293,60 @@ const findBestReplacementPosition = (hand, cardValue, difficulty) => {
 
         // SMART PROTECTION: Only skip if column completion is NOT possible or NOT profitable
         if (hand[idx].isRevealed && hand[idx].value <= 2) {
-            if (!checkColumnPotential(hand, idx, cardValue)) {
+            if (!checkColumnPotential(hand, idx, cardValue, false, difficulty)) {
                 continue;
             }
             // If checkColumnPotential returns true, it means it's a profitable elimination!
         }
 
-        if (checkColumnPotential(hand, idx, cardValue)) {
+        if (checkColumnPotential(hand, idx, cardValue, false, difficulty)) {
+            // Prudent Finisher: only finish with a column completion if it's highly profitable
+            if (slowDown && hiddenIndices.length === 1 && hiddenIndices.includes(idx)) {
+                // If this is the last hidden card, only complete if total hand score is already low
+                const currentScore = calculateVisibleScore(hand);
+                if (currentScore > 20) {
+                    aiLog(difficulty, "Prudent Finisher: Skipping game-ending column completion (score too high)");
+                    continue;
+                }
+            }
             return idx;
         }
     }
 
     // MULTI-COLUMN STRATEGY (Lower priority than completion)
-    if (difficulty === AI_DIFFICULTY.HARD || difficulty === AI_DIFFICULTY.HARDCORE || difficulty === AI_DIFFICULTY.BONUS) {
-        const otherRevealedValues = hand
-            .filter(c => c && c.isRevealed && c.value === cardValue)
-            .length;
+    if (isAdvancedLevel(difficulty) || difficulty === AI_DIFFICULTY.HARD) {
+        const matchingRevealedCount = hand.filter(c => c && c.isRevealed && c.value === cardValue).length;
 
-        if (otherRevealedValues > 0 && hiddenIndices.length > 0) {
-            // We have this value elsewhere, let's start a new column with it
-            // if we have hidden cards to explore.
-            const bestHidden = getRandomElement(hiddenIndices);
-            return bestHidden;
+        if (matchingRevealedCount > 0 && hiddenIndices.length > 0) {
+            // Find the best column to start the "collection"
+            let bestExpansionIdx = -1;
+            let maxPotential = -1;
+
+            for (const idx of hiddenIndices) {
+                const col = Math.floor(idx / 3);
+                const colStart = col * 3;
+                const colIndices = [colStart, colStart + 1, colStart + 2];
+                const colCards = colIndices.map(i => hand[i]);
+
+                // A column is good if it's mostly hidden or already has a matching card
+                const revealedInCol = colCards.filter(c => c && c.isRevealed);
+                const matchingInCol = revealedInCol.filter(c => c.value === cardValue);
+
+                let potential = 0;
+                if (matchingInCol.length > 0) potential = 10; // Already has it, keep filling!
+                else if (revealedInCol.length === 0) potential = 5; // Fresh column
+                else if (revealedInCol.length === 1 && revealedInCol[0].value > 8) potential = 2; // Can replace a bad card
+
+                if (potential > maxPotential) {
+                    maxPotential = potential;
+                    bestExpansionIdx = idx;
+                }
+            }
+
+            if (bestExpansionIdx !== -1) {
+                aiLog(difficulty, `Expanding multi-column: collecting value ${cardValue} at index ${bestExpansionIdx}`);
+                return bestExpansionIdx;
+            }
         }
     }
 
@@ -259,13 +397,24 @@ const findBestReplacementPosition = (hand, cardValue, difficulty) => {
     // GOOD CARDS (1-4)
     if (cardValue <= 4) {
         // Replace significantly worse card
-        if (highest.index !== -1 && highest.value >= cardValue + 4) {
+        const threshold = cardValue + 4 + riskAdjustment;
+        if (highest.index !== -1 && highest.value >= threshold) {
             return highest.index;
         }
 
         // Hard/Hardcore: Smart hidden card usage
         if (hiddenIndices.length > 0) {
-            if (difficulty === AI_DIFFICULTY.HARD || difficulty === AI_DIFFICULTY.HARDCORE || difficulty === AI_DIFFICULTY.BONUS) {
+            // Prudent Finisher: Don't reveal/replace last card if losing
+            if (slowDown && hiddenIndices.length === 1) {
+                // Try to find a revealed card to replace instead
+                if (highest.index !== -1 && highest.value > cardValue) {
+                    return highest.index;
+                }
+                aiLog(difficulty, "Prudent Finisher: Avoiding last card replacement (must slow down)");
+                return -1;
+            }
+
+            if (difficulty === AI_DIFFICULTY.HARD || isAdvancedLevel(difficulty)) {
                 // Prefer corners and edges for better column building
                 const cornerIndices = [0, 2, 9, 11].filter(i => hiddenIndices.includes(i));
                 if (cornerIndices.length > 0) {
@@ -278,7 +427,8 @@ const findBestReplacementPosition = (hand, cardValue, difficulty) => {
 
     // MEDIOCRE/BAD CARDS (> 4)
     // Only replace if we have something TERRIBLE revealed (like a 12)
-    if (highest.index !== -1 && cardValue < highest.value && highest.value >= 10) {
+    const badThreshold = 10 + riskAdjustment;
+    if (highest.index !== -1 && cardValue < highest.value && highest.value >= badThreshold) {
         return highest.index;
     }
 
@@ -291,7 +441,7 @@ const findBestReplacementPosition = (hand, cardValue, difficulty) => {
 
 /**
  * Choose 2 initial cards to reveal
- * Strategy: Random for normal, prefer corners for hard/hardcore
+ * Strategy: Random for normal, prefer same-column corners for hard/hardcore
  */
 export const chooseInitialCardsToReveal = (hand, difficulty = AI_DIFFICULTY.NORMAL) => {
     // Normal: Random
@@ -299,7 +449,20 @@ export const chooseInitialCardsToReveal = (hand, difficulty = AI_DIFFICULTY.NORM
         return getRandomIndices(2, hand.length);
     }
 
-    // Hard/Hardcore: prefer corner positions (better for column building visibility)
+    // Advanced/Hardcore: Prefer same-column corners (0&2 or 9&11) 
+    if (isAdvancedLevel(difficulty)) {
+        const potentialPairs = [
+            [0, 2], [9, 11], // Corners
+            [3, 5], [6, 8], // Edges
+        ];
+
+        // Pick one pair randomly (mostly corners)
+        const selectedPair = getRandomElement(potentialPairs.slice(0, 2));
+        aiLog(difficulty, `Initial reveal: targeting column corners ${selectedPair}`);
+        return selectedPair;
+    }
+
+    // Hard: prefer corner positions (legacy)
     const preferredPositions = [0, 2, 9, 11]; // Corners
     const shuffled = [...preferredPositions].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, 2);
@@ -326,7 +489,7 @@ export const decideDrawSource = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
         // Also take if it can complete a column
         const hand = currentPlayer.hand;
         for (let i = 0; i < hand.length; i++) {
-            if (hand[i] && !(hand[i].lockCount > 0) && checkColumnPotential(hand, i, discardValue)) {
+            if (hand[i] && !(hand[i].lockCount > 0) && checkColumnPotential(hand, i, discardValue, false, difficulty)) {
                 if (hand[i].isRevealed && hand[i].value === discardValue) continue;
                 return 'DISCARD_PILE';
             }
@@ -335,24 +498,25 @@ export const decideDrawSource = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
     }
 
     // Hard / Hardcore: Sophisticated analysis
-    if (difficulty === AI_DIFFICULTY.HARD || difficulty === AI_DIFFICULTY.HARDCORE || difficulty === AI_DIFFICULTY.BONUS) {
+    if (isAdvancedLevel(difficulty) || difficulty === AI_DIFFICULTY.HARD) {
+        const avgValue = getProbabilisticAverageValue(gameState);
+
         // Always take negative cards or the Swap card
         if (discardValue <= 0 || discardTop.specialType === 'S') {
             return 'DISCARD_PILE';
         }
 
-        // Hardcore: Aggressively take low cards (<= 4)
-        const threshold = (difficulty === AI_DIFFICULTY.HARDCORE || difficulty === AI_DIFFICULTY.BONUS) ? 4 : 3;
-
-        if (discardValue <= threshold) {
+        // Hardcore/Bonus: Take from discard if it's excellent (<= 2)
+        // OR if it completes a column. Otherwise, prefer drawing from the deck.
+        if (discardValue <= 2) {
             const highest = findHighestRevealedCard(currentPlayer.hand);
-            if (highest.value > discardValue + 2) { // Tighter threshold for swap
+            if (highest.value > discardValue + 2) {
                 return 'DISCARD_PILE';
             }
             // Check column potential
             for (let i = 0; i < currentPlayer.hand.length; i++) {
-                if (currentPlayer.hand[i] && checkColumnPotential(currentPlayer.hand, i, discardValue)) {
-                    // PROTECTION: Don't replace a GOOD revealed card (<= 2) for a column completion of a WORSE card
+                if (currentPlayer.hand[i] && checkColumnPotential(currentPlayer.hand, i, discardValue, false, difficulty)) {
+                    // Don't replace a GOOD card with a worse card even if it helps potential
                     if (currentPlayer.hand[i].isRevealed && currentPlayer.hand[i].value < discardValue && currentPlayer.hand[i].value <= 2) continue;
                     return 'DISCARD_PILE';
                 }
@@ -361,7 +525,7 @@ export const decideDrawSource = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
 
         // Check for column completion (Primary strat for Hardcore)
         for (let i = 0; i < currentPlayer.hand.length; i++) {
-            if (currentPlayer.hand[i] && !(currentPlayer.hand[i].lockCount > 0) && checkColumnPotential(currentPlayer.hand, i, discardValue)) {
+            if (currentPlayer.hand[i] && !(currentPlayer.hand[i].lockCount > 0) && checkColumnPotential(currentPlayer.hand, i, discardValue, false, difficulty)) {
                 // Fix: Don't take from discard if we would just replace same value
                 if (currentPlayer.hand[i].isRevealed && currentPlayer.hand[i].value === discardValue) continue;
 
@@ -374,11 +538,11 @@ export const decideDrawSource = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
 
         // ANTICIPATION: Denial Strategy (Block the opponent)
         // If the discard would give a huge benefit to the opponent, take it even if it's mediocre for us
-        if (wouldHelpOpponent(gameState, discardValue)) {
+        if (wouldHelpOpponent(gameState, discardValue, difficulty)) {
             // Only block if our own hand isn't already "perfect" (avoid taking high card if we are winning)
             const myHighest = findHighestRevealedCard(currentPlayer.hand);
             if (myHighest.value >= discardValue) {
-                console.log(`[AI] Blocking opponent by taking ${discardValue} from discard!`);
+                aiLog(difficulty, `Blocking opponent by taking ${discardValue} from discard!`);
                 return 'DISCARD_PILE';
             }
         }
@@ -427,7 +591,7 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
 
     // BONUS MODE RULE: Forced replacement if drawn card is 20
     if (difficulty === AI_DIFFICULTY.BONUS && drawnValue === 20) {
-        const replaceIndex = findBestReplacementPosition(hand, 20, difficulty);
+        const replaceIndex = findBestReplacementPosition(hand, 20, difficulty, gameState);
         if (replaceIndex !== -1) {
             return { action: 'REPLACE', cardIndex: replaceIndex };
         }
@@ -452,7 +616,7 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
 
     // If came from discard, MUST replace
     if (gameState.turnPhase === 'MUST_REPLACE') {
-        const replaceIndex = findBestReplacementPosition(hand, drawnValue, difficulty);
+        const replaceIndex = findBestReplacementPosition(hand, drawnValue, difficulty, gameState);
         // If no good position found, just replace a random card (should rarely happen for AI)
         // CRITICAL: Must not pick a locked card
         const finalIndex = replaceIndex !== -1 ? replaceIndex : getRandomElement(
@@ -463,7 +627,7 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
 
     // Normal: Strategic decision
     if (difficulty === AI_DIFFICULTY.NORMAL) {
-        const replaceIndex = findBestReplacementPosition(hand, drawnValue, difficulty);
+        const replaceIndex = findBestReplacementPosition(hand, drawnValue, difficulty, gameState);
         if (drawnValue <= 3 && replaceIndex !== -1) {
             return { action: 'REPLACE', cardIndex: replaceIndex };
         }
@@ -479,7 +643,7 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
     }
 
     // Hard / Hardcore
-    const replaceIndex = findBestReplacementPosition(hand, drawnValue, difficulty);
+    const replaceIndex = findBestReplacementPosition(hand, drawnValue, difficulty, gameState);
 
     // 1. Column Completion (Highest Priority)
     // Check if this card completes a column
@@ -505,11 +669,9 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
     // 4. ANTICIPATION: Denial Strategy (Block the opponent)
     // If the drawn card would help the opponent, replace our worst revealed card with it
     // instead of discarding it (which gives it to them!)
-    if ((difficulty === AI_DIFFICULTY.HARD || difficulty === AI_DIFFICULTY.HARDCORE || difficulty === AI_DIFFICULTY.BONUS) &&
-        wouldHelpOpponent(gameState, drawnValue)) {
-
+    if (isAdvancedLevel(difficulty) && wouldHelpOpponent(gameState, drawnValue)) {
         if (highest.index !== -1 && highest.value >= drawnValue) {
-            console.log(`[AI] Preventing opponent from getting ${drawnValue} by keeping it!`);
+            aiLog(difficulty, `Preventing opponent from getting ${drawnValue} by keeping it!`);
             return { action: 'REPLACE', cardIndex: highest.index };
         }
     }
@@ -551,12 +713,13 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
                 score = 1;
             }
 
-            // Hardcore: Avoid revealing the last card if score is high (risky)
-            if ((difficulty === AI_DIFFICULTY.HARDCORE || difficulty === AI_DIFFICULTY.BONUS) && hiddenIndices.length === 1) {
-                const totalScore = calculateVisibleScore(hand);
-                if (totalScore > 50) {
-                    // Start closing out game, just take random
-                    score = 0;
+            // Hardcore: Avoid revealing the last card if we are behind
+            if (isAdvancedLevel(difficulty) && hiddenIndices.length === 1) {
+                if (!shouldAccelerateEndGame(gameState, hand)) {
+                    aiLog(difficulty, "Prudent Finisher: avoiding last card revelation (score differential is bad)");
+                    score = -100; // Even heavier penalty
+                } else {
+                    score = 20; // Encouraged if leading
                 }
             }
 
@@ -599,62 +762,72 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
  */
 export const decideSwapAction = (gameState) => {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-    const humanPlayer = gameState.players.find(p => !p.isAI) || gameState.players[(gameState.currentPlayerIndex + 1) % gameState.players.length];
+    // Find next player (human-1 if available, otherwise next in order)
+    const opponent = gameState.players.find(p => p.id === 'human-1') ||
+        gameState.players[(gameState.currentPlayerIndex + 1) % gameState.players.length];
+    const opponentIndex = gameState.players.findIndex(p => p.id === opponent.id);
 
-    // IA Strategy:
-    // 1. Find my worst card (revealed > 10, or random hidden if no bad revealed)
-    // 2. Find human's best revealed card (< 0)
+    const difficulty = gameState.aiDifficulty || AI_DIFFICULTY.NORMAL;
+    const avgValue = getProbabilisticAverageValue(gameState);
 
+    // 1. Find my worst card
+    const myHidden = getHiddenCardIndices(currentPlayer.hand);
     let worstMyIndex = -1;
     let worstMyValue = -Infinity;
-    currentPlayer.hand.forEach((card, idx) => {
-        if (card && !(card.lockCount > 0)) {
-            // Prefer revealed bad cards
-            if (card.isRevealed && card.value > worstMyValue) {
-                worstMyValue = card.value;
-                worstMyIndex = idx;
-            }
-        }
-    });
 
-    // If no bad revealed cards, pick a hidden one
-    if (worstMyIndex === -1 || worstMyValue < 5) {
-        const hidden = getHiddenCardIndices(currentPlayer.hand);
-        if (hidden.length > 0) worstMyIndex = getRandomElement(hidden);
+    const myHighest = findHighestRevealedCard(currentPlayer.hand);
+    if (myHighest.index !== -1) {
+        worstMyIndex = myHighest.index;
+        worstMyValue = myHighest.value;
     }
 
-    // If still -1, pick any non-locked revealed
-    if (worstMyIndex === -1) {
-        const revealed = getRevealedCardIndices(currentPlayer.hand);
-        if (revealed.length > 0) worstMyIndex = getRandomElement(revealed);
-    }
-
+    // 2. Find their best revealed card
     let bestTheirIndex = -1;
     let bestTheirValue = Infinity;
-    humanPlayer.hand.forEach((card, idx) => {
+    opponent.hand.forEach((card, idx) => {
         if (card && card.isRevealed && !(card.lockCount > 0) && card.value < bestTheirValue) {
             bestTheirValue = card.value;
             bestTheirIndex = idx;
         }
     });
 
-    // If human has no good revealed cards, pick a hidden one
-    if (bestTheirIndex === -1) {
-        const hidden = getHiddenCardIndices(humanPlayer.hand);
-        if (hidden.length > 0) bestTheirIndex = getRandomElement(hidden);
+    // 3. EV Decision Logic
+    if (isAdvancedLevel(difficulty)) {
+        // Option A: Swap my worst revealed for their best revealed
+        // Option B: Swap a hidden (EV ~5.3) for their best revealed
+
+        // If my worst revealed is actually better than the average hidden card, 
+        // swap a hidden card instead IF the target is excellent.
+        if (myHidden.length > 0 && (worstMyIndex === -1 || worstMyValue <= avgValue)) {
+            // Target must be better than average to risk a hidden swap
+            if (bestTheirValue <= -1) {
+                worstMyIndex = getRandomElement(myHidden);
+                aiLog(difficulty, `EV Decided: Swapping hidden card for opponent's ${bestTheirValue}`);
+            }
+        }
+
+        // If opponent has no good revealed cards, pick a hidden one
+        if (bestTheirIndex === -1 || bestTheirValue > avgValue) {
+            const theirHidden = getHiddenCardIndices(opponent.hand);
+            if (theirHidden.length > 0) {
+                bestTheirIndex = getRandomElement(theirHidden);
+                aiLog(difficulty, `EV Decided: Picking opponent's hidden card (no good revealed available)`);
+            }
+        }
     }
 
-    // Safety fallback
-    if (bestTheirIndex === -1) {
-        const revealed = getRevealedCardIndices(humanPlayer.hand);
-        if (revealed.length > 0) bestTheirIndex = getRandomElement(revealed);
+    // Final Fallbacks
+    if (worstMyIndex === -1) {
+        worstMyIndex = myHidden.length > 0 ? getRandomElement(myHidden) : 0;
     }
-
-    const humanPlayerIndex = gameState.players.findIndex(p => p.id === humanPlayer.id);
+    if (bestTheirIndex === -1) {
+        const theirHidden = getHiddenCardIndices(opponent.hand);
+        bestTheirIndex = theirHidden.length > 0 ? getRandomElement(theirHidden) : 0;
+    }
 
     return {
         sourceCardIndex: worstMyIndex,
-        targetPlayerIndex: humanPlayerIndex,
+        targetPlayerIndex: opponentIndex,
         targetCardIndex: bestTheirIndex
     };
 };

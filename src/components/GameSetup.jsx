@@ -55,9 +55,8 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
     const { playStart } = useFeedback();
     const { checkForUpdates, isChecking, checkResult } = useUpdateCheck();
 
-    // Synced animation refs
-    const scoreContainerRef = useRef(null);
-    const virtualContainerRef = useRef(null);
+    // Unified Skyjo Score Container - Premium Redesign
+    // refs already defined below
 
     // News State
     const [showWhatsNew, setShowWhatsNew] = useState(false);
@@ -71,17 +70,9 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
         }
     }, []);
 
-    useEffect(() => {
-        let frameId;
-        const animate = () => {
-            const angle = (Date.now() / 20) % 360;
-            if (scoreContainerRef.current) scoreContainerRef.current.style.setProperty('--border-angle', `${angle}deg`);
-            if (virtualContainerRef.current) virtualContainerRef.current.style.setProperty('--border-angle', `${(angle + 180) % 360}deg`);
-            frameId = requestAnimationFrame(animate);
-        };
-        frameId = requestAnimationFrame(animate);
-        return () => cancelAnimationFrame(frameId);
-    }, []);
+    // Unified Skyjo Score Container animation refs
+    const scoreContainerRef = useRef(null);
+    const virtualContainerRef = useRef(null);
 
     const addPlayer = () => {
         if (players.length < 8) {
@@ -125,13 +116,8 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
             {/* Header Premium */}
             {/* Unified Skyjo Score Container - Premium Redesign */}
             <div ref={scoreContainerRef} className="w-full relative group overflow-hidden rounded-[24px] shadow-[0_20px_60px_-15px_rgba(14,165,233,0.3)] transition-all hover:shadow-[0_30px_70px_-15px_rgba(14,165,233,0.4)]">
-                {/* Rotating Beam Border (Preserved) */}
-                <div
-                    className="absolute inset-[-150%] opacity-100"
-                    style={{
-                        background: 'conic-gradient(from var(--border-angle), transparent 0deg 300deg, #0ea5e9 360deg)'
-                    }}
-                />
+                {/* Static Premium Border */}
+                <div className="absolute inset-0 rounded-[24px] border border-white/10 z-0" />
 
                 {/* Glass Background (Premium Ultra) */}
                 <div className="absolute inset-[1px] bg-[#0f172a]/70 backdrop-blur-2xl rounded-[23px] z-10" />
@@ -284,13 +270,8 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                 whileTap={{ scale: 0.96 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-                {/* Rotating Beam Border */}
-                <div
-                    className="absolute inset-[-150%] opacity-100"
-                    style={{
-                        background: 'conic-gradient(from var(--border-angle), transparent 0deg 300deg, #9333ea 360deg)'
-                    }}
-                />
+                {/* Static Premium Border */}
+                <div className="absolute inset-0 rounded-[24px] border border-white/10 z-0" />
 
                 {/* Background Image Container */}
                 <div className="absolute inset-[2px] rounded-[22px] overflow-hidden z-10 bg-slate-900">

@@ -1,62 +1,64 @@
-# Fonctionnement de l'IA Skyjo
+# 🤖 Intelligence Artificielle Skyjo (Brain V2)
 
-Ce document explique les algorithmes et les stratégies utilisés par l'Intelligence Artificielle (IA) dans les différents modes de difficulté du jeu.
-
-## 🧠 Niveaux de Difficulté
-
-L'IA dispose de quatre niveaux de comportement, allant du simple amateur au maître stratège.
-
-| Niveau | Nom | Stratégie Globale |
-| :--- | :--- | :--- |
-| **Normal** | Amateur | Joue de manière basique, prend peu de risques et ne planifie pas ses colonnes. |
-| **Difficile** | Stratège | Vise les coins, construit des colonnes et **bloque l'adversaire**. |
-| **Hardcore** | Maître | Analyse mathématiquement chaque coup et **optimise les combos**. |
-| **Tourment** | Expert (Bonus) | Gère les cartes spéciales, la Tête de Mort et les stratégies avancées. |
+Ce document détaille l'architecture et les stratégies de l'IA Skyjo "Brain V2", un moteur de décision probabiliste et tactique.
 
 ---
 
-## 🃏 Phases de Jeu
+## 🏗️ Architecture Technique
 
-### 1. Révélation Initiale
-Comment l'IA choisit ses deux premières cartes à retourner :
-- **Normal** : Choix totalement aléatoire.
-- **Difficile+** : Privilégie les **coins** (0, 2, 9, 11). Cela lui permet d'avoir une meilleure visibilité pour construire ses colonnes dès le début.
-
-### 2. Pioche vs Défausse
-- **Normal** : Prend la défausse si la carte est $\leq 4$ ou si elle complète une colonne.
-- **Difficile+** : 
-    - Prend **systématiquement** les cartes négatives ($-1, -2$) ou la carte **Échange**.
-    - Analyse si la carte de la défausse peut former un "Skyjo" (3 cartes identiques).
-    - Ne remplace jamais une carte "Excellente" ($\leq 0$) par une carte de la défausse, sauf pour compléter une colonne.
-
-### 3. Actions (Remplacer vs Défausser)
-C'est ici que l'IA montre son intelligence :
-- **Priorité Absolue** : Compléter une colonne (Skyjo). Si l'IA peut aligner 3 cartes identiques, elle le fera, sauf si cela implique de supprimer trois cartes très négatives (ex: trois $-2$).
-- **Stratégie Multi-Colonnes (Combos)** : L'IA Hardcore privilégie maintenant de garder des valeurs qu'elle possède déjà sur son tapis, même dans des colonnes différentes, pour augmenter ses chances de piocher une troisième carte identique et déclencher une élimination.
-- **Anticipation (Blocage)** : 
-    - L'IA vérifie le tapis de l'adversaire (l'humain) avant chaque action.
-    - Elle ne te donnera pas une carte dont tu as besoin pour finir une colonne. Si elle pioche une carte qui t'aiderait, elle la gardera pour elle (même si elle est un peu haute) ou la remplacera pour ne pas te la laisser en défausse.
-- **Protection Intelligente** : 
-    - L'IA ne refuse plus aveuglément de remplacer ses 0, 1 ou 2. 
-    - Si remplacer un **0** par un **3** permet d'éliminer une colonne entière (gain net de points), elle fera le sacrifice pour "nettoyer" son tapis.
-- **Gestion des cartes cachées** :
-    - L'IA "Hardcore" calcule un score pour chaque emplacement caché.
-    - Elle préfère révéler des cartes dans les colonnes où elle a déjà commencé à construire une paire.
-- **Seuils de décision** :
-    - L'IA remplace ses cartes révélées si la nouvelle carte apporte un gain significatif (généralement une différence de 2 à 4 points).
+Le système est découplé en trois couches :
+1.  **[skyjoAI.js](file:///d:/VibeCoding/SkyJo-master/src/lib/skyjoAI.js)** : Le **Cerveau**. Contient les fonctions de décision pures (heuristiques, probabilités, blocking).
+2.  **[virtualGameStore.js](file:///d:/VibeCoding/SkyJo-master/src/store/virtualGameStore.js)** : L'**Orchestrateur**. Gère le cycle de vie du tour IA et le timing.
+3.  **[VirtualGame.jsx](file:///d:/VibeCoding/SkyJo-master/src/components/VirtualGame.jsx)** : L'**Interface**. Traduit les décisions logiques en animations visuelles.
 
 ---
 
-## ⚡ Mode Bonus (Tourment)
+## 🧠 Stratégies Avancées (Brain V2)
 
-Dans ce mode, l'IA utilise des logiques spécifiques pour les cartes spéciales :
+L'IA ne se contente plus de réagir, elle anticipe et calcule ses risques.
 
-- **Échange (S)** : L'IA l'utilise s'il possède une carte révélée très haute ($> 8$). Il cherchera alors à te donner sa pire carte contre ta meilleure carte révélée (ou une cachée s'il pense avoir de la chance).
-- **Trou Noir (H)** : Toujours activé dès que pioché pour perturber le jeu.
-- **Tête de Mort (20)** : L'IA subit la règle du remplacement forcé. Il tentera de la placer sur une colonne qu'il compte éliminer plus tard ou sur une de ses cartes déjà hautes pour limiter les dégâts.
+### 1. Modèle Probabiliste (EV)
+L'IA maintient une estimation de l'**Espérance de Valeur (EV)** du deck. 
+- Elle compte les cartes visibles sur le tapis et dans la défausse.
+- Elle calcule la valeur moyenne des cartes restantes ($EV_{deck} \approx 5.3$ au début).
+- **Impact** : Elle ne remplacera un 6 révélé que si l'EV du deck est nettement meilleure.
+
+### 2. Déni Stratégique (Blocage)
+Avant de jeter une carte, l'IA scanne votre tapis :
+- **Détection de patterns** : Elle repère si vous avez deux cartes identiques (révélées ou cachées).
+- **Rétention** : Si la carte piochée complète votre colonne, elle la **garde** (même si elle est mauvaise pour elle) pour vous étouffer.
+
+### 3. Gestion du Tempo & Finisseur Prudent
+L'IA ajuste son agressivité selon le score différentiel :
+- **Accélération** : Si elle mène ($Score_{IA} < Score_{Joueur} - 5$), elle cherche à révéler ses cartes pour finir la manche le plus vite possible.
+- **Finisseur Prudent (Nouveau)** : Si elle est dominée ($Score_{IA} > Score_{Joueur} + 10$), elle refuse catégoriquement d'agir sur sa dernière carte cachée. Elle préfère utiliser ses tours restants pour remplacer des cartes déjà révélées par de meilleures valeurs afin de minimiser ses points avant que l'adversaire ne finisse.
+
+### 4. Expansion Multi-Colonnes 2.0
+Lorsqu'elle possède déjà une valeur, elle ne choisit plus une carte cachée au hasard pour commencer un combo.
+- Elle cible les colonnes avec le plus gros potentiel (colonnes vides ou avec des cartes à sacrifier).
+
+### 5. Révélation Initiale Tactique
+En mode Hardcore, l'IA révèle deux cartes d'une **même colonne** (priorité aux coins). Cela maximise ses chances de match immédiat et stabilise sa structure de jeu dès le tour 1.
+
+### 6. Gestion de la Défausse (Aggressive Mode)
+Nouveauté majeure de la V2 : l'IA évite de s'encrasser avec des cartes médiocres.
+- **Cartes <= 4** : L'IA peut les piocher en défausse pour créer un potentiel de colonne (si une seule carte identique est visible).
+- **Cartes >= 5** : L'IA ne les prend en défausse que pour **compléter** une colonne (si deux cartes identiques sont déjà présentes).
+- **Impact** : Elle préférera piocher dans le deck (tentative de 0, -1, -2) plutôt que de prendre un 7 "par défaut".
 
 ---
 
-## 💡 Conseils pour gagner
-- L'IA ne sait pas mentir, mais en mode **Hardcore**, elle ne fait quasiment aucune erreur de calcul.
-- En mode **Tourment**, garde tes meilleures cartes cachées le plus longtemps possible pour éviter que l'IA ne te les vole avec une carte Échange !
+## 🎮 Niveaux de Difficulté
+
+| Niveau | Caractéristiques V2 |
+| :--- | :--- |
+| **Normal** | Decision 100% réactive. Pas de blocking. Pas de gestion de l'EV. |
+| **Difficile** | Blocking simple. Ouverture des coins. Heuristique basique. |
+| **Hardcore** | **Brain V2 Complet**. EV dynamique, Blocage avancé, Gestion du tempo. |
+| **Tourment** | **Brain V2 + Bonus**. Utilisation optimale des cartes Action (Swap, Trou Noir). |
+
+---
+
+## 💡 Conseils de Pro
+- **Ne piégez pas l'IA** : Elle connaît l'EV. Si vous laissez un -2 en défausse, elle ne le prendra pas seulement pour le score, mais aussi si cela bloque votre propre combo.
+- **Cachez vos paires** : Si vous révélez deux 9, l'IA ne jettera plus AUCUN 9 dans la défausse.
