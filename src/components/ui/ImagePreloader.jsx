@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import SkyjoLoader from '../SkyjoLoader';
 
 const CRITICAL_IMAGES = [
@@ -105,20 +106,31 @@ export default function ImagePreloader({ children }) {
 
     return (
         <>
-            {isLoading && (
-                <div className="fixed inset-0 z-[9999]">
-                    <SkyjoLoader progress={displayProgress} />
-                </div>
-            )}
-            <div
-                style={{
+            <AnimatePresence mode="wait">
+                {isLoading && (
+                    <motion.div
+                        key="loader"
+                        initial={{ opacity: 1 }}
+                        exit={{ opacity: 0, filter: "blur(20px)", scale: 1.05 }}
+                        transition={{ duration: 0.8, ease: "easeInOut" }}
+                        className="fixed inset-0 z-[9999]"
+                    >
+                        <SkyjoLoader progress={displayProgress} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{
                     opacity: isLoading ? 0 : 1,
-                    transition: 'opacity 0.5s ease-in-out',
-                    visibility: isLoading ? 'hidden' : 'visible'
+                    scale: isLoading ? 0.98 : 1
                 }}
+                transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                className="w-full h-full"
             >
                 {children}
-            </div>
+            </motion.div>
         </>
     );
 }
