@@ -21,6 +21,179 @@ const isAdvancedLevel = (difficulty) => {
     return difficulty === AI_DIFFICULTY.HARDCORE || difficulty === AI_DIFFICULTY.BONUS;
 };
 
+// ============================================
+// OPPONENT MEMORY & PLAYER PROFILING (Points 2 & 8)
+// ============================================
+
+/**
+ * Persistent memory of opponent actions across turns.
+ * Tracks what the opponent picks from discard (reveals their strategy)
+ * and what they discard (reveals what they don't need).
+ */
+const opponentMemory = {
+    // Cards the opponent deliberately took from discard pile
+    pickedFromDiscard: [],
+    // Cards the opponent discarded after drawing from deck
+    discardedValues: [],
+    // Number of column completions the opponent has achieved
+    columnCompletions: 0,
+    // Total turns observed
+    turnsObserved: 0,
+    // How many times opponent drew from discard vs deck
+    drawFromDiscard: 0,
+    drawFromDeck: 0,
+    // Track the last known discard top to detect opponent picks
+    lastDiscardTop: null,
+    // Number of times opponent replaced a revealed card (aggressive play)
+    replacedRevealed: 0,
+    // Number of times opponent revealed a hidden card (conservative play)
+    revealedHidden: 0,
+};
+
+/**
+ * Reset opponent memory (call at start of a new game)
+ */
+export const resetOpponentMemory = () => {
+    opponentMemory.pickedFromDiscard = [];
+    opponentMemory.discardedValues = [];
+    opponentMemory.columnCompletions = 0;
+    opponentMemory.turnsObserved = 0;
+    opponentMemory.drawFromDiscard = 0;
+    opponentMemory.drawFromDeck = 0;
+    opponentMemory.lastDiscardTop = null;
+    opponentMemory.replacedRevealed = 0;
+    opponentMemory.revealedHidden = 0;
+};
+
+/**
+ * Update opponent memory after observing their turn.
+ * Call this at the END of each human turn, passing the gameState
+ * BEFORE and AFTER the human's action.
+ *
+ * @param {object} preState - gameState before human action
+ * @param {object} postState - gameState after human action
+ */
+export const observeOpponentTurn = (preState, postState) => {
+    opponentMemory.turnsObserved++;
+
+    const preDiscard = preState.discardPile || [];
+    const postDiscard = postState.discardPile || [];
+    const preDiscardTop = preDiscard.length > 0 ? preDiscard[preDiscard.length - 1] : null;
+
+    // Detect if opponent drew from discard (discard pile shrank or top changed)
+    if (preDiscard.length > postDiscard.length ||
+        (preDiscardTop && postDiscard.length > 0 &&
+            preDiscardTop.value !== postDiscard[postDiscard.length - 1]?.value)) {
+        opponentMemory.drawFromDiscard++;
+        if (preDiscardTop) {
+            opponentMemory.pickedFromDiscard.push(preDiscardTop.value);
+            aiLog('memory', `Opponent picked ${preDiscardTop.value} from discard`);
+        }
+    } else {
+        opponentMemory.drawFromDeck++;
+    }
+
+    // Detect what opponent discarded (new top of discard after their turn)
+    if (postDiscard.length > 0) {
+        const newTop = postDiscard[postDiscard.length - 1];
+        // If discard grew or top changed, opponent discarded something
+        if (postDiscard.length > preDiscard.length ||
+            (preDiscardTop && newTop.value !== preDiscardTop.value)) {
+            opponentMemory.discardedValues.push(newTop.value);
+        }
+    }
+
+    // Detect play style: count revealed vs hidden changes
+    const opponent = postState.players.find(p => p.id === 'human-1');
+    const preOpponent = preState.players.find(p => p.id === 'human-1');
+    if (opponent && preOpponent) {
+        const preHiddenCount = preOpponent.hand.filter(c => c && !c.isRevealed).length;
+        const postHiddenCount = opponent.hand.filter(c => c && !c.isRevealed).length;
+        const preRevealedCount = preOpponent.hand.filter(c => c && c.isRevealed).length;
+        const postRevealedCount = opponent.hand.filter(c => c && c.isRevealed).length;
+
+        if (postHiddenCount < preHiddenCount && postRevealedCount > preRevealedCount) {
+            opponentMemory.revealedHidden++;
+        }
+        if (postRevealedCount >= preRevealedCount && postHiddenCount === preHiddenCount) {
+            opponentMemory.replacedRevealed++;
+        }
+    }
+
+    opponentMemory.lastDiscardTop = postDiscard.length > 0
+        ? postDiscard[postDiscard.length - 1]
+        : null;
+};
+
+/**
+ * Get opponent's player profile based on observed behavior.
+ * Returns a profile object describing their tendencies.
+ */
+const getOpponentProfile = () => {
+    const mem = opponentMemory;
+    if (mem.turnsObserved < 2) {
+        return { style: 'unknown', discardPickRate: 0, aggressiveness: 0.5, preferredValues: [] };
+    }
+
+    const totalDraws = mem.drawFromDiscard + mem.drawFromDeck;
+    const discardPickRate = totalDraws > 0 ? mem.drawFromDiscard / totalDraws : 0;
+
+    const totalActions = mem.replacedRevealed + mem.revealedHidden;
+    const aggressiveness = totalActions > 0 ? mem.replacedRevealed / totalActions : 0.5;
+
+    // Identify values the opponent is collecting (picked from discard multiple times)
+    const valueCounts = {};
+    mem.pickedFromDiscard.forEach(v => {
+        valueCounts[v] = (valueCounts[v] || 0) + 1;
+    });
+    const preferredValues = Object.entries(valueCounts)
+        .filter(([_, count]) => count >= 2)
+        .map(([val]) => parseInt(val));
+
+    // Identify values the opponent doesn't want (discarded)
+    const unwantedValues = [...new Set(mem.discardedValues)];
+
+    let style = 'balanced';
+    if (discardPickRate > 0.6) style = 'column_builder';  // Frequently picks specific values
+    if (aggressiveness > 0.7) style = 'aggressive';       // Replaces revealed cards often
+    if (discardPickRate < 0.25 && aggressiveness < 0.3) style = 'conservative';
+
+    return {
+        style,
+        discardPickRate,
+        aggressiveness,
+        preferredValues,
+        unwantedValues,
+    };
+};
+
+/**
+ * Check if opponent is likely building a column with a specific value.
+ * Uses memory of what they picked from discard + visible hand state.
+ */
+const isOpponentCollecting = (gameState, cardValue) => {
+    const profile = getOpponentProfile();
+
+    // Direct evidence: opponent picked this value from discard before
+    if (opponentMemory.pickedFromDiscard.includes(cardValue)) {
+        return true;
+    }
+
+    // Indirect evidence: opponent has 2+ revealed cards of this value
+    const opponent = gameState.players.find(p => p.id === 'human-1');
+    if (opponent) {
+        const matchCount = opponent.hand.filter(
+            c => c && c.isRevealed && c.value === cardValue
+        ).length;
+        if (matchCount >= 2) return true;
+    }
+
+    // Profile-based: if opponent is a column_builder and this value is in their preferences
+    if (profile.preferredValues.includes(cardValue)) return true;
+
+    return false;
+};
+
 /**
  * Structured AI logging
  */
@@ -65,6 +238,132 @@ const getProbabilisticAverageValue = (gameState) => {
     return Math.max(2, Math.min(8, ev));
 };
 
+// ============================================
+// DYNAMIC THRESHOLDS & ESTIMATED SCORE (Points 3 & 5)
+// ============================================
+
+/**
+ * Calculate the game progress ratio (0 = start, 1 = near end).
+ * Based on how many cards are revealed across all players.
+ */
+const getGameProgress = (gameState) => {
+    const allCards = gameState.players.flatMap(p => p.hand).filter(Boolean);
+    const totalCards = allCards.length;
+    if (totalCards === 0) return 0;
+    const revealedCards = allCards.filter(c => c.isRevealed).length;
+    return revealedCards / totalCards;
+};
+
+/**
+ * Get dynamic thresholds that adapt based on game progress and score differential.
+ * Early game = more selective (higher standards). Late game = more accepting.
+ *
+ * @param {object} gameState
+ * @param {Array} playerHand - AI's hand
+ * @param {string} difficulty
+ * @returns {object} Dynamic threshold values
+ */
+const getDynamicThresholds = (gameState, playerHand, difficulty) => {
+    const progress = getGameProgress(gameState);
+    const avgValue = getProbabilisticAverageValue(gameState);
+    const hiddenCount = getHiddenCardIndices(playerHand).length;
+    const totalSlots = playerHand.filter(c => c !== null).length;
+    const revealRatio = totalSlots > 0 ? 1 - (hiddenCount / totalSlots) : 1;
+
+    // Score differential: positive = AI winning
+    const scoreDiff = getScoreDifferential(gameState, playerHand);
+
+    // --- goodCardThreshold ---
+    // Early game (progress < 0.3): strict, only accept <= 3
+    // Mid game (0.3-0.7): accept <= 4-5
+    // Late game (> 0.7): accept anything below average deck value
+    let goodCardThreshold;
+    if (progress < 0.3) {
+        goodCardThreshold = isAdvancedLevel(difficulty) ? 3 : 4;
+    } else if (progress < 0.7) {
+        goodCardThreshold = isAdvancedLevel(difficulty) ? 4 : 5;
+    } else {
+        // Late game: accept up to deck average (clamped)
+        goodCardThreshold = Math.min(Math.ceil(avgValue), 7);
+    }
+
+    // If losing, be more accepting (raise threshold by 1)
+    if (scoreDiff < -10) goodCardThreshold = Math.min(goodCardThreshold + 1, 8);
+    // If winning, be stricter (lower threshold by 1)
+    if (scoreDiff > 15) goodCardThreshold = Math.max(goodCardThreshold - 1, 2);
+
+    // --- badThreshold (for "only replace terrible cards") ---
+    // Early game: only replace 11-12
+    // Late game: replace anything >= 7-8
+    let badThreshold;
+    if (progress < 0.3) {
+        badThreshold = 11;
+    } else if (progress < 0.6) {
+        badThreshold = 9;
+    } else {
+        badThreshold = 7;
+    }
+    if (scoreDiff < -10) badThreshold = Math.max(badThreshold - 2, 5);
+    if (scoreDiff > 15) badThreshold = Math.min(badThreshold + 1, 12);
+
+    // --- columnEliminationMinValue ---
+    // Early game: only complete columns of 4+
+    // Late game: complete columns of 3+
+    let columnEliminationMinValue;
+    if (progress < 0.4) {
+        columnEliminationMinValue = isAdvancedLevel(difficulty) ? 4 : 3;
+    } else {
+        columnEliminationMinValue = 3;
+    }
+
+    // --- replacementGapThreshold ---
+    // How much better must the new card be to justify replacing a revealed card
+    // Early game: gap of 5+ required. Late game: gap of 2+ is fine.
+    let replacementGap;
+    if (progress < 0.3) {
+        replacementGap = 5;
+    } else if (progress < 0.6) {
+        replacementGap = 4;
+    } else {
+        replacementGap = 2;
+    }
+
+    return {
+        goodCardThreshold,
+        badThreshold,
+        columnEliminationMinValue,
+        replacementGap,
+        gameProgress: progress,
+        revealRatio,
+    };
+};
+
+/**
+ * Estimate the TOTAL score of a hand, including hidden cards.
+ * Hidden cards are valued at their expected value based on remaining deck composition.
+ * This gives a much more accurate picture than just visible score.
+ *
+ * @param {Array} hand - Player's hand
+ * @param {object} gameState - Current game state
+ * @returns {number} Estimated total score
+ */
+const estimateTotalScore = (hand, gameState) => {
+    const avgValue = getProbabilisticAverageValue(gameState);
+    let total = 0;
+
+    hand.forEach(card => {
+        if (card === null) return;
+        if (card.isRevealed) {
+            total += card.value;
+        } else {
+            // Hidden card: use expected value from remaining deck
+            total += avgValue;
+        }
+    });
+
+    return total;
+};
+
 /**
  * Get a random element from an array
  */
@@ -97,6 +396,8 @@ const calculateVisibleScore = (hand) => {
 
 /**
  * Decision: Should the AI try to end the game quickly?
+ * IMPROVED (Point 5): Uses estimated total score (hidden cards included)
+ * instead of just visible score for more accurate end-game decisions.
  */
 const shouldAccelerateEndGame = (gameState, playerHand) => {
     const opponent = gameState.players.find(p => p.id === 'human-1') ||
@@ -104,14 +405,37 @@ const shouldAccelerateEndGame = (gameState, playerHand) => {
 
     if (!opponent) return true;
 
-    const myScore = calculateVisibleScore(playerHand);
-    const opponentScore = calculateVisibleScore(opponent.hand);
+    // Use estimated total scores (visible + hidden card EV)
+    const myEstimated = estimateTotalScore(playerHand, gameState);
+    const opponentEstimated = estimateTotalScore(opponent.hand, gameState);
 
-    // Strategy: Accelerate if leading, slow down if losing (unless forced)
-    if (myScore < opponentScore - 5) return true; // Leading: rush it!
-    if (myScore > opponentScore + 10) return false; // Losing: work on hand
+    // Also check visible scores for a "confidence" factor
+    const myVisible = calculateVisibleScore(playerHand);
+    const myHiddenCount = getHiddenCardIndices(playerHand).length;
 
-    return true; // Default
+    // If we have many hidden cards, our estimate is less reliable → be cautious
+    const confidencePenalty = myHiddenCount * 1.5;
+
+    // Leading estimated: rush if confident
+    if (myEstimated < opponentEstimated - 5 - confidencePenalty) {
+        aiLog('endgame', `Accelerating: estimated ${myEstimated.toFixed(1)} vs opponent ${opponentEstimated.toFixed(1)}`);
+        return true;
+    }
+
+    // Losing estimated: slow down and improve hand
+    if (myEstimated > opponentEstimated + 8) {
+        aiLog('endgame', `Slowing down: estimated ${myEstimated.toFixed(1)} vs opponent ${opponentEstimated.toFixed(1)}`);
+        return false;
+    }
+
+    // Edge case: if all our cards are revealed and score is good, rush
+    if (myHiddenCount <= 1 && myVisible < opponentEstimated) return true;
+
+    // Close game: default to slight acceleration if we have fewer hidden cards
+    const opponentHiddenCount = getHiddenCardIndices(opponent.hand).length;
+    if (myHiddenCount < opponentHiddenCount) return true;
+
+    return myEstimated <= opponentEstimated; // Accelerate only if not losing
 };
 
 /**
@@ -427,12 +751,130 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
 
     // MEDIOCRE/BAD CARDS (> 4)
     // Only replace if we have something TERRIBLE revealed (like a 12)
-    const badThreshold = 10 + riskAdjustment;
+    // IMPROVED (Point 3): Use dynamic thresholds instead of fixed 10
+    let badThreshold = 10 + riskAdjustment;
+    if (gameState && (isAdvancedLevel(difficulty) || difficulty === AI_DIFFICULTY.HARD)) {
+        const dynThresholds = getDynamicThresholds(gameState, hand, difficulty);
+        badThreshold = dynThresholds.badThreshold + riskAdjustment;
+    }
     if (highest.index !== -1 && cardValue < highest.value && highest.value >= badThreshold) {
         return highest.index;
     }
 
     return -1; // Don't replace
+};
+
+// ============================================
+// LOOK-AHEAD / ANTICIPATION (Point 4)
+// ============================================
+
+/**
+ * Simulate what happens if we discard a card: would the opponent benefit?
+ * This is a depth-1 minimax: we evaluate the opponent's best possible
+ * response to our discard action.
+ *
+ * @param {object} gameState
+ * @param {number} cardValue - Value we would discard
+ * @param {string} difficulty
+ * @returns {number} Risk score (higher = worse for us to discard this card)
+ *   0 = safe to discard, >0 = risky, the opponent can use it well
+ */
+const evaluateDiscardRisk = (gameState, cardValue, difficulty) => {
+    if (!isAdvancedLevel(difficulty) && difficulty !== AI_DIFFICULTY.HARD) return 0;
+
+    const opponent = gameState.players.find(p => p.id === 'human-1') ||
+        gameState.players[(gameState.currentPlayerIndex + 1) % gameState.players.length];
+    if (!opponent) return 0;
+
+    let risk = 0;
+
+    // 1. Check if opponent can complete a column with this value
+    for (let i = 0; i < opponent.hand.length; i++) {
+        const card = opponent.hand[i];
+        if (!card || card.lockCount > 0) continue;
+
+        const col = Math.floor(i / 3);
+        const colStart = col * 3;
+        const colIndices = [colStart, colStart + 1, colStart + 2];
+
+        let matchCount = 0;
+        colIndices.forEach(idx => {
+            if (idx === i) return;
+            const c = opponent.hand[idx];
+            if (c && c.isRevealed && c.value === cardValue) matchCount++;
+        });
+
+        // Opponent can complete a column! High risk.
+        if (matchCount === 2) {
+            risk += cardValue >= 3 ? cardValue * 3 : cardValue; // Higher value columns are worse to give away
+        }
+        // Opponent has 1 matching card — building potential
+        if (matchCount === 1) {
+            risk += cardValue >= 5 ? 3 : 1;
+        }
+    }
+
+    // 2. Check memory: is the opponent actively collecting this value?
+    if (isOpponentCollecting(gameState, cardValue)) {
+        risk += 10;
+        aiLog(difficulty, `Lookahead: opponent is collecting value ${cardValue}, high discard risk!`);
+    }
+
+    // 3. Profile-based adjustment
+    const profile = getOpponentProfile();
+    if (profile.style === 'column_builder' && cardValue >= 3) {
+        // Column builders are more dangerous — any medium-high card helps them
+        risk += 3;
+    }
+
+    // 4. If it would replace opponent's worst card with something better
+    const opponentHighest = findHighestRevealedCard(opponent.hand);
+    if (opponentHighest.index !== -1 && cardValue < opponentHighest.value) {
+        risk += (opponentHighest.value - cardValue); // The bigger the upgrade, the bigger the risk
+    }
+
+    return risk;
+};
+
+/**
+ * Compare two possible actions: REPLACE vs DISCARD_AND_REVEAL
+ * using look-ahead to evaluate which is safer.
+ *
+ * @param {object} gameState
+ * @param {number} drawnValue - Value of drawn card
+ * @param {number} replaceIndex - Best replacement position (-1 if none)
+ * @param {Array} hand - AI's hand
+ * @param {string} difficulty
+ * @returns {'REPLACE'|'DISCARD'} Recommended action considering look-ahead
+ */
+const lookaheadDecision = (gameState, drawnValue, replaceIndex, hand, difficulty) => {
+    if (!isAdvancedLevel(difficulty)) return replaceIndex !== -1 ? 'REPLACE' : 'DISCARD';
+
+    const discardRisk = evaluateDiscardRisk(gameState, drawnValue, difficulty);
+
+    // If discarding is very risky and we have a valid replacement, prefer keeping the card
+    if (discardRisk >= 8 && replaceIndex !== -1) {
+        aiLog(difficulty, `Lookahead: keeping card ${drawnValue} (discard risk=${discardRisk}) to deny opponent`);
+        return 'REPLACE';
+    }
+
+    // If discarding is somewhat risky but replacing would hurt us more
+    if (replaceIndex !== -1) {
+        const currentCardValue = hand[replaceIndex]?.isRevealed ? hand[replaceIndex].value : null;
+        if (currentCardValue !== null) {
+            const replaceBenefit = currentCardValue - drawnValue; // positive = we improve
+            // If replacing helps us more than discard risk hurts us
+            if (replaceBenefit > 0 || discardRisk >= 5) {
+                return 'REPLACE';
+            }
+        }
+    }
+
+    // If discard risk is low, discard freely
+    if (discardRisk <= 2) return 'DISCARD';
+
+    // Medium risk: prefer replacing if possible
+    return replaceIndex !== -1 ? 'REPLACE' : 'DISCARD';
 };
 
 // ============================================
@@ -547,6 +989,17 @@ export const decideDrawSource = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
             }
         }
 
+        // IMPROVED (Point 2): Memory-based denial
+        // If opponent has been collecting a specific value, block it even if
+        // the standard wouldHelpOpponent check didn't trigger
+        if (isAdvancedLevel(difficulty) && isOpponentCollecting(gameState, discardValue)) {
+            const myHighest = findHighestRevealedCard(currentPlayer.hand);
+            if (myHighest.value >= discardValue) {
+                aiLog(difficulty, `Memory-based block: opponent collects ${discardValue}, taking from discard`);
+                return 'DISCARD_PILE';
+            }
+        }
+
         return 'DRAW_PILE';
     }
 
@@ -645,6 +1098,9 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
     // Hard / Hardcore
     const replaceIndex = findBestReplacementPosition(hand, drawnValue, difficulty, gameState);
 
+    // IMPROVED (Point 3): Use dynamic thresholds
+    const dynThresholds = getDynamicThresholds(gameState, hand, difficulty);
+
     // 1. Column Completion (Highest Priority)
     // Check if this card completes a column
     // (Handled inside findBestReplacementPosition, but verified here)
@@ -653,30 +1109,38 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
     }
 
     // 2. Good Card Strategy
-    // Hardcore: Always keep cards <= 4 if they improve the board
-    const goodCardThreshold = (difficulty === AI_DIFFICULTY.HARDCORE || difficulty === AI_DIFFICULTY.BONUS) ? 4 : 3;
-    if (drawnValue <= goodCardThreshold && replaceIndex !== -1) {
+    // IMPROVED (Point 3): Dynamic threshold instead of fixed 3/4
+    if (drawnValue <= dynThresholds.goodCardThreshold && replaceIndex !== -1) {
         return { action: 'REPLACE', cardIndex: replaceIndex };
     }
 
     // 3. High Card Replacement
     const highest = findHighestRevealedCard(hand);
     if (highest.index !== -1 && drawnValue < highest.value) {
-        // Hardcore: Strict improvement
-        return { action: 'REPLACE', cardIndex: highest.index };
-    }
-
-    // 4. ANTICIPATION: Denial Strategy (Block the opponent)
-    // If the drawn card would help the opponent, replace our worst revealed card with it
-    // instead of discarding it (which gives it to them!)
-    if (isAdvancedLevel(difficulty) && wouldHelpOpponent(gameState, drawnValue)) {
-        if (highest.index !== -1 && highest.value >= drawnValue) {
-            aiLog(difficulty, `Preventing opponent from getting ${drawnValue} by keeping it!`);
+        // IMPROVED (Point 3): Use dynamic replacement gap
+        if (highest.value - drawnValue >= dynThresholds.replacementGap || drawnValue <= dynThresholds.goodCardThreshold) {
             return { action: 'REPLACE', cardIndex: highest.index };
         }
     }
 
-    // 4. Bad/Mediocre Card -> Discard & Reveal Strategy
+    // 4. LOOKAHEAD + DENIAL (Points 4 & 2)
+    // Use look-ahead to evaluate discard risk before deciding
+    if (isAdvancedLevel(difficulty)) {
+        const lookahead = lookaheadDecision(gameState, drawnValue, replaceIndex, hand, difficulty);
+        if (lookahead === 'REPLACE' && replaceIndex !== -1) {
+            aiLog(difficulty, `Lookahead decided to KEEP card ${drawnValue} (deny opponent)`);
+            return { action: 'REPLACE', cardIndex: replaceIndex };
+        }
+        // Fallback: original denial logic if lookahead says discard but opponent would benefit
+        if (wouldHelpOpponent(gameState, drawnValue)) {
+            if (highest.index !== -1 && highest.value >= drawnValue) {
+                aiLog(difficulty, `Preventing opponent from getting ${drawnValue} by keeping it!`);
+                return { action: 'REPLACE', cardIndex: highest.index };
+            }
+        }
+    }
+
+    // 5. Bad/Mediocre Card -> Discard & Reveal Strategy
     const hiddenIndices = getHiddenCardIndices(hand);
     if (hiddenIndices.length > 0) {
         // Hardcore/Hard: Target specific hidden cards to reveal
@@ -758,7 +1222,34 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
 };
 
 /**
+ * IMPROVED (Point 7): Check if sending a card to the opponent would complete
+ * one of their columns. Returns true if dangerous.
+ *
+ * @param {Array} opponentHand
+ * @param {number} targetIndex - Where the card will land in opponent's hand
+ * @param {number} cardValue - Value of the card being sent
+ * @returns {boolean} True if this would gift a column completion
+ */
+const wouldGiftColumnCompletion = (opponentHand, targetIndex, cardValue) => {
+    const col = Math.floor(targetIndex / 3);
+    const colStart = col * 3;
+    const colIndices = [colStart, colStart + 1, colStart + 2];
+
+    let matchCount = 0;
+    colIndices.forEach(idx => {
+        if (idx === targetIndex) return;
+        const card = opponentHand[idx];
+        if (card && card.isRevealed && card.value === cardValue) matchCount++;
+    });
+
+    // If 2 other cards in the column match, placing this card completes it
+    return matchCount === 2;
+};
+
+/**
  * Decide which cards to swap (Special card 'S')
+ * IMPROVED (Point 7): Verifies that the swap doesn't accidentally
+ * gift the opponent a column completion.
  */
 export const decideSwapAction = (gameState) => {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
@@ -796,7 +1287,7 @@ export const decideSwapAction = (gameState) => {
         // Option A: Swap my worst revealed for their best revealed
         // Option B: Swap a hidden (EV ~5.3) for their best revealed
 
-        // If my worst revealed is actually better than the average hidden card, 
+        // If my worst revealed is actually better than the average hidden card,
         // swap a hidden card instead IF the target is excellent.
         if (myHidden.length > 0 && (worstMyIndex === -1 || worstMyValue <= avgValue)) {
             // Target must be better than average to risk a hidden swap
@@ -823,6 +1314,91 @@ export const decideSwapAction = (gameState) => {
     if (bestTheirIndex === -1) {
         const theirHidden = getHiddenCardIndices(opponent.hand);
         bestTheirIndex = theirHidden.length > 0 ? getRandomElement(theirHidden) : 0;
+    }
+
+    // ============================================
+    // POINT 7: Anti-completion safety check
+    // Verify that sending our card to the opponent's slot won't complete their column!
+    // ============================================
+    if (isAdvancedLevel(difficulty) || difficulty === AI_DIFFICULTY.HARD) {
+        const myCard = currentPlayer.hand[worstMyIndex];
+        const myCardValue = myCard ? (myCard.isRevealed ? myCard.value : avgValue) : avgValue;
+
+        // Check: would placing our card at bestTheirIndex complete a column for opponent?
+        if (bestTheirIndex !== -1 && wouldGiftColumnCompletion(opponent.hand, bestTheirIndex, myCardValue)) {
+            aiLog(difficulty, `Swap safety: sending ${myCardValue} to index ${bestTheirIndex} would gift a column completion!`);
+
+            // Try to find an alternative target that doesn't gift a column
+            let alternativeIndex = -1;
+            let alternativeValue = Infinity;
+
+            opponent.hand.forEach((card, idx) => {
+                if (idx === bestTheirIndex) return; // Skip the dangerous one
+                if (!card || card.lockCount > 0) return;
+
+                // Check this alternative doesn't also gift a completion
+                if (wouldGiftColumnCompletion(opponent.hand, idx, myCardValue)) return;
+
+                if (card.isRevealed && card.value < alternativeValue) {
+                    alternativeValue = card.value;
+                    alternativeIndex = idx;
+                }
+            });
+
+            if (alternativeIndex !== -1) {
+                aiLog(difficulty, `Swap safety: using safe alternative target index ${alternativeIndex} (value ${alternativeValue})`);
+                bestTheirIndex = alternativeIndex;
+            } else {
+                // No safe revealed targets — try a hidden card
+                const theirHidden = getHiddenCardIndices(opponent.hand);
+                const safeHidden = theirHidden.filter(
+                    idx => !wouldGiftColumnCompletion(opponent.hand, idx, myCardValue)
+                );
+                if (safeHidden.length > 0) {
+                    bestTheirIndex = getRandomElement(safeHidden);
+                    aiLog(difficulty, `Swap safety: targeting hidden card at ${bestTheirIndex} instead`);
+                }
+                // If all targets are dangerous, we proceed anyway (rare edge case)
+            }
+        }
+
+        // BONUS CHECK: Also verify the card we RECEIVE won't break one of our own potential columns
+        const theirCard = opponent.hand[bestTheirIndex];
+        if (theirCard && theirCard.isRevealed && worstMyIndex !== -1) {
+            // Check if placing their card at worstMyIndex would disrupt our column building
+            const col = Math.floor(worstMyIndex / 3);
+            const colStart = col * 3;
+            const colIndices = [colStart, colStart + 1, colStart + 2];
+            const myColValues = colIndices
+                .filter(i => i !== worstMyIndex)
+                .map(i => currentPlayer.hand[i])
+                .filter(c => c && c.isRevealed)
+                .map(c => c.value);
+
+            // If we had 2 matching cards in this column and incoming card breaks it
+            if (myColValues.length === 2 && myColValues[0] === myColValues[1] && theirCard.value !== myColValues[0]) {
+                // Try to find a different source card from our hand
+                const myRevealed = getRevealedCardIndices(currentPlayer.hand);
+                const alternativeSource = myRevealed.find(idx => {
+                    if (idx === worstMyIndex) return false;
+                    const srcCol = Math.floor(idx / 3);
+                    const srcColStart = srcCol * 3;
+                    const srcColIndices = [srcColStart, srcColStart + 1, srcColStart + 2];
+                    const srcColVals = srcColIndices
+                        .filter(i => i !== idx)
+                        .map(i => currentPlayer.hand[i])
+                        .filter(c => c && c.isRevealed)
+                        .map(c => c.value);
+                    // Don't break another potential column either
+                    return !(srcColVals.length === 2 && srcColVals[0] === srcColVals[1]);
+                });
+
+                if (alternativeSource !== undefined) {
+                    aiLog(difficulty, `Swap safety: avoiding column disruption, swapping from index ${alternativeSource} instead of ${worstMyIndex}`);
+                    worstMyIndex = alternativeSource;
+                }
+            }
+        }
     }
 
     return {

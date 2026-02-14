@@ -28,6 +28,8 @@ import {
     decideDrawSource,
     decideCardAction,
     decideSwapAction,
+    resetOpponentMemory,
+    observeOpponentTurn,
 } from '../lib/skyjoAI';
 
 /**
@@ -85,6 +87,7 @@ export const useVirtualGameStore = create(
             drawnCardSource: null, // 'pile' or 'discard'
             isDailyChallenge: false,
             isShowingGame: false, // UI flag to indicate if we are on the game screen
+            humanTurnStartState: null, // Track state for turn observation
 
             // Pause state
             isPaused: false,
@@ -183,6 +186,10 @@ export const useVirtualGameStore = create(
                 }
 
                 const gameState = initializeGame(players, { isBonusMode });
+
+                // Reset AI memory for new game
+                resetOpponentMemory();
+
                 const totalScores = {};
                 players.forEach(p => {
                     totalScores[p.id] = 0;
@@ -206,6 +213,7 @@ export const useVirtualGameStore = create(
                     drawnCardSource: null,
                     isPaused: false,
                     isDailyChallenge: options.isDailyChallenge || false,
+                    humanTurnStartState: null,
                 });
             },
 
@@ -529,8 +537,13 @@ export const useVirtualGameStore = create(
              * Draw from the main pile
              */
             drawFromDrawPile: () => {
-                const { gameState } = get();
+                const { gameState, aiPlayers } = get();
                 if (!gameState || gameState.turnPhase !== 'DRAW') return;
+
+                // Capture start state for human turn observation
+                if (!aiPlayers.includes(gameState.currentPlayerIndex)) {
+                    set({ humanTurnStartState: gameState });
+                }
 
                 const newState = drawFromPile(gameState);
                 set({ gameState: newState, drawnCardSource: 'pile' });
@@ -540,9 +553,14 @@ export const useVirtualGameStore = create(
              * Take from discard pile
              */
             takeFromDiscard: () => {
-                const { gameState } = get();
+                const { gameState, aiPlayers } = get();
                 if (!gameState || gameState.turnPhase !== 'DRAW') return;
                 if (gameState.discardPile.length === 0) return;
+
+                // Capture start state for human turn observation
+                if (!aiPlayers.includes(gameState.currentPlayerIndex)) {
+                    set({ humanTurnStartState: gameState });
+                }
 
                 const newState = drawFromDiscard(gameState);
                 set({ gameState: newState, drawnCardSource: 'discard' });
@@ -552,13 +570,21 @@ export const useVirtualGameStore = create(
              * Replace a card in hand with drawn card
              */
             replaceHandCard: (cardIndex) => {
-                const { gameState } = get();
+                const { gameState, humanTurnStartState, aiPlayers } = get();
                 if (!gameState) return;
                 if (gameState.turnPhase !== 'REPLACE_OR_DISCARD' && gameState.turnPhase !== 'MUST_REPLACE') return;
+
+                const isHuman = !aiPlayers.includes(gameState.currentPlayerIndex);
 
                 let newState = replaceCard(gameState, cardIndex);
                 newState = endTurn(newState);
                 newState = applyGameEndLogic(newState);
+
+                // Observe turn if human finished
+                if (isHuman && humanTurnStartState) {
+                    observeOpponentTurn(humanTurnStartState, newState);
+                    set({ humanTurnStartState: null });
+                }
 
                 // Notification for elimination
                 if (newState.lastEliminatedCards) {
@@ -580,15 +606,23 @@ export const useVirtualGameStore = create(
              * Discard drawn card and reveal a hidden card
              */
             discardAndRevealCard: (cardIndex) => {
-                const { gameState } = get();
+                const { gameState, humanTurnStartState, aiPlayers } = get();
                 if (!gameState || gameState.turnPhase !== 'REPLACE_OR_DISCARD') return;
 
                 const player = gameState.players[gameState.currentPlayerIndex];
                 if (player.hand[cardIndex]?.isRevealed) return;
 
+                const isHuman = !aiPlayers.includes(gameState.currentPlayerIndex);
+
                 let newState = discardAndReveal(gameState, cardIndex);
                 newState = endTurn(newState);
                 newState = applyGameEndLogic(newState);
+
+                // Observe turn if human finished
+                if (isHuman && humanTurnStartState) {
+                    observeOpponentTurn(humanTurnStartState, newState);
+                    set({ humanTurnStartState: null });
+                }
 
                 // Notification for elimination
                 if (newState.lastEliminatedCards) {
@@ -611,12 +645,22 @@ export const useVirtualGameStore = create(
              * This buries the card in the discard pile and triggers the action phase.
              */
             playDrawnActionCard: () => {
-                const { gameState } = get();
+                const { gameState, humanTurnStartState, aiPlayers } = get();
                 if (!gameState || gameState.turnPhase !== 'REPLACE_OR_DISCARD') return;
+
+                const isHuman = !aiPlayers.includes(gameState.currentPlayerIndex);
 
                 let newState = playActionCard(gameState);
                 newState = endTurn(newState); // endTurn respects SPECIAL_ACTION_SWAP phase
                 newState = applyGameEndLogic(newState);
+
+                // Observe turn if human finished (and turn actually ended - 
+                // playActionCard might lead to SPECIAL_ACTION_SWAP which is still human turn)
+                if (isHuman && humanTurnStartState && newState.currentPlayerIndex !== gameState.currentPlayerIndex) {
+                    observeOpponentTurn(humanTurnStartState, newState);
+                    set({ humanTurnStartState: null });
+                }
+
                 set({ gameState: newState, selectedCardIndex: null, drawnCardSource: null });
             },
 
@@ -646,8 +690,10 @@ export const useVirtualGameStore = create(
              * Reveal a card on the grid (used when in MUST_REVEAL phase)
              */
             revealGridCard: (cardIndex) => {
-                const { gameState } = get();
+                const { gameState, humanTurnStartState, aiPlayers } = get();
                 if (!gameState || gameState.turnPhase !== 'MUST_REVEAL') return;
+
+                const isHuman = !aiPlayers.includes(gameState.currentPlayerIndex);
 
                 const player = gameState.players[gameState.currentPlayerIndex];
                 // Can only reveal hidden cards
@@ -673,6 +719,12 @@ export const useVirtualGameStore = create(
 
                 // Use engine's endTurn to handle column clearing and next player
                 newState = endTurn(newState);
+
+                // Observe turn if human finished
+                if (isHuman && humanTurnStartState) {
+                    observeOpponentTurn(humanTurnStartState, newState);
+                    set({ humanTurnStartState: null });
+                }
 
                 // Handle Chest Revelation Phase transition
                 if (newState.phase === 'FINISHED') {
@@ -718,11 +770,13 @@ export const useVirtualGameStore = create(
              * Reveal a hidden card (after discarding drawn card)
              */
             revealHiddenCard: (cardIndex) => {
-                const { gameState } = get();
+                const { gameState, humanTurnStartState, aiPlayers } = get();
                 if (!gameState || gameState.turnPhase !== 'MUST_REVEAL') return;
 
                 const player = gameState.players[gameState.currentPlayerIndex];
                 if (player.hand[cardIndex]?.isRevealed) return; // Can only reveal hidden cards
+
+                const isHuman = !aiPlayers.includes(gameState.currentPlayerIndex);
 
                 // Reveal the card
                 const newHand = player.hand.map((card, i) => {
@@ -749,6 +803,13 @@ export const useVirtualGameStore = create(
                 };
                 newState = endTurn(newState);
                 newState = applyGameEndLogic(newState);
+
+                // Observe turn if human finished
+                if (isHuman && humanTurnStartState) {
+                    observeOpponentTurn(humanTurnStartState, newState);
+                    set({ humanTurnStartState: null });
+                }
+
                 set({ gameState: newState, selectedCardIndex: null, drawnCardSource: null });
             },
 
