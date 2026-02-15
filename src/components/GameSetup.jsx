@@ -291,7 +291,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                             gradientFrom="from-slate-800"
                             gradientTo="to-slate-950"
                             shadowColor="shadow-sky-500/10"
-                            contentClassName="border border-sky-500/40 rounded-2xl"
+                            contentClassName="border border-sky-500/40 rounded-2xl py-3"
                         >
                             <span className="flex items-center gap-2 text-sky-400 font-black tracking-[0.1em] uppercase text-sm">
                                 <Play className="h-4 w-4 fill-current" />
