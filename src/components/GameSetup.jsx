@@ -131,7 +131,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                 <div className="relative z-10 w-full overflow-hidden rounded-[24px] border border-white/10 shadow-[0_20px_60px_-15px_rgba(14,165,233,0.3)] bg-[#0c0c1e] backdrop-blur-2xl transition-all hover:shadow-[0_30px_70px_-15px_rgba(14,165,233,0.4)] flex flex-col items-stretch">
 
                     {/* Header Section (Skyjoreel Design) */}
-                    <div className="relative overflow-hidden border-b border-white/5 bg-[#0c0c1e] z-20 aspect-[21/9] sm:aspect-auto sm:h-48 group/header">
+                    <div className="relative overflow-hidden border-b border-white/5 bg-[#0c0c1e] z-20 aspect-[21/7] sm:aspect-auto sm:h-40 group/header">
 
                         {/* FOND VIVANT MULTI-COUCHES (from Skyjoreel) */}
                         <div className="absolute inset-0 pointer-events-none overflow-hidden">
