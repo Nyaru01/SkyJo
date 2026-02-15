@@ -1140,8 +1140,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                 {[
                                     { level: AI_DIFFICULTY.NORMAL, label: 'Normal', color: 'from-emerald-500 to-teal-500', shadow: 'shadow-emerald-500/50', icon: Leaf, desc: 'Idéal pour débuter', activeClass: "border-emerald-500 ring-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.4)]" },
                                     { level: AI_DIFFICULTY.HARD, label: 'Difficile', color: 'from-amber-500 to-orange-500', shadow: 'shadow-amber-500/50', icon: Swords, desc: 'Défi stratégique', activeClass: "border-amber-500 ring-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.4)]" },
-                                    { level: AI_DIFFICULTY.HARDCORE, label: 'Hardcore', color: 'from-red-600 to-rose-600', shadow: 'shadow-red-600/50', icon: Skull, desc: 'IA impitoyable', activeClass: "border-red-600 ring-red-600/50 shadow-[0_0_20px_rgba(220,38,38,0.4)]" },
-                                    { level: AI_DIFFICULTY.BONUS, label: 'Tourment', color: 'from-purple-600 to-indigo-600', shadow: 'shadow-purple-600/50', icon: Flame, desc: 'Stratégie & Bonus', activeClass: "border-purple-500 ring-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.4)]" }
+                                    { level: AI_DIFFICULTY.HARDCORE, label: 'Hardcore', color: 'from-purple-600 to-indigo-600', shadow: 'shadow-purple-600/50', icon: Skull, desc: 'IA impitoyable', activeClass: "border-purple-500 ring-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.4)]" },
+                                    { level: AI_DIFFICULTY.BONUS, label: 'Tourment', color: 'from-red-600 to-rose-600', shadow: 'shadow-red-600/50', icon: Flame, desc: 'Stratégie & Bonus', activeClass: "border-red-600 ring-red-600/50 shadow-[0_0_20px_rgba(220,38,38,0.4)]" }
                                 ].map((mode) => (
                                     <div key={mode.level} className="relative group h-full">
                                         <motion.div
@@ -1199,28 +1199,23 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                                     </div>
                                                 </div>
 
-                                                {/* Footer Area for Rules Button - Fixed height for alignment */}
-                                                <div className="w-full flex items-center justify-center min-h-[40px]">
-                                                    {mode.level === AI_DIFFICULTY.BONUS ? (
-                                                        <div className="w-full pt-2 border-t border-white/5">
-                                                            <div
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setShowBonusTutorial(true);
-                                                                }}
-                                                                className="w-full py-1.5 px-3 rounded-lg bg-slate-800/50 border border-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 hover:bg-slate-700 hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
-                                                            >
-                                                                <Info className="w-3 h-3" />
-                                                                Règles
+                                                {/* Footer Area for Rules Button - Only if needed */}
+                                                {mode.level === AI_DIFFICULTY.BONUS && (
+                                                    <div className="w-full pt-2 border-t border-white/5 mt-auto">
+                                                        <div
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setShowBonusTutorial(true);
+                                                            }}
+                                                            className="w-full py-1.5 px-3 rounded-lg bg-slate-800/50 border border-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 hover:bg-slate-700 hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                                        >
+                                                            <div className="w-3 h-3 flex items-center justify-center bg-purple-500/20 rounded-full">
+                                                                <Info className="w-2.5 h-2.5" />
                                                             </div>
+                                                            Règles
                                                         </div>
-                                                    ) : (
-                                                        /* Invisible placeholder to maintain consistent card heights */
-                                                        <div className="w-full pt-2 invisible">
-                                                            <div className="w-full py-1.5 px-3 text-[9px]">&nbsp;</div>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                    </div>
+                                                )}
                                                 {aiConfig.difficulty === mode.level && (
                                                     <div className={cn(
                                                         "absolute top-2 right-2 w-2 h-2 rounded-full shadow-[0_0_8px]",
@@ -1245,20 +1240,20 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                     gradientFrom={
                         aiConfig.difficulty === AI_DIFFICULTY.NORMAL ? "from-emerald-500" :
                             aiConfig.difficulty === AI_DIFFICULTY.HARD ? "from-amber-500" :
-                                aiConfig.difficulty === AI_DIFFICULTY.HARDCORE ? "from-red-600" :
-                                    "from-purple-600"
+                                aiConfig.difficulty === AI_DIFFICULTY.HARDCORE ? "from-purple-600" :
+                                    "from-red-600"
                     }
                     gradientTo={
                         aiConfig.difficulty === AI_DIFFICULTY.NORMAL ? "to-teal-500" :
                             aiConfig.difficulty === AI_DIFFICULTY.HARD ? "to-orange-500" :
-                                aiConfig.difficulty === AI_DIFFICULTY.HARDCORE ? "to-rose-600" :
-                                    "to-indigo-600"
+                                aiConfig.difficulty === AI_DIFFICULTY.HARDCORE ? "to-indigo-600" :
+                                    "to-rose-600"
                     }
                     shadowColor={
                         aiConfig.difficulty === AI_DIFFICULTY.NORMAL ? "shadow-emerald-500/25" :
                             aiConfig.difficulty === AI_DIFFICULTY.HARD ? "shadow-amber-500/25" :
-                                aiConfig.difficulty === AI_DIFFICULTY.HARDCORE ? "shadow-red-500/25" :
-                                    "shadow-purple-500/25"
+                                aiConfig.difficulty === AI_DIFFICULTY.HARDCORE ? "shadow-purple-500/25" :
+                                    "shadow-red-500/25"
                     }
                 >
                     <span className="flex items-center justify-center gap-2">
@@ -1268,12 +1263,12 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 </PremiumTiltButton>
 
                 {/* Robot Avatar - Precision Placement (Red Box Area) */}
-                <div className="flex-1 flex items-end justify-end p-1 pr-1 pb-8 pointer-events-none">
+                <div className="flex-1 flex items-end justify-end p-1 pr-1 pb-16 pointer-events-none">
                     <div className="w-12 h-32 relative pointer-events-auto">
                         <RobotAvatar
                             size="lg"
                             className="w-full h-full"
-                            isAngry={aiConfig.difficulty === AI_DIFFICULTY.HARDCORE || aiConfig.difficulty === AI_DIFFICULTY.BONUS}
+                            difficulty={aiConfig.difficulty}
                         />
                     </div>
                 </div>

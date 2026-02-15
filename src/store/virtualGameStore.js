@@ -470,14 +470,14 @@ export const useVirtualGameStore = create(
                         const myCard = currentPlayer.hand[sourceCardIndex];
                         const theirCard = targetPlayer.hand[targetCardIndex];
 
-                        // Phrasing logic for grammar
-                        const myValText = myCard.isRevealed ? `son ${myCard.value}` : 'sa carte cachée';
-                        const theirValText = theirCard.isRevealed ? `votre ${theirCard.value}` : 'votre carte cachée';
+                        // Phrasing logic for grammar - EXTREMELY STRICT for hidden cards
+                        const myValText = (myCard && myCard.isRevealed) ? `son ${myCard.value}` : 'une de ses cartes cachées';
+                        const theirValText = (theirCard && theirCard.isRevealed) ? `votre ${theirCard.value}` : 'une de vos cartes cachées';
 
                         set({
                             lastNotification: {
                                 type: 'info',
-                                message: `${currentPlayer.name} a échangé ${myValText} contre ${theirValText} !`,
+                                message: `🔄 ${currentPlayer.name} a échangé ${myValText} contre ${theirValText} !`,
                                 timestamp: Date.now()
                             }
                         });

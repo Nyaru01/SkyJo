@@ -502,10 +502,12 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false, di
     const colStart = col * 3;
     const colIndices = [colStart, colStart + 1, colStart + 2];
 
-    const MIN_VALUE_FOR_COLUMN_ELIMINATION = 3;
+    const MIN_VALUE_FOR_COLUMN_ELIMINATION = 2;
     const isAdvanced = difficulty === AI_DIFFICULTY.HARDCORE || difficulty === AI_DIFFICULTY.BONUS;
 
-    if (!forceCheck && cardValue < MIN_VALUE_FOR_COLUMN_ELIMINATION && cardValue !== 0) {
+    // Simplified logic: Allow elimination for values >= 2, or 0 and 1.
+    // Negative cards are handled separately (never eliminate).
+    if (!forceCheck && cardValue < MIN_VALUE_FOR_COLUMN_ELIMINATION && cardValue !== 0 && cardValue !== 1) {
         return false;
     }
 
@@ -534,11 +536,18 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false, di
             else currentTotal += cardValue;
         });
 
-        // SPECIAL RULE: Don't eliminate a column if total is <= 0 (keeps negative advantage)
-        // Exception: eliminate columns of 0s if they don't have any negative cards
-        const hasNegative = colIndices.some(idx => hand[idx] && hand[idx].isRevealed && hand[idx].value < 0);
-        if (currentTotal > 0 || (currentTotal === 0 && !hasNegative)) return true;
-        return false;
+        // SPECIAL RULE: Never eliminate a column if total is < 0 (keeps negative advantage)
+        if (currentTotal < 0) return false;
+
+        // STRATEGIC CHOICE: Don't eliminate a column of 0s if it's already "perfect" (0,0,0)
+        // because those 0s are better used as buffers or replacing high cards elsewhere.
+        // Exception: if we are in a rush to end the game.
+        if (currentTotal === 0) {
+            const shouldRush = forceCheck || (isAdvanced && getGameProgress(hand) > 0.8);
+            return shouldRush;
+        }
+
+        return true;
     }
 
     // Case 2: Potential (Waiting for 1 more card)
@@ -554,9 +563,8 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false, di
 
         if (estimatedTotal <= 0) return false;
         // STRATEGY REFINEMENT: In advanced mode, don't build potential with mediocre cards (5-9)
-        // because it's better to keep searching for lower values.
-        // We only build potential for cards <= 4.
-        if (isAdvanced && cardValue > 4) {
+        // UNLESS we already have a matching revealed card. 
+        if (isAdvanced && cardValue > 4 && matchCount === 0) {
             return false;
         }
         return true;
@@ -576,7 +584,7 @@ const wouldHelpOpponent = (gameState, cardValue, difficulty = AI_DIFFICULTY.NORM
 
     if (!opponent) return false;
 
-    // A card "helps" if it completes a column of value >= 3 (beneficial elimination)
+    // A card "helps" if it completes a column of value >= 2 (beneficial elimination)
     // or if it completes ANY column regardless of value if opponent is close to ending/winning
     for (let i = 0; i < opponent.hand.length; i++) {
         const card = opponent.hand[i];
@@ -590,7 +598,7 @@ const wouldHelpOpponent = (gameState, cardValue, difficulty = AI_DIFFICULTY.NORM
                 // If the card being replaced is excellent (<= 2) and the elimination value 
                 // is mediocre, maybe it's not a huge "help". But for now, let's keep it simple:
                 // Elimination of >= 3 is always a target for blocking.
-                if (cardValue >= 3) return true;
+                if (cardValue >= 2) return true;
                 // If opponent is winning, block even low value eliminations
                 const opponentScore = calculateVisibleScore(opponent.hand);
                 if (opponentScore < 20) return true;
@@ -630,12 +638,20 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
         // CRITICAL FIX: Never replace a card with the same value (waste of turn)
         if (hand[idx].isRevealed && hand[idx].value === cardValue) continue;
 
-        // SMART PROTECTION: Only skip if column completion is NOT possible or NOT profitable
-        if (hand[idx].isRevealed && hand[idx].value <= 2) {
-            if (!checkColumnPotential(hand, idx, cardValue, false, difficulty)) {
+        // SMART PROTECTION: Only prioritize completion if it's a MEDIUM/HIGH value elimination (>= 2)
+        // or if we are forced/aggressive. 
+        // For 0, 1, it's better to check if we have a 12 elsewhere first!
+        if (hand[idx].isRevealed && hand[idx].value < 2) {
+            if (cardValue < 2) {
+                // Both are low (0 or 1), completion is not urgent.
                 continue;
             }
-            // If checkColumnPotential returns true, it means it's a profitable elimination!
+        }
+
+        // CRITICAL PROTECTION: NEVER replace a very negative card (<= -2) for an elimination.
+        // A -10 is too valuable to be "cleaned" even to remove a column.
+        if (hand[idx] && hand[idx].isRevealed && hand[idx].value <= -2) {
+            continue;
         }
 
         if (checkColumnPotential(hand, idx, cardValue, false, difficulty)) {
@@ -652,52 +668,54 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
         }
     }
 
+    // --- UNIVERSAL GROUPING STRATEGY (High Priority) ---
+    // Rule: Always try to group matching cards in the same column to aim for elimination.
+    // This applies to any value and any difficulty.
+    const matchingRevealedCards = hand.filter(c => c && c.isRevealed && c.value === cardValue);
+    if (matchingRevealedCards.length > 0) {
+        // 1. Find columns that already contain this value
+        for (let col = 0; col < 4; col++) {
+            const colStart = col * 3;
+            const colIndices = [colStart, colStart + 1, colStart + 2];
+            const colCards = colIndices.map(i => hand[i]);
+
+            const hasMatch = colCards.some(c => c && c.isRevealed && c.value === cardValue);
+            const isFull = colCards.every(c => c && c.isRevealed);
+            const hasNegative = colCards.some(c => c && c.isRevealed && c.value < 0);
+
+            if (hasMatch && !isFull && !hasNegative) {
+                // We found a column to group in!
+                // Prioritize hidden cards, then worst revealed cards (that aren't the match)
+                const targetIdx = colIndices.find(idx => hand[idx] && !hand[idx].isRevealed) ||
+                    colIndices.find(idx => hand[idx] && hand[idx].isRevealed && hand[idx].value !== cardValue && hand[idx].value > cardValue);
+
+                if (targetIdx !== undefined) {
+                    aiLog(difficulty, `Grouping matching values: placing ${cardValue} in column ${col} (at index ${targetIdx})`);
+                    return targetIdx;
+                }
+            }
+        }
+    }
+
+    // --- EXPLORATION (Medium Priority) ---
+    // If no match found, maybe start a fresh column if we are in difficulty mode
+    if (isAdvancedLevel(difficulty) || difficulty === AI_DIFFICULTY.HARD) {
+        const freshColIdx = hiddenIndices.find(idx => {
+            const col = Math.floor(idx / 3);
+            const colStart = col * 3;
+            const colCards = [hand[colStart], hand[colStart + 1], hand[colStart + 2]];
+            return colCards.every(c => c && !c.isRevealed);
+        });
+        if (freshColIdx !== undefined && (cardValue <= 4)) {
+            aiLog(difficulty, `Starting fresh column with value ${cardValue} at index ${freshColIdx}`);
+            return freshColIdx;
+        }
+    }
+
     // --- URGENT REPLACEMENTS (High targets) ---
     // If we have very bad revealed cards (>= 10), replace them before thinking about strategy
     if (highest.index !== -1 && highest.value >= 10 && cardValue < highest.value) {
         return highest.index;
-    }
-
-    // MULTI-COLUMN STRATEGY (Lower priority than completion)
-    if (isAdvancedLevel(difficulty) || difficulty === AI_DIFFICULTY.HARD) {
-        const matchingRevealedCount = hand.filter(c => c && c.isRevealed && c.value === cardValue).length;
-
-        if (matchingRevealedCount > 0 && hiddenIndices.length > 0) {
-            // Find the best column to start the "collection"
-            let bestExpansionIdx = -1;
-            let maxPotential = -1;
-
-            for (const idx of hiddenIndices) {
-                const col = Math.floor(idx / 3);
-                const colStart = col * 3;
-                const colIndices = [colStart, colStart + 1, colStart + 2];
-                const colCards = colIndices.map(i => hand[i]);
-
-                // A column is good if it's mostly hidden or already has a matching card
-                const revealedInCol = colCards.filter(c => c && c.isRevealed);
-                const matchingInCol = revealedInCol.filter(c => c.value === cardValue);
-
-                let potential = 0;
-                if (matchingInCol.length > 0) {
-                    // PROTECTION: Don't expand if col has an excellent negative card (don't eliminate it!)
-                    const hasNegative = colCards.some(c => c && c.isRevealed && c.value < 0);
-                    if (!hasNegative) potential = 10;
-                    else potential = 1; // Low priority
-                }
-                else if (revealedInCol.length === 0) potential = 5; // Fresh column
-                else if (revealedInCol.length === 1 && revealedInCol[0].value > 8) potential = 2; // Can replace a bad card
-
-                if (potential > maxPotential) {
-                    maxPotential = potential;
-                    bestExpansionIdx = idx;
-                }
-            }
-
-            if (bestExpansionIdx !== -1) {
-                aiLog(difficulty, `Expanding multi-column: collecting value ${cardValue} at index ${bestExpansionIdx}`);
-                return bestExpansionIdx;
-            }
-        }
     }
 
     // SPECIAL LOGIC FOR 20 (Cursed Skull)
@@ -798,6 +816,11 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
         const dynThresholds = getDynamicThresholds(gameState, hand, difficulty);
         badThreshold = dynThresholds.badThreshold + riskAdjustment;
     }
+    // LAST STAND PROTECTION: Never replace a negative card unless the new one is BETTER
+    if (highest.index !== -1 && highest.value <= -2 && cardValue >= highest.value) {
+        return -1;
+    }
+
     if (highest.index !== -1 && cardValue < highest.value && highest.value >= badThreshold) {
         return highest.index;
     }
@@ -1112,10 +1135,18 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
     if (gameState.turnPhase === 'MUST_REPLACE') {
         const replaceIndex = findBestReplacementPosition(hand, drawnValue, difficulty, gameState);
         // If no good position found, just replace a random card (should rarely happen for AI)
-        // CRITICAL: Must not pick a locked card
-        const finalIndex = replaceIndex !== -1 ? replaceIndex : getRandomElement(
-            hand.map((c, i) => (c !== null && !(c.lockCount > 0)) ? i : -1).filter(i => i !== -1)
-        );
+        // CRITICAL: Must not pick a locked card OR an excellent negative card (<= -2)
+        const safeIndices = hand.map((c, i) => {
+            if (c === null) return -1;
+            if (c.lockCount > 0) return -1;
+            if (c.isRevealed && c.value <= -2) return -1; // NEVER replace -10 even randomly
+            return i;
+        }).filter(i => i !== -1);
+
+        const finalIndex = (replaceIndex !== -1 && !safeIndices.includes(replaceIndex)) ?
+            (safeIndices.length > 0 ? safeIndices[0] : replaceIndex) :
+            (replaceIndex !== -1 ? replaceIndex : getRandomElement(safeIndices));
+
         return { action: 'REPLACE', cardIndex: finalIndex };
     }
 

@@ -244,7 +244,7 @@ export default function SettingsPage({ onViewChangelog }) {
                             </div>
                             <div className="flex flex-col items-start">
                                 <span className="font-bold text-emerald-100">Nouveautés</span>
-                                <span className="text-[10px] text-emerald-400/60 uppercase tracking-widest">v2.5.0</span>
+                                <span className="text-[10px] text-emerald-400/60 uppercase tracking-widest">{typeof __APP_VERSION__ !== 'undefined' ? `v${__APP_VERSION__}` : 'v3.0.1'}</span>
                             </div>
                         </button>
 
@@ -354,7 +354,7 @@ export default function SettingsPage({ onViewChangelog }) {
 
             {/* Version & About */}
             <AboutSection
-                appVersion="v2.5.0"
+                appVersion={typeof __APP_VERSION__ !== 'undefined' ? `v${__APP_VERSION__}` : 'v3.0.1'}
                 onAdminUnlock={handleAdminUnlock}
             />
 

@@ -4,8 +4,34 @@ import React, { useState, useEffect } from 'react';
  * RobotAvatar - A sleek, minimal drone head for the AI
  * Mobile-focused, no hover needed, subtle idle animations.
  */
-const RobotAvatar = ({ className = "", isAngry = false, size = "md" }) => {
+const RobotAvatar = ({ className = "", difficulty = 'NORMAL', size = "md" }) => {
   const [blink, setBlink] = useState(false);
+
+  // Difficulty to Color Theme Mapping (Matching values in AI_DIFFICULTY enum)
+  const themes = {
+    'normal': {
+      eye: 'bg-emerald-400 shadow-[0_0_8px_#34d399]',
+      aura: 'border-emerald-500/20',
+      side: 'bg-emerald-500/50'
+    },
+    'hard': {
+      eye: 'bg-amber-400 shadow-[0_0_8px_#fbbf24]',
+      aura: 'border-amber-500/20',
+      side: 'bg-amber-500/50'
+    },
+    'hardcore': {
+      eye: 'bg-purple-500 shadow-[0_0_8px_#a855f7]',
+      aura: 'border-purple-500/20',
+      side: 'bg-purple-500/50'
+    },
+    'bonus': {
+      eye: 'bg-red-500 shadow-[0_0_8px_#ef4444]',
+      aura: 'border-red-500/20',
+      side: 'bg-red-500/50'
+    }
+  };
+
+  const theme = themes[difficulty] || themes.NORMAL;
 
   // Random eye blinking
   useEffect(() => {
@@ -43,7 +69,7 @@ const RobotAvatar = ({ className = "", isAngry = false, size = "md" }) => {
             `}</style>
 
       {/* Subtle Aura (Pulse) */}
-      <div className={`absolute inset-0 rounded-full border-2 transition-colors duration-500 ${isAngry ? 'border-red-500/20' : 'border-cyan-500/20'} animate-[pulse-ring_2s_infinite]`} />
+      <div className={`absolute inset-0 rounded-full border-2 transition-colors duration-500 ${theme.aura} animate-[pulse-ring_2s_infinite]`} />
 
       <div className="relative drone-main flex flex-col items-center">
         {/* Head Body - Sleek Metal Sphere */}
@@ -52,16 +78,16 @@ const RobotAvatar = ({ className = "", isAngry = false, size = "md" }) => {
           {/* Face Plate */}
           <div className="w-12 h-8 bg-black/90 rounded-full flex items-center justify-center gap-2 border border-white/5 relative">
             {/* Eyes */}
-            <div className={`w-3 h-1.5 transition-all duration-300 rounded-full ${isAngry ? 'bg-red-500 shadow-[0_0_8px_#ef4444]' : 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]'} ${blink ? 'eye-blink' : ''}`} />
-            <div className={`w-3 h-1.5 transition-all duration-300 rounded-full ${isAngry ? 'bg-red-500 shadow-[0_0_8px_#ef4444]' : 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]'} ${blink ? 'eye-blink' : ''}`} />
+            <div className={`w-3 h-1.5 transition-all duration-300 rounded-full ${theme.eye} ${blink ? 'eye-blink' : ''}`} />
+            <div className={`w-3 h-1.5 transition-all duration-300 rounded-full ${theme.eye} ${blink ? 'eye-blink' : ''}`} />
 
             {/* Internal Reflection */}
             <div className="absolute top-1 left-3 w-4 h-1 bg-white/10 rounded-full blur-[1px]" />
           </div>
 
           {/* Side Decorative Lights */}
-          <div className={`absolute left-1 top-1/2 -translate-y-1/2 w-1 h-3 rounded-full ${isAngry ? 'bg-red-500/50' : 'bg-cyan-500/50'}`} />
-          <div className={`absolute right-1 top-1/2 -translate-y-1/2 w-1 h-3 rounded-full ${isAngry ? 'bg-red-500/50' : 'bg-cyan-500/50'}`} />
+          <div className={`absolute left-1 top-1/2 -translate-y-1/2 w-1 h-3 rounded-full ${theme.side}`} />
+          <div className={`absolute right-1 top-1/2 -translate-y-1/2 w-1 h-3 rounded-full ${theme.side}`} />
         </div>
 
         {/* Drone Stand/Bottom Detail */}

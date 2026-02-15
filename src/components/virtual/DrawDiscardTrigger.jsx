@@ -195,45 +195,47 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
         <>
             <div className="flex flex-col items-center gap-1 w-full">
                 <div className="relative flex items-center justify-center gap-3 w-full">
-                    {/* Draw pile card preview - Face-down card on the LEFT - CLICKABLE */}
-                    <motion.div
-                        className={cn(
-                            "w-10 h-14 rounded-lg flex items-center justify-center shrink-0 relative",
-                            canInteract ? "cursor-pointer" : "cursor-not-allowed opacity-80"
-                        )}
-                        style={{
-                            backgroundColor: '#1e293b', // Fallback
-                            boxShadow: activeActionSource === 'deck-pile'
-                                ? '0 0 20px 5px rgba(52, 211, 153, 0.7)' // Intense Green Glow if active
-                                : canInteract ? '0 4px 12px rgba(0,0,0,0.5)' : 'none',
-                            border: activeActionSource === 'deck-pile'
-                                ? '2px solid #34d399' // Green border
-                                : '2px solid rgba(100, 116, 139, 0.4)',
-                            transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
-                            overflow: 'hidden'
-                        }}
-                        onClick={canInteract ? () => { triggerHaptic(); (onDrawAction || onClick)?.(); } : undefined}
-                        whileHover={canInteract ? { scale: 1.1, rotate: -5 } : undefined}
-                        whileTap={canInteract ? { scale: 0.95 } : undefined}
-                        animate={
-                            activeActionSource === 'deck-pile'
-                                ? { scale: [1, 1.1, 1] }
-                                : canInteract
-                                    ? { scale: [1, 1.03, 1] }
-                                    : {}
-                        }
-                        transition={{ duration: canInteract ? 1.5 : 0.8, repeat: Infinity }}
-                        id="deck-pile"
-                    >
-                        {/* Card back design */}
-                        <img
-                            src={getCardSkinPath(cardSkin)}
-                            alt="Deck"
-                            className="w-full h-full object-cover"
-                        />
-
-                        {/* Count Badge for Draw Pile (Optional - usually on button but good to have here too maybe? No, kept on button) */}
-                    </motion.div>
+                    {/* Draw pile section */}
+                    <div className="flex flex-col items-center gap-1.5 shrink-0">
+                        <motion.div
+                            className={cn(
+                                "w-10 h-14 rounded-lg flex items-center justify-center relative",
+                                canInteract ? "cursor-pointer" : "cursor-not-allowed opacity-80"
+                            )}
+                            style={{
+                                backgroundColor: '#1e293b', // Fallback
+                                boxShadow: activeActionSource === 'deck-pile'
+                                    ? '0 0 20px 5px rgba(52, 211, 153, 0.7)' // Intense Green Glow if active
+                                    : canInteract ? '0 4px 12px rgba(0,0,0,0.5)' : 'none',
+                                border: activeActionSource === 'deck-pile'
+                                    ? '2px solid #34d399' // Green border
+                                    : '2px solid rgba(100, 116, 139, 0.4)',
+                                transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
+                                overflow: 'hidden'
+                            }}
+                            onClick={canInteract ? () => { triggerHaptic(); (onDrawAction || onClick)?.(); } : undefined}
+                            whileHover={canInteract ? { scale: 1.1, rotate: -5 } : undefined}
+                            whileTap={canInteract ? { scale: 0.95 } : undefined}
+                            animate={
+                                activeActionSource === 'deck-pile'
+                                    ? { scale: [1, 1.1, 1] }
+                                    : canInteract
+                                        ? { scale: [1, 1.03, 1] }
+                                        : {}
+                            }
+                            transition={{ duration: canInteract ? 1.5 : 0.8, repeat: Infinity }}
+                            id="deck-pile"
+                        >
+                            <img
+                                src={getCardSkinPath(cardSkin)}
+                                alt="Deck"
+                                className="w-full h-full object-cover"
+                            />
+                        </motion.div>
+                        <span className="text-[11px] font-black text-white/90 bg-slate-900/60 px-2 py-0.5 rounded-md border border-white/10 backdrop-blur-sm min-w-[20px] text-center shadow-lg uppercase tracking-widest">
+                            {drawPileCount}
+                        </span>
+                    </div>
 
                     {hasDrawnCard ? (
                         // Show the actual drawn card in the center
@@ -251,7 +253,6 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                 card={{ ...drawnCard, isRevealed: true }}
                                 size="md"
                                 isHighlighted={canInteract}
-                            // Add a label below or above?
                             />
                         </motion.div>
                     ) : (
@@ -268,7 +269,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                 boxShadow: canInteract
                                     ? '0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.05)'
                                     : '0 4px 15px rgba(0, 0, 0, 0.3)',
-                                maxWidth: '280px'
+                                maxWidth: '240px'
                             }}
                             whileHover={canInteract ? { scale: 1.02, y: -2 } : undefined}
                             whileTap={canInteract ? { scale: 0.98 } : undefined}
@@ -308,11 +309,11 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                             <div className="flex items-center justify-center relative z-20 mx-2">
                                 <span className={cn(
                                     "font-black text-white uppercase tracking-[0.2em] whitespace-nowrap drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]",
-                                    (instructionText?.includes('DERNIER TOUR') || isAIThinking) ? "text-[11px] animate-pulse" : (instructionText ? "text-[11px]" : "text-[10px]")
+                                    (instructionText?.includes('DERNIER TOUR') || isAIThinking) ? "text-[11px] animate-pulse" : (instructionText ? "text-[11px]" : "text-[11px]")
                                 )}>
                                     {instructionText?.includes('DERNIER TOUR')
                                         ? instructionText
-                                        : (isDrawPhase && canInteract ? 'CHOISIR UNE CARTE' : (instructionText || 'Piocher'))}
+                                        : (isDrawPhase && canInteract ? 'CHOISIR UNE CARTE' : (instructionText || 'PIOCHER'))}
                                 </span>
                             </div>
 
@@ -333,74 +334,66 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                         </motion.button>
                     )}
 
-                    {/* Discard card preview - positioned to the right - CLICKABLE */}
-                    {/* Always render a placeholder to keep alignment symmetric if user wants "aligned all time" */}
-                    <div className="w-10 h-14 flex items-center justify-center shrink-0 relative">
-                        {showDiscardPreview ? (
-                            <motion.div
-                                className={cn(
-                                    "w-full h-full rounded-lg flex items-center justify-center relative overflow-hidden",
-                                    canInteract ? "cursor-pointer" : "cursor-default"
-                                )}
-                                style={{
-                                    fontSize: '16px',
-                                    fontWeight: 'bold',
-                                    boxShadow: activeActionSource === 'discard-pile'
-                                        ? '0 0 20px 5px rgba(245, 158, 11, 0.7)' // Amber Glow
-                                        : '0 4px 12px rgba(0,0,0,0.5)',
-                                    border: activeActionSource === 'discard-pile'
-                                        ? '2px solid #f59e0b' // Amber border
-                                        : '2px solid rgba(255,255,255,0.5)',
-                                    background: mosaicColors.secondary,
-                                    transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
-                                    // Prevent text selection on long-press (mobile)
-                                    userSelect: 'none',
-                                    WebkitUserSelect: 'none',
-                                    WebkitTouchCallout: 'none',
-                                    touchAction: 'manipulation',
-                                }}
-                                onClick={canInteract ? () => { triggerHaptic(); (onDiscardAction || onClick)?.(); } : undefined}
-                                onPointerDown={handleDiscardPointerDown}
-                                onPointerUp={handleDiscardPointerUp}
-                                onPointerLeave={handleDiscardPointerLeave}
-                                onPointerCancel={handleDiscardPointerUp}
-                                whileHover={canInteract ? { scale: 1.1, rotate: 5 } : undefined}
-                                whileTap={canInteract ? { scale: 0.95 } : undefined}
-                                animate={activeActionSource === 'discard-pile' ? { scale: [1, 1.1, 1] } : {}}
-                                transition={{ duration: 0.8, repeat: Infinity }}
-                                id="discard-pile"
-                            >
-                                {/* Mosaic texture pattern */}
-                                <MiniMosaicPattern colors={mosaicColors} id={patternId} />
-
-                                {/* Card value - white text */}
-                                <span
-                                    className="relative z-10"
+                    {/* Discard pile section */}
+                    <div className="flex flex-col items-center gap-1.5 shrink-0">
+                        <div className="w-10 h-14 flex items-center justify-center relative">
+                            {showDiscardPreview ? (
+                                <motion.div
+                                    className={cn(
+                                        "w-full h-full rounded-lg flex items-center justify-center relative overflow-hidden",
+                                        canInteract ? "cursor-pointer" : "cursor-default"
+                                    )}
                                     style={{
-                                        color: '#ffffff',
-                                        textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
+                                        fontSize: '16px',
+                                        fontWeight: 'bold',
+                                        boxShadow: activeActionSource === 'discard-pile'
+                                            ? '0 0 20px 5px rgba(245, 158, 11, 0.7)' // Amber Glow
+                                            : '0 4px 12px rgba(0,0,0,0.5)',
+                                        border: activeActionSource === 'discard-pile'
+                                            ? '2px solid #f59e0b' // Amber border
+                                            : '2px solid rgba(255,255,255,0.5)',
+                                        background: mosaicColors.secondary,
+                                        transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
+                                        userSelect: 'none',
+                                        WebkitUserSelect: 'none',
+                                        WebkitTouchCallout: 'none',
+                                        touchAction: 'manipulation',
                                     }}
+                                    onClick={canInteract ? () => { triggerHaptic(); (onDiscardAction || onClick)?.(); } : undefined}
+                                    onPointerDown={handleDiscardPointerDown}
+                                    onPointerUp={handleDiscardPointerUp}
+                                    onPointerLeave={handleDiscardPointerLeave}
+                                    onPointerCancel={handleDiscardPointerUp}
+                                    whileHover={canInteract ? { scale: 1.1, rotate: 5 } : undefined}
+                                    whileTap={canInteract ? { scale: 0.95 } : undefined}
+                                    animate={activeActionSource === 'discard-pile' ? { scale: [1, 1.1, 1] } : {}}
+                                    transition={{ duration: 0.8, repeat: Infinity }}
+                                    id="discard-pile"
                                 >
-                                    {discardTop.specialType === 'S' || discardTop.value === 15
-                                        ? 'S'
-                                        : (discardTop.specialType === 'C' || (discardTop.value === 0 && discardTop.color === 'special'))
-                                            ? <Sparkles className="w-5 h-5 text-white" strokeWidth={3} />
-                                            : (discardTop.specialType === 'CH' || discardTop.value === 'CH' || discardTop.color === 'gold')
-                                                ? <HelpCircle className="w-5 h-5 text-white" strokeWidth={3} />
-                                                : discardTop.value}
-                                </span>
-
-                                {/* Discard Pile Count Badge */}
-                                <div className="absolute -bottom-2 -right-2 bg-slate-800 text-slate-300 text-[9px] px-1.5 py-0.5 rounded-full border border-slate-600 shadow-md z-20">
-                                    {discardPileCount}
-                                </div>
-                            </motion.div>
-                        ) : (
-                            /* Empty placeholder when no discard visible to maintain symmetry if desired */
-                            <div className="w-full h-full rounded-lg border-2 border-dashed border-slate-700/50 flex items-center justify-center">
-                                <span className="text-[9px] text-slate-600">{discardPileCount}</span>
-                            </div>
-                        )}
+                                    <MiniMosaicPattern colors={mosaicColors} id={patternId} />
+                                    <span
+                                        className="relative z-10"
+                                        style={{
+                                            color: '#ffffff',
+                                            textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
+                                        }}
+                                    >
+                                        {discardTop.specialType === 'S' || discardTop.value === 15
+                                            ? 'S'
+                                            : (discardTop.specialType === 'C' || (discardTop.value === 0 && discardTop.color === 'special'))
+                                                ? <Sparkles className="w-5 h-5 text-white" strokeWidth={3} />
+                                                : (discardTop.specialType === 'CH' || discardTop.value === 'CH' || discardTop.color === 'gold')
+                                                    ? <HelpCircle className="w-5 h-5 text-white" strokeWidth={3} />
+                                                    : discardTop.value}
+                                    </span>
+                                </motion.div>
+                            ) : (
+                                <div className="w-full h-full rounded-lg border-2 border-dashed border-slate-700/50 flex items-center justify-center" />
+                            )}
+                        </div>
+                        <span className="text-[11px] font-black text-white/90 bg-slate-900/60 px-2 py-0.5 rounded-md border border-white/10 backdrop-blur-sm min-w-[20px] text-center shadow-lg uppercase tracking-widest">
+                            {discardPileCount}
+                        </span>
                     </div>
                 </div>
 

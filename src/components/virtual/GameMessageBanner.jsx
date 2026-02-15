@@ -28,7 +28,7 @@ const GameMessageBanner = ({ message, type = 'info' }) => {
     };
 
     return (
-        <div className="absolute inset-x-0 top-[55%] -translate-y-1/2 z-[60] w-full pointer-events-none px-4">
+        <div className="absolute inset-x-0 top-[45%] -translate-y-1/2 z-[60] w-full pointer-events-none px-4">
             <AnimatePresence>
                 {isVisible && (
                     <motion.div
