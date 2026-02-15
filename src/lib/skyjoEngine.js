@@ -447,9 +447,12 @@ export const discardAndReveal = (gameState, cardIndex) => {
 
     const player = gameState.players[gameState.currentPlayerIndex];
 
-    // RULE: Cannot discard a Black Hole (H)
+    // RULE: Cannot discard a Black Hole (H) or a 20 (Cursed Skull) in Bonus mode
     if (gameState.drawnCard?.specialType === 'H') {
         throw new Error("Impossible de défausser un Trou Noir ! Vous devez l'activer.");
+    }
+    if (gameState.drawnCard?.value === 20 && gameState.isBonusMode) {
+        throw new Error("Impossible de défausser le Crâne Maudit (20) ! Vous devez l'échanger.");
     }
 
     // RULE: Cannot reveal a locked card

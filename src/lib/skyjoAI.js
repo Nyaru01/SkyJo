@@ -354,7 +354,7 @@ const estimateTotalScore = (hand, gameState) => {
     hand.forEach(card => {
         if (card === null) return;
         if (card.isRevealed) {
-            total += card.value;
+            total += Number(card.value);
         } else {
             // Hidden card: use expected value from remaining deck
             total += avgValue;
@@ -390,7 +390,7 @@ const calculateVisibleScore = (hand) => {
     return hand.reduce((sum, card) => {
         if (card === null) return sum;
         if (!card.isRevealed) return sum;
-        return sum + card.value;
+        return sum + Number(card.value);
     }, 0);
 };
 
@@ -512,21 +512,34 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false, di
     }
 
     let matchCount = 0;
+    let jokerCount = 0;
     let hiddenCount = 0;
+    const nonJokerValues = [];
 
     colIndices.forEach(idx => {
-        if (idx === cardIndex) return;
-        const card = hand[idx];
+        const card = (idx === cardIndex) ? { value: cardValue, isRevealed: true, specialType: (cardValue === 'C' || isNaN(parseInt(cardValue))) ? cardValue : null } : hand[idx];
+
         if (card === null) return;
+
         if (!card.isRevealed) {
             hiddenCount++;
-        } else if (card.value === cardValue) {
-            matchCount++;
+        } else if (card.specialType === 'C' || card.value === 'C') {
+            jokerCount++;
+        } else {
+            nonJokerValues.push(Number(card.value));
         }
     });
 
-    // Case 1: Completion (3 cards of same value)
-    if (matchCount === 2) {
+    // A column is a match if:
+    // - All non-joker revealed cards have the same value
+    // - AND there is at least one non-joker card OR all are jokers
+    const allNonJokersMatch = nonJokerValues.length <= 1 || nonJokerValues.every(v => v === nonJokerValues[0]);
+
+    // Total revealed "useful" cards (non-hidden)
+    const revealedCount = (3 - hiddenCount);
+
+    // Case 1: Completion (3 cards revealed and they match)
+    if (revealedCount === 3 && allNonJokersMatch) {
         let currentTotal = cardValue;
         colIndices.forEach(idx => {
             if (idx === cardIndex) return;
@@ -548,25 +561,49 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false, di
         // STRATEGIC CHOICE: Don't eliminate a column of 0s if it's already "perfect" (0,0,0)
         // ... unless we want the bonus!
         if (currentTotal === 0) {
-            const shouldRush = forceCheck || (isAdvanced && getGameProgress(hand) > 0.8) || isAdvanced;
-            return shouldRush;
+            // In Bonus mode, we ALWAYS want to complete a 0-column because it gives -3 bonus.
+            if (isAdvanced) return true;
+
+            // In normal mode, it's neutral (0pts removed). Only do it if forced or nearing end.
+            const revealedCount = hand.filter(c => c && c.isRevealed).length;
+            const totalCount = hand.filter(c => c !== null).length;
+            const handProgress = totalCount > 0 ? revealedCount / totalCount : 0;
+            return forceCheck || handProgress > 0.8;
         }
 
         return true;
     }
 
-    // Case 2: Potential (Waiting for 1 more card)
-    if (matchCount === 1 && hiddenCount >= 1) {
+    // Case 2: Potential (Waiting for 1 or 2 more cards)
+    if (revealedCount >= 1 && allNonJokersMatch && hiddenCount >= 1) {
         // Only build potential if it's profitable or zero
-        let estimatedTotal = cardValue;
+        let estimatedTotal = 0;
         colIndices.forEach(idx => {
-            if (idx === cardIndex) return;
-            const card = hand[idx];
-            if (card && card.isRevealed) estimatedTotal += card.value;
-            else estimatedTotal += 5.3; // Hidden EV
+            const card = (idx === cardIndex) ? { value: cardValue, isRevealed: true, specialType: (cardValue === 'C' || isNaN(parseInt(cardValue))) ? cardValue : null } : hand[idx];
+            if (card && card.isRevealed) {
+                // Joker is valued at 0 for scoring expectation
+                estimatedTotal += (card.specialType === 'C' || card.value === 'C') ? 0 : Number(card.value);
+            } else {
+                estimatedTotal += 5.3; // Hidden EV
+            }
         });
 
         if (estimatedTotal <= 0) return false;
+
+        // STRATEGY REFINEMENT: Don't build potential for 20s if it's too late or if we replace a good card
+        if (cardValue === 20 || Number(cardValue) === 20) {
+            const totalRevealed = hand.filter(c => c && c.isRevealed).length;
+            const totalPresent = hand.filter(c => c !== null).length;
+            const handProgress = totalPresent > 0 ? totalRevealed / totalPresent : 0;
+
+            // If game is > 70% done, building a 20-column is very risky
+            if (handProgress > 0.7) return false;
+
+            // Never replace a card <= 5 to "start/build" a 20-column
+            const currentCard = hand[cardIndex];
+            if (currentCard && currentCard.isRevealed && Number(currentCard.value) <= 5) return false;
+        }
+
         // STRATEGY REFINEMENT: In advanced mode, don't build potential with mediocre cards (5-9)
         // UNLESS we already have a matching revealed card. 
         if (isAdvanced && cardValue > 4 && matchCount === 0) {
@@ -646,11 +683,20 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
         // SMART PROTECTION: Only prioritize completion if it's a MEDIUM/HIGH value elimination (>= 2)
         // or if we are forced/aggressive. 
         // For 0, 1, it's better to check if we have a 12 elsewhere first!
-        if (hand[idx].isRevealed && hand[idx].value < 2) {
-            if (cardValue < 2) {
-                // Both are low (0 or 1), completion is not urgent.
-                continue;
-            }
+        // [EXCEPTION] For 20 or Joker ('C'), we ALWAYS want to complete a column because it's a massive penalty removal or a clean utility.
+        if (cardValue !== 20 && Number(cardValue) !== 20 && cardValue !== 'C' && hand[idx].isRevealed && Number(hand[idx].value) < 2 && Number(cardValue) < 2) {
+            continue;
+        }
+
+        // [PROTECTION] Never replace a good card (<= 5) with a 20 for "potential" columns
+        if (cardValue === 20 && hand[idx].isRevealed && hand[idx].value <= 5) {
+            // Check if this card completes a column (matchCount === 2)
+            // If it's ONLY potential, skip it.
+            const col = Math.floor(idx / 3);
+            const colStart = col * 3;
+            const colIndices = [colStart, colStart + 1, colStart + 2];
+            const matches = colIndices.filter(i => i !== idx && hand[i] && hand[i].isRevealed && hand[i].value === 20).length;
+            if (matches < 2) continue;
         }
 
         // CRITICAL PROTECTION: NEVER replace a very negative card (<= -2) for an elimination.
@@ -677,27 +723,27 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
 
     // --- UNIVERSAL GROUPING STRATEGY (High Priority) ---
     // Rule: Always try to group matching cards in the same column to aim for elimination.
-    // This applies to any value and any difficulty.
-    const matchingRevealedCards = hand.filter(c => c && c.isRevealed && c.value === cardValue);
+    // Joker ('C') matches any card.
+    const matchingRevealedCards = hand.filter(c => c && c.isRevealed && (c.value === cardValue || c.specialType === 'C' || cardValue === 'C'));
     if (matchingRevealedCards.length > 0) {
-        // 1. Find columns that already contain this value
+        // 1. Find columns that already contain this value OR a Joker
         for (let col = 0; col < 4; col++) {
             const colStart = col * 3;
             const colIndices = [colStart, colStart + 1, colStart + 2];
             const colCards = colIndices.map(i => hand[i]);
 
-            const hasMatch = colCards.some(c => c && c.isRevealed && c.value === cardValue);
+            const hasMatch = colCards.some(c => c && c.isRevealed && (c.value === cardValue || c.specialType === 'C' || cardValue === 'C'));
             const isFull = colCards.every(c => c && c.isRevealed);
-            const hasNegative = colCards.some(c => c && c.isRevealed && c.value < 0);
+            const hasNegative = colCards.some(c => c && c.isRevealed && Number(c.value) < 0 && c.specialType !== 'C');
 
             if (hasMatch && !isFull && !hasNegative) {
                 // We found a column to group in!
                 // Prioritize hidden cards, then worst revealed cards (that aren't the match)
                 const targetIdx = colIndices.find(idx => hand[idx] && !hand[idx].isRevealed) ||
-                    colIndices.find(idx => hand[idx] && hand[idx].isRevealed && hand[idx].value !== cardValue && hand[idx].value > cardValue);
+                    colIndices.find(idx => hand[idx] && hand[idx].isRevealed && (hand[idx].value !== cardValue && hand[idx].specialType !== 'C') && Number(hand[idx].value) > (cardValue === 'C' ? 0 : Number(cardValue)));
 
                 if (targetIdx !== undefined) {
-                    aiLog(difficulty, `Grouping matching values: placing ${cardValue} in column ${col} (at index ${targetIdx})`);
+                    aiLog(difficulty, `Grouping matching values (including Joker): placing ${cardValue} in column ${col} (at index ${targetIdx})`);
                     return targetIdx;
                 }
             }
@@ -727,23 +773,35 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
 
     // SPECIAL LOGIC FOR 20 (Cursed Skull)
     if (cardValue === 20) {
-        // 1. Try to replace any high revealed card first (10, 11, 12)
-        // Since we MUST replace if we drawn a 20, replacing a 12 with a 20
-        // is better than replacing a -10, as we hope to clear the column later.
+        // 1. STRATEGIC GROUPING: Try to find a column already containing a 20!
+        for (let col = 0; col < 4; col++) {
+            const colStart = col * 3;
+            const colIndices = [colStart, colStart + 1, colStart + 2];
+            const has20 = colIndices.some(idx => hand[idx] && hand[idx].isRevealed && hand[idx].value === 20);
+            if (has20) {
+                // Return a hidden card in this column first, or the worst revealed card
+                const target = colIndices.find(idx => hand[idx] && !hand[idx].isRevealed) ||
+                    colIndices.find(idx => hand[idx] && hand[idx].isRevealed && hand[idx].value !== 20 && hand[idx].value >= 5);
+                if (target !== undefined) {
+                    aiLog(difficulty, `Grouping 20s: targetting index ${target} in 20-column`);
+                    return target;
+                }
+            }
+        }
+
+        // 2. High revealed cards (10, 11, 12)
         if (highest.index !== -1 && highest.value >= 10) {
             return highest.index;
         }
 
-        // 2. Prefer replacing a hidden card to "start" a column for elimination
-        // and avoid breaking known GOOD cards.
+        // 3. Prefer hidden cards over reveals (don't break a good 0, 1, 2, 3...)
         if (hiddenIndices.length > 0) {
-            // Prefer corners as usual
             const cornerIndices = [0, 2, 9, 11].filter(i => hiddenIndices.includes(i));
             if (cornerIndices.length > 0) return getRandomElement(cornerIndices);
             return getRandomElement(hiddenIndices);
         }
 
-        // 3. Last resort: highest revealed card even if it's "okay" (like a 5)
+        // 4. Last resort: highest revealed card if >= 5
         if (highest.index !== -1 && highest.value >= 5) {
             return highest.index;
         }
@@ -1103,7 +1161,17 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
         }
     }
 
-    if (drawnCard.specialType === 'C') drawnValue = 0;   // Value it like a zero
+    if (drawnCard.specialType === 'C') {
+        // Value Joker highly (-2 effectively) if it can help complete a column, otherwise 0
+        drawnValue = -1; // Give it a slight edge over 0 to encourage keeping it
+        // Check if it can complete a column immediately
+        for (let i = 0; i < hand.length; i++) {
+            if (hand[i] && !(hand[i].lockCount > 0) && checkColumnPotential(hand, i, 'C', true, difficulty)) {
+                drawnValue = -5; // Very high priority if it completes a column
+                break;
+            }
+        }
+    }
 
     // BLACK HOLE (H)
     if (drawnCard.specialType === 'H') {
@@ -1114,28 +1182,35 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
     }
 
     // BONUS MODE RULE: Forced replacement if drawn card is 20
-    if (difficulty === AI_DIFFICULTY.BONUS && drawnValue === 20) {
+    if (gameState.isBonusMode && drawnValue === 20) {
         const replaceIndex = findBestReplacementPosition(hand, 20, difficulty, gameState);
         if (replaceIndex !== -1) {
+            aiLog(difficulty, `Forced 20 replacement at best position: ${replaceIndex}`);
             return { action: 'REPLACE', cardIndex: replaceIndex };
         }
 
-        // Fallback if findBestReplacementPosition somehow failed or didn't want to replace
-        // We MUST find a non-locked card.
+        // Fallback: Pick the absolute worst card to replace with a 20
+        const highestRev = findHighestRevealedCard(hand);
+        const hiddenIndices = getHiddenCardIndices(hand);
+
+        // 1. If we have a revealed card >= 10, replace it (it's trash anyway)
+        if (highestRev.index !== -1 && highestRev.value >= 10) {
+            aiLog(difficulty, `Forced 20 replacement fallback: replacing high card ${highestRev.value} at ${highestRev.index}`);
+            return { action: 'REPLACE', cardIndex: highestRev.index };
+        }
+
+        // 2. Otherwise, if we have hidden cards, MUST pick one to avoid breaking good reveals!
+        if (hiddenIndices.length > 0) {
+            const cornerIndices = [0, 2, 9, 11].filter(i => hiddenIndices.includes(i));
+            const target = cornerIndices.length > 0 ? getRandomElement(cornerIndices) : getRandomElement(hiddenIndices);
+            aiLog(difficulty, `Forced 20 replacement fallback: picking hidden card at ${target}`);
+            return { action: 'REPLACE', cardIndex: target };
+        }
+
+        // 3. Absolute last resort: replace the highest revealed card even if it's "good"
+        aiLog(difficulty, `Forced 20 replacement fallback: absolute last resort at ${highestRev.index}`);
         const validIndices = hand.map((c, i) => (c !== null && !(c.lockCount > 0)) ? i : -1).filter(i => i !== -1);
-
-        // Pick the absolute worst card to replace with a 20 (highest value)
-        let worstIdx = validIndices[0];
-        let maxVal = -Infinity;
-        validIndices.forEach(idx => {
-            const card = hand[idx];
-            if (card && card.isRevealed && card.value > maxVal) {
-                maxVal = card.value;
-                worstIdx = idx;
-            }
-        });
-
-        return { action: 'REPLACE', cardIndex: worstIdx };
+        return { action: 'REPLACE', cardIndex: highestRev.index !== -1 ? highestRev.index : validIndices[0] };
     }
 
     // If came from discard, MUST replace

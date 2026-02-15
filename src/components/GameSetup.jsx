@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, X, User, Sparkles, Gamepad2, RefreshCw, CheckCircle, Edit2, ArrowRight, HelpCircle, Trophy, Play, Settings, Download, Zap } from 'lucide-react';
+import { Plus, X, User, Sparkles, Gamepad2, RefreshCw, CheckCircle, Edit2, ArrowRight, HelpCircle, Trophy, Target, Play, Settings, Download, Zap } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 // Card imports removed as they are no longer used
@@ -128,39 +128,78 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                 </div>
 
                 {/* Main Glass Container with Clipping */}
-                <div className="relative z-10 w-full overflow-hidden rounded-[24px] border border-white/10 shadow-[0_20px_60px_-15px_rgba(14,165,233,0.3)] bg-[#0f172a]/90 backdrop-blur-2xl transition-all hover:shadow-[0_30px_70px_-15px_rgba(14,165,233,0.4)] flex flex-col items-stretch">
-                    {/* Internal Ambient Gradient (Blue/Cyan for Score) */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-sky-500/20 via-transparent to-purple-500/20 opacity-30 z-10 pointer-events-none rounded-[24px]" />
+                <div className="relative z-10 w-full overflow-hidden rounded-[24px] border border-white/10 shadow-[0_20px_60px_-15px_rgba(14,165,233,0.3)] bg-[#0c0c1e] backdrop-blur-2xl transition-all hover:shadow-[0_30px_70px_-15px_rgba(14,165,233,0.4)] flex flex-col items-stretch">
 
-                    {/* Decorative Top Beam */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-sky-400 to-transparent z-20 opacity-60" />
+                    {/* Header Section (Skyjoreel Design) */}
+                    <div className="relative overflow-hidden border-b border-white/5 bg-[#0c0c1e] z-20 aspect-[21/9] sm:aspect-auto sm:h-48 group/header">
 
-                    {/* Header Section */}
-                    <div className="relative p-3 flex items-center gap-4 border-b border-white/5 bg-white/5 z-20">
+                        {/* FOND VIVANT MULTI-COUCHES (from Skyjoreel) */}
+                        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                            {/* Orbes de plasma en mouvement */}
+                            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[80%] bg-[#1c2739] blur-[80px] rounded-full animate-[pulse_10s_ease-in-out_infinite] opacity-40" />
+                            <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[80%] bg-[#242464] blur-[80px] rounded-full animate-[pulse_8s_ease-in-out_infinite_reverse] opacity-40" />
 
-                        <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden border border-sky-400/50 bg-slate-900 shrink-0 relative z-30 group-hover:scale-105 transition-transform duration-500 animate-breathing" style={{ transform: "translateZ(40px)" }}>
-                            <div className="absolute inset-0 bg-sky-500/20 mix-blend-overlay" />
-                            <img
-                                src="/Gemini_Generated_Image_auzhtfauzhtfauzh.png"
-                                alt="Skyjo Logo"
-                                className="w-full h-full object-cover scale-110"
-                            />
+                            {/* Texture grainée dynamique */}
+                            <div className="absolute inset-0 opacity-[0.15] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay" />
+
+                            {/* Particules de lumière (Poussière d'étoiles) */}
+                            {[...Array(12)].map((_, i) => (
+                                <div
+                                    key={i}
+                                    className="absolute rounded-full bg-blue-200/40 blur-[1px] animate-[float_15s_linear_infinite]"
+                                    style={{
+                                        width: `${Math.random() * 2 + 1}px`,
+                                        height: `${Math.random() * 2 + 1}px`,
+                                        top: `${Math.random() * 100}%`,
+                                        left: `${Math.random() * 100}%`,
+                                        animationDelay: `${i * -1.2}s`,
+                                        animationDuration: `${8 + Math.random() * 8}s`
+                                    }}
+                                />
+                            ))}
                         </div>
-                        <div className="text-left flex-1 relative z-30">
-                            <h1 className="text-2xl font-black text-white drop-shadow-md tracking-tight flex items-center gap-2">
-                                SkyJo sur table
-                                <span className="flex h-2 w-2 relative mt-1">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
-                                </span>
-                            </h1>
-                            <p className="text-sky-400 font-bold text-sm tracking-wide flex items-center gap-1.5">
-                                <Trophy className="h-3 w-3" />
-                                COMPTEUR DE POINTS
-                            </p>
-                            <p className="text-xs text-slate-400 font-medium mt-1 opacity-80">
-                                Pour vos parties physiques
-                            </p>
+
+                        {/* TITRE CENTRAL */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none z-20 scale-90 sm:scale-100">
+                            <div className="flex flex-col items-center animate-[breath_8s_ease-in-out_infinite]">
+                                <h1 className="relative text-6xl md:text-7xl font-[1000] tracking-tighter leading-tight text-white italic">
+                                    <span className="relative z-10 block drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]">SKYJO</span>
+
+                                    {/* Reflet Shimmer balayant */}
+                                    <span className="absolute inset-0 z-20 bg-gradient-to-r from-transparent via-white/30 to-transparent bg-[length:200%_100%] animate-[shimmer_5s_infinite] bg-clip-text text-transparent italic">
+                                        SKYJO
+                                    </span>
+
+                                    {/* Lueur pulsée en fond */}
+                                    <div className="absolute -inset-4 blur-[40px] bg-blue-600/20 opacity-40 animate-pulse" />
+                                </h1>
+
+                                {/* Sous-titre */}
+                                <div className="relative flex items-center gap-4 -mt-2">
+                                    <div className="h-[1px] w-12 bg-gradient-to-l from-blue-400/40 to-transparent shadow-[0_0_8px_rgba(96,165,250,0.5)]" />
+                                    <h2 className="text-[10px] md:text-sm font-medium text-blue-100/40 uppercase transition-all duration-500 whitespace-nowrap">
+                                        <span className="tracking-[1em]">Edition</span>
+                                        <span className="text-white font-black tracking-[0.5em] drop-shadow-[0_0_10px_rgba(255,255,255,0.3)] -mr-[0.5em]">Réelle</span>
+                                    </h2>
+                                    <div className="h-[1px] w-12 bg-gradient-to-r from-blue-400/40 to-transparent shadow-[0_0_8px_rgba(96,165,250,0.5)]" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ACCENTS DÉCORATIFS */}
+                        <div className="absolute top-4 left-4 flex gap-2 opacity-30">
+                            <div className="w-0.5 h-6 bg-gradient-to-b from-blue-400 to-transparent rounded-full animate-pulse" />
+                            <Zap size={10} className="text-blue-400 mt-0.5 animate-bounce" />
+                        </div>
+
+                        <div className="absolute top-4 right-4 flex items-center gap-3 opacity-20 group-hover/header:opacity-60 transition-opacity duration-500">
+                            <Trophy size={14} className="text-white" />
+                            <Target size={14} className="text-white" />
+                        </div>
+
+                        <div className="absolute bottom-4 right-6 flex items-center gap-2 opacity-20">
+                            <Sparkles size={10} className="text-blue-300 animate-[spin_12s_linear_infinite]" />
+                            <span className="text-[6px] font-mono text-white tracking-[0.4em] uppercase">ACTIVE_CORE</span>
                         </div>
                     </div>
 
@@ -356,6 +395,25 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                     }
                 }}
             />
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                @keyframes shimmer {
+                    0% { background-position: -200% 0; }
+                    100% { background-position: 200% 0; }
+                }
+                @keyframes float {
+                    0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+                    50% { transform: translateY(-20px) translateX(10px); opacity: 0.7; }
+                }
+                @keyframes breath {
+                    0%, 100% { transform: scale(1); filter: brightness(1); }
+                    50% { transform: scale(1.03); filter: brightness(1.1); }
+                }
+                @keyframes pulse {
+                    0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.3; }
+                    50% { transform: scale(1.1) translate(10px, 5px); opacity: 0.5; }
+                }
+            `}} />
         </div>
     );
 }

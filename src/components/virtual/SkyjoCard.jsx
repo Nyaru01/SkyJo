@@ -106,34 +106,67 @@ const MOSAIC_COLORS = {
     },
 };
 
-// Generate mosaic SVG pattern
+// Generate mosaic SVG pattern with more complexity
 const MosaicPattern = ({ colors, id }) => (
     <svg width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0 }}>
         <defs>
-            <pattern id={`mosaic-${id}`} patternUnits="userSpaceOnUse" width="30" height="30">
+            <pattern id={`mosaic-${id}`} patternUnits="userSpaceOnUse" width="40" height="40">
                 {/* Gradient background */}
-                <rect width="30" height="30" fill={colors.secondary} />
+                <rect width="40" height="40" fill={colors.secondary} />
 
-                {/* Irregular polygon cells to create mosaic/stained glass effect */}
-                <polygon points="0,0 15,5 10,15 0,12" fill={colors.primary} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="15,5 30,0 30,10 20,15 10,15" fill={colors.tertiary} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="0,12 10,15 5,30 0,30" fill={colors.tertiary} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="10,15 20,15 15,30 5,30" fill={colors.light} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="20,15 30,10 30,25 25,30 15,30" fill={colors.secondary} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="30,25 30,30 25,30" fill={colors.primary} stroke={colors.lines} strokeWidth="0.5" />
+                {/* More complex irregular polygon cells */}
+                <polygon points="0,0 20,5 15,15 0,12" fill={colors.primary} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="20,5 40,0 40,15 25,20 15,15" fill={colors.tertiary} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="0,12 15,15 8,40 0,40" fill={colors.tertiary} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="15,15 25,20 20,40 8,40" fill={colors.light} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="25,20 40,15 40,35 32,40 20,40" fill={colors.secondary} stroke={colors.lines} strokeWidth="0.5" />
+                <polygon points="40,35 40,40 32,40" fill={colors.primary} stroke={colors.lines} strokeWidth="0.5" />
+
+                {/* Additional micro-cells for richness */}
+                <circle cx="10" cy="8" r="1.5" fill={colors.light} opacity="0.3" />
+                <circle cx="30" cy="25" r="2" fill={colors.primary} opacity="0.2" />
             </pattern>
 
             {/* Gradient overlay for depth */}
             <linearGradient id={`depth-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="rgba(255,255,255,0.15)" />
-                <stop offset="50%" stopColor="rgba(255,255,255,0)" />
-                <stop offset="100%" stopColor="rgba(0,0,0,0.1)" />
+                <stop offset="0%" stopColor="rgba(255,255,255,0.25)" />
+                <stop offset="45%" stopColor="rgba(255,255,255,0.05)" />
+                <stop offset="55%" stopColor="rgba(0,0,0,0.05)" />
+                <stop offset="100%" stopColor="rgba(0,0,0,0.2)" />
             </linearGradient>
+
+            {/* Texture Filter */}
+            <filter id={`noise-${id}`}>
+                <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0" />
+            </filter>
         </defs>
 
         <rect width="100%" height="100%" fill={`url(#mosaic-${id})`} />
         <rect width="100%" height="100%" fill={`url(#depth-${id})`} />
+        <rect width="100%" height="100%" filter={`url(#noise-${id})`} opacity="0.4" />
     </svg>
+);
+
+// Shimmer effect component
+const ShimmerOverlay = () => (
+    <motion.div
+        className="absolute inset-0 z-10 pointer-events-none overflow-hidden"
+        initial={{ x: '-150%', skewX: -20 }}
+        animate={{
+            x: ['-150%', '250%'],
+        }}
+        transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            repeatDelay: 4,
+            ease: "easeInOut"
+        }}
+        style={{
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.0), rgba(255,255,255,0.4), rgba(255,255,255,0.0), transparent)',
+            width: '100%',
+        }}
+    />
 );
 
 const SkyjoCard = memo(function SkyjoCard({
@@ -160,30 +193,30 @@ const SkyjoCard = memo(function SkyjoCard({
         xs: {
             width: 'clamp(2.25rem, 7vw, 3.25rem)',
             height: 'clamp(2.25rem, 7.5vh, 3.375rem)',
-            fontSize: 'clamp(0.85rem, 2.6vw, 1.3rem)',
-            cornerSize: '0.4rem',
-            cornerFont: '0.35rem',
+            fontSize: 'clamp(0.95rem, 2.8vw, 1.4rem)',
+            cornerSize: '0.45rem',
+            cornerFont: '0.38rem',
         },
         sm: {
             width: 'clamp(2.5rem, 7vw, 3.5rem)',
             height: 'clamp(3.2rem, 9vh, 4.2rem)',
-            fontSize: 'clamp(1.1rem, 3vw, 1.5rem)',
-            cornerSize: '0.6rem',
-            cornerFont: '0.45rem',
+            fontSize: 'clamp(1.25rem, 3.4vw, 1.7rem)',
+            cornerSize: '0.65rem',
+            cornerFont: '0.5rem',
         },
         md: {
             width: 'clamp(2.7rem, 7.5vw, 3.8rem)',
             height: 'clamp(3.6rem, 10vh, 4.8rem)',
-            fontSize: 'clamp(1.2rem, 3.2vw, 1.8rem)',
-            cornerSize: '0.7rem',
-            cornerFont: '0.45rem',
+            fontSize: 'clamp(1.5rem, 4vw, 2.1rem)',
+            cornerSize: '0.8rem',
+            cornerFont: '0.55rem',
         },
         lg: {
             width: 'clamp(3.5rem, 9vw, 4.5rem)',
             height: 'clamp(5.25rem, 13.5vh, 6.75rem)',
-            fontSize: 'clamp(1.6rem, 4.5vw, 2.4rem)',
-            cornerSize: '0.9rem',
-            cornerFont: '0.6rem',
+            fontSize: 'clamp(2.1rem, 6vw, 3.2rem)',
+            cornerSize: '1.1rem',
+            cornerFont: '0.75rem',
         },
     };
 
@@ -289,13 +322,24 @@ const SkyjoCard = memo(function SkyjoCard({
                     )}
                     style={{
                         borderRadius: '10px',
-                        boxShadow: '0 6px 20px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
-                        border: '3px solid white',
+                        boxShadow: `
+                            0 4px 15px rgba(0, 0, 0, 0.5), 
+                            0 1px 3px rgba(0, 0, 0, 0.4), 
+                            inset 0 0 0 1px rgba(255,255,255,0.3),
+                            inset 0 1px 1px rgba(255,255,255,0.5),
+                            ${(isCH || isH || isSpecial || numericValue === 20 || numericValue === -10)
+                                ? `0 0 12px ${mosaicColors.tertiary}66`
+                                : ''}
+                        `,
+                        border: '2.5px solid #ffffff',
                         background: mosaicColors.secondary,
                     }}
                 >
                     {/* Mosaic texture pattern */}
                     <MosaicPattern colors={mosaicColors} id={patternId} />
+
+                    {/* Shimmer effect */}
+                    <ShimmerOverlay />
 
                     {/* Top-left corner number */}
                     <div
@@ -314,7 +358,7 @@ const SkyjoCard = memo(function SkyjoCard({
                         }}
                     >
                         {isSpecial ? (
-                            <SpecialIcon style={{ width: '70%', height: '70%' }} strokeWidth={3} />
+                            <SpecialIcon style={{ width: '80%', height: '80%' }} strokeWidth={3} />
                         ) : (
                             displayValue
                         )}
@@ -338,7 +382,7 @@ const SkyjoCard = memo(function SkyjoCard({
                         }}
                     >
                         {isSpecial ? (
-                            <SpecialIcon style={{ width: '70%', height: '70%' }} strokeWidth={3} />
+                            <SpecialIcon style={{ width: '80%', height: '80%' }} strokeWidth={3} />
                         ) : (
                             displayValue
                         )}
@@ -346,26 +390,40 @@ const SkyjoCard = memo(function SkyjoCard({
 
                     {/* Center number with strong relief effect */}
                     <div
-                        className="absolute inset-0 flex items-center justify-center"
+                        className="absolute inset-0 flex items-center justify-center p-2"
                         style={{ fontSize: currentSize.fontSize }}
                     >
                         <span
                             style={{
                                 fontWeight: 900,
                                 color: '#ffffff',
-                                textShadow: '2px 2px 4px rgba(0,0,0,0.6), 0 0 8px rgba(0,0,0,0.4)',
+                                textShadow: '0 1px 1px rgba(0,0,0,0.3), 1px 1px 3px rgba(0,0,0,0.3)',
                                 letterSpacing: '-0.02em',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 width: '100%',
                                 height: '100%',
+                                filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.5))',
+                                position: 'relative'
                             }}
                         >
+                            {/* Inner highlight for "embossed" look */}
+                            <span
+                                className="absolute inset-0 flex items-center justify-center opacity-40 blur-[0.5px]"
+                                style={{ transform: 'translate(-1px, -1px)', color: 'rgba(255,255,255,0.8)' }}
+                            >
+                                {isSpecial ? (
+                                    <SpecialIcon className="w-[65%] h-[65%]" strokeWidth={4} />
+                                ) : (
+                                    displayValue
+                                )}
+                            </span>
+
                             {isSpecial ? (
-                                <SpecialIcon className="w-1/2 h-1/2" strokeWidth={4} />
+                                <SpecialIcon className="w-[65%] h-[65%] relative z-10" strokeWidth={4} />
                             ) : (
-                                displayValue
+                                <span className="relative z-10">{displayValue}</span>
                             )}
                         </span>
                     </div>

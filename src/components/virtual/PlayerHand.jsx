@@ -52,7 +52,7 @@ const PlayerHand = memo(function PlayerHand({
     // Calculate score for display
     const currentScore = player.hand
         .filter((c) => c?.isRevealed)
-        .reduce((sum, c) => sum + (typeof c.value === 'number' ? c.value : 0), 0);
+        .reduce((sum, c) => sum + (c.value !== undefined ? Number(c.value) : 0), 0);
 
     const chestCount = player.hand.filter(c => c && c.isRevealed && (c.specialType === 'CH' || c.value === 'CH')).length;
 

@@ -249,7 +249,7 @@ export function AdminDashboard({ adminPassword, onClose }) {
                             <div className="p-1.5 bg-white/20 rounded-lg group-hover:scale-110 transition-transform">
                                 <Play className="w-4 h-4 fill-current" />
                             </div>
-                            Démarrer Simulation
+                            Simuler Fin de Manche
                         </button>
 
                         <div className="flex bg-white/5 rounded-2xl p-1.5 border border-white/10 backdrop-blur-md">
@@ -281,6 +281,18 @@ export function AdminDashboard({ adminPassword, onClose }) {
                             >
                                 <Trophy className="w-4 h-4" />
                                 <span className="hidden sm:inline">Level</span>
+                            </button>
+                            <div className="w-px h-8 bg-white/10 mx-1 self-center" />
+                            <button
+                                onClick={() => {
+                                    useVirtualGameStore.getState().debugForceEndRound();
+                                    onClose(); // Close admin to see result
+                                }}
+                                title="Finir la manche immédiatement"
+                                className="flex items-center gap-2 px-4 py-2.5 hover:bg-white/10 text-white/50 hover:text-rose-400 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider"
+                            >
+                                <Check className="w-4 h-4" />
+                                <span className="hidden sm:inline">Finir Manche</span>
                             </button>
                         </div>
                     </div>

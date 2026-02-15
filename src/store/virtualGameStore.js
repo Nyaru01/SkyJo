@@ -19,6 +19,7 @@ import {
     playActionCard,
     generateChestResults,
     resolveBlackHole,
+    createCard,
 } from '../lib/skyjoEngine';
 import { useGameStore } from './gameStore';
 import {
@@ -36,7 +37,7 @@ import {
  * Utility to handle game end transitions (revealing chests, revealing all cards)
  */
 const applyGameEndLogic = (newState) => {
-    if (newState.phase === 'FINISHED') {
+    if (newState.phase === 'FINISHED' || newState.phase === 'REVEALING_CHESTS') {
         let hasChests = false;
         newState.players.forEach(p => {
             p.hand.forEach(c => {
@@ -53,7 +54,10 @@ const applyGameEndLogic = (newState) => {
         // Reveal all cards for final score visibility
         newState.players.forEach(p => {
             p.hand.forEach(c => {
-                if (c) c.isRevealed = true;
+                if (c && !c.isRevealed) {
+                    c.isRevealed = true;
+                    c.wasAutoRevealed = true; // Tag for UI
+                }
             });
         });
     }
@@ -215,6 +219,26 @@ export const useVirtualGameStore = create(
                     isDailyChallenge: options.isDailyChallenge || false,
                     humanTurnStartState: null,
                 });
+            },
+
+            /**
+             * [DEBUG] Force end the current round immediately for UI testing
+             */
+            debugForceEndRound: () => {
+                const { gameState } = get();
+                if (!gameState) return;
+
+                const newState = {
+                    ...gameState,
+                    phase: 'FINISHED',
+                    turnPhase: 'FINISHED'
+                };
+
+                // Apply game end logic (reveals cards, checks chests, etc.)
+                const finalState = applyGameEndLogic(newState);
+
+                set({ gameState: finalState });
+                toast.success('Manche terminée (Debug)');
             },
 
             /**
@@ -1022,19 +1046,61 @@ export const useVirtualGameStore = create(
              * Initializes an AI game, reveals human cards, and switches tabs.
              */
             debugSimulateGame: () => {
-                const { startAIGame, revealInitial } = get();
+                const { startAIGame } = get();
                 const { userProfile, setActiveTab } = useGameStore.getState();
 
                 // 1. Start a Bonus mode game against 1 IA
                 startAIGame({ name: userProfile.name, avatarId: userProfile.avatarId }, 1, AI_DIFFICULTY.HARDCORE, { isBonusMode: true });
 
-                // 2. Automatically reveal 2 cards for human to get into PLAYING phase
-                setTimeout(() => {
-                    revealInitial(0, [0, 1]);
-                    // 3. Switch to game tab
-                    setActiveTab('virtual');
-                    toast.success('Simulation lancée : Mode Bonus vs IA Hardcore');
-                }, 100);
+                const state = get().gameState;
+                if (!state) return;
+
+                // 2. Populate hands with random cards and force FINISHED state
+                const allPossibleValues = ['-10', '-2', '-1', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '20', 'C', 'CH'];
+
+                const players = state.players.map((p, pIdx) => {
+                    const newHand = p.hand.map((c, cIdx) => {
+                        const randomValue = allPossibleValues[Math.floor(Math.random() * allPossibleValues.length)];
+                        const newCard = createCard(randomValue, `sim-${pIdx}-${cIdx}`, true);
+
+                        // Start as hidden for the simulator to let applyGameEndLogic handle the tagging
+                        newCard.isRevealed = false;
+
+                        const revealRoll = Math.random();
+                        if (revealRoll < 0.4) {
+                            newCard.isRevealed = true;
+                        }
+                        // We DON'T set wasAutoRevealed here, let applyGameEndLogic do it consistently
+
+                        // Add lockCount for 20s
+                        if (newCard.value === 20) newCard.lockCount = Math.floor(Math.random() * 4);
+
+                        return newCard;
+                    });
+                    return { ...p, hand: newHand };
+                });
+
+                const newState = {
+                    ...state,
+                    players,
+                    phase: 'FINISHED',
+                    turnPhase: 'FINISHED',
+                    discardPile: [...state.discardPile, createCard('5', 'sim-discard', true)]
+                };
+
+                // Apply Chest Revelation if any CH present
+                const finalState = applyGameEndLogic(newState);
+
+                set({
+                    gameState: finalState,
+                    roundNumber: 1,
+                    selectedCardIndex: null,
+                    showScores: false,
+                    isPaused: false,
+                });
+
+                setActiveTab('virtual');
+                toast.success('Simulation FIN DE MANCHE générée');
             },
 
             /**
