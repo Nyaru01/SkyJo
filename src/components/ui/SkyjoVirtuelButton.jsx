@@ -41,7 +41,7 @@ const SkyjoVirtuelButton = ({ onClick }) => {
                 onClick={onClick}
                 onMouseDown={() => setIsPressed(true)}
                 onMouseUp={() => setIsPressed(false)}
-                className={`relative w-full aspect-[16/9] rounded-[48px] bg-[#0c0c24] overflow-hidden border border-white/20 shadow-[0_0_100px_rgba(79,70,229,0.3)] transition-all duration-700 ease-out cursor-pointer group/container
+                className={`relative w-full aspect-[16/9] rounded-[24px] bg-[#0c0c24] overflow-hidden border border-white/10 shadow-[0_20px_60px_-15px_rgba(79,70,229,0.3)] transition-all duration-700 ease-out cursor-pointer group/container
           ${isPressed ? 'scale-[0.985] brightness-125' : 'scale-100'}
           ${isBooting ? 'opacity-0 translate-y-8 blur-xl' : 'opacity-100 translate-y-0 blur-0'}`}
                 style={{
@@ -54,8 +54,6 @@ const SkyjoVirtuelButton = ({ onClick }) => {
                     {/* Scanline Overlay */}
                     <div className="absolute inset-0 z-50 pointer-events-none opacity-[0.05] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_4px,3px_100%]" />
 
-                    {/* Ligne de Scanner Laser Mobile */}
-                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-300/60 to-transparent z-10 animate-[scanner_6s_linear_infinite]" />
 
                     {/* Fragments de données flottants */}
                     {[...Array(6)].map((_, i) => (
@@ -171,12 +169,6 @@ const SkyjoVirtuelButton = ({ onClick }) => {
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
-        }
-        @keyframes scanner {
-          0% { top: -5%; opacity: 0; }
-          20% { opacity: 1; }
-          80% { opacity: 1; }
-          100% { top: 105%; opacity: 0; }
         }
         @keyframes shimmer {
           0% { background-position: -200% 0; }
