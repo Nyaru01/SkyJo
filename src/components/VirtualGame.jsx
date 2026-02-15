@@ -2311,6 +2311,14 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                                         </span>
                                                     </div>
                                                 )}
+                                                {score.columnBonus < 0 && (
+                                                    <div className="px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/30 shadow-sm backdrop-blur-sm flex items-center shrink-0 animate-pulse">
+                                                        <Zap className="w-2 h-2 text-emerald-400 mr-1" />
+                                                        <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest leading-none">
+                                                            Nettoyage ({score.columnBonus})
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end shrink-0">

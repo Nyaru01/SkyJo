@@ -184,6 +184,7 @@ export const initializeGame = (players, options = {}) => {
             ...player,
             hand: hands[index],
             hasFinished: false,
+            columnsCleared: 0,
         })),
         drawPile: finalDrawPile,
         discardPile: finalDiscardPile,
@@ -538,6 +539,8 @@ export const checkAndRemoveColumns = (gameState) => {
                 if (isMatch) {
                     indices.forEach(i => cardsToRemove.add(i));
                     cards.forEach(c => removedCardsFromPlayer.push({ ...c, isRevealed: true }));
+                    // Track column cleared (Standard mode only counts columns of 3)
+                    player.columnsCleared = (player.columnsCleared || 0) + 1;
                 }
             }
         }
@@ -679,8 +682,8 @@ export const performSwap = (gameState, sourceCardIndex, targetPlayerIndex, targe
 /**
  * Calculate score for a player's hand
  */
-export const calculateHandScore = (hand, chestResults = {}) => {
-    return hand.reduce((sum, card, index) => {
+export const calculateHandScore = (hand, chestResults = {}, columnsCleared = 0, isBonusMode = false) => {
+    let score = hand.reduce((sum, card, index) => {
         if (card === null) return sum;
 
         // Handle chest cards (?)
@@ -695,6 +698,13 @@ export const calculateHandScore = (hand, chestResults = {}) => {
         }
         return sum + card.value;
     }, 0);
+
+    // Apply -3pts bonus per cleared column in Bonus/Tourment Mode
+    if (isBonusMode && columnsCleared > 0) {
+        score -= (columnsCleared * 3);
+    }
+
+    return score;
 };
 
 /**
@@ -702,18 +712,23 @@ export const calculateHandScore = (hand, chestResults = {}) => {
  */
 export const calculateFinalScores = (gameState) => {
     const chestResults = gameState.chestResults || {};
+    const isBonusMode = gameState.players.some(p => p.hand.some(c => c && (c.value === 20 || c.value === -10)));
+
     const scores = gameState.players.map((player, index) => {
-        let score = calculateHandScore(player.hand, chestResults);
+        let score = calculateHandScore(player.hand, chestResults, player.columnsCleared, isBonusMode);
 
         // Penalty: if finisher doesn't have lowest score, double their score
         if (index === gameState.finishingPlayerIndex) {
             const otherScores = gameState.players
                 .filter((_, i) => i !== index)
-                .map(p => calculateHandScore(p.hand, chestResults));
+                .map(p => calculateHandScore(p.hand, chestResults, p.columnsCleared, isBonusMode));
             const lowestOther = Math.min(...otherScores);
 
             // Official rule: penalty only applies to POSITIVE scores
             if (score >= lowestOther && score > 0) {
+                // We double the score, but should we double the bonus too?
+                // Standard rules say double the *score*. 
+                // Let's double the raw hand score + bonus for consistency with "your score is doubled".
                 score *= 2;
             }
         }
@@ -721,10 +736,12 @@ export const calculateFinalScores = (gameState) => {
         return {
             playerId: player.id,
             playerName: player.name,
-            rawScore: calculateHandScore(player.hand, chestResults),
+            rawScore: calculateHandScore(player.hand, chestResults, 0, false), // Just cards
+            columnsCleared: player.columnsCleared || 0,
+            columnBonus: isBonusMode ? (player.columnsCleared || 0) * -3 : 0,
             finalScore: score,
             isFinisher: index === gameState.finishingPlayerIndex,
-            penalized: index === gameState.finishingPlayerIndex && score !== calculateHandScore(player.hand, chestResults),
+            penalized: index === gameState.finishingPlayerIndex && score !== calculateHandScore(player.hand, chestResults, player.columnsCleared, isBonusMode),
         };
     });
 

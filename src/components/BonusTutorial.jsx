@@ -6,6 +6,28 @@ import SkyjoCard from './virtual/SkyjoCard';
 
 const BONUS_STEPS = [
     {
+        title: "Le Nettoyage de Colonne",
+        description: "NOUVELLE RÈGLE : Chaque fois que vous complétez et éliminez une colonne de 3 cartes identiques, vous recevez un bonus de -3 points sur votre score final. C'est le moment de viser le combo parfait !",
+        icon: Eraser,
+        color: "text-cyan-400",
+        bg: "bg-cyan-400/10",
+        content: (
+            <div className="flex flex-col items-center gap-4 py-4">
+                <div className="flex gap-2 relative group">
+                    <div className="flex flex-col gap-1 items-center">
+                        <div className="text-[10px] font-black text-cyan-400 mb-1 animate-bounce">BONUS -3</div>
+                        <div className="flex gap-1">
+                            <SkyjoCard card={{ value: 8, color: 'orange', isRevealed: true }} size="xs" isClickable={false} />
+                            <SkyjoCard card={{ value: 8, color: 'orange', isRevealed: true }} size="xs" isClickable={false} />
+                            <SkyjoCard card={{ value: 8, color: 'orange', isRevealed: true }} size="xs" isClickable={false} />
+                        </div>
+                    </div>
+                </div>
+                <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Éliminez pour gagner plus !</p>
+            </div>
+        )
+    },
+    {
         title: "Le Mode Tourment",
         description: "Bienvenue dans la variante la plus extrême de Skyjo ! Ici, nous avons ajouté 28 cartes spéciales au deck original pour rendre les parties stratégiques et impitoyables.",
         icon: Flame,

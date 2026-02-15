@@ -537,13 +537,18 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false, di
         });
 
         // SPECIAL RULE: Never eliminate a column if total is < 0 (keeps negative advantage)
-        if (currentTotal < 0) return false;
+        // EXCEPT in Tournament mode where we get a -3 bonus!
+        // So a column of -1, -1, -1 = -3. If we eliminate it, we get -3 (bonus). 
+        // It's neutral. But -2, -2, -2 = -6. Eliminating it gives -3. Bad.
+        const tournamentBonus = isAdvanced ? 3 : 0;
+        if (currentTotal + tournamentBonus < 0 && !isAdvanced) return false;
+        // In Tourment mode, we only keep the column if the cards alone are better than -3.
+        if (isAdvanced && currentTotal < -3) return false;
 
         // STRATEGIC CHOICE: Don't eliminate a column of 0s if it's already "perfect" (0,0,0)
-        // because those 0s are better used as buffers or replacing high cards elsewhere.
-        // Exception: if we are in a rush to end the game.
+        // ... unless we want the bonus!
         if (currentTotal === 0) {
-            const shouldRush = forceCheck || (isAdvanced && getGameProgress(hand) > 0.8);
+            const shouldRush = forceCheck || (isAdvanced && getGameProgress(hand) > 0.8) || isAdvanced;
             return shouldRush;
         }
 
@@ -658,7 +663,9 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
             // Prudent Finisher: only finish with a column completion if it's highly profitable
             if (slowDown && hiddenIndices.length === 1 && hiddenIndices.includes(idx)) {
                 // If this is the last hidden card, only complete if total hand score is already low
-                const currentScore = calculateVisibleScore(hand);
+                // Factor in the -3pts bonus for Tournament mode
+                const bonus = isAdvancedLevel(difficulty) ? 3 : 0;
+                const currentScore = calculateVisibleScore(hand) - bonus;
                 if (currentScore > 20) {
                     aiLog(difficulty, "Prudent Finisher: Skipping game-ending column completion (score too high)");
                     continue;
