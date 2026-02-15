@@ -1,0 +1,204 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { ArrowRight, Zap, Activity } from 'lucide-react';
+
+const SkyjoVirtuelButton = ({ onClick }) => {
+    const [isPressed, setIsPressed] = useState(false);
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const [isBooting, setIsBooting] = useState(true);
+    const containerRef = useRef(null);
+
+    // Données des cartes
+    const cards = [
+        { id: '0x0C', val: 12, color: '#ff4d4d', glow: 'rgba(255, 77, 77, 0.5)', x: -30, y: 20, rotate: -10 },
+        { id: '0x04', val: 4, color: '#00ff88', glow: 'rgba(0, 255, 136, 0.5)', x: -10, y: 8, rotate: -3 },
+        { id: '0xFC', val: -2, color: '#00d4ff', glow: 'rgba(0, 212, 255, 0.5)', x: 10, y: 8, rotate: 3 },
+        { id: '0x08', val: 8, color: '#ffcc00', glow: 'rgba(255, 204, 0, 0.5)', x: 30, y: 20, rotate: 10 },
+    ];
+
+    // Simulation du chargement système - Délai ultra-réduit pour une réactivité maximale
+    useEffect(() => {
+        const timer = setTimeout(() => setIsBooting(false), 20);
+        return () => clearTimeout(timer);
+    }, []);
+
+
+    const handleMouseMove = (e) => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width - 0.5;
+        const y = (e.clientY - rect.top) / rect.height - 0.5;
+        setMousePos({ x, y });
+    };
+
+    return (
+        <div className="w-full mt-4 flex items-center justify-center font-sans antialiased overflow-hidden">
+
+            {/* FRAME PRINCIPAL 16:9 - Fond Indigo profond */}
+            <div
+                ref={containerRef}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={() => setMousePos({ x: 0, y: 0 })}
+                onClick={onClick}
+                onMouseDown={() => setIsPressed(true)}
+                onMouseUp={() => setIsPressed(false)}
+                className={`relative w-full aspect-[16/9] rounded-[48px] bg-[#0c0c24] overflow-hidden border border-white/20 shadow-[0_0_100px_rgba(79,70,229,0.3)] transition-all duration-700 ease-out cursor-pointer group/container
+          ${isPressed ? 'scale-[0.985] brightness-125' : 'scale-100'}
+          ${isBooting ? 'opacity-0 translate-y-8 blur-xl' : 'opacity-100 translate-y-0 blur-0'}`}
+                style={{
+                    transform: `perspective(1200px) rotateX(${mousePos.y * 6}deg) rotateY(${mousePos.x * 6}deg)`,
+                }}
+            >
+
+                {/* ENGINE DE FOND CYBER */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    {/* Scanline Overlay */}
+                    <div className="absolute inset-0 z-50 pointer-events-none opacity-[0.05] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_4px,3px_100%]" />
+
+                    {/* Ligne de Scanner Laser Mobile */}
+                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-300/60 to-transparent z-10 animate-[scanner_6s_linear_infinite]" />
+
+                    {/* Fragments de données flottants */}
+                    {[...Array(6)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="absolute w-8 h-8 border border-indigo-400/30 rounded-sm opacity-30"
+                            style={{
+                                top: `${20 + i * 15}%`,
+                                left: `${10 + (i % 3) * 30}%`,
+                                transform: `translate(${mousePos.x * -40}px, ${mousePos.y * -40}px) rotate(${i * 45}deg)`,
+                                animation: `float ${10 + i * 2}s ease-in-out infinite`
+                            }}
+                        />
+                    ))}
+
+                    {/* Réseau SVG animé */}
+                    <svg className="absolute inset-0 w-full h-full opacity-40 transition-transform duration-1000" style={{ transform: `scale(1.15) translate(${mousePos.x * -35}px, ${mousePos.y * -35}px)` }}>
+                        <path d="M-100 220 L350 220 L400 270 L600 270 L650 220 L1100 220" fill="none" stroke="#818cf8" strokeWidth="0.8" strokeDasharray="15 5" />
+                        <circle r="1.5" fill="#22d3ee">
+                            <animateMotion dur="7s" repeatCount="indefinite" path="M-100 220 L350 220 L400 270 L600 270 L650 220 L1100 220" />
+                        </circle>
+                    </svg>
+
+                    {/* Grille Laser Perspective - Indigo plus clair */}
+                    <div
+                        className="absolute bottom-0 w-full h-[65%] opacity-30"
+                        style={{
+                            backgroundImage: `linear-gradient(to right, #6366f1 1px, transparent 1px), linear-gradient(to bottom, #6366f1 1px, transparent 1px)`,
+                            backgroundSize: '45px 45px',
+                            transform: `perspective(800px) rotateX(78deg) translateY(${mousePos.y * 30}px) scale(1.4)`,
+                            maskImage: 'linear-gradient(to top, black, transparent)'
+                        }}
+                    />
+                </div>
+
+                {/* TITRE CENTRAL */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none z-20">
+                    <div className="flex flex-col items-center pb-12 md:pb-20">
+                        <h1 className="relative text-5xl md:text-[7rem] font-[1000] italic tracking-tighter leading-[0.8] group">
+                            <span className="relative z-10 text-white animate-[glitch_5s_infinite]">SKYJO</span>
+                            {/* Effets de lueur plus intenses */}
+                            <span className="absolute inset-0 z-0 text-indigo-400/50 blur-2xl scale-110">SKYJO</span>
+                            <span className="absolute inset-0 z-10 bg-gradient-to-r from-transparent via-white/30 to-transparent bg-[length:200%_100%] animate-[shimmer_4s_infinite] bg-clip-text text-transparent">SKYJO</span>
+                        </h1>
+
+                        <div className="relative mt-2 md:mt-4 flex items-center gap-4 md:gap-6">
+                            <div className="h-[1px] w-8 md:w-12 bg-gradient-to-l from-cyan-400 to-transparent opacity-50" />
+                            <h2 className="text-xl md:text-3xl font-black italic tracking-[0.4em] md:tracking-[0.5em] text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-indigo-300 filter drop-shadow-[0_0_15px_rgba(34,211,238,0.6)]">
+                                VIRTUEL
+                            </h2>
+                            <div className="h-[1px] w-8 md:w-12 bg-gradient-to-r from-cyan-400 to-transparent opacity-50" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* CARDS DISPLAY - Taille réduite */}
+                <div className="absolute inset-x-0 bottom-8 md:bottom-12 flex justify-center items-end px-12 h-20 md:h-28 pointer-events-none z-30 gap-3 md:gap-4 scale-90 md:scale-100">
+                    {cards.map((card, i) => (
+                        <div
+                            key={i}
+                            className="relative w-10 h-15 md:w-14 md:h-20 rounded-lg md:rounded-xl border border-white/30 backdrop-blur-2xl transition-all duration-700 ease-out group"
+                            style={{
+                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                transform: `translateX(${card.x + mousePos.x * (18 * (i + 1))}px) translateY(${card.y + mousePos.y * (10 * (i + 1))}px) rotate(${card.rotate + mousePos.x * 12}deg)`,
+                                boxShadow: `0 20px 40px -10px rgba(0,0,0,0.5), inset 0 0 15px ${card.glow}`,
+                            }}
+                        >
+                            <div className="absolute top-1.5 left-1.5 flex gap-1 opacity-40 scale-75">
+                                <div className="w-1 h-1 rounded-full bg-white" />
+                                <div className="w-3 h-0.5 bg-white rounded-full mt-0.5" />
+                            </div>
+
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className="text-2xl md:text-4xl font-black text-white filter drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]" style={{ color: card.color }}>
+                                    {card.val}
+                                </span>
+                                <div className="mt-1.5 w-6 md:w-8 h-0.5 rounded-full overflow-hidden bg-white/10">
+                                    <div className="h-full bg-current animate-[loading_3s_infinite]" style={{ color: card.color, width: '40%' }} />
+                                </div>
+                            </div>
+
+                            <div className="absolute inset-0 rounded-xl border border-white/10 group-hover:border-white/30 transition-colors" />
+                        </div>
+                    ))}
+                </div>
+
+                {/* BOUTON D'ACTION - Indigo vibrant */}
+                <div className="absolute right-8 md:right-12 top-1/2 -translate-y-1/2 z-50 group/btn bg-transparent border-none outline-none">
+                    <div className="relative flex items-center justify-center">
+                        <div className="absolute w-24 h-24 rounded-full bg-cyan-400/10 blur-2xl animate-pulse" />
+                        <div className="absolute w-16 h-16 rounded-full border border-cyan-400/30 scale-100 group-hover/btn:scale-110 transition-all duration-500" />
+                        <div className="absolute w-14 h-14 rounded-full border border-white/20 border-t-cyan-300 animate-[spin_3s_linear_infinite]" />
+
+                        <div className="relative w-10 h-10 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-[#2e2e7a] to-[#0c0c24] flex items-center justify-center shadow-[0_0_30px_rgba(79,70,229,0.4)] border border-white/20 group-hover/btn:border-cyan-400/50">
+                            <ArrowRight className="text-white group-hover/btn:translate-x-1 transition-transform" size={24} strokeWidth={2.5} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Décoration d'angle */}
+                <div className="absolute bottom-8 left-12 flex items-center gap-3 opacity-40 group">
+                    <Activity size={14} className="text-cyan-400 animate-pulse" />
+                    <div className="flex flex-col">
+                        <div className="h-[2px] w-16 bg-cyan-500/50" />
+                        <span className="text-[6px] font-mono text-white tracking-[0.5em] mt-1 uppercase">Transmission Stable</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <style dangerouslySetInnerHTML={{
+                __html: `
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes scanner {
+          0% { top: -5%; opacity: 0; }
+          20% { opacity: 1; }
+          80% { opacity: 1; }
+          100% { top: 105%; opacity: 0; }
+        }
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        @keyframes loading {
+          0% { transform: translateX(-110%); }
+          100% { transform: translateX(110%); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0); }
+          50% { transform: translateY(-20px) rotate(10deg); }
+        }
+        @keyframes glitch {
+          0%, 90%, 100% { transform: translate(0); text-shadow: none; }
+          91% { transform: translate(-2px, 1px); text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff; }
+          93% { transform: translate(2px, -1px); text-shadow: -2px 0 #ff00ff, 2px 0 #00ffff; }
+          95% { transform: translate(-1px, 2px); }
+        }
+      `}} />
+        </div>
+    );
+};
+
+export default SkyjoVirtuelButton;

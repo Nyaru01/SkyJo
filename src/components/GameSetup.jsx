@@ -15,6 +15,7 @@ import AvatarSelector from './AvatarSelector';
 import WhatsNewModal, { CURRENT_NEWS_VERSION } from './WhatsNewModal';
 import { TiltCard } from './ui/TiltCard';
 import { PremiumTiltButton } from './ui/PremiumTiltButton';
+import SkyjoVirtuelButton from './ui/SkyjoVirtuelButton';
 
 // Couleurs uniques pour chaque joueur
 const PLAYER_COLORS = [
@@ -71,7 +72,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
     }, []);
 
     // Unified Skyjo Score Container animation refs
-    const scoreContainerRef = useRef(null);
+    const scoreContainerRef = useSyncedAnimation();
     const virtualContainerRef = useRef(null);
 
     const addPlayer = () => {
@@ -112,26 +113,31 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
         setConfiguration(finalPlayers, 100); // Default threshold 100
     };
     return (
-        <div className="max-w-md mx-auto p-2 space-y-2 animate-in fade-in zoom-in duration-300 h-[calc(100vh-5rem)] flex flex-col justify-center overflow-hidden">
+        <div className="max-w-md mx-auto p-2 space-y-2 animate-in fade-in zoom-in duration-300 h-[calc(100vh-5rem)] flex flex-col justify-center">
             {/* Header Premium */}
             {/* Unified Skyjo Score Container - Premium Redesign */}
-            <div ref={scoreContainerRef} className="w-full relative group overflow-hidden rounded-[24px] shadow-[0_20px_60px_-15px_rgba(14,165,233,0.3)] transition-all hover:shadow-[0_30px_70px_-15px_rgba(14,165,233,0.4)]">
-                {/* Static Premium Border */}
-                <div className="absolute inset-0 rounded-[24px] border border-white/10 z-0" />
+            <div ref={scoreContainerRef} className="w-full relative group">
+                {/* External Glowing Halo (Aura) - Reduced weight */}
+                <div className="absolute inset-[-2px] z-0 pointer-events-none rounded-[30px] overflow-hidden">
+                    <div
+                        className="absolute inset-[-20%] opacity-80 blur-lg"
+                        style={{
+                            background: `conic-gradient(from var(--rotation), transparent 35%, #0ea5e9 50%, transparent 65%)`,
+                        }}
+                    />
+                </div>
 
-                {/* Glass Background (Premium Ultra) */}
-                <div className="absolute inset-[1px] bg-[#0f172a]/70 backdrop-blur-2xl rounded-[23px] z-10" />
+                {/* Main Glass Container with Clipping */}
+                <div className="relative z-10 w-full overflow-hidden rounded-[24px] border border-white/10 shadow-[0_20px_60px_-15px_rgba(14,165,233,0.3)] bg-[#0f172a]/90 backdrop-blur-2xl transition-all hover:shadow-[0_30px_70px_-15px_rgba(14,165,233,0.4)] flex flex-col items-stretch">
+                    {/* Internal Ambient Gradient (Blue/Cyan for Score) */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-sky-500/20 via-transparent to-purple-500/20 opacity-30 z-10 pointer-events-none rounded-[24px]" />
 
-                {/* Internal Ambient Gradient (Blue/Cyan for Score) */}
-                <div className="absolute inset-0 bg-gradient-to-br from-sky-500/20 via-transparent to-purple-500/20 opacity-30 z-10 pointer-events-none rounded-[24px]" />
+                    {/* Decorative Top Beam */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-sky-400 to-transparent z-20 opacity-60" />
 
-                {/* Decorative Top Beam */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-sky-400 to-transparent z-20 opacity-60" />
-
-                {/* Content Layer */}
-                <div className="relative z-20 flex flex-col items-stretch h-full">
                     {/* Header Section */}
-                    <div className="relative p-3 flex items-center gap-4 border-b border-white/5 bg-white/5">
+                    <div className="relative p-3 flex items-center gap-4 border-b border-white/5 bg-white/5 z-20">
+
                         <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden border border-sky-400/50 bg-slate-900 shrink-0 relative z-30 group-hover:scale-105 transition-transform duration-500 animate-breathing" style={{ transform: "translateZ(40px)" }}>
                             <div className="absolute inset-0 bg-sky-500/20 mix-blend-overlay" />
                             <img
@@ -257,39 +263,14 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                 </div>
             </div>
 
-            {/* Virtual Game Section */}
-            {/* Virtual Game Section */}
-            {/* Virtual Game Section - Premium Redesign for 16:9 Image */}
-            <motion.button
-                ref={virtualContainerRef}
+            {/* Virtual Game Section - Integrated SkyjoVirtuelButton */}
+            <SkyjoVirtuelButton
                 onClick={() => {
                     playStart();
                     onNavigate?.('virtual');
                 }}
-                className="w-full relative group cursor-pointer overflow-hidden rounded-[24px] transition-all hover:scale-[1.02] shadow-[0_20px_50px_rgba(147,51,234,0.3)] mt-4 aspect-video flex-none"
-                whileTap={{ scale: 0.96 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-                {/* Static Premium Border */}
-                <div className="absolute inset-0 rounded-[24px] border border-white/10 z-0" />
+            />
 
-                {/* Background Image Container */}
-                <div className="absolute inset-[2px] rounded-[22px] overflow-hidden z-10 bg-slate-900">
-                    <img
-                        src="/SkyJo Virtuel.png"
-                        alt="Mode Virtuel"
-                        className="w-full h-full object-cover object-center opacity-100 group-hover:scale-105 transition-all duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
-                </div>
-
-                {/* Content Layer - Centered Arrow only */}
-                <div className="absolute bottom-4 right-4 z-20">
-                    <div className="w-16 h-16 shrink-0 rounded-full bg-slate-900/30 backdrop-blur-md border border-white/10 text-white flex items-center justify-center shadow-[0_8px_32px_rgba(0,0,0,0.3)] group-hover:scale-110 group-hover:bg-slate-900/50 transition-all duration-300 aspect-square animate-pulse-slow">
-                        <ArrowRight className="w-8 h-8 drop-shadow-md opacity-90" strokeWidth={3} />
-                    </div>
-                </div>
-            </motion.button>
 
             {/* Footer Actions */}
             <div className="grid grid-cols-2 gap-2 mt-auto pt-2">
