@@ -212,7 +212,13 @@ app.get('/api/health', async (req, res) => {
 app.post('/api/auth/google-link', async (req, res) => {
     const { idToken, dbId } = req.body;
     try {
-        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        const firebaseApp = getFirebaseAdmin();
+        if (!firebaseApp) {
+            console.error('[AUTH] Firebase Admin not initialized');
+            return res.status(500).json({ error: 'Server authentication unconfigured' });
+        }
+
+        const decodedToken = await admin.auth(firebaseApp).verifyIdToken(idToken);
         const firebaseUid = decodedToken.uid;
         const existing = await pool.query('SELECT id, name, level, xp, vibe_id, emoji, avatar_id FROM users WHERE firebase_uid = $1', [firebaseUid]);
 
@@ -227,8 +233,12 @@ app.post('/api/auth/google-link', async (req, res) => {
         await pool.query('UPDATE users SET firebase_uid = $1 WHERE id = $2', [firebaseUid, dbId]);
         res.json({ status: 'linked_success' });
     } catch (error) {
-        console.error('[AUTH] Link error:', error);
-        res.status(401).json({ error: 'Unauthorized' });
+        console.error('[AUTH] Link error details:', error);
+        res.status(401).json({
+            error: 'Authentication failed',
+            message: error.message,
+            code: error.code
+        });
     }
 });
 

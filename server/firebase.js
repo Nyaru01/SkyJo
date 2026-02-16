@@ -57,13 +57,18 @@ export const initFirebase = () => {
                     privateKey,
                 }),
             });
-            console.log('✅ [FIREBASE] Admin initialized successfully');
+            console.log('✅ [FIREBASE] Admin initialized successfully for project:', projectId);
             return firebaseApp;
         } catch (error) {
-            console.error('❌ [FIREBASE] Initialization error:', error.message);
+            console.error('❌ [FIREBASE] Initialization error catch block:', error.message);
+            if (error.stack) console.error(error.stack);
         }
     } else {
-        console.warn('⚠️ [FIREBASE] Missing environment variables for Admin SDK');
+        const missing = [];
+        if (!projectId) missing.push('FIREBASE_PROJECT_ID');
+        if (!clientEmail) missing.push('FIREBASE_CLIENT_EMAIL');
+        if (!privateKey) missing.push('FIREBASE_PRIVATE_KEY');
+        console.warn('⚠️ [FIREBASE] Missing environment variables:', missing.join(', '));
     }
     return null;
 };
