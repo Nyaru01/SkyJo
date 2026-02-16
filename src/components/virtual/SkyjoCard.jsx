@@ -317,8 +317,8 @@ const SkyjoCard = memo(function SkyjoCard({
                 {/* FRONT FACE - Skeuomorphic card design */}
                 <div
                     className={cn(
-                        "absolute inset-0 backface-hidden overflow-hidden",
-                        isSelected && "ring-4 ring-amber-400 ring-offset-2",
+                        "absolute inset-0 backface-hidden overflow-hidden transition-all duration-200",
+                        isSelected && "ring-2 ring-amber-400 ring-offset-1",
                     )}
                     style={{
                         borderRadius: '10px',
@@ -454,8 +454,8 @@ const SkyjoCard = memo(function SkyjoCard({
                 {/* BACK FACE */}
                 <div
                     className={cn(
-                        "absolute inset-0 backface-hidden flex items-center justify-center rotate-y-180 overflow-hidden",
-                        isSelected && "ring-4 ring-amber-400 ring-offset-2",
+                        "absolute inset-0 backface-hidden flex items-center justify-center rotate-y-180 overflow-hidden transition-all duration-200",
+                        isSelected && "ring-2 ring-amber-400 ring-offset-1",
                     )}
                     style={{
                         borderRadius: '10px',
@@ -463,8 +463,8 @@ const SkyjoCard = memo(function SkyjoCard({
                             ? '0 0 20px rgba(52, 211, 153, 0.6), 0 4px 16px rgba(0, 0, 0, 0.4)'
                             : '0 4px 16px rgba(0, 0, 0, 0.4)',
                         border: isHighlighted
-                            ? '3px solid rgba(52, 211, 153, 0.8)'
-                            : '3px solid rgba(100, 116, 139, 0.5)',
+                            ? '2px solid rgba(52, 211, 153, 0.9)'
+                            : '2.5px solid rgba(100, 116, 139, 0.5)',
                         backgroundColor: '#1e293b', // Fallback
                     }}
                 >

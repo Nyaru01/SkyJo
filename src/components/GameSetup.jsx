@@ -331,7 +331,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                     className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold"
                 >
                     <HelpCircle className="w-4 h-4" />
-                    TUTORIEL
+                    GUIDE
                 </Button>
 
                 <Button

@@ -89,10 +89,8 @@ export default function WhatsNewModal({ isOpen, onClose }) {
         }
     }, [isOpen, onClose]);
 
-    if (!isOpen) return null;
-
     return createPortal(
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
             {isOpen && (
                 <motion.div
                     initial={{ opacity: 0 }}
@@ -104,19 +102,26 @@ export default function WhatsNewModal({ isOpen, onClose }) {
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="modal-title"
+                    style={{ willChange: 'opacity' }}
                 >
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        transition={{
+                            type: "spring",
+                            damping: 25,
+                            stiffness: 300,
+                            duration: 0.3
+                        }}
                         className="w-full max-w-md relative"
                         onClick={(e) => e.stopPropagation()}
+                        style={{ willChange: 'transform, opacity' }}
                     >
                         <div className="relative overflow-hidden bg-slate-900 rounded-3xl border border-white/10 shadow-2xl">
                             {/* Effets de fond */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/50 via-slate-900 to-purple-900/50" />
-                            <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-purple-500/20 to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-slate-900 to-purple-900/40 pointer-events-none" />
+                            <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-purple-500/10 to-transparent pointer-events-none" />
 
                             {/* Effet de brillance subtil */}
                             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
@@ -126,7 +131,7 @@ export default function WhatsNewModal({ isOpen, onClose }) {
                                 <motion.div
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
-                                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                                    transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
                                     className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 mb-3 shadow-lg shadow-purple-500/50"
                                 >
                                     <Sparkles className="w-6 h-6 text-white" />
@@ -167,7 +172,7 @@ export default function WhatsNewModal({ isOpen, onClose }) {
                                 <Button
                                     size="lg"
                                     onClick={onClose}
-                                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-purple-500/25 transition-all duration-200 hover:shadow-purple-500/40 hover:scale-[1.02]"
+                                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-purple-500/25 transition-all duration-200 hover:shadow-purple-500/40"
                                 >
                                     C'est parti !
                                 </Button>
