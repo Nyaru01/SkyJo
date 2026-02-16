@@ -705,6 +705,23 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
             continue;
         }
 
+        // PROTECTION: Protect low cards (0, 1) from being replaced for "potential" logic
+        // Unless it's an immediate column completion
+        if (hand[idx].isRevealed && hand[idx].value <= 1 && Number(cardValue) > hand[idx].value) {
+            const col = Math.floor(idx / 3);
+            const colStart = col * 3;
+            // Check if the other 2 cards match the new card (triggering elimination)
+            // Note: We handle 'C' (Joker) as wildcard
+            const othersMatch = [colStart, colStart + 1, colStart + 2]
+                .filter(i => i !== idx)
+                .every(i => hand[i] && hand[i].isRevealed && (hand[i].value === cardValue || hand[i].value === 'C' || cardValue === 'C'));
+
+            if (!othersMatch) {
+                // aiLog(difficulty, `Protection: Refusing to replace ${hand[idx].value} with ${cardValue} (potential only)`);
+                continue;
+            }
+        }
+
         if (checkColumnPotential(hand, idx, cardValue, false, difficulty)) {
             // Prudent Finisher: only finish with a column completion if it's highly profitable
             if (slowDown && hiddenIndices.length === 1 && hiddenIndices.includes(idx)) {
@@ -721,7 +738,16 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
         }
     }
 
-    // --- UNIVERSAL GROUPING STRATEGY (High Priority) ---
+    // --- URGENT REPLACEMENTS (High Priority) ---
+    // If we have very bad revealed cards (>= 10), replace them before thinking about strategy
+    // UNLESS the grouping strategy would trigger an immediate elimination (handled above in column completion loop)
+    if (highest.index !== -1 && highest.value >= 10 && cardValue < highest.value) {
+        // Double check: if cardValue is also bad (e.g. 9), maybe don't replace an 11 if we can group the 9?
+        // Actually no, getting rid of 10+ is almost always better than a potential grouping of a 9.
+        return highest.index;
+    }
+
+    // --- UNIVERSAL GROUPING STRATEGY (Medium Priority) ---
     // Rule: Always try to group matching cards in the same column to aim for elimination.
     // Joker ('C') matches any card.
     const matchingRevealedCards = hand.filter(c => c && c.isRevealed && (c.value === cardValue || c.specialType === 'C' || cardValue === 'C'));
@@ -765,11 +791,7 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
         }
     }
 
-    // --- URGENT REPLACEMENTS (High targets) ---
-    // If we have very bad revealed cards (>= 10), replace them before thinking about strategy
-    if (highest.index !== -1 && highest.value >= 10 && cardValue < highest.value) {
-        return highest.index;
-    }
+    // --- URGENT REPLACEMENTS (Handled above) ---
 
     // SPECIAL LOGIC FOR 20 (Cursed Skull)
     if (cardValue === 20) {
@@ -1055,7 +1077,14 @@ export const decideDrawSource = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
     // Normal: Take discard if value <= 4
     if (difficulty === AI_DIFFICULTY.NORMAL) {
         if (discardValue <= 4) {
-            return 'DISCARD_PILE';
+            // ANTI-REGRESSION CHECK: Only take if we have something worse to replace
+            const hasWorseRevealed = currentPlayer.hand.some(c => c && c.isRevealed && c.value > discardValue && !(c.lockCount > 0));
+            // Or if we have hidden cards (statistically likely to be > 4)
+            const hasHidden = currentPlayer.hand.some(c => c && !c.isRevealed);
+
+            if (hasWorseRevealed || hasHidden) {
+                return 'DISCARD_PILE';
+            }
         }
         // Also take if it can complete a column
         const hand = currentPlayer.hand;
@@ -1215,21 +1244,37 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
 
     // If came from discard, MUST replace
     if (gameState.turnPhase === 'MUST_REPLACE') {
-        const replaceIndex = findBestReplacementPosition(hand, drawnValue, difficulty, gameState);
-        // If no good position found, just replace a random card (should rarely happen for AI)
-        // CRITICAL: Must not pick a locked card OR an excellent negative card (<= -2)
-        const safeIndices = hand.map((c, i) => {
-            if (c === null) return -1;
-            if (c.lockCount > 0) return -1;
-            if (c.isRevealed && c.value <= -2) return -1; // NEVER replace -10 even randomly
-            return i;
-        }).filter(i => i !== -1);
+        let replaceIndex = findBestReplacementPosition(hand, drawnValue, difficulty, gameState);
 
-        const finalIndex = (replaceIndex !== -1 && !safeIndices.includes(replaceIndex)) ?
-            (safeIndices.length > 0 ? safeIndices[0] : replaceIndex) :
-            (replaceIndex !== -1 ? replaceIndex : getRandomElement(safeIndices));
+        // If no strategic position found (replaceIndex === -1), apply SMART FALLBACK
+        // Do NOT use random replacement for revealed cards.
+        if (replaceIndex === -1) {
+            const highest = findHighestRevealedCard(hand);
 
-        return { action: 'REPLACE', cardIndex: finalIndex };
+            // Priority 1: Replace a revealed card that is strictly worse
+            if (highest.index !== -1 && highest.value > drawnValue) {
+                replaceIndex = highest.index;
+            }
+            // Priority 2: Replace a hidden card (gamble)
+            else {
+                const hiddenIndices = getHiddenCardIndices(hand);
+                if (hiddenIndices.length > 0) {
+                    replaceIndex = getRandomElement(hiddenIndices);
+                }
+                // Priority 3: Absolute last resort - replace highest revealed (minimize damage)
+                else if (highest.index !== -1) {
+                    replaceIndex = highest.index;
+                }
+            }
+        }
+
+        // Final safety check: ensure we handle "no valid move" (should be impossible unless full lock)
+        if (replaceIndex === -1) {
+            const fallbackIdx = hand.findIndex(c => c !== null && !(c.lockCount > 0));
+            replaceIndex = fallbackIdx !== -1 ? fallbackIdx : 0;
+        }
+
+        return { action: 'REPLACE', cardIndex: replaceIndex };
     }
 
     // Normal: Strategic decision

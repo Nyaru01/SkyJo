@@ -262,12 +262,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         setShowingGame(screen === 'game' || screen === 'scores');
     }, [screen, setShowingGame]);
 
-    // Debug Pause State
-    useEffect(() => {
-        if (onlineGameStarted) {
-            console.log(`[PAUSE-DEBUG] Online Pause Updated: ${onlineIsPaused} (activeIsPaused: ${activeIsPaused})`);
-        }
-    }, [onlineIsPaused, activeIsPaused, onlineGameStarted]);
+
     // Handle Visibility Change for Auto-Pause (AI Games only)
     useEffect(() => {
         const handleVisibilityChange = () => {
@@ -3165,7 +3160,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
             {/* Pause Overlay (Unifié) */}
             <AnimatePresence>
-                {activeIsPaused && (aiMode || onlineGameStarted) && (
+                {((onlineGameStarted && onlineIsPaused) || (aiMode && activeIsPaused)) && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
