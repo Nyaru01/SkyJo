@@ -50,6 +50,8 @@ const WALLPAPERS = [
     { id: 'mystique', name: 'Mystique', url: '/Wallpapers/Mystique.png', color: 'bg-purple-900' },
     { id: 'noir', name: 'Noir premium', url: '/Wallpapers/Noir premium.png', color: 'bg-slate-900' },
     { id: 'stellaire', name: 'Stellaire', url: '/Wallpapers/stellaire.png', color: 'bg-indigo-900' },
+    { id: 'cybernature', name: 'Cyber Nature', url: '/Wallpapers/Cyber_nature.png', color: 'bg-emerald-950' },
+    { id: 'cybercity', name: 'Cyber City', url: '/Wallpapers/Cyber_City.png', color: 'bg-slate-950' },
 ];
 
 export default function Dashboard() {

@@ -17,6 +17,8 @@ const CRITICAL_IMAGES = [
     '/Wallpapers/Mystique.png',
     '/Wallpapers/Noir premium.png',
     '/Wallpapers/stellaire.png',
+    '/Wallpapers/Cyber_nature.png',
+    '/Wallpapers/Cyber_City.png',
     '/virtual-logo.jpg',
     '/logo.jpg',
     '/virtual-logo2.jpg',
