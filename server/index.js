@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 import admin from 'firebase-admin';
 import pool from './db.js';
 
-import { initFirebase } from './firebase.js';
+import { initFirebase, getFirebaseAdmin } from './firebase.js';
 
 initFirebase();
 
