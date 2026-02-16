@@ -14,40 +14,23 @@ export const initFirebase = () => {
 
     if (projectId && clientEmail && privateKey) {
         try {
-            // Nettoyage FLEXIBLE pour Railway / Windows / Docker
             if (typeof privateKey === 'string') {
-                privateKey = privateKey.trim();
+                // 1. Enlever les guillemets éventuels (Railway / .env)
+                privateKey = privateKey.trim().replace(/^["']|["']$/g, '');
 
-                // 1. Enlever les guillemets éventuels
-                if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
-                    privateKey = privateKey.substring(1, privateKey.length - 1);
-                }
-
-                // 2. Extraire le corps Base64 proprement via Regex
-                const headerRegex = /-----BEGIN [A-Z ]*PRIVATE KEY-----/;
-                const footerRegex = /-----END [A-Z ]*PRIVATE KEY-----/;
-
-                const headerMatch = privateKey.match(headerRegex);
-                const footerMatch = privateKey.match(footerRegex);
-
-                if (headerMatch && footerMatch) {
-                    const headerStr = headerMatch[0];
-                    const footerStr = footerMatch[0];
-                    const startPos = headerMatch.index + headerStr.length;
-                    const endPos = footerMatch.index;
-
-                    let body = privateKey.substring(startPos, endPos);
-                    // Nettoyer le corps : garder uniquement Base64 (A-Z, a-z, 0-9, +, /, =)
-                    body = body.replace(/[^A-Za-z0-9+/=]/g, '');
-
-                    // Reconstruire PEM (Node.js accepte le corps sur une seule ligne)
-                    privateKey = `${headerStr}\n${body}\n${footerStr}\n`;
-                } else {
-                    // Fallback si format bizarre : conversion simple \n
+                // 2. Gérer les \n littéraux (fréquent dans les variables d'env)
+                if (privateKey.includes('\\n')) {
                     privateKey = privateKey.replace(/\\n/g, '\n');
                 }
 
-                console.log(`[FIREBASE_DIAG] Final PEM format length: ${privateKey.length}`);
+                // 3. Normalisation finale : s'assurer des headers/footers propres
+                // (Si la clé est sur une seule ligne avec des espaces, on tente de la ré-indenter)
+                if (!privateKey.includes('\n') && privateKey.includes('-----')) {
+                    privateKey = privateKey.replace(/-----BEGIN PRIVATE KEY-----/, '-----BEGIN PRIVATE KEY-----\n')
+                        .replace(/-----END PRIVATE KEY-----/, '\n-----END PRIVATE KEY-----');
+                }
+
+                console.log(`[FIREBASE_DIAG] Private key normalization complete. Length: ${privateKey.length}`);
             }
 
             firebaseApp = admin.initializeApp({
