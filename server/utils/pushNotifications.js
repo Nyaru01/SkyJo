@@ -1,3 +1,4 @@
+import admin from 'firebase-admin';
 import { getFirebaseAdmin } from '../firebase.js';
 
 // Auto-init at load
