@@ -129,7 +129,7 @@ const SkyjoVirtuelButton = ({ onClick }) => {
                                 <span className="relative z-10 text-white animate-[glitch_5s_infinite]">SKYJO</span>
                                 {/* Effets de lueur plus intenses */}
                                 <span className="absolute inset-0 z-0 text-indigo-400/50 blur-2xl scale-110">SKYJO</span>
-                                <span className="absolute inset-0 z-10 bg-gradient-to-r from-transparent via-white/30 to-transparent bg-[length:200%_100%] animate-[shimmer_4s_infinite] bg-clip-text text-transparent">SKYJO</span>
+                                <span className="absolute inset-0 z-10 bg-gradient-to-r from-transparent via-white/30 to-transparent bg-[length:200%_100%] animate-[shimmer_20s_infinite] bg-clip-text text-transparent">SKYJO</span>
                             </h1>
 
                             <div className="relative mt-2 md:mt-4 flex items-center gap-4 md:gap-6">

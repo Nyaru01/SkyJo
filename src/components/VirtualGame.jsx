@@ -32,6 +32,7 @@ import { cn } from '../lib/utils';
 
 import { AVATARS, getAvatarPath } from '../lib/avatars';
 import AvatarSelector from './AvatarSelector';
+import PseudoModal from './PseudoModal';
 import BonusTutorial from './BonusTutorial';
 import Tutorial from './Tutorial';
 import SkyjoLoader from './SkyjoLoader';
@@ -85,6 +86,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const [initialReveals, setInitialReveals] = useState({});
     const [isActionPending, setIsActionPending] = useState(false); // For online loading states
     const [showBonusRules, setShowBonusRules] = useState(false);
+    const [rulesMode, setRulesMode] = useState('tourment'); // tourment or hardcore
+    const [showPseudoModal, setShowPseudoModal] = useState(false);
+    const [pendingStartAction, setPendingStartAction] = useState(null); // 'ai' or 'local'
     const hasArchivedOnlineRef = useRef(false);
 
     const gameState = useVirtualGameStore((s) => s.gameState);
@@ -160,6 +164,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const getSocketId = useOnlineGameStore(s => s.getSocketId);
     const onlineGameMode = useOnlineGameStore(s => s.gameMode);
     const setOnlineGameMode = useOnlineGameStore(s => s.setGameMode);
+    const onlineIsPaused = useOnlineGameStore(s => s.isPaused);
+    const toggleOnlinePause = useOnlineGameStore(s => s.togglePause);
 
 
     // Main game store for archiving
@@ -178,6 +184,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const effectiveIsBonusMode = onlineGameStarted ? (onlineGameMode === 'bonus') : virtualIsBonusMode;
     const activeDrawnCardSource = onlineGameStarted ? onlineDrawnCardSource : drawnCardSource;
     const activeTotalScores = onlineGameStarted ? onlineTotalScores : totalScores;
+    const activeIsPaused = onlineGameStarted ? onlineIsPaused : isPaused;
 
     // 2. Calculate the local player's index in the game state
     // In online mode, try to find by socket.id first, then fallback to dbId (for reconnects)
@@ -254,6 +261,13 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     useEffect(() => {
         setShowingGame(screen === 'game' || screen === 'scores');
     }, [screen, setShowingGame]);
+
+    // Debug Pause State
+    useEffect(() => {
+        if (onlineGameStarted) {
+            console.log(`[PAUSE-DEBUG] Online Pause Updated: ${onlineIsPaused} (activeIsPaused: ${activeIsPaused})`);
+        }
+    }, [onlineIsPaused, activeIsPaused, onlineGameStarted]);
     // Handle Visibility Change for Auto-Pause (AI Games only)
     useEffect(() => {
         const handleVisibilityChange = () => {
@@ -582,14 +596,16 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         if (screen === 'game' && !onlineGameStarted && !gameState && !onlineRoomCode && !onlineError) {
             console.log("[VG] Resetting to menu (no game, no room)");
             setScreen('menu');
+            if (onBackToMenu) onBackToMenu();
         }
 
         // Also handle legacy case where we might still have roomCode but game stopped
         if (screen === 'game' && onlineRoomCode && !onlineGameStarted && !onlineIsGameOver && !onlineError) {
             console.log("[VG] Resetting to menu (game stopped but room active)");
             setScreen('menu');
+            if (onBackToMenu) onBackToMenu();
         }
-    }, [onlineGameStarted, onlineIsGameOver, onlineRoomCode, screen, gameState, onlineError]);
+    }, [onlineGameStarted, onlineIsGameOver, onlineRoomCode, screen, gameState, onlineError, onBackToMenu]);
 
     // Handle Visibility Change for Auto-Pause (AI Games only)
     useEffect(() => {
@@ -810,6 +826,14 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     // Start game
     const handleStartGame = () => {
+        // Check for invalid names
+        const hasInvalidName = players.some(p => !p.name.trim() || p.name.trim().toLowerCase() === 'joueur');
+        if (hasInvalidName) {
+            setPendingStartAction('local');
+            setShowPseudoModal(true);
+            return;
+        }
+
         const gamePlayers = players.map((p, i) => ({
             id: `player-${i}`,
             name: p.name.trim() || `Joueur ${i + 1}`,
@@ -978,6 +1002,14 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         setOpenAvatarSelector(null);
     };
 
+    const handleTogglePause = useCallback(() => {
+        if (onlineGameStarted) {
+            toggleOnlinePause(!onlineIsPaused);
+        } else {
+            togglePause();
+        }
+    }, [onlineGameStarted, onlineIsPaused, toggleOnlinePause, togglePause]);
+
     // Back to menu
     const handleBackToMenu = (force = false) => {
         if (!force && screen === 'game' && !isGameOver) {
@@ -1098,6 +1130,13 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     // Render AI setup screen
     if (screen === 'ai-setup') {
         const handleStartAIGame = () => {
+            const name = aiConfig.playerName?.trim();
+            if (!name || name.toLowerCase() === 'joueur') {
+                setPendingStartAction('ai');
+                setShowPseudoModal(true);
+                return;
+            }
+
             playStartGame();
             const isBonus = aiConfig.difficulty === AI_DIFFICULTY.BONUS;
             startAIGame(
@@ -1200,11 +1239,12 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                                 </div>
 
                                                 {/* Footer Area for Rules Button - Only if needed */}
-                                                {mode.level === AI_DIFFICULTY.BONUS && (
+                                                {(mode.level === AI_DIFFICULTY.BONUS || mode.level === AI_DIFFICULTY.HARDCORE) && (
                                                     <div className="w-full pt-2 border-t border-white/5 mt-auto">
                                                         <div
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
+                                                                setRulesMode(mode.level === AI_DIFFICULTY.HARDCORE ? 'hardcore' : 'tourment');
                                                                 setShowBonusTutorial(true);
                                                             }}
                                                             className="w-full py-1.5 px-3 rounded-lg bg-slate-800/50 border border-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 hover:bg-slate-700 hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
@@ -1236,7 +1276,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
                 <PremiumTiltButton
                     onClick={handleStartAIGame}
-                    disabled={!aiConfig.playerName.trim()}
                     gradientFrom={
                         aiConfig.difficulty === AI_DIFFICULTY.NORMAL ? "from-emerald-500" :
                             aiConfig.difficulty === AI_DIFFICULTY.HARD ? "from-amber-500" :
@@ -1274,7 +1313,51 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 </div>
 
                 {avatarSelectorComponent}
-                <BonusTutorial isOpen={showBonusTutorial} onClose={() => setShowBonusTutorial(false)} />
+                <BonusTutorial
+                    isOpen={showBonusTutorial}
+                    onClose={() => setShowBonusTutorial(false)}
+                    mode={rulesMode}
+                />
+
+                <PseudoModal
+                    isOpen={showPseudoModal}
+                    onClose={() => setShowPseudoModal(false)}
+                    initialValue={pendingStartAction === 'ai' ? aiConfig.playerName : (players[0]?.name || '')}
+                    onConfirm={(newPseudo) => {
+                        setShowPseudoModal(false);
+                        if (pendingStartAction === 'ai') {
+                            setAIConfig(prev => ({ ...prev, playerName: newPseudo }));
+                            updateUserProfile({ name: newPseudo });
+                            // Re-trigger start with the new name
+                            playStartGame();
+                            const isBonus = aiConfig.difficulty === AI_DIFFICULTY.BONUS;
+                            startAIGame(
+                                { name: newPseudo, avatarId: aiConfig.playerAvatarId },
+                                1,
+                                aiConfig.difficulty,
+                                { isBonusMode: isBonus }
+                            );
+                            setInitialReveals({});
+                            setScreen('game');
+                        } else if (pendingStartAction === 'local') {
+                            const updatedPlayers = [...players];
+                            updatedPlayers[0] = { ...updatedPlayers[0], name: newPseudo };
+                            setPlayers(updatedPlayers);
+                            updateUserProfile({ name: newPseudo });
+
+                            if (updatedPlayers.every(p => p.name.trim() && p.name.trim().toLowerCase() !== 'joueur')) {
+                                const gamePlayers = updatedPlayers.map((p, i) => ({
+                                    id: `player-${i}`,
+                                    name: p.name.trim(),
+                                    emoji: p.emoji,
+                                }));
+                                startLocalGame(gamePlayers);
+                                setInitialReveals({});
+                                setScreen('game');
+                            }
+                        }
+                    }}
+                />
             </div >
         );
     }
@@ -1994,24 +2077,45 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     }
 
 
-    // If no active game state and we're on game screen, show loading indicator
-    if (!activeGameState && screen === 'game') {
-        // ERROR HANDLING: If there is an error (e.g. host left), show overlay instead of loading
-        if (onlineError) {
-            return <HostLeftOverlay />;
-        }
+    // 7. Gestion des états de redirection et d'erreur (avancé)
+    const isRedirecting = onlineRedirection?.active;
 
+    // Protection immédiate pour l'écran menu pour éviter de descendre dans la logique de jeu
+    if (screen === 'menu') {
+        if (onBackToMenu) {
+            onBackToMenu();
+        }
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-slate-400">
-                <Bot className="w-12 h-12 mb-4 opacity-20 animate-pulse" />
-                <p className="text-sm font-medium">Initialisation de la partie...</p>
+            <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+                <SkyjoLoader progress={100} />
+                <p className="text-white font-bold">Menu...</p>
             </div>
         );
     }
 
-    // Early return if no game state
-    if (!activeGameState) {
-        return null;
+    // Si on est sur l'écran de jeu mais qu'il n'y a plus d'état (ex: déconnexion)
+    if (!activeGameState && screen === 'game') {
+        if (onlineError) {
+            return <HostLeftOverlay />;
+        }
+        if (isRedirecting) {
+            return (
+                <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+                    <SkyjoLoader progress={100} />
+                    <p className="text-white font-bold">Redirection...</p>
+                </div>
+            );
+        }
+    }
+
+    // Protection ultime : si pas d'état et pas dans le lobby/setup, on affiche un loader ou on sort
+    if (!activeGameState && screen !== 'lobby' && screen !== 'setup' && screen !== 'ai-setup') {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh]">
+                <SkyjoLoader progress={100} />
+                <p className="mt-4 text-white font-bold animate-pulse">Chargement...</p>
+            </div>
+        );
     }
 
     // Use a separate view for the sequential revelation phase
@@ -2670,20 +2774,20 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                             </Button>
                         </div>
 
-                        {/* Pause Button (Local/AI only) */}
-                        {aiMode && (
+                        {/* Pause Button (Local/AI & Online) */}
+                        {(aiMode || onlineGameStarted) && (
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={togglePause}
+                                onClick={handleTogglePause}
                                 className={cn(
                                     "h-12 sm:h-16 px-5 sm:px-8 rounded-3xl transition-all active:scale-90 border shrink-0 flex items-center gap-3 shadow-2xl",
-                                    isPaused
+                                    activeIsPaused
                                         ? "bg-amber-500/25 text-amber-500 border-amber-500/40 ring-4 ring-amber-500/10"
                                         : "bg-white/5 text-slate-400 border-white/10"
                                 )}
                             >
-                                {isPaused ? <PlayCircle className="h-6 w-6 sm:h-8 sm:w-8" /> : <Pause className="h-5 w-5 sm:h-7 sm:w-7" />}
+                                {activeIsPaused ? <PlayCircle className="h-6 w-6 sm:h-8 sm:w-8" /> : <Pause className="h-5 w-5 sm:h-7 sm:w-7" />}
                                 <span className="text-xs sm:text-sm font-black uppercase tracking-widest hidden sm:inline">Pause</span>
                             </Button>
                         )}
@@ -3059,14 +3163,14 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             />
             <HostLeftOverlay />
 
-            {/* AI Pause Overlay */}
+            {/* Pause Overlay (Unifié) */}
             <AnimatePresence>
-                {isPaused && aiMode && (
+                {activeIsPaused && (aiMode || onlineGameStarted) && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[140] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-6"
+                        className="fixed inset-0 z-[500] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-6"
                     >
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -3087,7 +3191,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
                             <div className="grid grid-cols-1 gap-3">
                                 <PremiumTiltButton
-                                    onClick={() => setPaused(false)}
+                                    onClick={handleTogglePause}
                                     gradientFrom="from-emerald-500"
                                     gradientTo="to-teal-500"
                                     shadowColor="shadow-emerald-500/20"

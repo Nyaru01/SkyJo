@@ -54,7 +54,7 @@ export const useGameStore = create(
             lastDailyWinDate: null, // ISO date string of last daily challenge win
             userProfile: {
                 id: `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                name: 'Joueur',
+                name: '',
                 avatarId: 'cat',
                 emoji: '🐱',
                 vibeId: '',
@@ -127,6 +127,9 @@ export const useGameStore = create(
             },
 
             updateUserProfile: (updates) => {
+                if (updates.name && updates.name.trim().toLowerCase() === 'joueur') {
+                    return; // Block 'Joueur' name
+                }
                 set(state => ({
                     userProfile: { ...state.userProfile, ...updates }
                 }));
@@ -147,7 +150,7 @@ export const useGameStore = create(
                         userProfile: {
                             ...state.userProfile,
                             id: newId,
-                            name: state.userProfile?.name || 'Joueur',
+                            name: state.userProfile?.name && state.userProfile.name.toLowerCase() !== 'joueur' ? state.userProfile.name : '',
                             avatarId: state.userProfile?.avatarId || 'cat',
                             emoji: state.userProfile?.emoji || '🐱',
                             level: state.level,
@@ -553,7 +556,7 @@ export const useGameStore = create(
                         userProfile: {
                             ...(persistedState.userProfile || {}),
                             id: newId,
-                            name: persistedState.userProfile?.name || 'Joueur',
+                            name: persistedState.userProfile?.name && persistedState.userProfile.name.toLowerCase() !== 'joueur' ? persistedState.userProfile.name : '',
                             avatarId: 'cat',
                             level: 1,
                             currentXP: 0

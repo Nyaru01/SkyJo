@@ -217,7 +217,7 @@ const getProbabilisticAverageValue = (gameState) => {
         gameState.drawnCard
     ].filter(Boolean);
 
-    const isBonusMode = allKnownCards.some(c => c.value === 20 || c.specialType === 'H' || c.specialType === 'S' || c.value === -10);
+    const isBonusMode = allKnownCards.some(c => c.value === 20 || c.specialType === 'S' || c.value === -10);
 
     let totalSum = isBonusMode ? 820 : 760;
     let totalCards = isBonusMode ? 156 : 150;
@@ -226,7 +226,7 @@ const getProbabilisticAverageValue = (gameState) => {
     const seenCards = allKnownCards.filter(c => c.isRevealed);
 
     seenCards.forEach(c => {
-        // S, H, C, CH are valued at 0 in engine for simplicity
+        // S, C, CH sont valorisés à 0
         totalSum -= c.value;
         totalCards--;
     });

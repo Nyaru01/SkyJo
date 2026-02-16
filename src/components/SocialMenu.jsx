@@ -77,12 +77,14 @@ export default function SocialDashboard(props) {
     }, [userProfile.id, clearSearchResults]);
 
     const handleUpdateName = () => {
-        if (!newName.trim()) {
+        const trimmedName = newName.trim();
+        if (!trimmedName || trimmedName.toLowerCase() === 'joueur') {
+            import('react-hot-toast').then(m => m.toast.error("Pseudo invalide (pas 'Joueur')"));
             setNewName(userProfile.name);
             setIsEditingName(false);
             return;
         }
-        updateUserProfile({ name: newName });
+        updateUserProfile({ name: trimmedName });
         setIsEditingName(false);
     };
 

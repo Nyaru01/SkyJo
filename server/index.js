@@ -633,6 +633,7 @@ io.on('connection', (socket) => {
             gameStarted: false,
             isGameOver: false,
             gameWinner: null,
+            isPaused: false,
             isPublic: !!isPublic,
             gameMode: null
         });
@@ -727,7 +728,8 @@ io.on('connection', (socket) => {
                 socket.emit('game_started', {
                     gameState: room.gameState,
                     totalScores: room.totalScores,
-                    roundNumber: room.roundNumber
+                    roundNumber: room.roundNumber,
+                    isPaused: room.isPaused
                 });
                 // Sync mode on reconnect
                 socket.emit('mode_changed', room.gameMode);
@@ -805,7 +807,8 @@ io.on('connection', (socket) => {
             gameState: room.gameState,
             totalScores: room.totalScores,
             roundNumber: room.roundNumber,
-            gameMode: room.gameMode
+            gameMode: room.gameMode,
+            isPaused: room.isPaused
         });
     });
 
@@ -859,7 +862,8 @@ io.on('connection', (socket) => {
         io.to(roomCode.toUpperCase()).emit('room_sync', {
             gameMode: room.gameMode,
             gameStarted: room.gameStarted,
-            roundNumber: room.roundNumber
+            roundNumber: room.roundNumber,
+            isPaused: room.isPaused
         });
     });
 
@@ -1029,6 +1033,30 @@ io.on('connection', (socket) => {
         if (player && player.isHost) {
             startNextRoundForRoom(roomCode.toUpperCase(), room, io);
         }
+    });
+
+    socket.on('toggle_pause', ({ roomCode, paused }) => {
+        const uppercaseRoomCode = roomCode?.toUpperCase();
+        const room = rooms.get(uppercaseRoomCode);
+        if (!room) {
+            console.log(`[PAUSE] Error: Room ${uppercaseRoomCode} not found (received: ${roomCode})`);
+            return;
+        }
+
+        room.isPaused = !!paused;
+        console.log(`[PAUSE] Room ${uppercaseRoomCode} state: ${room.isPaused}`);
+
+        // Broadcast to everyone in the room
+        io.to(uppercaseRoomCode).emit('room_paused', { isPaused: room.isPaused });
+
+        // Diagnostic: list clients in the room
+        const clients = io.sockets.adapter.rooms.get(uppercaseRoomCode);
+        const clientCount = clients ? clients.size : 0;
+        console.log(`[PAUSE] Broadcast sent to ${uppercaseRoomCode}. Clients in channel: ${clientCount}`);
+
+        // Also log the player names in this room for extra clarity
+        const playerNames = room.players.map(p => p.name).join(', ');
+        console.log(`[PAUSE] Registered players in room object: ${playerNames}`);
     });
 
     socket.on('invite_friend', async ({ friendId, roomCode, fromName }) => {

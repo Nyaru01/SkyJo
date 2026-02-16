@@ -159,7 +159,7 @@ const ShimmerOverlay = () => (
         transition={{
             duration: 1.5,
             repeat: Infinity,
-            repeatDelay: 4,
+            repeatDelay: 18.5,
             ease: "easeInOut"
         }}
         style={{

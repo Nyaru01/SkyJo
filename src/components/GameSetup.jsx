@@ -12,6 +12,7 @@ import { useUpdateCheck } from './UpdatePrompt';
 import { cn } from '../lib/utils';
 import { AVATARS, getAvatarPath } from '../lib/avatars';
 import AvatarSelector from './AvatarSelector';
+import PseudoModal from './PseudoModal';
 import WhatsNewModal, { CURRENT_NEWS_VERSION } from './WhatsNewModal';
 import { TiltCard } from './ui/TiltCard';
 import { PremiumTiltButton } from './ui/PremiumTiltButton';
@@ -53,8 +54,11 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
     ]);
     const [openAvatarSelector, setOpenAvatarSelector] = useState(null); // Index of player selecting
     const setConfiguration = useGameStore(state => state.setConfiguration);
+    const updateUserProfile = useGameStore(state => state.updateUserProfile);
     const { playStart } = useFeedback();
     const { checkForUpdates, isChecking, checkResult } = useUpdateCheck();
+
+    const [showPseudoModal, setShowPseudoModal] = useState(false);
 
     // Unified Skyjo Score Container - Premium Redesign
     // refs already defined below
@@ -105,8 +109,16 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
     };
 
     const handleStart = () => {
+        // Validation: All players must have a name and it shouldn't be "Joueur"
+        const invalidPlayer = players.find(p => !p.name.trim() || p.name.trim().toLowerCase() === 'joueur');
+
+        if (invalidPlayer) {
+            setShowPseudoModal(true);
+            return;
+        }
+
         const finalPlayers = players.map((p, i) => ({
-            name: p.name.trim() || `Joueur ${i + 1}`,
+            name: p.name.trim(),
             avatarId: p.avatarId
         }));
         playStart();
@@ -166,7 +178,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                                     <span className="relative z-10 block drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]">SKYJO</span>
 
                                     {/* Reflet Shimmer balayant */}
-                                    <span className="absolute inset-0 z-20 bg-gradient-to-r from-transparent via-white/30 to-transparent bg-[length:200%_100%] animate-[shimmer_5s_infinite] bg-clip-text text-transparent italic">
+                                    <span className="absolute inset-0 z-20 bg-gradient-to-r from-transparent via-white/30 to-transparent bg-[length:200%_100%] animate-[shimmer_20s_infinite] bg-clip-text text-transparent italic">
                                         SKYJO
                                     </span>
 
@@ -392,6 +404,28 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                     if (hasUnreadNews) {
                         setHasUnreadNews(false);
                         localStorage.setItem('skyjo_news_version', CURRENT_NEWS_VERSION.toString());
+                    }
+                }}
+            />
+            <PseudoModal
+                isOpen={showPseudoModal}
+                onClose={() => setShowPseudoModal(false)}
+                initialValue={players[0]?.name || ''}
+                onConfirm={(newPseudo) => {
+                    setShowPseudoModal(false);
+                    const updatedPlayers = [...players];
+                    updatedPlayers[0] = { ...updatedPlayers[0], name: newPseudo };
+                    setPlayers(updatedPlayers);
+                    updateUserProfile({ name: newPseudo });
+
+                    // Check if everything is now valid to start
+                    if (updatedPlayers.every(p => p.name.trim() && p.name.trim().toLowerCase() !== 'joueur')) {
+                        const finalPlayers = updatedPlayers.map((p, i) => ({
+                            name: p.name.trim(),
+                            avatarId: p.avatarId
+                        }));
+                        playStart();
+                        setConfiguration(finalPlayers, 100);
                     }
                 }}
             />

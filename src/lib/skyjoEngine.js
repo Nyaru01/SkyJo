@@ -43,8 +43,7 @@ const CARD_DISTRIBUTION_BONUS = {
     '20': { count: 6, color: 'darkred' },
     'S': { count: 4, color: 'special' }, // Swap Card
     'C': { count: 4, color: 'special' }, // Clean Card
-    'CH': { count: 4, color: 'gold' }, // Chest Card (?)
-    'H': { count: 4, color: 'black' }, // Black Hole Card
+    'CH': { count: 4, color: 'gold' }, // Chest Card
 };
 
 // Color mappings for CSS classes
@@ -60,7 +59,6 @@ export const CARD_COLORS = {
     darkred: { bg: 'bg-red-950', text: 'text-white', glow: 'shadow-red-900/50' },
     special: { bg: 'bg-indigo-900', text: 'text-white', glow: 'shadow-indigo-500/50' },
     gold: { bg: 'bg-amber-500', text: 'text-amber-950', glow: 'shadow-amber-400/50' },
-    black: { bg: 'bg-slate-950', text: 'text-white', glow: 'shadow-slate-800/50' },
 };
 
 /**
@@ -73,8 +71,7 @@ export const createCard = (value, id, isBonusMode = false) => {
     let numericValue = parseInt(value);
     if (value === 'S') numericValue = 0; // Action card (value 0)
     if (value === 'C') numericValue = 0; // Joker card
-    if (value === 'CH') numericValue = 0; // Chest card (?)
-    if (value === 'H') numericValue = 0; // Black Hole action
+    if (value === 'CH') numericValue = 0; // Chest card
 
     const specialType = isNaN(parseInt(value)) ? value : null;
 
@@ -194,6 +191,7 @@ export const initializeGame = (players, options = {}) => {
         drawnCard: null,
         finishingPlayerIndex: null,
         roundNumber: 1,
+        isHardcoreMode: options.isHardcoreMode || false,
     };
 };
 
@@ -685,7 +683,7 @@ export const performSwap = (gameState, sourceCardIndex, targetPlayerIndex, targe
 /**
  * Calculate score for a player's hand
  */
-export const calculateHandScore = (hand, chestResults = {}, columnsCleared = 0, isBonusMode = false) => {
+export const calculateHandScore = (hand, chestResults = {}, columnsCleared = 0, isBonusMode = false, isHardcoreMode = false) => {
     let score = hand.reduce((sum, card, index) => {
         if (card === null) return sum;
 
@@ -702,8 +700,8 @@ export const calculateHandScore = (hand, chestResults = {}, columnsCleared = 0, 
         return sum + card.value;
     }, 0);
 
-    // Apply -3pts bonus per cleared column in Bonus/Tourment Mode
-    if (isBonusMode && columnsCleared > 0) {
+    // Apply -3pts bonus per cleared column in Bonus/Tourment/Hardcore Mode
+    if ((isBonusMode || isHardcoreMode) && columnsCleared > 0) {
         score -= (columnsCleared * 3);
     }
 
@@ -718,13 +716,14 @@ export const calculateFinalScores = (gameState) => {
     const isBonusMode = gameState.players.some(p => p.hand.some(c => c && (c.value === 20 || c.value === -10)));
 
     const scores = gameState.players.map((player, index) => {
-        let score = calculateHandScore(player.hand, chestResults, player.columnsCleared, isBonusMode);
+        const isHardcore = gameState.isHardcoreMode || false;
+        let score = calculateHandScore(player.hand, chestResults, player.columnsCleared, isBonusMode, isHardcore);
 
         // Penalty: if finisher doesn't have lowest score, double their score
         if (index === gameState.finishingPlayerIndex) {
             const otherScores = gameState.players
                 .filter((_, i) => i !== index)
-                .map(p => calculateHandScore(p.hand, chestResults, p.columnsCleared, isBonusMode));
+                .map(p => calculateHandScore(p.hand, chestResults, p.columnsCleared, isBonusMode, isHardcore));
             const lowestOther = Math.min(...otherScores);
 
             // Official rule: penalty only applies to POSITIVE scores
@@ -741,10 +740,10 @@ export const calculateFinalScores = (gameState) => {
             playerName: player.name,
             rawScore: calculateHandScore(player.hand, chestResults, 0, false), // Just cards
             columnsCleared: player.columnsCleared || 0,
-            columnBonus: isBonusMode ? (player.columnsCleared || 0) * -3 : 0,
+            columnBonus: (isBonusMode || isHardcore) ? (player.columnsCleared || 0) * -3 : 0,
             finalScore: score,
             isFinisher: index === gameState.finishingPlayerIndex,
-            penalized: index === gameState.finishingPlayerIndex && score !== calculateHandScore(player.hand, chestResults, player.columnsCleared, isBonusMode),
+            penalized: index === gameState.finishingPlayerIndex && score !== calculateHandScore(player.hand, chestResults, player.columnsCleared, isBonusMode, isHardcore),
         };
     });
 

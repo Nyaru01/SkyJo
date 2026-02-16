@@ -40,6 +40,7 @@ export const useOnlineGameStore = create((set, get) => ({
     readyStatus: { readyCount: 0, totalPlayers: 0 }, // Track ready players for next round
     timeoutExpired: false, // True when 10s timeout has passed and host can force-start
     gameMode: null, // 'classic' or 'bonus' (must be chosen by host)
+    isPaused: false, // Online game pause state
 
     // Redirection State (when host leaves)
     redirectionState: { active: false, timer: 5, reason: '' },
@@ -63,8 +64,10 @@ export const useOnlineGameStore = create((set, get) => ({
     // Actions
     connect: () => {
         // Set up listeners only once
+        console.log('[Store] Connect action called. listenersInitialized:', listenersInitialized);
         if (!listenersInitialized) {
             listenersInitialized = true;
+            console.log('[Store] Registering socket listeners...');
 
             socket.on('connect', () => {
                 console.log('[Socket] Connected:', socket.id);
@@ -102,6 +105,12 @@ export const useOnlineGameStore = create((set, get) => ({
                 if (data.gameMode) set({ gameMode: data.gameMode });
                 if (data.roundNumber) set({ roundNumber: data.roundNumber });
                 if (data.isHost !== undefined) set({ isHost: data.isHost });
+                if (data.isPaused !== undefined) set({ isPaused: data.isPaused });
+            });
+
+            socket.on('room_paused', ({ isPaused }) => {
+                console.log('[Socket] Room pause status updated:', isPaused);
+                set({ isPaused });
             });
 
             socket.on('new_player_joined', ({ playerName, emoji }) => {
@@ -162,8 +171,8 @@ export const useOnlineGameStore = create((set, get) => ({
                 set({ players, isHost: me?.isHost === true });
             });
 
-            socket.on('game_started', ({ gameState, totalScores, roundNumber, gameMode }) => {
-                console.log('[Socket] Game started, round:', roundNumber, 'mode:', gameMode);
+            socket.on('game_started', ({ gameState, totalScores, roundNumber, gameMode, isPaused }) => {
+                console.log('[Socket] Game started, round:', roundNumber, 'mode:', gameMode, 'isPaused:', isPaused);
                 set({
                     gameState,
                     activeState: gameState,
@@ -173,6 +182,7 @@ export const useOnlineGameStore = create((set, get) => ({
                     onlineStarted: true,
                     isGameOver: false,
                     gameWinner: null,
+                    isPaused: isPaused || false,
                     selectedCardIndex: null,
                     readyStatus: { readyCount: 0, totalPlayers: get().players.length || Object.keys(totalScores).length },
                     timeoutExpired: false,
@@ -519,6 +529,15 @@ export const useOnlineGameStore = create((set, get) => ({
 
         const dbId = useGameStore.getState().userProfile.id;
         socket.emit('change_mode', { roomCode: roomCode.toUpperCase(), mode, dbId });
+    },
+
+    togglePause: (paused) => {
+        const { roomCode } = get();
+        if (!roomCode) return;
+
+        // Optimistic update
+        set({ isPaused: paused });
+        socket.emit('toggle_pause', { roomCode, paused });
     },
 
     startGame: () => {

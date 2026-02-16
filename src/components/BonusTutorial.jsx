@@ -1,10 +1,30 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, ChevronLeft, Star, Skull, TrendingUp, Swords, RefreshCw, Eraser, Zap, Flame, HelpCircle, Orbit } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Star, Skull, TrendingUp, Swords, RefreshCw, Eraser, Zap, Flame, HelpCircle } from 'lucide-react';
 import { Button } from './ui/Button';
 import SkyjoCard from './virtual/SkyjoCard';
 
 const BONUS_STEPS = [
+    {
+        title: "Le Mode Tourment",
+        description: "Bienvenue dans la variante la plus extrême de Skyjo ! Ici, nous avons ajouté 24 cartes spéciales au deck original pour rendre les parties stratégiques et impitoyables.",
+        icon: Flame,
+        color: "text-rose-500",
+        bg: "bg-rose-500/10",
+        content: (
+            <div className="flex justify-center my-4">
+                <div className="inline-block rounded-2xl bg-gradient-to-br from-rose-500/40 via-purple-500/30 to-rose-500/40 p-[2px] shadow-lg shadow-rose-500/25">
+                    <div className="rounded-[14px] overflow-hidden bg-slate-900">
+                        <img
+                            src="/Tourment.png"
+                            alt="Tourment Mode"
+                            className="block max-w-full h-auto rounded-[14px]"
+                        />
+                    </div>
+                </div>
+            </div>
+        )
+    },
     {
         title: "Le Nettoyage de Colonne",
         description: "NOUVELLE RÈGLE : Chaque fois que vous complétez et éliminez une colonne de 3 cartes identiques, vous recevez un bonus de -3 points sur votre score final. C'est le moment de viser le combo parfait !",
@@ -24,26 +44,6 @@ const BONUS_STEPS = [
                     </div>
                 </div>
                 <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Éliminez pour gagner plus !</p>
-            </div>
-        )
-    },
-    {
-        title: "Le Mode Tourment",
-        description: "Bienvenue dans la variante la plus extrême de Skyjo ! Ici, nous avons ajouté 28 cartes spéciales au deck original pour rendre les parties stratégiques et impitoyables.",
-        icon: Flame,
-        color: "text-rose-500",
-        bg: "bg-rose-500/10",
-        content: (
-            <div className="flex justify-center my-4">
-                <div className="inline-block rounded-2xl bg-gradient-to-br from-rose-500/40 via-purple-500/30 to-rose-500/40 p-[2px] shadow-lg shadow-rose-500/25">
-                    <div className="rounded-[14px] overflow-hidden bg-slate-900">
-                        <img
-                            src="/Tourment.png"
-                            alt="Tourment Mode"
-                            className="block max-w-full h-auto rounded-[14px]"
-                        />
-                    </div>
-                </div>
             </div>
         )
     },
@@ -215,49 +215,6 @@ const BONUS_STEPS = [
         )
     },
     {
-        title: "Le Trou Noir",
-        description: "CARTE TROU NOIR (4 exemplaires) : ASPIRATION ! Lorsque vous piochez cette carte, elle aspire instantanément toute la défausse. Les cartes sont mélangées et remises dans la pioche. Votre tour s'arrête immédiatement après.",
-        icon: Orbit,
-        color: "text-slate-200",
-        bg: "bg-slate-900",
-        content: (
-            <div className="flex flex-col items-center gap-4 py-4">
-                <div className="flex items-center gap-6 relative">
-                    <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ repeat: Infinity, duration: 10, ease: "linear" }}
-                        className="relative z-10"
-                    >
-                        <SkyjoCard
-                            card={{ id: 'tut-hole', value: 0, color: 'black', specialType: 'H', isRevealed: true }}
-                            size="sm"
-                            isClickable={false}
-                        />
-                    </motion.div>
-                    <div className="relative">
-                        <div className="flex flex-col gap-1 opacity-40">
-                            <div className="w-8 h-12 bg-slate-700 rounded-sm border border-white/10" />
-                            <div className="w-8 h-12 bg-slate-700 rounded-sm border border-white/10" />
-                        </div>
-                        <motion.div
-                            animate={{
-                                x: [-20, -60],
-                                y: [0, 0],
-                                opacity: [0, 1, 0],
-                                scale: [1, 0.5, 0]
-                            }}
-                            transition={{ repeat: Infinity, duration: 1.5 }}
-                            className="absolute top-1/2 left-0 -translate-y-1/2"
-                        >
-                            <div className="w-6 h-10 bg-blue-500/50 rounded-sm blur-[2px]" />
-                        </motion.div>
-                    </div>
-                </div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nettoyez la table et rechargez la pioche !</p>
-            </div>
-        )
-    },
-    {
         title: "Astuce",
         description: "Vous avez un doute sur les cartes passées ? Faites un appui long sur la défausse pour voir les 3 dernières cartes jouées !",
         icon: Zap,
@@ -279,15 +236,20 @@ const BONUS_STEPS = [
     }
 ];
 
-export default function BonusTutorial({ isOpen, onClose }) {
+export default function BonusTutorial({ isOpen, onClose, mode = 'tourment' }) {
     const [currentStep, setCurrentStep] = useState(0);
 
     if (!isOpen) return null;
 
-    const step = BONUS_STEPS[currentStep];
+    // Filter steps based on mode
+    const filteredSteps = mode === 'hardcore'
+        ? BONUS_STEPS.filter(step => step.title === "Le Nettoyage de Colonne")
+        : BONUS_STEPS;
+
+    const step = filteredSteps[currentStep];
 
     const handleNext = () => {
-        if (currentStep < BONUS_STEPS.length - 1) {
+        if (currentStep < filteredSteps.length - 1) {
             setCurrentStep(currentStep + 1);
         } else {
             onClose();
@@ -303,7 +265,7 @@ export default function BonusTutorial({ isOpen, onClose }) {
 
     return (
         <AnimatePresence>
-            <div className="fixed inset-0 z-[160] flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -327,10 +289,10 @@ export default function BonusTutorial({ isOpen, onClose }) {
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-[10px] font-black text-rose-400 uppercase tracking-[0.2em]">
-                                    GUIDE DU MODE TOURMENT
+                                    {mode === 'hardcore' ? 'RÈGLES HARDCORE' : 'GUIDE DU MODE TOURMENT'}
                                 </span>
                                 <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-                                    Étape {currentStep + 1} / {BONUS_STEPS.length}
+                                    Étape {currentStep + 1} / {filteredSteps.length}
                                 </span>
                             </div>
                         </div>
@@ -340,7 +302,7 @@ export default function BonusTutorial({ isOpen, onClose }) {
                     </div>
 
                     <div className="px-6 flex gap-1 h-1 mb-4">
-                        {BONUS_STEPS.map((_, i) => (
+                        {filteredSteps.map((_, i) => (
                             <div
                                 key={i}
                                 className={`flex-1 rounded-full transition-all duration-300 ${i <= currentStep ? 'bg-purple-500' : 'bg-white/10'}`}
@@ -385,8 +347,8 @@ export default function BonusTutorial({ isOpen, onClose }) {
                             onClick={handleNext}
                             className="flex-[2] h-12 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 font-black shadow-lg shadow-purple-500/30"
                         >
-                            {currentStep === BONUS_STEPS.length - 1 ? "C'EST PARTI !" : "SUIVANT"}
-                            {currentStep < BONUS_STEPS.length - 1 && <ChevronRight className="w-5 h-5 ml-1" />}
+                            {currentStep === filteredSteps.length - 1 ? "C'EST PARTI !" : "SUIVANT"}
+                            {currentStep < filteredSteps.length - 1 && <ChevronRight className="w-5 h-5 ml-1" />}
                         </Button>
                     </div>
                 </motion.div>

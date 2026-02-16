@@ -175,8 +175,15 @@ export const useVirtualGameStore = create(
             startAIGame: (humanPlayer, aiCount = 1, difficulty = AI_DIFFICULTY.NORMAL, options = {}) => {
                 const isBonusMode = options.isBonusMode || false;
                 // Create players array: human first, then AI players
+                const humanName = humanPlayer.name && humanPlayer.name.toLowerCase() !== 'joueur' ? humanPlayer.name.trim() : '';
+
+                if (!humanName && !options.isDailyChallenge) {
+                    toast.error("Veuillez définir votre pseudo dans votre profil");
+                    return;
+                }
+
                 const players = [
-                    { id: 'human-1', name: humanPlayer.name || 'Joueur', avatarId: humanPlayer.avatarId || 'cat' },
+                    { id: 'human-1', name: humanName || 'Vous', avatarId: humanPlayer.avatarId || 'cat' },
                 ];
 
                 const aiPlayerIndices = [];
@@ -189,7 +196,9 @@ export const useVirtualGameStore = create(
                     aiPlayerIndices.push(i + 1); // AI players are at indices 1, 2, 3...
                 }
 
-                const gameState = initializeGame(players, { isBonusMode });
+                const isHardcoreMode = difficulty === AI_DIFFICULTY.HARDCORE;
+
+                const gameState = initializeGame(players, { isBonusMode, isHardcoreMode });
 
                 // Reset AI memory for new game
                 resetOpponentMemory();
@@ -213,6 +222,7 @@ export const useVirtualGameStore = create(
                     aiPlayers: aiPlayerIndices,
                     aiDifficulty: difficulty,
                     isBonusMode: isBonusMode,
+                    isHardcoreMode: isHardcoreMode,
                     isAIThinking: false,
                     drawnCardSource: null,
                     isPaused: false,

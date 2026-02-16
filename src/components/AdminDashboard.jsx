@@ -263,15 +263,6 @@ export function AdminDashboard({ adminPassword, onClose }) {
                             </button>
                             <div className="w-px h-8 bg-white/10 mx-1 self-center" />
                             <button
-                                onClick={() => useVirtualGameStore.getState().debugForceActionCard('H')}
-                                title="Forcer un Trou Noir (H)"
-                                className="flex items-center gap-2 px-4 py-2.5 hover:bg-white/10 text-white/50 hover:text-amber-400 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider"
-                            >
-                                <Zap className="w-4 h-4" />
-                                <span className="hidden sm:inline">Black Hole</span>
-                            </button>
-                            <div className="w-px h-8 bg-white/10 mx-1 self-center" />
-                            <button
                                 onClick={() => {
                                     useGameStore.getState().debugLevelUp();
                                     toast.success('Level Up déclenché !');

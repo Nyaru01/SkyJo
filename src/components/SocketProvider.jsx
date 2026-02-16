@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef } from 'react';
-import { socket } from '../store/onlineGameStore';
+import { socket, useOnlineGameStore } from '../store/onlineGameStore';
 import { useGameStore } from '../store/gameStore';
 import { useSocialStore } from '../store/socialStore';
 
@@ -26,6 +26,13 @@ export function SocketProvider({ children }) {
 
         const handleConnect = () => {
             console.log('[SOCKET] Global Connected:', socket.id);
+
+            // Ensure online game store listeners are initialized
+            try {
+                useOnlineGameStore.getState().connect();
+            } catch (e) {
+                console.warn('[SOCKET] Could not auto-initialize online game store', e);
+            }
 
             // Try to register immediately if profile exists
             try {
