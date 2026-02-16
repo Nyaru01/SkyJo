@@ -1,5 +1,20 @@
 export const UPDATES = [
     {
+        id: 20,
+        version: "3.1.0",
+        date: "16 Fév. 2026",
+        title: "Sauvegarde Cloud Native",
+        description: "Intégration transparente de la synchronisation Google et sécurité renforcée.",
+        isNew: true,
+        type: "major",
+        changes: [
+            { text: "Cloud Save V3 : Sauvegarde native et discrète directement dans le profil", type: "feat" },
+            { text: "Sécurité : Protection anti-conflit et restauration de compte simplifiée", type: "improve" },
+            { text: "Migration V2 : Support complet de l'historique des anciens comptes", type: "fix" }
+        ],
+        image: "/premium-bg.jpg"
+    },
+    {
         id: 19,
         version: "2.5.2",
         date: "10 Fév. 2026",

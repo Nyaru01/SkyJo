@@ -11,7 +11,7 @@ export function VersionCheck() {
     useEffect(() => {
         const checkVersion = async () => {
             try {
-                const res = await fetch(`/api/version?t=${Date.now()}`);
+                const res = await fetch(`/api/config/version?t=${Date.now()}`);
                 if (!res.ok) return;
 
                 const contentType = res.headers.get("content-type");

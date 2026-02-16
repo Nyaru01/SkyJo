@@ -59,7 +59,9 @@ export const useGameStore = create(
                 emoji: '🐱',
                 vibeId: '',
                 level: 1,
-                currentXP: 0
+                currentXP: 0,
+                isLinked: false,
+                firebase_uid: null
             },
 
             // Transition logic for V2
@@ -135,6 +137,30 @@ export const useGameStore = create(
                 }));
                 // Sync after update
                 get().syncProfileWithBackend();
+            },
+
+            forceRestoreProfile: async (serverData) => {
+                console.log('[STORE] 🔄 FORCING PROFILE RESTORE:', serverData);
+                // Atomic update of the profile to avoid partial sync conflicts
+                set(state => ({
+                    level: serverData.level || state.level,
+                    currentXP: serverData.xp || state.currentXP,
+                    lastAcknowledgedLevel: serverData.level || state.level,
+                    userProfile: {
+                        ...state.userProfile,
+                        id: serverData.id,
+                        name: serverData.name || '',
+                        emoji: serverData.emoji || state.userProfile.emoji,
+                        avatarId: serverData.avatar_id || state.userProfile.avatarId,
+                        vibeId: serverData.vibe_id || serverData.vibeId || '',
+                        level: serverData.level || state.level,
+                        currentXP: serverData.xp || state.currentXP,
+                        isLinked: true,
+                        firebase_uid: serverData.firebase_uid || serverData.firebaseUid
+                    }
+                }));
+
+                // We don't call syncProfileWithBackend here because we JUST got the data from the backend
             },
 
             syncProfileWithBackend: async () => {

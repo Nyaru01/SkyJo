@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getMessaging } from "firebase/messaging";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // Configuration récupérée depuis les variables d'environnement Vite
 const firebaseConfig = {
@@ -14,6 +15,10 @@ const firebaseConfig = {
 
 // Initialisation de Firebase
 const app = initializeApp(firebaseConfig);
+
+// Initialisation de Firebase Auth
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
 
 // Initialisation de Firebase Messaging
 export const messaging = getMessaging(app);

@@ -792,3 +792,9 @@ body,
     transform: scale(0.95);
   }
 }
+
+/* Shimmer Animation for Premium Buttons */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}

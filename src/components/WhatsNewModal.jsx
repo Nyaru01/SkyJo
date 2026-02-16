@@ -1,12 +1,19 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, Zap, Flame } from 'lucide-react';
+import { X, Sparkles, Zap, Flame, Cloud } from 'lucide-react';
 import { Button } from './ui/Button';
 
-export const CURRENT_NEWS_VERSION = 7;
+export const CURRENT_NEWS_VERSION = 8;
 
 const FEATURES = [
+    {
+        title: "Sauvegarde Cloud",
+        description: "Connectez votre compte Google pour sécuriser votre progression et jouer sur tous vos appareils.",
+        icon: Cloud,
+        color: "text-sky-400",
+        bg: "bg-sky-400/10"
+    },
     {
         title: "Mode Tourment",
         description: "Une expérience hardcore renouvelée ! 28 cartes spéciales, mécaniques de jeu impitoyables et stratégie poussée à l'extrême.",

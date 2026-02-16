@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, UserPlus, Users, Wifi, WifiOff, Loader2, Check, Edit2, Trash2, Play, Copy, Send, Trophy, Bell, MessageCircle, Swords } from 'lucide-react';
+import { Search, UserPlus, Users, Wifi, WifiOff, Loader2, Check, Edit2, Trash2, Play, Copy, Send, Trophy, Bell, MessageCircle, Swords, CheckCircle2, Cloud } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { useSocialStore } from '../store/socialStore';
@@ -12,6 +12,9 @@ import Leaderboard from './Leaderboard';
 import { useOnlineGameStore } from '../store/onlineGameStore';
 import { pushManager } from '../lib/pushManager';
 import ConfirmModal from './ui/ConfirmModal';
+import { auth, googleProvider } from '../lib/firebase';
+import { signInWithPopup } from 'firebase/auth';
+import { toast } from 'react-hot-toast';
 
 export default function SocialDashboard(props) {
     const { userProfile, updateUserProfile, generateSkyId } = useGameStore();
@@ -103,6 +106,60 @@ export default function SocialDashboard(props) {
         return AVATARS.find(a => a.id === id)?.path || '/avatars/cat.png';
     };
 
+    const [restoreAccountData, setRestoreAccountData] = useState(null);
+
+    const handleGoogleLink = async () => {
+        try {
+            console.log('[AUTH] Starting Google Auth popup...');
+            const result = await signInWithPopup(auth, googleProvider);
+            const idToken = await result.user.getIdToken();
+
+            console.log('[AUTH] Google Auth Success, linking with backend...');
+            const response = await fetch('/api/auth/google-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken, dbId: userProfile.id })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'linked_success' || data.status === 'already_linked') {
+                updateUserProfile({ isLinked: true, firebase_uid: result.user.uid });
+                toast.success("Compte lié avec succès ! 🚀");
+            } else if (data.status === 'conflict') {
+                setRestoreAccountData(data.existingUser);
+            } else {
+                toast.error("Erreur lors de la liaison du compte.");
+            }
+        } catch (error) {
+            console.error('[AUTH] Google Link Error:', error);
+            toast.error("Erreur de connexion Google");
+        }
+    };
+
+    const confirmRestore = async () => {
+        if (!restoreAccountData) return;
+
+        try {
+            const { forceRestoreProfile, loadProfileFromBackend } = useGameStore.getState();
+
+            // Utiliser l'action atomique pour éviter les conflits de sync
+            await forceRestoreProfile({
+                ...restoreAccountData,
+                firebase_uid: auth.currentUser.uid
+            });
+
+            // Recharger pour être sûr d'avoir la dernière version (amis, etc.)
+            await loadProfileFromBackend();
+
+            toast.success("Progression restaurée ! ✨");
+            setRestoreAccountData(null);
+        } catch (e) {
+            console.error('[AUTH] Restore error:', e);
+            toast.error("Échec de la restauration");
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Profil Card */}
@@ -163,6 +220,53 @@ export default function SocialDashboard(props) {
                                 />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Cloud Backup V3 - Native Integration */}
+                    <div className="mt-8 pt-6 border-t border-white/5">
+                        <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-lg ${userProfile?.isLinked
+                                        ? 'bg-emerald-500/20 text-emerald-400'
+                                        : 'bg-slate-700/50 text-slate-400'
+                                    }`}>
+                                    <Cloud className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <p className="text-[11px] font-bold text-slate-200 uppercase tracking-wider">
+                                        Cloud Save
+                                    </p>
+                                    <p className="text-[10px] text-slate-500 font-medium">
+                                        {userProfile?.isLinked ? 'Synchronisé' : 'Non connecté'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {userProfile?.isLinked ? (
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">OK</span>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={handleGoogleLink}
+                                    className="flex items-center gap-2 bg-slate-100 hover:bg-white text-slate-900 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all shadow-lg shadow-white/5 active:scale-95"
+                                >
+                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-3.5 h-3.5" alt="Google" />
+                                    <span>Lier</span>
+                                </button>
+                            )}
+                        </div>
+                        {!userProfile?.isLinked && (
+                            <div className="text-center mt-3">
+                                <button
+                                    onClick={handleGoogleLink}
+                                    className="text-[9px] font-bold text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-widest"
+                                >
+                                    Restaurer un compte
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
@@ -468,7 +572,16 @@ export default function SocialDashboard(props) {
                 variant="danger"
             />
 
-
-        </div >
+            {/* Account Restore Confirmation Modal */}
+            <ConfirmModal
+                isOpen={!!restoreAccountData}
+                onClose={() => setRestoreAccountData(null)}
+                onConfirm={confirmRestore}
+                title="Restaurer une progression ?"
+                message={`Ce compte Google est déjà lié au compte ${restoreAccountData?.vibe_id || 'sans ID'} (${restoreAccountData?.name || 'Joueur Anonymous'}, Niveau ${restoreAccountData?.level}). Voulez-vous abandonner votre profil actuel pour restaurer celui-ci ?`}
+                confirmText="Restaurer"
+                variant="primary"
+            />
+        </div>
     );
 }

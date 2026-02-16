@@ -1,10 +1,10 @@
 {
   "name": "skyjo-score-app",
   "private": true,
-  "version": "3.0.1",
+  "version": "3.1.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"node server/index.js\" \"vite\"",
+    "dev": "concurrently \"node --watch server/index.js\" \"vite\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
