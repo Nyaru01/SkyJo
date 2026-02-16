@@ -239,99 +239,106 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
 
                     {hasDrawnCard ? (
                         // Show the actual drawn card in the center
-                        <motion.div
-                            className={cn(
-                                "relative z-10",
-                                canInteract ? "cursor-pointer" : "cursor-default"
-                            )}
-                            onClick={onClick}
-                            whileHover={canInteract ? { scale: 1.05 } : undefined}
-                            whileTap={canInteract ? { scale: 0.95 } : undefined}
-                            id="drawn-card-slot"
-                        >
-                            <SkyjoCard
-                                card={{ ...drawnCard, isRevealed: true }}
-                                size="md"
-                                isHighlighted={canInteract}
-                            />
-                        </motion.div>
-                    ) : (
-                        <motion.button
-                            onClick={onClick}
-                            disabled={!canInteract}
-                            className={cn(
-                                "flex items-center justify-center gap-3 w-full px-2 py-1.5 rounded-xl transition-all relative z-10 overflow-hidden",
-                                canInteract
-                                    ? (instructionText && turnPhase === 'MUST_REVEAL' ? "cursor-default bg-indigo-600/80 backdrop-blur-md border border-indigo-400/50" : "cursor-pointer bg-slate-800/80 backdrop-blur-md hover:bg-slate-700/80 border border-emerald-500/50")
-                                    : "cursor-not-allowed bg-slate-800/40 backdrop-blur-sm opacity-60 border border-slate-700/30"
-                            )}
-                            style={{
-                                boxShadow: canInteract
-                                    ? '0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.05)'
-                                    : '0 4px 15px rgba(0, 0, 0, 0.3)',
-                                maxWidth: '240px'
-                            }}
-                            whileHover={canInteract ? { scale: 1.02, y: -2 } : undefined}
-                            whileTap={canInteract ? { scale: 0.98 } : undefined}
-                        >
-                            {/* Premium Shimmer Overlay */}
+                        <div className="flex flex-col items-center gap-1.5">
                             <motion.div
-                                className="absolute inset-0 z-0 pointer-events-none"
-                                initial={{ x: '-100%' }}
-                                animate={{ x: '250%' }}
-                                transition={{
-                                    duration: 3,
-                                    repeat: Infinity,
-                                    ease: "easeInOut",
-                                    repeatDelay: 2
-                                }}
+                                className={cn(
+                                    "relative z-10",
+                                    canInteract ? "cursor-pointer" : "cursor-default"
+                                )}
+                                onClick={onClick}
+                                whileHover={canInteract ? { scale: 1.05 } : undefined}
+                                whileTap={canInteract ? { scale: 0.95 } : undefined}
+                                id="drawn-card-slot"
+                            >
+                                <SkyjoCard
+                                    card={{ ...drawnCard, isRevealed: true }}
+                                    size="md"
+                                    isHighlighted={canInteract}
+                                />
+                            </motion.div>
+                            {/* Placeholder to match the bottom counter of piles */}
+                            <div className="h-[21px] invisible" aria-hidden="true" />
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center gap-1.5 flex-1 max-w-[240px]">
+                            <motion.button
+                                onClick={onClick}
+                                disabled={!canInteract}
+                                className={cn(
+                                    "flex items-center justify-center gap-3 w-full h-14 px-2 py-1.5 rounded-xl transition-all relative z-10 overflow-hidden",
+                                    canInteract
+                                        ? (instructionText && turnPhase === 'MUST_REVEAL' ? "cursor-default bg-indigo-600/80 backdrop-blur-md border border-indigo-400/50" : "cursor-pointer bg-slate-800/80 backdrop-blur-md hover:bg-slate-700/80 border border-emerald-500/50")
+                                        : "cursor-not-allowed bg-slate-800/40 backdrop-blur-sm opacity-60 border border-slate-700/30"
+                                )}
                                 style={{
-                                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)',
+                                    boxShadow: canInteract
+                                        ? '0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.05)'
+                                        : '0 4px 15px rgba(0, 0, 0, 0.3)',
                                 }}
-                            />
-
-                            {/* Left Arrow - pointing to draw pile */}
-                            {isDrawPhase && canInteract && (
+                                whileHover={canInteract ? { scale: 1.02, y: -2 } : undefined}
+                                whileTap={canInteract ? { scale: 0.98 } : undefined}
+                            >
+                                {/* Premium Shimmer Overlay */}
                                 <motion.div
-                                    className="text-emerald-400 font-black flex items-center relative z-20"
-                                    animate={{
-                                        x: [-2, 2, -2],
-                                        opacity: [0.7, 1, 0.7],
-                                        filter: ["drop-shadow(0 0 2px rgba(52, 211, 153, 0.3))", "drop-shadow(0 0 8px rgba(52, 211, 153, 0.6))", "drop-shadow(0 0 2px rgba(52, 211, 153, 0.3))"]
+                                    className="absolute inset-0 z-0 pointer-events-none"
+                                    initial={{ x: '-100%' }}
+                                    animate={{ x: '250%' }}
+                                    transition={{
+                                        duration: 3,
+                                        repeat: Infinity,
+                                        ease: "easeInOut",
+                                        repeatDelay: 2
                                     }}
-                                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                                >
-                                    <ArrowLeft strokeWidth={2.5} className="h-5 w-5" />
-                                </motion.div>
-                            )}
-
-                            {/* Label area */}
-                            <div className="flex items-center justify-center relative z-20 mx-2">
-                                <span className={cn(
-                                    "font-black text-white uppercase tracking-[0.2em] whitespace-nowrap drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]",
-                                    (instructionText?.includes('DERNIER TOUR') || isAIThinking) ? "text-[11px] animate-pulse" : (instructionText ? "text-[11px]" : "text-[11px]")
-                                )}>
-                                    {instructionText?.includes('DERNIER TOUR')
-                                        ? instructionText
-                                        : (isDrawPhase && canInteract ? 'CHOISIR UNE CARTE' : (instructionText || 'PIOCHER'))}
-                                </span>
-                            </div>
-
-                            {/* Right Arrow - pointing to discard pile */}
-                            {isDrawPhase && canInteract && (
-                                <motion.div
-                                    className="text-amber-400 font-black flex items-center relative z-20"
-                                    animate={{
-                                        x: [2, -2, 2],
-                                        opacity: [0.7, 1, 0.7],
-                                        filter: ["drop-shadow(0 0 2px rgba(245, 158, 11, 0.3))", "drop-shadow(0 0 8px rgba(245, 158, 11, 0.6))", "drop-shadow(0 0 2px rgba(245, 158, 11, 0.3))"]
+                                    style={{
+                                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)',
                                     }}
-                                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                                >
-                                    <ArrowRight strokeWidth={2.5} className="h-5 w-5" />
-                                </motion.div>
-                            )}
-                        </motion.button>
+                                />
+
+                                {/* Left Arrow - pointing to draw pile */}
+                                {isDrawPhase && canInteract && (
+                                    <motion.div
+                                        className="text-emerald-400 font-black flex items-center relative z-20"
+                                        animate={{
+                                            x: [-2, 2, -2],
+                                            opacity: [0.7, 1, 0.7],
+                                            filter: ["drop-shadow(0 0 2px rgba(52, 211, 153, 0.3))", "drop-shadow(0 0 8px rgba(52, 211, 153, 0.6))", "drop-shadow(0 0 2px rgba(52, 211, 153, 0.3))"]
+                                        }}
+                                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                    >
+                                        <ArrowLeft strokeWidth={2.5} className="h-5 w-5" />
+                                    </motion.div>
+                                )}
+
+                                {/* Label area */}
+                                <div className="flex items-center justify-center relative z-20 mx-2">
+                                    <span className={cn(
+                                        "font-black text-white uppercase tracking-[0.2em] whitespace-nowrap drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]",
+                                        (instructionText?.includes('DERNIER TOUR') || isAIThinking) ? "text-[11px] animate-pulse" : (instructionText ? "text-[11px]" : "text-[11px]")
+                                    )}>
+                                        {instructionText?.includes('DERNIER TOUR')
+                                            ? instructionText
+                                            : (isDrawPhase && canInteract ? 'CHOISIR UNE CARTE' : (instructionText || 'PIOCHER'))}
+                                    </span>
+                                </div>
+
+                                {/* Right Arrow - pointing to discard pile */}
+                                {isDrawPhase && canInteract && (
+                                    <motion.div
+                                        className="text-amber-400 font-black flex items-center relative z-20"
+                                        animate={{
+                                            x: [2, -2, 2],
+                                            opacity: [0.7, 1, 0.7],
+                                            filter: ["drop-shadow(0 0 2px rgba(245, 158, 11, 0.3))", "drop-shadow(0 0 8px rgba(245, 158, 11, 0.6))", "drop-shadow(0 0 2px rgba(245, 158, 11, 0.3))"]
+                                        }}
+                                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                    >
+                                        <ArrowRight strokeWidth={2.5} className="h-5 w-5" />
+                                    </motion.div>
+                                )}
+                            </motion.button>
+                            {/* Placeholder to match the bottom counter of piles */}
+                            <div className="h-[21px] invisible" aria-hidden="true" />
+                        </div>
                     )}
 
                     {/* Discard pile section */}
