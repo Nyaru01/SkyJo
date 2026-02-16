@@ -210,7 +210,7 @@ app.get('/api/health', async (req, res) => {
 });
 
 app.post('/api/auth/google-link', async (req, res) => {
-    const { idToken, dbId } = req.body;
+    const { idToken, dbId, force } = req.body;
     try {
         const firebaseApp = getFirebaseAdmin();
         if (!firebaseApp) {
@@ -220,16 +220,25 @@ app.post('/api/auth/google-link', async (req, res) => {
 
         const decodedToken = await admin.auth(firebaseApp).verifyIdToken(idToken);
         const firebaseUid = decodedToken.uid;
+
+        // Check for existing link
         const existing = await pool.query('SELECT id, name, level, xp, vibe_id, emoji, avatar_id FROM users WHERE firebase_uid = $1', [firebaseUid]);
 
         if (existing.rows.length > 0) {
             const user = existing.rows[0];
             if (user.id !== dbId) {
-                return res.json({ status: 'conflict', existingUser: user });
+                if (force) {
+                    console.log(`[AUTH] Force linking ${dbId}, unlinking ${user.id} from ${firebaseUid}`);
+                    await pool.query('UPDATE users SET firebase_uid = NULL WHERE firebase_uid = $1', [firebaseUid]);
+                } else {
+                    return res.json({ status: 'conflict', existingUser: user });
+                }
+            } else {
+                return res.json({ status: 'already_linked' });
             }
-            return res.json({ status: 'already_linked' });
         }
 
+        // Link the current profile
         await pool.query('UPDATE users SET firebase_uid = $1 WHERE id = $2', [firebaseUid, dbId]);
         res.json({ status: 'linked_success' });
     } catch (error) {

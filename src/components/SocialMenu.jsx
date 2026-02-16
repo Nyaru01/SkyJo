@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, UserPlus, Users, Wifi, WifiOff, Loader2, Check, Edit2, Trash2, Play, Copy, Send, Trophy, Bell, MessageCircle, Swords, CheckCircle2, Cloud } from 'lucide-react';
+import { Search, UserPlus, Users, Wifi, WifiOff, Loader2, Check, Edit2, Trash2, Play, Copy, Send, Trophy, Bell, MessageCircle, Swords, CheckCircle2, Cloud, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { useSocialStore } from '../store/socialStore';
@@ -137,6 +137,30 @@ export default function SocialDashboard(props) {
         }
     };
 
+    const handleForceLink = async () => {
+        if (!restoreAccountData) return;
+        try {
+            const idToken = await auth.currentUser.getIdToken();
+            const response = await fetch('/api/auth/google-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken, dbId: userProfile.id, force: true })
+            });
+
+            const data = await response.json();
+            if (data.status === 'linked_success') {
+                updateUserProfile({ isLinked: true, firebase_uid: auth.currentUser.uid });
+                toast.success("Compte lié avec succès ! 🚀");
+            } else {
+                toast.error("Erreur lors de la liaison forcée.");
+            }
+            setRestoreAccountData(null);
+        } catch (error) {
+            console.error('[AUTH] Force Link Error:', error);
+            toast.error("Erreur de connexion");
+        }
+    };
+
     const confirmRestore = async () => {
         if (!restoreAccountData) return;
 
@@ -227,8 +251,8 @@ export default function SocialDashboard(props) {
                         <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
                             <div className="flex items-center gap-3">
                                 <div className={`p-2 rounded-lg ${userProfile?.isLinked
-                                        ? 'bg-emerald-500/20 text-emerald-400'
-                                        : 'bg-slate-700/50 text-slate-400'
+                                    ? 'bg-emerald-500/20 text-emerald-400'
+                                    : 'bg-slate-700/50 text-slate-400'
                                     }`}>
                                     <Cloud className="w-4 h-4" />
                                 </div>
@@ -572,16 +596,59 @@ export default function SocialDashboard(props) {
                 variant="danger"
             />
 
-            {/* Account Restore Confirmation Modal */}
-            <ConfirmModal
-                isOpen={!!restoreAccountData}
-                onClose={() => setRestoreAccountData(null)}
-                onConfirm={confirmRestore}
-                title="Restaurer une progression ?"
-                message={`Ce compte Google est déjà lié au compte ${restoreAccountData?.vibe_id || 'sans ID'} (${restoreAccountData?.name || 'Joueur Anonymous'}, Niveau ${restoreAccountData?.level}). Voulez-vous abandonner votre profil actuel pour restaurer celui-ci ?`}
-                confirmText="Restaurer"
-                variant="primary"
-            />
+            {/* Account Conflict Modal */}
+            <AnimatePresence>
+                {restoreAccountData && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setRestoreAccountData(null)}
+                            className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 30 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 30 }}
+                            className="relative w-full max-w-sm bg-slate-900 border border-white/10 rounded-[2.5rem] shadow-2xl p-8 z-10"
+                        >
+                            <div className="flex flex-col items-center text-center">
+                                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-6">
+                                    <AlertTriangle className="w-8 h-8 text-amber-500" />
+                                </div>
+                                <h3 className="text-2xl font-black text-white mb-2">Conflit de compte</h3>
+                                <p className="text-sm text-slate-400 mb-8 px-4 leading-relaxed">
+                                    Ce Google est déjà lié à <span className="text-white font-bold">{restoreAccountData.name}</span> (Lvl {restoreAccountData.level}, {restoreAccountData.vibe_id}).
+                                </p>
+                            </div>
+
+                            <div className="space-y-3">
+                                <Button
+                                    onClick={confirmRestore}
+                                    className="w-full bg-sky-500 hover:bg-sky-400 text-white rounded-2xl h-12 font-bold flex items-center justify-center gap-2"
+                                >
+                                    <Trophy className="w-4 h-4" />
+                                    Restaurer {restoreAccountData.name}
+                                </Button>
+                                <Button
+                                    onClick={handleForceLink}
+                                    className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-2xl h-12 font-bold flex items-center justify-center gap-2"
+                                >
+                                    <Edit2 className="w-4 h-4" />
+                                    Lier à ce profil (Virgil)
+                                </Button>
+                                <button
+                                    onClick={() => setRestoreAccountData(null)}
+                                    className="w-full h-10 text-slate-500 font-bold text-xs uppercase tracking-widest hover:text-white transition-colors"
+                                >
+                                    Annuler
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
