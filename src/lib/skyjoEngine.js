@@ -192,6 +192,7 @@ export const initializeGame = (players, options = {}) => {
         finishingPlayerIndex: null,
         roundNumber: 1,
         isHardcoreMode: options.isHardcoreMode || false,
+        isBonusMode: options.isBonusMode || false,
     };
 };
 
@@ -713,7 +714,7 @@ export const calculateHandScore = (hand, chestResults = {}, columnsCleared = 0, 
  */
 export const calculateFinalScores = (gameState) => {
     const chestResults = gameState.chestResults || {};
-    const isBonusMode = gameState.players.some(p => p.hand.some(c => c && (c.value === 20 || c.value === -10)));
+    const isBonusMode = gameState.isBonusMode || gameState.players.some(p => p.hand.some(c => c && (c.value === 20 || c.value === -10)));
 
     const scores = gameState.players.map((player, index) => {
         const isHardcore = gameState.isHardcoreMode || false;

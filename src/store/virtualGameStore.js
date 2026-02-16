@@ -1155,7 +1155,10 @@ export const useVirtualGameStore = create(
                     avatarId: p.avatarId,
                 }));
 
-                const newGameState = initializeGame(players, { isBonusMode: get().isBonusMode });
+                const newGameState = initializeGame(players, {
+                    isBonusMode: get().isBonusMode,
+                    isHardcoreMode: get().isHardcoreMode
+                });
                 set({
                     gameState: newGameState,
                     roundNumber: roundNumber + 1,
@@ -1179,7 +1182,10 @@ export const useVirtualGameStore = create(
                 }));
 
                 // Reset everything for a new full game
-                const newGameState = initializeGame(players, { isBonusMode: get().isBonusMode });
+                const newGameState = initializeGame(players, {
+                    isBonusMode: get().isBonusMode,
+                    isHardcoreMode: get().isHardcoreMode
+                });
                 const totalScores = {};
                 players.forEach(p => {
                     totalScores[p.id] = 0;
