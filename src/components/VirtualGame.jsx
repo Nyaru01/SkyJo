@@ -557,27 +557,36 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         }
     }, [onlineGameStarted, onlineIsGameOver]);
     // Toasts pour le pause en ligne
+    const prevOnlineIsPaused = useRef(onlineIsPaused);
+
     useEffect(() => {
         if (onlineGameStarted && isGameOver === false) {
-            if (onlineIsPaused) {
-                toast("Partie en pause", {
-                    icon: '⏸️',
-                    style: {
-                        borderRadius: '10px',
-                        background: '#333',
-                        color: '#fff',
-                    },
-                });
-            } else {
-                toast("Partie reprise", {
-                    icon: '▶️',
-                    style: {
-                        borderRadius: '10px',
-                        background: '#333',
-                        color: '#fff',
-                    },
-                });
+            // Only toast if the paused state actually changed
+            if (prevOnlineIsPaused.current !== onlineIsPaused) {
+                if (onlineIsPaused) {
+                    toast("Partie en pause", {
+                        icon: '⏸️',
+                        style: {
+                            borderRadius: '10px',
+                            background: '#333',
+                            color: '#fff',
+                        },
+                    });
+                } else {
+                    toast("Partie reprise", {
+                        icon: '▶️',
+                        style: {
+                            borderRadius: '10px',
+                            background: '#333',
+                            color: '#fff',
+                        },
+                    });
+                }
+                prevOnlineIsPaused.current = onlineIsPaused;
             }
+        } else {
+            // Reset ref if game is not started, so it's ready for next game
+            prevOnlineIsPaused.current = onlineIsPaused;
         }
     }, [onlineIsPaused, onlineGameStarted, isGameOver]);
 
@@ -2122,7 +2131,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     // Si on est sur l'écran de jeu mais qu'il n'y a plus d'état (ex: déconnexion)
     if (!activeGameState && screen === 'game') {
         if (onlineError) {
-            return <HostLeftOverlay />;
+            // No need to return HostLeftOverlay here anymore as it's global
         }
         if (isRedirecting) {
             return (
@@ -2216,7 +2225,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                         pendingAnimation={onlineGameStarted ? onlinePendingAnimation : virtualPendingAnimation}
                         onClear={onlineGameStarted ? clearOnlinePendingAnimation : clearVirtualPendingAnimation}
                     />
-                    <HostLeftOverlay />
                     <Card className="glass-premium shadow-xl overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 to-orange-900/20" />
                         <CardHeader className="text-center relative">
@@ -3278,6 +3286,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             />
 
             {/* Premium Countdown Overlay */}
+            <HostLeftOverlay />
         </div>
     );
 }

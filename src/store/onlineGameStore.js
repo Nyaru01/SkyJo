@@ -411,7 +411,8 @@ export const useOnlineGameStore = create((set, get) => ({
             gameWinner: null,
             players: [],
             roundNumber: 1,
-            gameMode: 'classic'
+            gameMode: null,
+            error: null
         });
     },
 

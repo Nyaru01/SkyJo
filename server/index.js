@@ -326,7 +326,7 @@ io.on('connection', (socket) => {
         rooms.set(roomCode, {
             players: [{ id: socket.dbId || socket.id, socketId: socket.id, dbId: socket.dbId, name: playerName, emoji, isHost: true }],
             gameStarted: false,
-            gameMode: 'classic',
+            gameMode: null,  // Force Host to select
             isPublic: !!isPublic
         });
         socket.join(roomCode);
@@ -360,7 +360,7 @@ io.on('connection', (socket) => {
 
         // Synchronise le nouvel arrivant avec l'état de la salle
         socket.emit('room_sync', {
-            gameMode: room.gameMode || 'classic',
+            gameMode: room.gameMode,
             isPaused: !!room.isPaused,
             isHost: false
         });
@@ -611,7 +611,72 @@ io.on('connection', (socket) => {
         }
     });
 
+    const handlePlayerLeft = (socket, roomCode) => {
+        const code = roomCode?.toUpperCase();
+        const room = rooms.get(code);
+        if (!room) return;
+
+        const myId = socket.dbId || socket.id;
+        const playerIdx = room.players.findIndex(p => p.id === myId);
+
+        if (playerIdx !== -1) {
+            const player = room.players[playerIdx];
+            room.players.splice(playerIdx, 1);
+
+            console.log(`[ROOM] ${player.name} left ${code}. Remaining: ${room.players.length}`);
+
+            if (room.players.length === 0) {
+                rooms.delete(code);
+                console.log(`[ROOM] ${code} deleted (empty)`);
+            } else {
+                // If it was the host who left, promote someone else OR close room if game was started
+                if (player.isHost) {
+                    if (room.gameStarted) {
+                        io.to(code).emit('game_cancelled', { reason: "L'hôte a quitté la partie." });
+                        rooms.delete(code);
+                    } else {
+                        room.players[0].isHost = true;
+                        io.to(code).emit('player_left', {
+                            playerId: myId,
+                            playerName: player.name,
+                            newHost: room.players[0].name
+                        });
+                        io.to(code).emit('player_list_update', room.players);
+                    }
+                } else {
+                    // Just notify others
+                    if (room.gameStarted) {
+                        // In a 1v1 game, if one leaves, the other wins or game ends
+                        // For now, let's cancel the game if anyone leaves a started game (simpler)
+                        io.to(code).emit('game_cancelled', { reason: `${player.name} a quitté la partie.` });
+                        rooms.delete(code);
+                    } else {
+                        io.to(code).emit('player_left', {
+                            playerId: myId,
+                            playerName: player.name
+                        });
+                        io.to(code).emit('player_list_update', room.players);
+                    }
+                }
+            }
+            io.emit('room_list_update', getPublicRooms());
+        }
+    };
+
+    socket.on('leave_room', (roomCode) => {
+        handlePlayerLeft(socket, roomCode);
+        socket.leave(roomCode?.toUpperCase());
+    });
+
     socket.on('disconnect', () => {
+        // Find which room this socket was in and clean up
+        for (const [code, room] of rooms.entries()) {
+            const isMember = room.players.some(p => p.socketId === socket.id);
+            if (isMember) {
+                handlePlayerLeft(socket, code);
+            }
+        }
+
         if (socket.dbId && userStatus.has(socket.dbId)) {
             userStatus.get(socket.dbId).delete(socket.id);
             if (userStatus.get(socket.dbId).size === 0) {
