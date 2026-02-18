@@ -25,7 +25,6 @@ export const messaging = getMessaging(app);
 
 // Initialisation de Firestore
 import { getFirestore } from "firebase/firestore";
-// Only initialize Firestore if we have a valid config to avoid "Database not found" errors
-export const db = firebaseConfig.apiKey ? getFirestore(app) : null;
+export const db = getFirestore(app);
 
 export default app;

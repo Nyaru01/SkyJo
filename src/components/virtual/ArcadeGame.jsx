@@ -353,7 +353,9 @@ export default function ArcadeGame({ onBack }) {
 
     // 2. Leaderboard
     useEffect(() => {
-        if (!db || !user) {
+        // Only attempt to connect if we have a valid API Key (avoid SDK error logs)
+        const hasApiKey = !!import.meta.env.VITE_FIREBASE_API_KEY;
+        if (!db || !user || !hasApiKey) {
             // console.warn("[LEADERBOARD] Firestore not configured or user not logged in.");
             return;
         }
