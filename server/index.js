@@ -197,9 +197,14 @@ app.get('/api/social/profile/:userId', async (req, res) => {
     const { userId } = req.params;
     try {
         const result = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
-        if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+        if (result.rows.length === 0) {
+            console.log(`[PROFILE] Fetch 404: ${userId} not found`);
+            return res.status(404).json({ error: 'Not found' });
+        }
+        console.log(`[PROFILE] Fetched: ${result.rows[0].name} (Lvl ${result.rows[0].level}, XP ${result.rows[0].xp})`);
         res.json(result.rows[0]);
     } catch (err) {
+        console.error('[PROFILE] Fetch error:', err);
         res.status(500).json({ error: 'Fetch failed' });
     }
 });

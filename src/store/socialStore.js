@@ -90,10 +90,19 @@ export const useSocialStore = create(
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ userId, friendId })
                     });
+
                     if (res.ok) {
                         get().fetchFriends(userId);
+                        import('react-hot-toast').then(m => m.toast.success("Demande envoyée !"));
+                        return true;
+                    } else if (res.status === 400) {
+                        const data = await res.json();
+                        import('react-hot-toast').then(m => m.toast.error(data.error || "Déjà en relation"));
+                        return false;
+                    } else {
+                        import('react-hot-toast').then(m => m.toast.error("Erreur d'envoi"));
+                        return false;
                     }
-                    return res.ok;
                 } catch (err) {
                     console.error('[SOCIAL] Request error:', err);
                     return false;

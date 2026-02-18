@@ -718,9 +718,12 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             lastAwardedRoundRef.current = 0;
         }
     }, [onlineGameStarted]);
-
-
-
+    // Use effect to handle navigation back to menu instead of calling it during render
+    useEffect(() => {
+        if (screen === 'menu' && onBackToMenu) {
+            onBackToMenu();
+        }
+    }, [screen, onBackToMenu]);
 
     // AI Auto-play: Execute AI turns automatically with delay
     useEffect(() => {
@@ -2068,12 +2071,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     }
 
 
-    // Use effect to handle navigation back to menu instead of calling it during render
-    useEffect(() => {
-        if (screen === 'menu' && onBackToMenu) {
-            onBackToMenu();
-        }
-    }, [screen, onBackToMenu]);
+
 
     // 7. Gestion des états de redirection et d'erreur (avancé)
     const isRedirecting = onlineRedirection?.active;

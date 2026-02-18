@@ -391,24 +391,35 @@ export default function SocialDashboard(props) {
                                         <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Résultats</p>
                                         <button onClick={clearSearchResults} className="text-[10px] text-slate-400 hover:text-white underline">Fermer</button>
                                     </div>
-                                    {searchResults.map(u => (
-                                        <Card key={u.id} className="glass-premium border-white/10 p-4 rounded-[20px]">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-slate-800 overflow-hidden border border-white/10">
-                                                        <img src={getAvatarPath(u.avatar_id)} alt="" className="w-full h-full object-cover" />
+                                    {searchResults.map(u => {
+                                        const friendRelation = friends.find(f => String(f.id) === String(u.id));
+                                        const isAlreadyRelated = !!friendRelation;
+
+                                        return (
+                                            <Card key={u.id} className="glass-premium border-white/10 p-4 rounded-[20px]">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-slate-800 overflow-hidden border border-white/10">
+                                                            <img src={getAvatarPath(u.avatar_id)} alt="" className="w-full h-full object-cover" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-white text-sm">{u.name}</p>
+                                                            <p className="text-[10px] text-slate-500 font-medium">@{u.vibe_id.replace('#', '')}</p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="font-bold text-white text-sm">{u.name}</p>
-                                                        <p className="text-[10px] text-slate-500 font-medium">@{u.vibe_id.replace('#', '')}</p>
-                                                    </div>
+                                                    {isAlreadyRelated ? (
+                                                        <div className="px-3 py-1 bg-white/5 rounded-full border border-white/10 text-[10px] font-bold text-slate-400">
+                                                            {friendRelation.status === 'ACCEPTED' ? 'DÉJÀ AMI' : 'EN ATTENTE'}
+                                                        </div>
+                                                    ) : (
+                                                        <Button size="sm" variant="outline" className="border-skyjo-blue/30 text-skyjo-blue hover:bg-skyjo-blue/10 h-8 rounded-full text-xs font-bold" onClick={() => sendFriendRequest(userProfile.id, u.id)}>
+                                                            AJOUTER
+                                                        </Button>
+                                                    )}
                                                 </div>
-                                                <Button size="sm" variant="outline" className="border-skyjo-blue/30 text-skyjo-blue hover:bg-skyjo-blue/10 h-8 rounded-full text-xs font-bold" onClick={() => sendFriendRequest(userProfile.id, u.id)}>
-                                                    AJOUTER
-                                                </Button>
-                                            </div>
-                                        </Card>
-                                    ))}
+                                            </Card>
+                                        );
+                                    })}
                                 </motion.div>
                             )}
                         </AnimatePresence>

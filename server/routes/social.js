@@ -8,27 +8,39 @@ const router = express.Router();
 // Send Friend Request
 router.post('/friends/request', async (req, res) => {
     const { userId, friendId } = req.body;
+    console.log(`[SOCIAL] Friend request: From ${userId} to ${friendId}`);
+
+    if (!userId || !friendId) {
+        console.warn('[SOCIAL] Missing IDs in request:', { userId, friendId });
+        return res.status(400).json({ error: 'Missing user IDs' });
+    }
+
+    if (String(userId) === String(friendId)) {
+        return res.status(400).json({ error: 'You cannot add yourself' });
+    }
+
     try {
         // Check if already friends or requested
         const existing = await pool.query(
             'SELECT * FROM friends WHERE (user_id = $1 AND friend_id = $2) OR (user_id = $2 AND friend_id = $1)',
-            [userId, friendId]
+            [String(userId), String(friendId)]
         );
 
         if (existing.rows.length > 0) {
+            console.log('[SOCIAL] Relation already exists between:', userId, friendId);
             return res.status(400).json({ error: 'Relation already exists' });
         }
 
         await pool.query(
             'INSERT INTO friends (user_id, friend_id, status) VALUES ($1, $2, $3)',
-            [userId, friendId, 'PENDING']
+            [String(userId), String(friendId), 'PENDING']
         );
 
-        // Notify the friend via socket if possible (handled by store/client polling usually, or we can emit here if we had io access)
+        console.log(`[SOCIAL] Request sent from ${userId} to ${friendId}`);
         res.json({ status: 'sent' });
     } catch (err) {
-        console.error('[SOCIAL] Request error:', err);
-        res.status(500).json({ error: 'Request failed' });
+        console.error('[SOCIAL] Request database error:', err);
+        res.status(500).json({ error: 'Request database failed', details: err.message });
     }
 });
 
