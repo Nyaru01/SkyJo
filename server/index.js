@@ -297,7 +297,9 @@ const getPublicRooms = () => {
                 code,
                 hostName: room.players.find(p => p.isHost)?.name || 'Inconnu',
                 playerCount: room.players.length,
-                emoji: room.players.find(p => p.isHost)?.emoji || '🎮'
+                emoji: room.players.find(p => p.isHost)?.emoji || '🎮',
+                gameMode: room.gameMode || 'classic',
+                isPaused: !!room.isPaused
             });
         }
     }
@@ -308,11 +310,15 @@ io.on('connection', (socket) => {
     socket.emit('room_list_update', getPublicRooms());
 
     socket.on('register_user', ({ id, name }) => {
+        if (!id) {
+            console.warn(`[USER] Registration failed: Missing ID for ${name}`);
+            return;
+        }
         socket.dbId = String(id);
         if (!userStatus.has(socket.dbId)) userStatus.set(socket.dbId, new Set());
         userStatus.get(socket.dbId).add(socket.id);
         io.emit('user_presence_update', { userId: socket.dbId, status: 'ONLINE' });
-        console.log(`[USER] Registered: ${name} (${socket.dbId}) | Socket: ${socket.id}`);
+        console.log(`[USER] Registered: ${name} (${socket.dbId}) | Socket: ${socket.id} | Total Sockets: ${userStatus.get(socket.dbId).size}`);
     });
 
     socket.on('create_room', ({ playerName, emoji, isPublic, autoInviteFriendId }) => {
@@ -351,7 +357,37 @@ io.on('connection', (socket) => {
         room.players.push({ id: socket.dbId || socket.id, socketId: socket.id, dbId: socket.dbId, name: playerName, emoji, isHost: false });
         socket.join(roomCode.toUpperCase());
         io.to(roomCode.toUpperCase()).emit('player_list_update', room.players);
+
+        // Synchronise le nouvel arrivant avec l'état de la salle
+        socket.emit('room_sync', {
+            gameMode: room.gameMode || 'classic',
+            isPaused: !!room.isPaused,
+            isHost: false
+        });
+
         io.emit('room_list_update', getPublicRooms());
+    });
+
+    socket.on('toggle_pause', ({ roomCode, paused }) => {
+        const code = roomCode?.toUpperCase();
+        const room = rooms.get(code);
+        if (!room) {
+            console.warn(`[PAUSE] Room not found: ${code}`);
+            return;
+        }
+        room.isPaused = !!paused;
+        io.to(code).emit('room_paused', { isPaused: room.isPaused });
+        io.emit('room_list_update', getPublicRooms());
+        console.log(`[ROOM] ${code} pause status updated to: ${room.isPaused}`);
+    });
+
+    socket.on('change_mode', ({ roomCode, mode, dbId }) => {
+        const room = rooms.get(roomCode?.toUpperCase());
+        if (!room) return;
+        room.gameMode = mode;
+        io.to(roomCode.toUpperCase()).emit('mode_changed', mode);
+        io.emit('room_list_update', getPublicRooms());
+        console.log(`[ROOM] ${roomCode} mode changed to: ${mode} by ${dbId}`);
     });
 
     socket.on('start_game', (roomCode) => {
@@ -366,45 +402,180 @@ io.on('connection', (socket) => {
         }));
         room.gameState = initializeGame(gamePlayers, { isBonusMode: room.gameMode === 'bonus' });
         room.gameStarted = true;
+        room.totalScores = {};
+        gamePlayers.forEach(p => {
+            room.totalScores[p.id] = 0;
+        });
 
         io.to(roomCode.toUpperCase()).emit('game_started', {
             gameState: room.gameState,
-            totalScores: {},
+            totalScores: room.totalScores,
             roundNumber: 1,
-            gameMode: room.gameMode
+            gameMode: room.gameMode,
+            isPaused: !!room.isPaused
         });
     });
 
     socket.on('game_action', ({ roomCode, action, payload }) => {
         const room = rooms.get(roomCode?.toUpperCase());
         if (!room || !room.gameState) return;
-        const pIdx = room.gameState.players.findIndex(p => p.id === (socket.dbId || socket.id));
+
+        const myId = socket.dbId || socket.id;
+        const pIdx = room.gameState.players.findIndex(p => p.id === myId);
         if (pIdx === -1) return;
 
         try {
             let newState = JSON.parse(JSON.stringify(room.gameState));
-            // Apply actions... (Simplified for now, using core engine)
+            let lastAction = { type: action, playerId: myId, ...payload };
+
             switch (action) {
-                case 'draw_pile': newState = drawFromPile(newState); break;
-                case 'draw_discard': newState = drawFromDiscard(newState); break;
-                // Add all other actions...
+                case 'reveal_initial':
+                    newState = revealInitialCards(newState, pIdx, payload.cardIndices);
+                    // For animation, take the last revealed card
+                    const initialCard = newState.players[pIdx].hand[payload.cardIndices[1]];
+                    lastAction.card = initialCard;
+                    lastAction.cardValue = initialCard ? initialCard.value : null;
+                    break;
+                case 'draw_pile':
+                    newState = drawFromPile(newState);
+                    lastAction.card = newState.drawnCard;
+                    break;
+                case 'draw_discard':
+                    newState = drawFromDiscard(newState);
+                    lastAction.card = newState.drawnCard;
+                    lastAction.cardValue = newState.drawnCard.value;
+                    break;
+                case 'replace_card':
+                    lastAction.card = room.gameState.drawnCard;
+                    lastAction.cardValue = room.gameState.drawnCard?.value;
+                    newState = replaceCard(newState, payload.cardIndex);
+                    newState = endTurn(newState);
+                    break;
+                case 'discard_drawn':
+                    lastAction.card = room.gameState.drawnCard;
+                    lastAction.cardValue = room.gameState.drawnCard?.value;
+                    // Simply move to reveal phase
+                    newState.discardPile.push({ ...newState.drawnCard, isRevealed: true });
+                    newState.drawnCard = null;
+                    newState.turnPhase = 'MUST_REVEAL';
+                    break;
+                case 'discard_and_reveal':
+                    lastAction.card = room.gameState.drawnCard;
+                    lastAction.cardValue = room.gameState.drawnCard?.value;
+                    newState = discardAndReveal(newState, payload.cardIndex);
+                    newState = endTurn(newState);
+                    break;
+                case 'reveal_hidden':
+                    const hiddenPlayer = newState.players[pIdx];
+                    const hiddenCard = hiddenPlayer.hand[payload.cardIndex];
+                    if (hiddenCard) {
+                        hiddenCard.isRevealed = true;
+                        if (hiddenCard.value === 20) hiddenCard.lockCount = 3;
+                        lastAction.cardValue = hiddenCard.value;
+                        lastAction.card = hiddenCard;
+                    }
+                    newState.turnPhase = 'DRAW'; // Preparation for endTurn
+                    newState = endTurn(newState);
+                    break;
+                case 'perform_swap':
+                    newState = performSwap(newState, payload.sourceCardIndex, payload.targetPlayerIndex, payload.targetCardIndex);
+                    break;
+                case 'activate_black_hole':
+                    newState = resolveBlackHole(newState);
+                    break;
+                case 'use_action_card':
+                    newState = playActionCard(newState);
+                    newState = endTurn(newState);
+                    break;
+                case 'undo_draw_discard':
+                    if (newState.drawnCard) {
+                        lastAction.card = newState.drawnCard;
+                        newState.discardPile.push(newState.drawnCard);
+                        newState.drawnCard = null;
+                        newState.turnPhase = 'DRAW';
+                    }
+                    break;
             }
+
+            // Check for game end within round (not handled by endTurn automatically for phase transition)
+            if (newState.phase === 'FINISHED') {
+                // Round scores
+                const roundResults = calculateFinalScores(newState);
+                roundResults.forEach(r => {
+                    room.totalScores[r.playerId] = (room.totalScores[r.playerId] || 0) + r.finalScore;
+                });
+
+                // Check for absolute game end (100 points)
+                const gameOver = Object.values(room.totalScores).some(s => s >= 100);
+                if (gameOver) {
+                    const sorted = Object.entries(room.totalScores).sort((a, b) => a[1] - b[1]);
+                    const winner = room.players.find(p => p.id === sorted[0][0]);
+                    io.to(roomCode.toUpperCase()).emit('game_over', {
+                        totalScores: room.totalScores,
+                        winner: winner ? { id: winner.id, name: winner.name, score: sorted[0][1] } : null
+                    });
+                }
+            }
+
             room.gameState = newState;
-            io.to(roomCode).emit('game_update', { gameState: newState });
+            io.to(roomCode.toUpperCase()).emit('game_update', { gameState: newState, lastAction });
         } catch (e) {
-            socket.emit('error', e.message);
+            console.error('[GAME ERROR]', e);
+            socket.emit('gameplay_error', e.message);
         }
+    });
+
+    socket.on('next_round', (roomCode) => {
+        const room = rooms.get(roomCode?.toUpperCase());
+        if (!room) return;
+
+        const gamePlayers = room.players.map(p => ({ id: p.id, name: p.name, emoji: p.emoji, dbId: p.dbId, socketId: p.socketId }));
+        room.gameState = initializeGame(gamePlayers, { isBonusMode: room.gameMode === 'bonus' });
+        room.roundNumber = (room.roundNumber || 1) + 1;
+
+        io.to(roomCode.toUpperCase()).emit('game_started', {
+            gameState: room.gameState,
+            totalScores: room.totalScores,
+            roundNumber: room.roundNumber,
+            gameMode: room.gameMode,
+            isPaused: !!room.isPaused
+        });
+    });
+
+    socket.on('rematch', (roomCode) => {
+        const room = rooms.get(roomCode?.toUpperCase());
+        if (!room) return;
+
+        room.totalScores = {};
+        room.players.forEach(p => room.totalScores[p.id] = 0);
+        room.roundNumber = 1;
+
+        const gamePlayers = room.players.map(p => ({ id: p.id, name: p.name, emoji: p.emoji, dbId: p.dbId, socketId: p.socketId }));
+        room.gameState = initializeGame(gamePlayers, { isBonusMode: room.gameMode === 'bonus' });
+
+        io.to(roomCode.toUpperCase()).emit('game_started', {
+            gameState: room.gameState,
+            totalScores: room.totalScores,
+            roundNumber: 1,
+            gameMode: room.gameMode,
+            isPaused: !!room.isPaused
+        });
     });
 
     socket.on('invite_friend', ({ friendId, roomCode, fromName }) => {
         const fId = String(friendId);
+        console.log(`[INVITE] ${fromName} inviting ${fId} to ${roomCode}`);
+
         if (userStatus.has(fId)) {
-            userStatus.get(fId).forEach(sid => {
+            const sockets = userStatus.get(fId);
+            console.log(`[INVITE] Sending to ${sockets.size} sockets for user ${fId}`);
+            sockets.forEach(sid => {
                 io.to(sid).emit('game_invitation', { roomCode, fromName });
             });
-            console.log(`[INVITE] Manual: ${fromName} -> ${fId} (Room: ${roomCode})`);
+            socket.emit('invitation_sent');
         } else {
-            console.log(`[INVITE] Manual: Friend ${fId} offline, invite failed`);
+            console.log(`[INVITE] Friend ${fId} is OFFLINE`);
+            socket.emit('invitation_failed', { reason: 'OFFLINE' });
         }
     });
 

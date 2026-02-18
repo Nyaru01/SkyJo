@@ -556,6 +556,39 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             hasArchivedOnlineRef.current = false;
         }
     }, [onlineGameStarted, onlineIsGameOver]);
+    // Toasts pour le pause en ligne
+    useEffect(() => {
+        if (onlineGameStarted && isGameOver === false) {
+            if (onlineIsPaused) {
+                toast("Partie en pause", {
+                    icon: '⏸️',
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    },
+                });
+            } else {
+                toast("Partie reprise", {
+                    icon: '▶️',
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    },
+                });
+            }
+        }
+    }, [onlineIsPaused, onlineGameStarted, isGameOver]);
+
+    useEffect(() => {
+        if (onlineGameStarted && !onlinePlayers.find(p => p.isHost)) {
+            toast.error("L'hôte s'est déconnecté. Redirection...");
+            setTimeout(() => {
+                handleBackToMenu(true);
+            }, 3000);
+        }
+    }, [onlinePlayers, onlineGameStarted]);
 
     useEffect(() => {
         if (onlineIsGameOver && onlineGameStarted && onlinePlayers.length > 0 && !hasArchivedOnlineRef.current) {

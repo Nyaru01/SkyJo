@@ -101,16 +101,19 @@ export const useOnlineGameStore = create((set, get) => ({
             });
 
             socket.on('room_sync', (data) => {
-                console.log('[Socket] Room sync received:', data);
+                console.log('[SOCKET] Room sync received:', data);
                 if (data.gameMode) set({ gameMode: data.gameMode });
                 if (data.roundNumber) set({ roundNumber: data.roundNumber });
                 if (data.isHost !== undefined) set({ isHost: data.isHost });
-                if (data.isPaused !== undefined) set({ isPaused: data.isPaused });
+                if (data.isPaused !== undefined) {
+                    console.log('[SOCKET] Syncing pause status:', data.isPaused);
+                    set({ isPaused: !!data.isPaused });
+                }
             });
 
             socket.on('room_paused', ({ isPaused }) => {
-                console.log('[Socket] Room pause status updated:', isPaused);
-                set({ isPaused });
+                console.log('[SOCKET] Room pause event received:', isPaused);
+                set({ isPaused: !!isPaused });
             });
 
             socket.on('new_player_joined', ({ playerName, emoji }) => {
@@ -212,44 +215,45 @@ export const useOnlineGameStore = create((set, get) => ({
                         sourceId = 'deck-pile';
                         targetId = 'drawn-card-slot';
                         set({ drawnCardSource: 'pile' });
-                        // For draw, we might not know the card if it's hidden, 
-                        // but usually if I drew it, I know it? 
-                        // Or if opponent drew, I assume it's face down?
-                        // The server `lastAction` should probably contain details.
+                        cardToAnimate = lastAction.card || { value: cardValue, isRevealed: true };
                     } else if (type === 'draw_discard') {
                         sourceId = 'discard-pile';
                         targetId = 'drawn-card-slot';
-                        cardToAnimate = { value: cardValue, isRevealed: true }; // We know value if from discard
+                        cardToAnimate = lastAction.card || { value: cardValue, isRevealed: true };
                         set({ drawnCardSource: 'discard' });
                     } else if (type === 'replace_card') {
                         // From center to slot
                         sourceId = 'drawn-card-slot';
                         targetId = `card-${playerId}-${cardIndex}`;
-                        cardToAnimate = { value: cardValue, isRevealed: true };
+                        cardToAnimate = lastAction.card || { value: cardValue, isRevealed: true };
                         set({ drawnCardSource: null });
                     } else if (type === 'discard_drawn') {
                         // From center to discard
                         sourceId = 'drawn-card-slot';
                         targetId = 'discard-pile';
-                        cardToAnimate = { value: cardValue, isRevealed: true };
+                        cardToAnimate = lastAction.card || { value: cardValue, isRevealed: true };
                         set({ drawnCardSource: null });
                     } else if (type === 'discard_and_reveal') {
                         // This is a complex one: Card goes to discard, AND another card is revealed.
                         // Animation: Drawn card -> Discard.
                         sourceId = 'drawn-card-slot';
                         targetId = 'discard-pile';
-                        cardToAnimate = { value: cardValue, isRevealed: true };
+                        cardToAnimate = lastAction.card || { value: cardValue, isRevealed: true };
                         set({ drawnCardSource: null });
                     } else if (type === 'undo_draw_discard') {
                         // Undo: Drawn card (Center) -> Discard Pile
                         sourceId = 'drawn-card-slot';
                         targetId = 'discard-pile';
-                        // For undo, we don't have 'cardValue' in payload usually, 
-                        // but we know what the card WAS because it's in the CURRENT gameState.drawnCard
-                        // before we apply the update.
                         const currentDrawn = get().gameState?.drawnCard;
-                        cardToAnimate = currentDrawn ? { ...currentDrawn, isRevealed: true } : { value: '?', isRevealed: true };
+                        cardToAnimate = lastAction.card || (currentDrawn ? { ...currentDrawn, isRevealed: true } : { value: '?', isRevealed: true });
                         set({ drawnCardSource: null });
+                    } else if (type === 'reveal_hidden' || type === 'reveal_initial') {
+                        // Reveal is a "flip in place" animation usually, but we can simulate it 
+                        // by animating from the card slot to itself with the new value.
+                        const idx = type === 'reveal_initial' ? lastAction?.cardIndices?.[0] : cardIndex;
+                        sourceId = `card-${playerId}-${idx}`;
+                        targetId = `card-${playerId}-${idx}`;
+                        cardToAnimate = lastAction.card || { value: cardValue, isRevealed: true };
                     }
 
                     if (sourceId && targetId) {

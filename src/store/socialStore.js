@@ -46,6 +46,10 @@ export const useSocialStore = create(
             },
 
             registerUser: (id, name, emoji, vibeId) => {
+                if (!socket.connected) {
+                    console.log('[SOCIAL] Socket not connected, connecting before registration...');
+                    socket.connect();
+                }
                 socket.emit('register_user', { id: String(id), name, emoji, vibeId });
             },
 
@@ -253,6 +257,7 @@ socket.on('friend_request', () => {
 });
 
 socket.on('game_invitation', (invitation) => {
+    console.log('[SOCIAL] Received game invitation:', invitation);
     useSocialStore.getState().setGameInvitation(invitation);
 });
 
