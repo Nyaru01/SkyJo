@@ -44,6 +44,7 @@ export const useGameStore = create(
             hasSeenNewOnlineModeAnnouncement: false,
             migratedToV2: false, // Flag for LocalStorage -> DB migration
             isRehydrated: false, // Flag to track when store is ready
+            profileLoadedFromBackend: false, // Prevent early sync from overwriting DB
             cardSkin: 'classic', // classic, papyrus
             background: '/Wallpapers/bg-skyjo.png', // Default background
             isAdminOpen: false, // Global admin status
@@ -165,7 +166,15 @@ export const useGameStore = create(
 
             syncProfileWithBackend: async () => {
                 const state = get();
-                let { userProfile, level, currentXP } = state;
+                let { userProfile, level, currentXP, profileLoadedFromBackend } = state;
+
+                // CRITICAL: If we haven't loaded from backend yet in this session, 
+                // do NOT sync local state to backend as it might overwrite higher values 
+                // before we've had a chance to read them.
+                if (!profileLoadedFromBackend) {
+                    console.log('[STORE] ⏸ Skipping push sync: Backend data not yet loaded into session');
+                    return;
+                }
 
                 // Safety: Ensure ID exists before syncing
                 if (!userProfile?.id) {
@@ -186,11 +195,11 @@ export const useGameStore = create(
                     userProfile = get().userProfile;
                 }
 
-                // CRITICAL: Always use root level/XP to ensure they are never out of sync with userProfile object
+                // CRITICAL: Map currentXP to xp for backend column naming
                 const profileWithLatestStats = {
                     ...userProfile,
                     level: level,
-                    currentXP: currentXP
+                    xp: currentXP
                 };
 
                 try {
@@ -201,7 +210,7 @@ export const useGameStore = create(
                     });
 
                     if (response.ok) {
-                        // Silent on success to avoid console noise
+                        console.log('[STORE] ✅ Profile sync success:', profileWithLatestStats);
                     } else {
                         const errorData = await response.json().catch(() => ({}));
                         console.error('[STORE] ❌ Profile sync failed:', response.status, errorData);
@@ -221,10 +230,14 @@ export const useGameStore = create(
                         const data = await res.json();
                         console.log('[STORE] Profile data received from backend:', data);
 
+                        // Mark as loaded even if no update needed, so subsequent syncs are allowed
+                        set({ profileLoadedFromBackend: true });
+
                         // Only update if data is valid and different
-                        if (data && (data.level !== undefined || data.xp !== undefined)) {
-                            const newLevel = data.level !== undefined ? data.level : get().level;
-                            const newXP = data.xp !== undefined ? data.xp : get().currentXP;
+                        if (data) {
+                            // Ensure we have numbers and not NULLs from DB
+                            const newLevel = (data.level !== undefined && data.level !== null) ? Number(data.level) : get().level;
+                            const newXP = (data.xp !== undefined && data.xp !== null) ? Number(data.xp) : get().currentXP;
 
                             if (newLevel !== get().level || newXP !== get().currentXP) {
                                 console.log(`[STORE] 🔄 LOCAL STATE UPDATE from backend: Level ${get().level}->${newLevel}, XP ${get().currentXP}->${newXP}`);
@@ -248,6 +261,10 @@ export const useGameStore = create(
                                 }));
                             }
                         }
+                    } else if (res.status === 404) {
+                        // User not in DB yet, allowed to sync local state
+                        console.log('[STORE] User not found in DB, allowing initial sync');
+                        set({ profileLoadedFromBackend: true });
                     } else {
                         console.error('[STORE] Failed to load profile from backend:', res.status);
                     }
@@ -609,6 +626,10 @@ export const useGameStore = create(
             onRehydrateStorage: () => (state) => {
                 state?.setIsRehydrated(true);
             },
+            partialize: (state) =>
+                Object.fromEntries(
+                    Object.entries(state).filter(([key]) => !['profileLoadedFromBackend', 'isRehydrated'].includes(key))
+                ),
         }
     )
 );

@@ -194,13 +194,13 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     if (isOnlineMode && activeGameState) {
         const playersList = activeGameState.players || [];
-        // 1. Try socket ID
-        myPlayerIndex = playersList.findIndex(p => p.id === currentSocketId);
-
-        // 2. Fallback to DB ID if available
-        if (myPlayerIndex === -1 && userProfile?.id) {
-            myPlayerIndex = playersList.findIndex(p => String(p.dbId) === String(userProfile.id));
-        }
+        // Robust lookup: check id, dbId, or socketId
+        myPlayerIndex = playersList.findIndex(p =>
+            p.id === currentSocketId ||
+            (p.dbId && userProfile?.id && String(p.dbId) === String(userProfile.id)) ||
+            (p.socketId && p.socketId === currentSocketId) ||
+            (p.id && userProfile?.id && String(p.id) === String(userProfile.id))
+        );
 
         if (myPlayerIndex === -1 && screen === 'game') {
             showSyncIssue = true;
@@ -404,15 +404,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     // 5. EARLY RETURNS SECTION
     // These returns are safe now because all hooks have been declared.
 
-    if (showSyncIssue) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[50vh]">
-                <SkyjoLoader progress={100} />
-                <p className="mt-4 text-white font-bold animate-pulse">Synchronisation...</p>
-                <p className="text-xs text-white/50 mt-2">ID: {currentSocketId?.substr(0, 4)}...</p>
-            </div>
-        );
-    }
+    // 5. EARLY RETURNS SECTION MOVED TO BOTTOM TO FIX HOOK VIOLATION
+    // if (showSyncIssue) { ... } moved to before screen rendering
 
     // Global Identity Sync: React to userProfile changes
     useEffect(() => {
@@ -1096,15 +1089,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         if (onBackToMenu) onBackToMenu(wasDaily);
     };
 
-    if (showSyncIssue) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[50vh]">
-                <SkyjoLoader progress={100} />
-                <p className="mt-4 text-white font-bold animate-pulse">Synchronisation...</p>
-                <p className="text-xs text-white/50 mt-2">ID: {currentSocketId?.substr(0, 4)}...</p>
-            </div>
-        );
-    }
+
 
     const avatarSelectorComponent = (
         <AvatarSelector
@@ -1121,6 +1106,17 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         />
     );
 
+
+
+    if (showSyncIssue) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh]">
+                <SkyjoLoader progress={100} />
+                <p className="mt-4 text-white font-bold animate-pulse">Synchronisation...</p>
+                <p className="text-xs text-white/50 mt-2">ID: {currentSocketId?.substr(0, 4)}...</p>
+            </div>
+        );
+    }
 
     // Render AI setup screen
     if (screen === 'ai-setup') {
@@ -1585,10 +1581,10 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                             <div className="p-3">
                                 {onlineIsHost ? (
                                     <div className="grid grid-cols-2 gap-2">
-                                        <button
+                                        <div
                                             onClick={() => setOnlineGameMode('classic')}
                                             className={cn(
-                                                "flex flex-col items-center justify-center py-3 px-2 rounded-[18px] transition-all relative overflow-hidden group",
+                                                "flex flex-col items-center justify-center py-3 px-2 rounded-[18px] transition-all relative overflow-hidden group cursor-pointer",
                                                 onlineGameMode === 'classic'
                                                     ? "bg-blue-600/20 border border-blue-500/40 text-blue-400"
                                                     : "border border-transparent text-slate-500 hover:text-slate-300 hover:bg-white/5"
@@ -1599,11 +1595,11 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                             {onlineGameMode === 'classic' && (
                                                 <motion.div layoutId="active-mode" className="absolute inset-0 bg-blue-400/5 z-0" />
                                             )}
-                                        </button>
-                                        <button
+                                        </div>
+                                        <div
                                             onClick={() => setOnlineGameMode('bonus')}
                                             className={cn(
-                                                "flex flex-col items-center justify-center py-3 px-2 rounded-[18px] transition-all relative overflow-hidden group",
+                                                "flex flex-col items-center justify-center py-3 px-2 rounded-[18px] transition-all relative overflow-hidden group cursor-pointer",
                                                 onlineGameMode === 'bonus'
                                                     ? "bg-rose-600/30 border border-rose-500/50 text-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.15)]"
                                                     : "border border-transparent text-slate-500 hover:text-slate-300 hover:bg-white/5"
@@ -1630,7 +1626,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                             {onlineGameMode === 'bonus' && (
                                                 <motion.div layoutId="active-mode" className="absolute inset-0 bg-gradient-to-tr from-rose-500/10 to-transparent z-0" />
                                             )}
-                                        </button>
+                                        </div>
                                     </div>
                                 ) : (
                                     <div
@@ -2072,14 +2068,18 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     }
 
 
+    // Use effect to handle navigation back to menu instead of calling it during render
+    useEffect(() => {
+        if (screen === 'menu' && onBackToMenu) {
+            onBackToMenu();
+        }
+    }, [screen, onBackToMenu]);
+
     // 7. Gestion des états de redirection et d'erreur (avancé)
     const isRedirecting = onlineRedirection?.active;
 
     // Protection immédiate pour l'écran menu pour éviter de descendre dans la logique de jeu
     if (screen === 'menu') {
-        if (onBackToMenu) {
-            onBackToMenu();
-        }
         return (
             <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
                 <SkyjoLoader progress={100} />

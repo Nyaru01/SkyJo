@@ -15,6 +15,8 @@ initFirebase();
 
 import feedbackRoutes from './routes/feedback.js';
 import pushRoutes from './routes/push.js';
+import socialRoutes from './routes/social.js';
+
 import { sendInvitationNotification } from './utils/pushNotifications.js';
 
 // Import game engine functions
@@ -157,6 +159,7 @@ app.get(['/api/config/version', '/api/version'], (req, res) => {
 
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/push', pushRoutes);
+app.use('/api/social', socialRoutes);
 
 app.post('/api/social/migrate', async (req, res) => {
     // This endpoint is a stub to acknowledge V2 migration
@@ -173,6 +176,7 @@ app.post('/api/social/migrate', async (req, res) => {
 
 app.post('/api/social/profile', async (req, res) => {
     let { id, name, emoji, avatarId, vibeId, level, xp } = req.body;
+    console.log(`[PROFILE] Update request for ${name} (${id}): Level ${level}, XP ${xp}`);
     try {
         await pool.query(`
             INSERT INTO users (id, name, emoji, avatar_id, vibe_id, level, xp, last_seen)
@@ -182,6 +186,7 @@ app.post('/api/social/profile', async (req, res) => {
                 avatar_id = EXCLUDED.avatar_id, vibe_id = EXCLUDED.vibe_id,
                 level = EXCLUDED.level, xp = EXCLUDED.xp, last_seen = CURRENT_TIMESTAMP
         `, [id, name, emoji, avatarId, vibeId, level, xp]);
+        console.log(`[PROFILE] ✓ Saved ${name} (${id})`);
         res.json({ status: 'ok' });
     } catch (err) {
         res.status(500).json({ error: 'Sync failed', details: err.message });
@@ -268,16 +273,7 @@ app.get('/api/social/friends/:userId', async (req, res) => {
     }
 });
 
-// --- Leaderboard API ---
 
-app.get('/api/social/leaderboard/global', async (req, res) => {
-    try {
-        const result = await pool.query(`SELECT id, name, avatar_id, vibe_id, level, xp FROM users ORDER BY level DESC, xp DESC LIMIT 20`);
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: 'Leaderboard failed' });
-    }
-});
 
 // --- Socket.io Configuration ---
 
@@ -311,13 +307,13 @@ io.on('connection', (socket) => {
         if (!userStatus.has(socket.dbId)) userStatus.set(socket.dbId, new Set());
         userStatus.get(socket.dbId).add(socket.id);
         io.emit('user_presence_update', { userId: socket.dbId, status: 'ONLINE' });
-        console.log(`[USER] Registered: ${name} (${socket.dbId})`);
+        console.log(`[USER] Registered: ${name} (${socket.dbId}) | Socket: ${socket.id}`);
     });
 
-    socket.on('create_room', ({ playerName, emoji, isPublic }) => {
+    socket.on('create_room', ({ playerName, emoji, isPublic, autoInviteFriendId }) => {
         const roomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
         rooms.set(roomCode, {
-            players: [{ id: socket.dbId || socket.id, socketId: socket.id, name: playerName, emoji, isHost: true }],
+            players: [{ id: socket.dbId || socket.id, socketId: socket.id, dbId: socket.dbId, name: playerName, emoji, isHost: true }],
             gameStarted: false,
             gameMode: 'classic',
             isPublic: !!isPublic
@@ -325,6 +321,20 @@ io.on('connection', (socket) => {
         socket.join(roomCode);
         socket.emit('room_created', roomCode);
         io.emit('room_list_update', getPublicRooms());
+        console.log(`[ROOM] Created: ${roomCode} by ${playerName} | Public: ${isPublic}`);
+
+        // Handle Atomic Auto-Invite
+        if (autoInviteFriendId) {
+            const fId = String(autoInviteFriendId);
+            if (userStatus.has(fId)) {
+                userStatus.get(fId).forEach(sid => {
+                    io.to(sid).emit('game_invitation', { roomCode, fromName: playerName });
+                });
+                console.log(`[INVITE] Auto-inviting ${fId} to ${roomCode}`);
+            } else {
+                console.log(`[INVITE] Friend ${fId} offline, auto-invite failed`);
+            }
+        }
     });
 
     socket.on('join_room', ({ roomCode, playerName, emoji }) => {
@@ -333,7 +343,7 @@ io.on('connection', (socket) => {
         if (room.gameStarted) { socket.emit('error', 'Partie déjà commencée'); return; }
         if (room.players.length >= 8) { socket.emit('error', 'Salle pleine'); return; }
 
-        room.players.push({ id: socket.dbId || socket.id, socketId: socket.id, name: playerName, emoji, isHost: false });
+        room.players.push({ id: socket.dbId || socket.id, socketId: socket.id, dbId: socket.dbId, name: playerName, emoji, isHost: false });
         socket.join(roomCode.toUpperCase());
         io.to(roomCode.toUpperCase()).emit('player_list_update', room.players);
         io.emit('room_list_update', getPublicRooms());
@@ -342,7 +352,13 @@ io.on('connection', (socket) => {
     socket.on('start_game', (roomCode) => {
         const room = rooms.get(roomCode?.toUpperCase());
         if (!room) return;
-        const gamePlayers = room.players.map(p => ({ id: p.id, name: p.name, emoji: p.emoji }));
+        const gamePlayers = room.players.map(p => ({
+            id: p.id,
+            name: p.name,
+            emoji: p.emoji,
+            dbId: p.dbId,
+            socketId: p.socketId
+        }));
         room.gameState = initializeGame(gamePlayers, { isBonusMode: room.gameMode === 'bonus' });
         room.gameStarted = true;
 
@@ -372,6 +388,50 @@ io.on('connection', (socket) => {
             io.to(roomCode).emit('game_update', { gameState: newState });
         } catch (e) {
             socket.emit('error', e.message);
+        }
+    });
+
+    socket.on('invite_friend', ({ friendId, roomCode, fromName }) => {
+        const fId = String(friendId);
+        if (userStatus.has(fId)) {
+            userStatus.get(fId).forEach(sid => {
+                io.to(sid).emit('game_invitation', { roomCode, fromName });
+            });
+            console.log(`[INVITE] Manual: ${fromName} -> ${fId} (Room: ${roomCode})`);
+        } else {
+            console.log(`[INVITE] Manual: Friend ${fId} offline, invite failed`);
+        }
+    });
+
+    socket.on('private_message', (msg) => {
+        const { toId, text, replyTo } = msg;
+        const fromId = socket.dbId;
+        if (!fromId) return;
+
+        const fullMsg = {
+            id: Date.now() + Math.random().toString(36).substr(2, 9),
+            fromId,
+            toId: String(toId),
+            text,
+            timestamp: Date.now(),
+            replyTo
+        };
+
+        if (userStatus.has(String(toId))) {
+            userStatus.get(String(toId)).forEach(sid => {
+                io.to(sid).emit('private_message', fullMsg);
+            });
+        }
+    });
+
+    socket.on('chat_typing', ({ toId, isTyping }) => {
+        const fromId = socket.dbId;
+        if (!fromId) return;
+
+        if (userStatus.has(String(toId))) {
+            userStatus.get(String(toId)).forEach(sid => {
+                io.to(sid).emit('chat_typing', { fromId, isTyping });
+            });
         }
     });
 
