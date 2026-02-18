@@ -16,6 +16,7 @@ import GameSetup from './GameSetup';
 import GameHistory from './GameHistory';
 import Stats from './Stats';
 import VirtualGame from './VirtualGame';
+import ArcadeGame from './virtual/ArcadeGame';
 import BottomNav from './Navbar';
 import SettingsPage from './SettingsPage';
 
@@ -162,10 +163,10 @@ export default function Dashboard() {
             generateSkyId();
         }
         if (userProfile?.id) {
-            syncProfileWithBackend(userProfile);
+            // syncProfileWithBackend(userProfile); // REMOVED: prevent overwriting server XP with local stale state
             fetchFriends(String(userProfile.id));
         }
-    }, [userProfile?.id, userProfile?.vibeId, syncProfileWithBackend, fetchFriends, generateSkyId]);
+    }, [userProfile?.id, userProfile?.vibeId, fetchFriends, generateSkyId]);
     // Migration Local -> DB pour la V2
     useEffect(() => {
         if (!migratedToV2) {
@@ -184,6 +185,12 @@ export default function Dashboard() {
             playAchievement();
         }
     }, [achievements?.length, playAchievement]);
+
+    // Exposer setActiveTab pour les composants enfants (comme GameMenu) qui ont besoin de changer l'onglet global
+    useEffect(() => {
+        window.__SKYJO_SET_ACTIVE_TAB__ = setActiveTab;
+        return () => { delete window.__SKYJO_SET_ACTIVE_TAB__; };
+    }, []);
 
     // Debug logs pour le plan de fix
     useEffect(() => {
@@ -503,6 +510,23 @@ export default function Dashboard() {
                             initialScreen={virtualScreen}
                             onBackToMenu={handleBackToMenu}
                         />
+                    </motion.div>
+                );
+
+            case 'arcade':
+                return (
+                    <motion.div
+                        key="arcade"
+                        variants={pageVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        transition={pageTransition}
+                    >
+                        <ArcadeGame onBack={() => {
+                            setVirtualScreen('menu');
+                            setActiveTab('virtual');
+                        }} />
                     </motion.div>
                 );
 

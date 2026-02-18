@@ -174,6 +174,42 @@ export default function GameMenu({
                     </div>
                 </PremiumTiltButton>
 
+                {/* 
+                <PremiumTiltButton
+                    onClick={() => {
+                        playClick();
+                        // On utilise setActiveTab car le routing 'arcade' est au niveau du Dashboard
+                        const dashboardSetActiveTab = window.__SKYJO_SET_ACTIVE_TAB__;
+                        if (dashboardSetActiveTab) {
+                            dashboardSetActiveTab('arcade');
+                        } else {
+                            // Fallback pour VirtualGame interne si pas encore refactoré
+                            setScreen('arcade');
+                        }
+                    }}
+                    gradientFrom="from-rose-600"
+                    gradientTo="to-orange-600"
+                    shadowColor="shadow-rose-500/20"
+                    className="w-full"
+                    contentClassName="h-auto pl-8 pr-6"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-r from-rose-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="flex items-center justify-between w-full relative z-10 text-left">
+                        <div className="flex flex-col justify-center">
+                            <h3 className="text-lg font-bold text-white leading-tight">
+                                SKY THEM UP
+                            </h3>
+                            <p className="text-[10px] text-rose-200 font-bold uppercase mt-0.5 tracking-wide">
+                                Nouveau mode Arcade Retro
+                            </p>
+                        </div>
+                        <div className="w-12 h-12 rounded-2xl bg-rose-500/30 border border-rose-400/50 flex items-center justify-center shrink-0">
+                            <Sparkles className="h-6 w-6 text-white group-hover:rotate-12 transition-transform" />
+                        </div>
+                    </div>
+                </PremiumTiltButton> 
+                */}
+
                 <PremiumTiltButton
                     onClick={handleStartOnline}
                     gradientFrom="from-sky-600"

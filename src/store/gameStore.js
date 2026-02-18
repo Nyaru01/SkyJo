@@ -144,7 +144,7 @@ export const useGameStore = create(
                 // Atomic update of the profile to avoid partial sync conflicts
                 set(state => ({
                     level: serverData.level || state.level,
-                    currentXP: serverData.xp || state.currentXP,
+                    currentXP: (serverData.xp !== undefined && serverData.xp !== null) ? serverData.xp : state.currentXP,
                     lastAcknowledgedLevel: serverData.level || state.level,
                     userProfile: {
                         ...state.userProfile,
@@ -154,7 +154,7 @@ export const useGameStore = create(
                         avatarId: serverData.avatar_id || state.userProfile.avatarId,
                         vibeId: serverData.vibe_id || serverData.vibeId || '',
                         level: serverData.level || state.level,
-                        currentXP: serverData.xp || state.currentXP,
+                        currentXP: (serverData.xp !== undefined && serverData.xp !== null) ? serverData.xp : state.currentXP,
                         isLinked: true,
                         firebase_uid: serverData.firebase_uid || serverData.firebaseUid
                     }
@@ -190,7 +190,7 @@ export const useGameStore = create(
                 const profileWithLatestStats = {
                     ...userProfile,
                     level: level,
-                    currentXP: currentXP
+                    xp: currentXP
                 };
 
                 try {
@@ -224,7 +224,7 @@ export const useGameStore = create(
                         // Only update if data is valid and different
                         if (data && (data.level !== undefined || data.xp !== undefined)) {
                             const newLevel = data.level !== undefined ? data.level : get().level;
-                            const newXP = data.xp !== undefined ? data.xp : get().currentXP;
+                            const newXP = (data.xp !== undefined && data.xp !== null) ? data.xp : get().currentXP;
 
                             if (newLevel !== get().level || newXP !== get().currentXP) {
                                 console.log(`[STORE] 🔄 LOCAL STATE UPDATE from backend: Level ${get().level}->${newLevel}, XP ${get().currentXP}->${newXP}`);

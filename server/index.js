@@ -180,7 +180,13 @@ app.post('/api/social/profile', async (req, res) => {
             ON CONFLICT (id) DO UPDATE SET
                 name = EXCLUDED.name, emoji = EXCLUDED.emoji,
                 avatar_id = EXCLUDED.avatar_id, vibe_id = EXCLUDED.vibe_id,
-                level = EXCLUDED.level, xp = EXCLUDED.xp, last_seen = CURRENT_TIMESTAMP
+                level = GREATEST(COALESCE(EXCLUDED.level, 0), users.level),
+                xp = CASE
+                    WHEN COALESCE(EXCLUDED.level, 0) > users.level THEN COALESCE(EXCLUDED.xp, 0)
+                    WHEN COALESCE(EXCLUDED.level, 0) = users.level THEN GREATEST(COALESCE(EXCLUDED.xp, 0), users.xp)
+                    ELSE users.xp
+                END,
+                last_seen = CURRENT_TIMESTAMP
         `, [id, name, emoji, avatarId, vibeId, level, xp]);
         res.json({ status: 'ok' });
     } catch (err) {

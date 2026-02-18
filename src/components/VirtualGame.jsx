@@ -1061,9 +1061,10 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                         // CRITICAL: We only award XP here if it wasn't already awarded (e.g. if endRound hasn't been called)
                         // In Daily Challenge, we often quit from the results screen, so this is where 5 XP is awarded.
                         if (isDaily && isDailyAvailable) {
-                            addXP(5);
+                            const bonusXP = aiDifficulty === AI_DIFFICULTY.BONUS ? 6 : 3;
+                            addXP(bonusXP);
                             useGameStore.getState().markDailyWin();
-                            console.log("[VG] Daily Challenge Won (on quit)! 5 XP Awarded.");
+                            console.log(`[VG] Daily Challenge Won (on quit)! ${bonusXP} XP Awarded.`);
                         } else {
                             addXP(1);
                             console.log("[VG] Round Won (on quit)! 1 XP Awarded.");
