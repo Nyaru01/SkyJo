@@ -180,13 +180,7 @@ app.post('/api/social/profile', async (req, res) => {
             ON CONFLICT (id) DO UPDATE SET
                 name = EXCLUDED.name, emoji = EXCLUDED.emoji,
                 avatar_id = EXCLUDED.avatar_id, vibe_id = EXCLUDED.vibe_id,
-                level = GREATEST(COALESCE(EXCLUDED.level, 0), users.level),
-                xp = CASE
-                    WHEN COALESCE(EXCLUDED.level, 0) > users.level THEN COALESCE(EXCLUDED.xp, 0)
-                    WHEN COALESCE(EXCLUDED.level, 0) = users.level THEN GREATEST(COALESCE(EXCLUDED.xp, 0), users.xp)
-                    ELSE users.xp
-                END,
-                last_seen = CURRENT_TIMESTAMP
+                level = EXCLUDED.level, xp = EXCLUDED.xp, last_seen = CURRENT_TIMESTAMP
         `, [id, name, emoji, avatarId, vibeId, level, xp]);
         res.json({ status: 'ok' });
     } catch (err) {
@@ -259,20 +253,6 @@ app.post('/api/auth/google-link', async (req, res) => {
 
 // --- Friends API ---
 
-app.get('/api/social/search', async (req, res) => {
-    const { query } = req.query;
-    if (!query || query.length < 2) return res.json([]);
-    try {
-        const result = await pool.query(
-            `SELECT id, name, avatar_id, vibe_id FROM users WHERE name ILIKE $1 OR vibe_id ILIKE $1 LIMIT 10`,
-            [`%${query}%`]
-        );
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: 'Search failed' });
-    }
-});
-
 app.get('/api/social/friends/:userId', async (req, res) => {
     const { userId } = req.params;
     try {
@@ -303,7 +283,6 @@ app.get('/api/social/leaderboard/global', async (req, res) => {
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, { cors: { origin: "*" } });
-app.locals.io = io;
 
 const userStatus = new Map();
 const userMetadata = new Map();

@@ -401,10 +401,18 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         }
     }, [activeGameState?.turnPhase, activeGameState?.currentPlayerIndex, activeGameState?.phase, isMyTurn, swapSelection.sourceIndex, activeGameState, currentPlayer?.name, setInstruction]);
 
-
     // 5. EARLY RETURNS SECTION
     // These returns are safe now because all hooks have been declared.
 
+    if (showSyncIssue) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh]">
+                <SkyjoLoader progress={100} />
+                <p className="mt-4 text-white font-bold animate-pulse">Synchronisation...</p>
+                <p className="text-xs text-white/50 mt-2">ID: {currentSocketId?.substr(0, 4)}...</p>
+            </div>
+        );
+    }
 
     // Global Identity Sync: React to userProfile changes
     useEffect(() => {
@@ -1053,10 +1061,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                         // CRITICAL: We only award XP here if it wasn't already awarded (e.g. if endRound hasn't been called)
                         // In Daily Challenge, we often quit from the results screen, so this is where 5 XP is awarded.
                         if (isDaily && isDailyAvailable) {
-                            const bonusXP = aiDifficulty === AI_DIFFICULTY.BONUS ? 6 : 3;
-                            addXP(bonusXP);
+                            addXP(5);
                             useGameStore.getState().markDailyWin();
-                            console.log(`[VG] Daily Challenge Won (on quit)! ${bonusXP} XP Awarded.`);
+                            console.log("[VG] Daily Challenge Won (on quit)! 5 XP Awarded.");
                         } else {
                             addXP(1);
                             console.log("[VG] Round Won (on quit)! 1 XP Awarded.");
@@ -2067,17 +2074,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     // 7. Gestion des états de redirection et d'erreur (avancé)
     const isRedirecting = onlineRedirection?.active;
-
-    // --- RENDER ---
-    if (showSyncIssue) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[50vh]">
-                <SkyjoLoader progress={100} />
-                <p className="mt-4 text-white font-bold animate-pulse">Synchronisation...</p>
-                <p className="text-xs text-white/50 mt-2">ID: {currentSocketId?.substr(0, 4)}...</p>
-            </div>
-        );
-    }
 
     // Protection immédiate pour l'écran menu pour éviter de descendre dans la logique de jeu
     if (screen === 'menu') {

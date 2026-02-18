@@ -23,8 +23,4 @@ export const googleProvider = new GoogleAuthProvider();
 // Initialisation de Firebase Messaging
 export const messaging = getMessaging(app);
 
-// Initialisation de Firestore
-import { getFirestore } from "firebase/firestore";
-export const db = getFirestore(app);
-
 export default app;
