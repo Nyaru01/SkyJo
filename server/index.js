@@ -259,6 +259,20 @@ app.post('/api/auth/google-link', async (req, res) => {
 
 // --- Friends API ---
 
+app.get('/api/social/search', async (req, res) => {
+    const { query } = req.query;
+    if (!query || query.length < 2) return res.json([]);
+    try {
+        const result = await pool.query(
+            `SELECT id, name, avatar_id, vibe_id FROM users WHERE name ILIKE $1 OR vibe_id ILIKE $1 LIMIT 10`,
+            [`%${query}%`]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Search failed' });
+    }
+});
+
 app.get('/api/social/friends/:userId', async (req, res) => {
     const { userId } = req.params;
     try {
