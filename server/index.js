@@ -289,6 +289,7 @@ app.get('/api/social/leaderboard/global', async (req, res) => {
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, { cors: { origin: "*" } });
+app.locals.io = io;
 
 const userStatus = new Map();
 const userMetadata = new Map();

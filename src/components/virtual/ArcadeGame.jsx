@@ -2,14 +2,14 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield as ShieldIcon, Shield, Zap, TrendingUp, Trophy, Play, Store, RotateCcw, Pause, Heart, Sparkles, Globe, X, ArrowLeft, Volume2, VolumeX, AlertTriangle, Music } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, onSnapshot, doc, setDoc } from 'firebase/firestore';
-import { auth } from '../../lib/firebase';
+import { collection, onSnapshot, doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../../lib/firebase';
 import app from '../../lib/firebase';
 import { cn } from '../../lib/utils';
 import { useGameStore } from '../../store/gameStore';
 
 // --- CONFIGURATION FIREBASE ---
-const db = getFirestore(app);
+// const db = getFirestore(app); // Access via import
 const appId = 'pufferfish-mobile';
 
 // --- CONSTANTES ---
@@ -353,12 +353,26 @@ export default function ArcadeGame({ onBack }) {
 
     // 2. Leaderboard
     useEffect(() => {
-        if (!db || !user) return;
-        const q = collection(db, 'artifacts', appId, 'public', 'data', 'scores');
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const docs = snapshot.docs.map(d => d.data());
-            setLeaderboard(docs.sort((a, b) => b.score - a.score).slice(0, 5));
-        }, (err) => console.error(err));
+        if (!db || !user) {
+            // console.warn("[LEADERBOARD] Firestore not configured or user not logged in.");
+            return;
+        }
+
+        let unsubscribe = () => { };
+
+        try {
+            const q = collection(db, 'artifacts', appId, 'public', 'data', 'scores');
+            unsubscribe = onSnapshot(q, (snapshot) => {
+                const docs = snapshot.docs.map(d => d.data());
+                setLeaderboard(docs.sort((a, b) => b.score - a.score).slice(0, 5));
+            }, (err) => {
+                console.warn("[LEADERBOARD] Firestore Access Error (Offline Mode?):", err.code);
+                // Silent fail/retry logic could go here
+            });
+        } catch (e) {
+            console.warn("Could not connect to Firestore:", e);
+        }
+
         return () => unsubscribe();
     }, [user]);
 

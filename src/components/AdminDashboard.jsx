@@ -285,6 +285,20 @@ export function AdminDashboard({ adminPassword, onClose }) {
                                 <Check className="w-4 h-4" />
                                 <span className="hidden sm:inline">Finir Manche</span>
                             </button>
+                            <div className="w-px h-8 bg-white/10 mx-1 self-center" />
+                            <button
+                                onClick={() => {
+                                    if (window.__SKYJO_SET_ACTIVE_TAB__) {
+                                        window.__SKYJO_SET_ACTIVE_TAB__('arcade');
+                                    }
+                                    onClose();
+                                }}
+                                title="Lancer Sky Them Up (Mobile Test)"
+                                className="flex items-center gap-2 px-4 py-2.5 hover:bg-white/10 text-white/50 hover:text-orange-400 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider"
+                            >
+                                <Sparkles className="w-4 h-4" />
+                                <span className="hidden sm:inline">Sky Them Up</span>
+                            </button>
                         </div>
                     </div>
                 </div>
