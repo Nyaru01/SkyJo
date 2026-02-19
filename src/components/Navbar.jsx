@@ -1,4 +1,5 @@
 import { Home, Archive, BarChart3, Dices, Settings, Users } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { useGameStore } from '../store/gameStore';
 import { useSocialStore } from '../store/socialStore';
@@ -18,16 +19,13 @@ export default function BottomNav({ activeTab, onTabChange }) {
     ];
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-[80] pointer-events-none p-4 pb-6 flex justify-center safe-area-bottom">
+        <div className="fixed bottom-0 left-0 right-0 z-[80] pointer-events-none p-4 pb-8 flex justify-center safe-area-bottom">
             <nav
-                className="w-full max-w-lg bg-slate-900/90 backdrop-blur-2xl rounded-[2rem] border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] pointer-events-auto overflow-hidden relative"
+                className="w-full max-w-lg glass-v3 rounded-[2.5rem] p-1.5 shadow-[0_25px_60px_rgba(0,0,0,0.5)] pointer-events-auto relative overflow-hidden"
                 role="tablist"
                 aria-label="Navigation principale"
             >
-                {/* Glossy overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
-
-                <div className="flex items-center justify-around h-16 px-1">
+                <div className="flex items-center justify-around relative px-2">
                     {tabs.map((tab) => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
@@ -47,40 +45,44 @@ export default function BottomNav({ activeTab, onTabChange }) {
                                     }
                                 }}
                                 className={cn(
-                                    "relative flex-1 flex flex-col items-center justify-center h-full transition-all duration-300",
-                                    isActive ? "-translate-y-1" : "hover:bg-white/5",
-                                    isDisabled && "opacity-30 cursor-not-allowed grayscale"
+                                    "relative flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300",
+                                    isDisabled && "opacity-20 cursor-not-allowed grayscale"
                                 )}
                             >
-                                {/* Active Glow Background */}
+                                {/* Active Glass Glow Indicator */}
                                 {isActive && (
-                                    <div className="absolute inset-0 bg-skyjo-blue/20 blur-xl rounded-full scale-75" />
+                                    <motion.div
+                                        layoutId="navbar-indicator-glow"
+                                        className="glass-glow-indicator"
+                                        initial={false}
+                                        transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
+                                    />
                                 )}
 
                                 <div className={cn(
-                                    "relative z-10 p-2 rounded-2xl transition-all duration-300",
-                                    isActive ? "bg-gradient-to-br from-skyjo-blue to-sky-600 shadow-lg shadow-skyjo-blue/30 text-white scan-line-effect" : "text-slate-400"
+                                    "relative z-10 flex flex-col items-center justify-center transition-all duration-300",
+                                    isActive ? "scale-110 -translate-y-0.5" : "scale-100 opacity-60"
                                 )}>
                                     <Icon
                                         className={cn(
-                                            "h-5 w-5",
-                                            isActive && "animate-pulse-slow"
+                                            "h-5 w-5 transition-all duration-300",
+                                            isActive ? "text-blue-400" : "text-slate-400"
                                         )}
                                         strokeWidth={isActive ? 2.5 : 2}
                                     />
 
                                     {/* Notification Dot */}
                                     {tab.id === 'social' && socialNotification && !isActive && (
-                                        <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-slate-900 animate-bounce" />
+                                        <span className="absolute top-0 -right-1 w-2 h-2 bg-red-500 rounded-full border border-slate-900 animate-bounce shadow-sm" />
                                     )}
-                                </div>
 
-                                <span className={cn(
-                                    "text-[9px] font-bold mt-1 transition-all duration-300",
-                                    isActive ? "text-sky-400 scale-100" : "text-slate-500 scale-0 h-0 opacity-0"
-                                )}>
-                                    {tab.label}
-                                </span>
+                                    <span className={cn(
+                                        "text-[8px] font-black tracking-tighter transition-all duration-300 uppercase mt-1",
+                                        isActive ? "text-blue-400 nav-label-active" : "text-slate-500"
+                                    )}>
+                                        {tab.label}
+                                    </span>
+                                </div>
                             </button>
                         );
                     })}

@@ -599,4 +599,6 @@ export const useOnlineGameStore = create((set, get) => ({
             }
         }, 1000);
     },
+
+    clearOnlineNotification: () => set({ lastNotification: null }),
 }));

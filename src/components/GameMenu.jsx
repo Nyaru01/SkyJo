@@ -117,8 +117,8 @@ export default function GameMenu({
                                 Entraînez-vous en solo
                             </p>
                         </div>
-                        <div className="w-12 h-12 rounded-2xl bg-purple-500/30 border border-purple-400/50 flex items-center justify-center shrink-0">
-                            <Bot className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
+                        <div className="w-12 h-12 rounded-2xl bg-purple-500/30 border border-purple-400/50 flex items-center justify-center shrink-0 icon-3d-container">
+                            <Bot className="h-6 w-6 text-white icon-3d animate-float-3d" />
                         </div>
                     </div>
                 </PremiumTiltButton>
@@ -158,7 +158,7 @@ export default function GameMenu({
                         </div>
 
                         <div className={cn(
-                            "w-12 h-12 rounded-2xl border flex items-center justify-center transition-all duration-500 relative overflow-hidden shrink-0",
+                            "w-12 h-12 rounded-2xl border flex items-center justify-center transition-all duration-500 relative overflow-hidden shrink-0 icon-3d-container",
                             isDailyAvailable
                                 ? "bg-amber-500/20 border-amber-400/30 shadow-[0_0_15px_rgba(251,191,36,0.2)]"
                                 : "bg-slate-800/50 border-white/5"
@@ -168,7 +168,9 @@ export default function GameMenu({
                             )}
                             <Zap className={cn(
                                 "h-6 w-6 transition-all duration-500",
-                                isDailyAvailable ? "text-white scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" : "text-slate-600"
+                                isDailyAvailable
+                                    ? "text-white scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] icon-3d animate-float-3d"
+                                    : "text-slate-600"
                             )} />
                         </div>
                     </div>
@@ -187,8 +189,8 @@ export default function GameMenu({
                             <h3 className="text-lg font-bold text-white leading-tight">JOUER EN LIGNE</h3>
                             <p className="text-[10px] text-blue-100/90 font-bold uppercase mt-0.5 tracking-wide">Affrontez vos amis à distance</p>
                         </div>
-                        <div className="w-12 h-12 rounded-2xl bg-sky-500/30 border border-sky-400/50 flex items-center justify-center shrink-0">
-                            <Wifi className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
+                        <div className="w-12 h-12 rounded-2xl bg-sky-500/30 border border-sky-400/50 flex items-center justify-center shrink-0 icon-3d-container">
+                            <Wifi className="h-6 w-6 text-white icon-3d animate-float-3d" />
                         </div>
                     </div>
                 </PremiumTiltButton>

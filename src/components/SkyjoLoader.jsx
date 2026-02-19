@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Layers, Sparkles, Command, Zap, Activity, ShieldCheck } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 // --- Configuration Premium ---
 const MESSAGES = [
@@ -134,7 +135,7 @@ const CardSilhouette = memo(() => (
     </motion.div>
 ));
 
-export default function SkyjoLoaderPremium({ progress = 0 }) {
+export default function SkyjoLoaderPremium({ progress = 0, isFullPage = true }) {
     const [internalProgress, setInternalProgress] = useState(progress);
 
     useEffect(() => {
@@ -160,7 +161,10 @@ export default function SkyjoLoaderPremium({ progress = 0 }) {
     const circumference = 2 * Math.PI * radius;
 
     return (
-        <div className="fixed inset-0 w-full h-[100dvh] flex flex-col items-center justify-center z-[100] font-sans text-slate-200 overflow-hidden bg-[#030303] touch-none">
+        <div className={cn(
+            "w-full flex flex-col items-center justify-center font-sans text-slate-200 overflow-hidden bg-[#030303] touch-none",
+            isFullPage ? "fixed inset-0 h-[100dvh] z-[90]" : "absolute inset-0 h-full z-[10]"
+        )}>
 
             <PremiumBackground progress={internalProgress} />
             <FloatingParticles />

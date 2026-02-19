@@ -224,8 +224,8 @@ export default function Dashboard() {
 
     const handleBackToMenu = useCallback((wasDaily) => {
         setVirtualScreen('menu');
-        if (!isInOnlineSession && !wasDaily) setActiveTab('home');
-    }, [isInOnlineSession, setActiveTab]);
+        setActiveTab('home');
+    }, [setActiveTab]);
 
     // --- DEEP-LINKING via Service Worker postMessage ---
     useEffect(() => {

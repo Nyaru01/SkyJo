@@ -5,7 +5,7 @@ import { useOnlineGameStore } from "../../store/onlineGameStore";
 import { useVirtualGameStore } from "../../store/virtualGameStore";
 import { Button } from "../ui/Button";
 
-export default function HostLeftOverlay() {
+export default function HostLeftOverlay({ onBackToMenu }) {
     const error = useOnlineGameStore(s => s.error);
     const leaveRoom = useOnlineGameStore(s => s.leaveRoom);
     const resetLocalGame = useVirtualGameStore(s => s.resetGame);
@@ -27,6 +27,7 @@ export default function HostLeftOverlay() {
     const handleBackToMenu = () => {
         leaveRoom();
         resetLocalGame();
+        if (onBackToMenu) onBackToMenu();
     };
 
     return (

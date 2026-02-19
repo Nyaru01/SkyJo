@@ -190,7 +190,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                                 <div className="relative flex items-center gap-4 -mt-2">
                                     <div className="h-[1px] w-12 bg-gradient-to-l from-blue-400/40 to-transparent shadow-[0_0_8px_rgba(96,165,250,0.5)]" />
                                     <h2 className="text-[10px] md:text-sm font-medium text-blue-100/40 uppercase transition-all duration-500 whitespace-nowrap">
-                                        <span className="tracking-[1em]">Edition</span>
+                                        <span className="tracking-[1em] text-white">Edition</span>
                                         <span className="text-white font-black tracking-[0.5em] drop-shadow-[0_0_10px_rgba(255,255,255,0.3)] -mr-[0.5em]">Réelle</span>
                                     </h2>
                                     <div className="h-[1px] w-12 bg-gradient-to-r from-blue-400/40 to-transparent shadow-[0_0_8px_rgba(96,165,250,0.5)]" />

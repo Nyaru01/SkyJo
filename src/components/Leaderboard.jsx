@@ -3,61 +3,128 @@ import { Trophy, Medal, Crown, Star, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from './ui/Card';
 import { AVATARS } from '../lib/avatars';
+import { cn } from '../lib/utils'; // Assuming cn utility is available here
 
 const PodiumStep = ({ user, rank, delay }) => {
     const isFirst = rank === 1;
+    const isSecond = rank === 2;
+    const isThird = rank === 3;
     const avatar = AVATARS.find(a => a.id === user?.avatar_id)?.path || '/avatars/cat.png';
+
+    // Color Theme Mapping
+    const theme = isFirst ? {
+        border: 'border-amber-400',
+        glow: 'shadow-[0_25px_60px_rgba(251,191,36,0.4)]',
+        chrome: 'gold-chrome-border',
+        aura: 'rgba(251,191,36,0.2)',
+        particle: '#fbbf24'
+    } : isSecond ? {
+        border: 'border-slate-300',
+        glow: 'shadow-[0_15px_40px_rgba(203,213,225,0.3)]',
+        chrome: 'silver-chrome-border',
+        aura: 'rgba(203,213,225,0.1)',
+        particle: '#cbd5e1'
+    } : {
+        border: 'border-amber-700',
+        glow: 'shadow-[0_15px_40px_rgba(180,83,9,0.2)]',
+        chrome: 'bronze-chrome-border',
+        aura: 'rgba(180,83,9,0.1)',
+        particle: '#d97706'
+    };
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay, duration: 0.5, type: 'spring' }}
-            className={`flex flex-col items-center relative ${isFirst ? 'z-10 -mt-20' : 'mt-0'}`}
+            className={`flex flex-col items-center relative ${isFirst ? 'z-10 -mt-20' : 'mt-8'}`}
         >
             <motion.div
-                className="relative mb-4 group"
-                animate={isFirst ? {
-                    y: [0, -10, 0]
-                } : {}}
-                transition={isFirst ? {
-                    duration: 4,
+                className="relative mb-4 group perspective-1000"
+                animate={{
+                    y: isFirst ? [0, -10, 0] : [0, -5, 0],
+                    rotateX: isFirst ? [2, -2, 2] : [1, -1, 1],
+                    rotateY: isFirst ? [-3, 3, -3] : [-2, 2, -2]
+                }}
+                transition={{
+                    duration: isFirst ? 5 : 6,
                     repeat: Infinity,
                     ease: "easeInOut"
-                } : {}}
+                }}
             >
-                {/* 3D Depth Stack for First Place */}
-                {isFirst && (
-                    <>
-                        <div className="absolute inset-[-10px] rounded-full bg-amber-600/20 blur-xl animate-pulse" />
-                        {/* 3D Rings */}
-                        <div className="absolute inset-[-6px] rounded-full bg-gradient-to-b from-amber-400 to-amber-900 border border-white/20 shadow-lg" />
-                        <div className="absolute inset-[-3px] rounded-full bg-gradient-to-tr from-amber-500 via-amber-200 to-amber-600 border border-white/30" />
-                    </>
-                )}
+                {/* Divine Aura (Particles & Glow) */}
+                <div className="absolute inset-0 z-[-1]">
+                    <div className="divine-aura" style={{
+                        background: `radial-gradient(circle, ${theme.aura} 0%, transparent 70%)`,
+                        opacity: isFirst ? 1 : 0.5
+                    }} />
 
-                <div className={`relative rounded-full border-4 overflow-hidden bg-slate-900 shadow-2xl transition-all duration-700 ${isFirst ? 'w-32 h-32 border-amber-400 shadow-[0_20px_50px_rgba(251,191,36,0.3)]' :
-                    rank === 2 ? 'w-20 h-20 border-slate-300 shadow-slate-300/10' :
-                        'w-20 h-20 border-amber-600 shadow-amber-600/10'
-                    }`}>
+                    {/* Particles - More for First, less for others */}
+                    {isFirst && [...Array(15)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="particle-gold"
+                            style={{
+                                left: `${Math.random() * 100}%`,
+                                top: `${Math.random() * 100}%`,
+                                backgroundColor: theme.particle,
+                                boxShadow: `0 0 5px ${theme.particle}`,
+                                animation: `float-particle ${2 + Math.random() * 3}s linear infinite`,
+                                animationDelay: `${Math.random() * 5}s`
+                            }}
+                        />
+                    ))}
+                </div>
+
+                {/* Outer Rings & Chrome */}
+                <div className="absolute inset-[-10px] rounded-full opacity-40 blur-sm flex items-center justify-center">
+                    <div className={cn("absolute inset-0 rounded-full", theme.chrome)} />
+                    <div className="absolute inset-[2px] rounded-full bg-slate-950" />
+                </div>
+                <div className={cn("absolute inset-[-6px] rounded-full p-[2px] shadow-lg", theme.chrome)}>
+                    <div className="w-full h-full rounded-full bg-slate-900 overflow-hidden relative">
+                        <div className="shine-effect opacity-20" />
+                    </div>
+                </div>
+
+                <div className={cn(
+                    "relative rounded-full border-4 overflow-hidden bg-slate-900 transition-all duration-700 preserve-3d",
+                    theme.border,
+                    theme.glow,
+                    isFirst ? 'w-32 h-32' : 'w-20 h-20'
+                )}>
                     {user ? (
                         <>
                             <img src={avatar} alt={user.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
-                            {isFirst && <div className="absolute inset-0 bg-gradient-to-tr from-white/20 via-white/5 to-transparent pointer-events-none" />}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-white/20 via-transparent to-transparent pointer-events-none" />
+                            <div className="shine-effect opacity-10" />
                         </>
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-600">?</div>
                     )}
                 </div>
 
-                {/* 3D Crown Badge */}
-                <div className={`absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center shadow-2xl border-2 border-slate-900 z-20 ${isFirst ? 'bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 scale-110 ring-4 ring-amber-500/20' :
-                    rank === 2 ? 'bg-gradient-to-br from-slate-200 to-slate-400' :
-                        'bg-gradient-to-br from-amber-500 to-amber-800'
-                    }`}>
+                {/* 3D Crown/Rank Badge */}
+                <motion.div
+                    className={cn(
+                        "absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center shadow-2xl border-2 border-slate-900 z-20",
+                        isFirst ? "bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 scale-110 ring-4 ring-amber-500/20" :
+                            isSecond ? "bg-gradient-to-br from-slate-200 via-slate-100 to-slate-400" :
+                                "bg-gradient-to-br from-amber-600 via-amber-700 to-amber-900"
+                    )}
+                    animate={isFirst ? {
+                        rotateZ: [-5, 5, -5],
+                        scale: [1.1, 1.2, 1.1]
+                    } : {}}
+                    transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                    }}
+                >
                     {isFirst ? <Crown className="w-7 h-7 text-amber-950 drop-shadow-md" /> : <span className="text-sm font-black text-slate-950">{rank}</span>}
-                </div>
+                </motion.div>
             </motion.div>
 
             <div className="text-center relative z-10">
@@ -90,19 +157,10 @@ export default function Leaderboard({ data, currentUserId, type, setType }) {
     const others = data.slice(3);
 
     return (
-        <div className="space-y-6">
-            {/* Header with Title */}
-            <div className="flex items-center justify-center gap-3 px-4 py-2">
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
-                <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-skyjo-blue drop-shadow-[0_0_10px_rgba(56,189,248,0.3)]">
-                    Classement Mondial
-                </h3>
-                <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10" />
-            </div>
-
-            {/* Podium - Increased padding-top and changed to overflow-visible to prevent clipping of animated 3D elements */}
+        <div className="space-y-6 pb-6">
+            {/* Podium - Reduced padding-top to move it up as requested */}
             {data.length > 0 && (
-                <div className="flex items-end justify-center gap-4 pt-32 pb-10 px-2 bg-gradient-to-b from-skyjo-blue/10 to-transparent rounded-3xl border border-white/5 relative overflow-visible shadow-2xl">
+                <div className="flex items-end justify-center gap-4 pt-12 pb-10 px-2 bg-gradient-to-b from-skyjo-blue/10 to-transparent rounded-3xl border border-white/5 relative overflow-visible shadow-2xl">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.1),transparent)] pointer-events-none" />
                     {top3Arr[0] && <PodiumStep user={top3Arr[0]} rank={2} delay={0.2} />}
                     <PodiumStep user={top3Arr[1]} rank={1} delay={0.1} />
@@ -147,11 +205,11 @@ export default function Leaderboard({ data, currentUserId, type, setType }) {
                                             </div>
                                         </div>
                                         <div className="text-right">
+                                            <p className="text-xs font-black text-white uppercase tracking-tighter">Niveau {user.level}</p>
                                             <div className="flex items-center justify-end gap-1">
                                                 <span className="text-[9px] font-black text-skyjo-blue mr-0.5">XP</span>
-                                                <span className="text-xs font-black text-white">{user.xp}</span>
+                                                <span className="text-[10px] font-bold text-slate-500">{user.xp}</span>
                                             </div>
-                                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Niveau {user.level}</p>
                                         </div>
                                     </CardContent>
                                 </Card>

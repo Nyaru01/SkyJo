@@ -98,6 +98,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const gameWinner = useVirtualGameStore((s) => s.gameWinner);
     const onlineRedirection = useOnlineGameStore(s => s.redirectionState);
     const startLocalGame = useVirtualGameStore((s) => s.startLocalGame);
+
     const revealInitial = useVirtualGameStore((s) => s.revealInitial);
     const drawFromDrawPile = useVirtualGameStore((s) => s.drawFromDrawPile);
     const takeFromDiscard = useVirtualGameStore((s) => s.takeFromDiscard);
@@ -157,6 +158,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const publicRooms = useOnlineGameStore(s => s.publicRooms);
     const socketId = useOnlineGameStore(s => s.socketId);
     const onlineLastNotificationRaw = useOnlineGameStore(s => s.lastNotification);
+    const clearOnlineNotification = useOnlineGameStore(s => s.clearOnlineNotification);
     const lastAction = useOnlineGameStore(s => s.lastAction);
     const onlinePendingAnimation = useOnlineGameStore(s => s.pendingAnimation);
     const clearOnlinePendingAnimation = useOnlineGameStore(s => s.clearPendingAnimation);
@@ -167,6 +169,15 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const onlineIsPaused = useOnlineGameStore(s => s.isPaused);
     const toggleOnlinePause = useOnlineGameStore(s => s.togglePause);
 
+    // 🔥 AUTO-REDIRECTION TO HOME AFTER DISCONNECT
+    const prevRedirectionActive = useRef(false);
+    useEffect(() => {
+        if (prevRedirectionActive.current && !onlineRedirection.active && !onlineGameStarted) {
+            console.log("[VG] Automatic redirection finished, returning to home...");
+            if (onBackToMenu) onBackToMenu();
+        }
+        prevRedirectionActive.current = onlineRedirection.active;
+    }, [onlineRedirection.active, onlineGameStarted, onBackToMenu]);
 
     // Main game store for archiving
     const archiveOnlineGame = useGameStore(s => s.archiveOnlineGame);
@@ -543,8 +554,12 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                     });
                 }
             }
+            // NEW: Clear from store to avoid re-triggering (e.g. when re-entering Virtual Mode)
+            setTimeout(() => {
+                clearOnlineNotification();
+            }, 100);
         }
-    }, [onlineLastNotificationRaw, isTabHidden, sendNotification]);
+    }, [onlineLastNotificationRaw, isTabHidden, sendNotification, clearOnlineNotification]);
 
     // Auto-archive online game on Game Over
     // We use a ref to prevent double-archiving in the same mounting cycle if store updates slowly
@@ -2118,26 +2133,32 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     // 7. Gestion des états de redirection et d'erreur (avancé)
     const isRedirecting = onlineRedirection?.active;
 
+    // Helper to wrap loaders with critical overlays
+    const withOverlays = (content) => (
+        <div className="relative min-h-[50vh] flex items-center justify-center">
+            {content}
+            <HostLeftOverlay onBackToMenu={onBackToMenu} />
+            {/* We don't render Portal here because it might be redundant, but HostLeftOverlay is essential */}
+        </div>
+    );
+
     // Protection immédiate pour l'écran menu pour éviter de descendre dans la logique de jeu
     if (screen === 'menu') {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
-                <SkyjoLoader progress={100} />
-                <p className="text-white font-bold">Menu...</p>
+        return withOverlays(
+            <div className="flex flex-col items-center justify-center space-y-4">
+                <SkyjoLoader progress={100} isFullPage={false} />
+                <p className="text-white font-bold relative z-[150]">Menu...</p>
             </div>
         );
     }
 
     // Si on est sur l'écran de jeu mais qu'il n'y a plus d'état (ex: déconnexion)
     if (!activeGameState && screen === 'game') {
-        if (onlineError) {
-            // No need to return HostLeftOverlay here anymore as it's global
-        }
         if (isRedirecting) {
-            return (
-                <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
-                    <SkyjoLoader progress={100} />
-                    <p className="text-white font-bold">Redirection...</p>
+            return withOverlays(
+                <div className="flex flex-col items-center justify-center space-y-4">
+                    <SkyjoLoader progress={100} isFullPage={false} />
+                    <p className="text-white font-bold relative z-[150]">Redirection...</p>
                 </div>
             );
         }
@@ -2145,10 +2166,10 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     // Protection ultime : si pas d'état et pas dans le lobby/setup, on affiche un loader ou on sort
     if (!activeGameState && screen !== 'lobby' && screen !== 'setup' && screen !== 'ai-setup') {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[50vh]">
-                <SkyjoLoader progress={100} />
-                <p className="mt-4 text-white font-bold animate-pulse">Chargement...</p>
+        return withOverlays(
+            <div className="flex flex-col items-center justify-center">
+                <SkyjoLoader progress={100} isFullPage={false} />
+                <p className="mt-4 text-white font-bold animate-pulse relative z-[150]">Chargement...</p>
             </div>
         );
     }
@@ -3195,7 +3216,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 confirmText="Quitter"
                 variant="danger"
             />
-            <HostLeftOverlay />
+            <HostLeftOverlay onBackToMenu={onBackToMenu} />
 
             {/* Pause Overlay (Unifié) */}
             <AnimatePresence>
@@ -3286,7 +3307,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             />
 
             {/* Premium Countdown Overlay */}
-            <HostLeftOverlay />
+            <HostLeftOverlay onBackToMenu={onBackToMenu} />
         </div>
     );
 }
