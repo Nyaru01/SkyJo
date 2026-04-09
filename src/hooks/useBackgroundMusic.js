@@ -15,7 +15,10 @@ const PLAYLIST = [
     '/Music/postal-card-lofi-186313.mp3',
     '/Music/nostalgic.mp3',
     '/Music/Japanese Spring.mp3',
-    '/Music/Down the Kuma.mp3'
+    '/Music/Down the Kuma.mp3',
+    '/Music/Dosi & Aisake.mp3',
+    '/Music/springs.mp3',
+    '/Music/shuffling-cards-01-86984.mp3'
 ];
 
 /**

@@ -2861,14 +2861,15 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             {/* Opponent at TOP for thumb zone optimization */}
             {activeGameState.players[opponentIndex] && (
                 <motion.div
-                    initial={{ y: -80, opacity: 0, scale: 0.95, rotateX: -10 }}
-                    animate={{ y: 0, opacity: 1, scale: 1, rotateX: 0 }}
+                    initial={{ y: -60, opacity: 0, scale: 0.98 }}
+                    animate={{ y: 0, opacity: 1, scale: 1 }}
                     transition={{
                         type: "spring",
-                        stiffness: 100,
-                        damping: 18,
-                        delay: 0.2
+                        stiffness: 90,
+                        damping: 20,
+                        delay: 0.1
                     }}
+                    style={{ willChange: "transform, opacity" }}
                     className="relative rounded-2xl"
                 >
                     <PlayerHand
@@ -3000,14 +3001,15 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             {/* Local Player at BOTTOM for thumb zone optimization */}
             {activeGameState.players[myPlayerIndex] && (
                 <motion.div
-                    initial={{ y: 80, opacity: 0, scale: 0.95, rotateX: 10 }}
-                    animate={{ y: 0, opacity: 1, scale: 1, rotateX: 0 }}
+                    initial={{ y: 60, opacity: 0, scale: 0.98 }}
+                    animate={{ y: 0, opacity: 1, scale: 1 }}
                     transition={{
                         type: "spring",
-                        stiffness: 100,
-                        damping: 18,
-                        delay: 0.2
+                        stiffness: 90,
+                        damping: 20,
+                        delay: 0.1
                     }}
+                    style={{ willChange: "transform, opacity" }}
                     className="relative rounded-2xl"
                 >
                     <PlayerHand

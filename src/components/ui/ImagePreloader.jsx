@@ -37,13 +37,23 @@ const CRITICAL_AUDIO = [
     '/Sounds/Start.mp3',
     '/Sounds/victory.mp3',
     '/Sounds/whoosh-radio-ready-219487.mp3',
-    '/Music/track-344542.mp3',
+    '/Music/stranger-things-124008.mp3',
+    '/Music/bathroom-chill-background-music-14977.mp3',
+    '/Music/chill-lofi-347217.mp3',
+    '/Music/reveil-239031.mp3',
     '/Music/scizzie - aquatic ambience.mp3',
+    '/Music/lofi-piano-soulful-slow-music-260273.mp3',
     '/Music/GW1.mp3',
     '/Music/GW2.mp3',
-    '/Music/reveil-239031.mp3',
+    '/Music/fassounds-cutie-japan-lofi-402355.mp3',
+    '/Music/lofi-chil.mp3',
+    '/Music/postal-card-lofi-186313.mp3',
+    '/Music/nostalgic.mp3',
     '/Music/Japanese Spring.mp3',
-    '/Music/Down the Kuma.mp3'
+    '/Music/Down the Kuma.mp3',
+    '/Music/Dosi & Aisake.mp3',
+    '/Music/springs.mp3',
+    '/Music/shuffling-cards-01-86984.mp3'
 ];
 
 export default function ImagePreloader({ children }) {

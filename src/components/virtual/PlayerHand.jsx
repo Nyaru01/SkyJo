@@ -33,15 +33,12 @@ const PlayerHand = memo(function PlayerHand({
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
-            transition: {
-                staggerChildren: 0.05,
-            },
         },
     };
 
     const cardVariants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0 },
+        hidden: { opacity: 0 },
+        visible: { opacity: 1 },
     };
 
     // Safety check for undefined player (e.g. during state transitions or sync issues)
