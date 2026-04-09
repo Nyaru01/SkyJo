@@ -135,9 +135,9 @@ const PodiumStep = ({ user, rank, delay }) => {
                     <span className={`text-[10px] font-bold uppercase tracking-wider ${isFirst ? 'text-amber-300' : 'text-slate-500'}`}>
                         Niveau {user?.level || 1}
                     </span>
-                    <div className="flex items-center justify-center gap-1 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-inner">
-                        <span className="text-[9px] font-black text-skyjo-blue tracking-tighter mr-0.5">XP</span>
-                        <span className={`font-black ${isFirst ? 'text-sm text-white' : 'text-[10px] text-slate-300'}`}>
+                    <div className="flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md shadow-inner transition-transform hover:scale-105">
+                        <span className="text-[10px] font-black text-white tracking-tighter mr-0.5 opacity-80">XP</span>
+                        <span className={`font-black ${isFirst ? 'text-sm text-white' : 'text-[11px] text-slate-200'}`}>
                             {user?.xp || 0}
                         </span>
                     </div>
@@ -206,9 +206,9 @@ export default function Leaderboard({ data, currentUserId, type, setType }) {
                                         </div>
                                         <div className="text-right">
                                             <p className="text-xs font-black text-white uppercase tracking-tighter">Niveau {user.level}</p>
-                                            <div className="flex items-center justify-end gap-1">
-                                                <span className="text-[9px] font-black text-skyjo-blue mr-0.5">XP</span>
-                                                <span className="text-[10px] font-bold text-slate-500">{user.xp}</span>
+                                            <div className="flex items-center justify-end gap-1 px-2 py-0.5 rounded-lg bg-white/5 border border-white/5">
+                                                <span className="text-[9px] font-black text-white/60 mr-0.5">XP</span>
+                                                <span className="text-[11px] font-bold text-slate-300">{user.xp}</span>
                                             </div>
                                         </div>
                                     </CardContent>

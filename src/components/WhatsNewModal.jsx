@@ -9,7 +9,7 @@ export const CURRENT_NEWS_VERSION = 9;
 const FEATURES = [
     {
         title: "Floraisons de Zéros",
-        description: "Le nouveau défi hebdomadaire est disponible ! Cumulez les cartes '0' pour débloquer des bonus exclusifs et dominer le classement.",
+        description: "Le nouveau défi hebdomadaire est disponible ! Cumulez les 3 cartes minimum '0' pour gagner la partie.",
         icon: Sprout,
         color: "text-emerald-400",
         bg: "bg-emerald-400/10"

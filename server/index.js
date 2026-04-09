@@ -70,8 +70,8 @@ const initDb = async () => {
     try {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS friends (
-                user_id TEXT,
-                friend_id TEXT,
+                user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+                friend_id TEXT REFERENCES users(id) ON DELETE CASCADE,
                 status TEXT DEFAULT 'PENDING',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (user_id, friend_id)
@@ -84,7 +84,7 @@ const initDb = async () => {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS push_subscriptions (
                 id SERIAL PRIMARY KEY,
-                user_id VARCHAR(255) UNIQUE NOT NULL,
+                user_id VARCHAR(255) UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
                 username VARCHAR(100),
                 subscription JSONB NOT NULL,
                 created_at TIMESTAMP DEFAULT NOW(),
@@ -98,7 +98,7 @@ const initDb = async () => {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS game_history (
                 id TEXT PRIMARY KEY,
-                user_id TEXT,
+                user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
                 game_data JSONB NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
@@ -110,7 +110,7 @@ const initDb = async () => {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS feedbacks (
                 id SERIAL PRIMARY KEY,
-                user_id TEXT,
+                user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
                 username TEXT NOT NULL,
                 content TEXT NOT NULL,
                 type VARCHAR(50) DEFAULT 'general',
