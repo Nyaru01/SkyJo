@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Zap, Flame, Cloud, Sprout } from 'lucide-react';
 import { Button } from './ui/Button';
 
-export const CURRENT_NEWS_VERSION = 9;
+export const CURRENT_NEWS_VERSION = 10;
 
 const FEATURES = [
     {
@@ -55,6 +55,20 @@ const FEATURES = [
         icon: Zap,
         color: "text-emerald-400",
         bg: "bg-emerald-400/10"
+    },
+    {
+        title: "Comportement IA",
+        description: "L'intelligence artificielle a été affinée pour une stratégie plus humaine et des défis plus relevés.",
+        icon: Sparkles,
+        color: "text-indigo-400",
+        bg: "bg-indigo-400/10"
+    },
+    {
+        title: "Bugs Mineurs",
+        description: "Plusieurs correctifs internes ont été appliqués pour garantir une fluidité parfaite sur tous les supports.",
+        icon: Zap,
+        color: "text-slate-400",
+        bg: "bg-slate-400/10"
     }
 ];
 
