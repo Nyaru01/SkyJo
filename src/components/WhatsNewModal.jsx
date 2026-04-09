@@ -8,6 +8,20 @@ export const CURRENT_NEWS_VERSION = 10;
 
 const FEATURES = [
     {
+        title: "Comportement IA",
+        description: "L'intelligence artificielle a été affinée pour une stratégie plus humaine et des défis plus relevés.",
+        icon: Sparkles,
+        color: "text-indigo-400",
+        bg: "bg-indigo-400/10"
+    },
+    {
+        title: "Bugs Mineurs",
+        description: "Plusieurs correctifs internes ont été appliqués pour garantir une fluidité parfaite sur tous les supports.",
+        icon: Zap,
+        color: "text-slate-400",
+        bg: "bg-slate-400/10"
+    },
+    {
         title: "Floraisons de Zéros",
         description: "Le nouveau défi hebdomadaire est disponible ! Cumulez les 3 cartes minimum '0' pour gagner la partie.",
         icon: Sprout,
@@ -55,20 +69,6 @@ const FEATURES = [
         icon: Zap,
         color: "text-emerald-400",
         bg: "bg-emerald-400/10"
-    },
-    {
-        title: "Comportement IA",
-        description: "L'intelligence artificielle a été affinée pour une stratégie plus humaine et des défis plus relevés.",
-        icon: Sparkles,
-        color: "text-indigo-400",
-        bg: "bg-indigo-400/10"
-    },
-    {
-        title: "Bugs Mineurs",
-        description: "Plusieurs correctifs internes ont été appliqués pour garantir une fluidité parfaite sur tous les supports.",
-        icon: Zap,
-        color: "text-slate-400",
-        bg: "bg-slate-400/10"
     }
 ];
 
