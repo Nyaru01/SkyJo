@@ -41,7 +41,7 @@ export const PremiumTiltButton = ({
 
             {/* Main Button Body */}
             <div className={cn(
-                "relative rounded-2xl overflow-hidden",
+                "relative rounded-[1.625rem] overflow-hidden",
                 "bg-gradient-to-br",
                 gradientFrom, gradientTo,
                 "shadow-[0_2px_0_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.1)]", // Thinner physical depth
