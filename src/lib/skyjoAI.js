@@ -705,19 +705,20 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
             continue;
         }
 
-        // PROTECTION: Protect low cards (0, 1) from being replaced for "potential" logic
-        // Unless it's an immediate column completion
-        if (hand[idx].isRevealed && hand[idx].value <= 1 && Number(cardValue) > hand[idx].value) {
+        // PROTECTION: Protect good cards (<= 4) from being replaced for "potential" logic
+        // We only allow replacement if it's an immediate column completion (matches === 2)
+        if (hand[idx].isRevealed && hand[idx].value <= 4 && Number(cardValue) > hand[idx].value) {
             const col = Math.floor(idx / 3);
             const colStart = col * 3;
-            // Check if the other 2 cards match the new card (triggering elimination)
-            // Note: We handle 'C' (Joker) as wildcard
-            const othersMatch = [colStart, colStart + 1, colStart + 2]
+            // Count how many OTHER cards in this column match the new cardValue (or are Jokers)
+            const matches = [colStart, colStart + 1, colStart + 2]
                 .filter(i => i !== idx)
-                .every(i => hand[i] && hand[i].isRevealed && (hand[i].value === cardValue || hand[i].value === 'C' || cardValue === 'C'));
+                .filter(i => hand[i] && hand[i].isRevealed && (hand[i].value === cardValue || hand[i].value === 'C' || cardValue === 'C'))
+                .length;
 
-            if (!othersMatch) {
-                // aiLog(difficulty, `Protection: Refusing to replace ${hand[idx].value} with ${cardValue} (potential only)`);
+            if (matches < 2) {
+                // Not an immediate completion, so we protect the low card
+                // aiLog(difficulty, `Protection: Refusing to replace good card ${hand[idx].value} with ${cardValue} (potential only)`);
                 continue;
             }
         }
@@ -1086,12 +1087,26 @@ export const decideDrawSource = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
                 return 'DISCARD_PILE';
             }
         }
-        // Also take if it can complete a column
+        // Take if it can complete a column IMMEDIATELY
         const hand = currentPlayer.hand;
         for (let i = 0; i < hand.length; i++) {
             if (hand[i] && !(hand[i].lockCount > 0) && checkColumnPotential(hand, i, discardValue, false, difficulty)) {
-                if (hand[i].isRevealed && hand[i].value === discardValue) continue;
-                return 'DISCARD_PILE';
+                // Only take if it's an immediate completion or if the card replaced is much worse
+                const col = Math.floor(i / 3);
+                const colStart = col * 3;
+                const matches = [colStart, colStart + 1, colStart + 2]
+                    .filter(idx => idx !== i)
+                    .filter(idx => hand[idx] && hand[idx].isRevealed && (hand[idx].value === discardValue || hand[idx].value === 'C' || discardValue === 'C'))
+                    .length;
+
+                if (matches === 2) return 'DISCARD_PILE';
+                
+                // If not immediate completion, only take if it's actually a "good" card (<= 4) 
+                // AND we have a significantly worse card to replace (gap check)
+                if (discardValue <= 4) {
+                    const highest = findHighestRevealedCard(hand);
+                    if (highest.value > discardValue + 3) return 'DISCARD_PILE';
+                }
             }
         }
         return 'DRAW_PILE';

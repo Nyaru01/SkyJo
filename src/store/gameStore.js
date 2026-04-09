@@ -42,6 +42,7 @@ export const useGameStore = create(
             vibrationEnabled: true,
             hasSeenTutorial: false,
             hasSeenNewOnlineModeAnnouncement: false,
+            hasSeenWeeklyChallengeAnnouncement: false,
             migratedToV2: false, // Flag for LocalStorage -> DB migration
             isRehydrated: false, // Flag to track when store is ready
             profileLoadedFromBackend: false, // Prevent early sync from overwriting DB
@@ -53,6 +54,7 @@ export const useGameStore = create(
             activeTab: 'home', // 'home', 'game', 'stats', 'community', 'virtual'
             setActiveTab: (tab) => set({ activeTab: tab }),
             lastDailyWinDate: null, // ISO date string of last daily challenge win
+            weeklyChallengeWinDate: null, // ISO date string of last weekly challenge win
             userProfile: {
                 id: `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 name: '',
@@ -102,6 +104,8 @@ export const useGameStore = create(
             setHasSeenTutorial: (seen) => set({ hasSeenTutorial: seen }),
 
             setHasSeenNewOnlineModeAnnouncement: (seen) => set({ hasSeenNewOnlineModeAnnouncement: seen }),
+
+            setHasSeenWeeklyChallengeAnnouncement: (seen) => set({ hasSeenWeeklyChallengeAnnouncement: seen }),
 
             setIsAdminOpen: (open) => set({ isAdminOpen: open }),
 
@@ -199,7 +203,8 @@ export const useGameStore = create(
                 const profileWithLatestStats = {
                     ...userProfile,
                     level: level,
-                    xp: currentXP
+                    xp: currentXP,
+                    weeklyChallengeWinDate: state.weeklyChallengeWinDate
                 };
 
                 try {
@@ -257,7 +262,8 @@ export const useGameStore = create(
                                         vibeId: data.vibe_id || state.userProfile.vibeId,
                                         level: newLevel,
                                         currentXP: newXP
-                                    }
+                                    },
+                                    weeklyChallengeWinDate: data.weekly_challenge_win_date ? new Date(data.weekly_challenge_win_date).toISOString().split('T')[0] : state.weeklyChallengeWinDate
                                 }));
                             }
                         }
@@ -308,6 +314,15 @@ export const useGameStore = create(
              */
             markDailyWin: () => {
                 set({ lastDailyWinDate: new Date().toISOString().split('T')[0] });
+            },
+
+            /**
+             * Mark weekly challenge as completed for today
+             */
+            markWeeklyWin: () => {
+                set({ weeklyChallengeWinDate: new Date().toISOString().split('T')[0] });
+                // Trigger sync to persist in DB
+                get().syncProfileWithBackend();
             },
 
             /**
@@ -641,6 +656,7 @@ export const selectThreshold = (state) => state.threshold;
 export const selectGameStatus = (state) => state.gameStatus;
 export const selectGameHistory = (state) => state.gameHistory;
 export const selectLastDailyWinDate = (state) => state.lastDailyWinDate;
+export const selectWeeklyChallengeWinDate = (state) => state.weeklyChallengeWinDate;
 
 /**
  * Check if the daily challenge is available for today
@@ -649,6 +665,22 @@ export const selectIsDailyAvailable = (state) => {
     if (!state.lastDailyWinDate) return true;
     const today = new Date().toISOString().split('T')[0];
     return state.lastDailyWinDate !== today;
+};
+
+/**
+ * Check if the weekly challenge is available
+ */
+export const selectIsWeeklyAvailable = (state) => {
+    if (!state.weeklyChallengeWinDate) return true;
+    
+    const lastWin = new Date(state.weeklyChallengeWinDate);
+    const today = new Date();
+    
+    // Difference in days
+    const diffTime = Math.abs(today - lastWin);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays >= 7;
 };
 
 /**

@@ -14,7 +14,7 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
     const [showRewards, setShowRewards] = useState(false);
 
     // Calculate global progress
-    const maxLevel = 40;
+    const maxLevel = 100;
     const progressPercent = Math.min(100, Math.max(0, (currentXP / 10) * 100));
 
     // Scroll animation for list

@@ -31,7 +31,8 @@ import {
     calculateFinalScores,
     performSwap,
     playActionCard,
-    resolveBlackHole
+    resolveBlackHole,
+    generateChestResults
 } from '../src/lib/skyjoEngine.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -59,7 +60,8 @@ const initDb = async () => {
                 xp INTEGER DEFAULT 0,
                 last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 migrated_to_v2 BOOLEAN DEFAULT FALSE,
-                firebase_uid TEXT UNIQUE
+                firebase_uid TEXT UNIQUE,
+                weekly_challenge_win_date DATE
             );
         `);
         console.log('[DB] ✓ Users table ready');
@@ -126,6 +128,7 @@ const initDb = async () => {
         { table: 'feedbacks', col: 'status', sql: "ALTER TABLE feedbacks ADD COLUMN status VARCHAR(20) DEFAULT 'new'" },
         { table: 'feedbacks', col: 'device_info', sql: 'ALTER TABLE feedbacks ADD COLUMN device_info JSONB' },
         { table: 'push_subscriptions', col: 'username', sql: 'ALTER TABLE push_subscriptions ADD COLUMN username VARCHAR(100)' },
+        { table: 'users', col: 'weekly_challenge_win_date', sql: 'ALTER TABLE users ADD COLUMN weekly_challenge_win_date DATE' },
     ];
 
     for (const m of migrations) {
@@ -175,17 +178,19 @@ app.post('/api/social/migrate', async (req, res) => {
 // --- Profile API ---
 
 app.post('/api/social/profile', async (req, res) => {
-    let { id, name, emoji, avatarId, vibeId, level, xp } = req.body;
-    console.log(`[PROFILE] Update request for ${name} (${id}): Level ${level}, XP ${xp}`);
+    let { id, name, emoji, avatarId, vibeId, level, xp, weeklyChallengeWinDate } = req.body;
+    console.log(`[PROFILE] Update request for ${name} (${id}): Level ${level}, XP ${xp}, WeeklyChallenge: ${weeklyChallengeWinDate}`);
     try {
         await pool.query(`
-            INSERT INTO users (id, name, emoji, avatar_id, vibe_id, level, xp, last_seen)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
+            INSERT INTO users (id, name, emoji, avatar_id, vibe_id, level, xp, weekly_challenge_win_date, last_seen)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP)
             ON CONFLICT (id) DO UPDATE SET
                 name = EXCLUDED.name, emoji = EXCLUDED.emoji,
                 avatar_id = EXCLUDED.avatar_id, vibe_id = EXCLUDED.vibe_id,
-                level = EXCLUDED.level, xp = EXCLUDED.xp, last_seen = CURRENT_TIMESTAMP
-        `, [id, name, emoji, avatarId, vibeId, level, xp]);
+                level = EXCLUDED.level, xp = EXCLUDED.xp, 
+                weekly_challenge_win_date = EXCLUDED.weekly_challenge_win_date,
+                last_seen = CURRENT_TIMESTAMP
+        `, [id, name, emoji, avatarId, vibeId, level, xp, weeklyChallengeWinDate]);
         console.log(`[PROFILE] ✓ Saved ${name} (${id})`);
         res.json({ status: 'ok' });
     } catch (err) {
@@ -497,9 +502,33 @@ io.on('connection', (socket) => {
                     break;
             }
 
-            // Check for game end within round (not handled by endTurn automatically for phase transition)
+            // Handle round end and chest revelation synchronization
             if (newState.phase === 'FINISHED') {
-                // Round scores
+                // Check if any player has chests in Bonus Mode
+                let hasChests = false;
+                newState.players.forEach(p => {
+                    p.hand.forEach(c => {
+                        if (c && (c.specialType === 'CH' || c.value === 'CH')) hasChests = true;
+                    });
+                });
+
+                if (hasChests) {
+                    console.log(`[GAME] ${roomCode} transitioning to REVEALING_CHESTS phase`);
+                    newState.phase = 'REVEALING_CHESTS';
+                    newState.chestResults = generateChestResults(newState, Date.now().toString());
+
+                    // Auto-reveal all cards for final round visibility
+                    newState.players.forEach(p => {
+                        p.hand.forEach(c => {
+                            if (c && !c.isRevealed) {
+                                c.isRevealed = true;
+                                c.wasAutoRevealed = true;
+                            }
+                        });
+                    });
+                }
+
+                // Calculate scores immediately (they will be displayed after revelation overlay on client)
                 const roundResults = calculateFinalScores(newState);
                 roundResults.forEach(r => {
                     room.totalScores[r.playerId] = (room.totalScores[r.playerId] || 0) + r.finalScore;

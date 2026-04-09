@@ -60,6 +60,31 @@ const applyGameEndLogic = (newState) => {
                 }
             });
         });
+
+        // --- Weekly Challenge: Floraison de Zéros 🌸 ---
+        const gameStore = useGameStore.getState();
+        const lastWinStr = gameStore.weeklyChallengeWinDate;
+        const isAvailable = !lastWinStr || (Math.ceil(Math.abs(new Date() - new Date(lastWinStr)) / (1000 * 60 * 60 * 24)) >= 7);
+
+        if (isAvailable) {
+            const human = newState.players.find(p => p.id === 'human-1');
+            if (human) {
+                const zeros = human.hand.filter(c => c && c.isRevealed && c.value === 0).length;
+                if (zeros >= 3) {
+                    // Check if human won the round
+                    const roundScores = calculateFinalScores(newState);
+                    const minScore = Math.min(...roundScores.map(s => s.finalScore));
+                    const humanScore = roundScores.find(s => s.playerId === human.id)?.finalScore;
+
+                    if (humanScore === minScore) {
+                        console.log('[CHALLENGE] 🌸 Floraison de Zéros & Victoire ! +10 XP');
+                        gameStore.markWeeklyWin();
+                        gameStore.addXP(10);
+                        newState.challengeJustWon = 'floraison_zeros';
+                    }
+                }
+            }
+        }
     }
     return newState;
 };
@@ -82,6 +107,7 @@ export const useVirtualGameStore = create(
             selectedCardIndex: null,
             showScores: false,
             animatingCards: [],
+            challengeJustWon: null, // 'floraison_zeros' or null
 
             // AI mode state
             aiMode: false,
@@ -135,6 +161,8 @@ export const useVirtualGameStore = create(
             },
 
             clearNotification: () => set({ lastNotification: null }),
+
+            clearChallengeWon: () => set({ challengeJustWon: null }),
 
             // Animation State
             pendingAnimation: null, // { type, sourceId, targetId, card, onComplete }
@@ -760,28 +788,7 @@ export const useVirtualGameStore = create(
                     set({ humanTurnStartState: null });
                 }
 
-                // Handle Chest Revelation Phase transition
-                if (newState.phase === 'FINISHED') {
-                    let hasChests = false;
-                    newState.players.forEach(p => {
-                        p.hand.forEach(c => {
-                            if (c && (c.specialType === 'CH' || c.value === 'CH')) hasChests = true;
-                        });
-                    });
-
-                    if (hasChests) {
-                        const chestResults = generateChestResults(newState, Date.now().toString());
-                        newState.phase = 'REVEALING_CHESTS';
-                        newState.chestResults = chestResults;
-                    }
-
-                    // Reveal all cards for final score visibility
-                    newState.players.forEach(p => {
-                        p.hand.forEach(c => {
-                            if (c) c.isRevealed = true;
-                        });
-                    });
-                }
+                newState = applyGameEndLogic(newState);
 
                 set({ gameState: newState });
             },
@@ -980,7 +987,7 @@ export const useVirtualGameStore = create(
                 // Check if anyone reached 100 points (game over condition)
                 const maxScore = Math.max(...Object.values(newTotalScores));
                 const isDaily = get().isDailyChallenge;
-                const isGameOver = maxScore >= 100 || isDaily;
+                const isGameOver = maxScore >= 100 || isDaily || !!gameState.challengeJustWon;
 
                 let gameWinner = null;
                 if (isGameOver) {

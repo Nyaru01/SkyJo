@@ -4,7 +4,8 @@ import { Play, Users, ArrowLeft, RotateCcw, RefreshCw, Trophy, Info, HelpCircle,
 import { Button } from './ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Input } from './ui/Input';
-import toast from 'react-hot-toast'; // Import react-hot-toast
+import toast from 'react-hot-toast'; 
+import confetti from 'canvas-confetti';
 // Removed custom Toast import to avoid confusion
 import ConfirmModal from './ui/ConfirmModal';
 import PlayerHand from './virtual/PlayerHand';
@@ -139,6 +140,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const aiDifficulty = useVirtualGameStore((s) => s.aiDifficulty);
     const virtualIsBonusMode = useVirtualGameStore((s) => s.isBonusMode);
     const drawnCardSource = useVirtualGameStore(s => s.drawnCardSource);
+    const challengeJustWon = useVirtualGameStore(s => s.challengeJustWon);
+    const clearChallengeWon = useVirtualGameStore(s => s.clearChallengeWon);
     const onlineDrawnCardSource = useOnlineGameStore(s => s.drawnCardSource);
 
 
@@ -775,12 +778,40 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             lastAwardedRoundRef.current = 0;
         }
     }, [onlineGameStarted]);
-    // Use effect to handle navigation back to menu instead of calling it during render
+
+    // --- Challenge Success Celebration ---
     useEffect(() => {
-        if (screen === 'menu' && onBackToMenu) {
-            onBackToMenu();
+        if (challengeJustWon === 'floraison_zeros') {
+            // Explose de confettis !
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#10b981', '#34d399', '#6ee7b7', '#fff']
+            });
+
+            toast.success("🌸 DÉFI RÉUSSI : FLORAISON DE ZÉROS ! +10 XP", {
+                duration: 6000,
+                icon: '🌸',
+                style: {
+                    border: '1px solid #10b981',
+                    padding: '20px',
+                    color: '#fff',
+                    background: '#064e3b',
+                    fontWeight: 'black',
+                    fontSize: '16px'
+                }
+            });
+
+            // Play victory sound as well
+            playVictory();
+
+            // Clear flag
+            setTimeout(() => {
+                clearChallengeWon();
+            }, 500);
         }
-    }, [screen, onBackToMenu]);
+    }, [challengeJustWon, clearChallengeWon, playVictory]);
 
     // AI Auto-play: Execute AI turns automatically with delay
     useEffect(() => {
@@ -2212,7 +2243,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         // Check if game would end after this round
         const maxProjected = Math.max(...Object.values(projectedTotals), 0);
         const isDaily = isDailyChallenge;
-        const gameEndsAfterThisRound = maxProjected >= 100 || isDaily;
+        const gameEndsAfterThisRound = maxProjected >= 100 || isDaily || !!activeGameState?.challengeJustWon;
 
         // If game is already over (endRound was called), show final results
         if (isGameOver && gameWinner) {
@@ -2681,6 +2712,11 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                             <>
                                                 <Star className="h-4 w-4 mr-2 fill-current" />
                                                 Terminer
+                                            </>
+                                        ) : activeGameState?.challengeJustWon ? (
+                                            <>
+                                                <Star className="h-4 w-4 mr-2 fill-current" />
+                                                Terminer le défi
                                             </>
                                         ) : (
                                             <>
