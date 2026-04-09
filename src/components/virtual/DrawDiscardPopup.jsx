@@ -72,26 +72,28 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                         onClose();
                     }}
                 >
-                    {/* Blur backdrop - lighter for better visibility of background cards */}
+                    {/* Blur backdrop - darkened for better contrast while keeping low blur */}
                     <div
-                        className="absolute inset-0 bg-black/20"
+                        className="absolute inset-0 bg-black/45"
                         style={{
-                            backdropFilter: 'blur(3px)',
-                            WebkitBackdropFilter: 'blur(3px)',
+                            backdropFilter: 'blur(1.5px)',
+                            WebkitBackdropFilter: 'blur(1.5px)',
                         }}
                     />
 
                     {/* Modal content - vertically centered */}
                     <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.9, opacity: 0 }}
+                        initial={{ scale: 0.9, opacity: 0, y: 30 }}
+                        animate={{ scale: 1, opacity: 1, y: 50 }}
+                        exit={{ scale: 0.9, opacity: 0, y: 30 }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                        className="relative z-10 p-6 rounded-3xl max-w-sm w-full mx-4 flex flex-col items-center justify-center"
+                        className="relative z-10 p-6 rounded-[2.5rem] max-w-sm w-full mx-4 flex flex-col items-center justify-center overflow-hidden"
                         style={{
-                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                            border: '1px solid rgba(100, 116, 139, 0.3)',
-                            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)',
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            backdropFilter: 'blur(20px)',
+                            WebkitBackdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
                             minHeight: drawnCard ? '260px' : '300px',
                         }}
                         onClick={(e) => e.stopPropagation()}

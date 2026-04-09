@@ -2386,40 +2386,31 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                 </motion.div>
                             )}
 
-                            <div className="flex gap-3 pt-4">
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.5, type: "spring", stiffness: 100 }}
+                                className="flex gap-3 p-1.5 bg-black/30 backdrop-blur-xl rounded-[2rem] border border-white/10 shadow-2xl mt-6 group/tray"
+                            >
                                 <Button
                                     variant="ghost"
                                     size="icon"
                                     onClick={handleBackToMenu}
-                                    className="w-10 h-10 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 hover:scale-110 active:scale-95 transition-all shadow-lg"
+                                    className="w-[3.5rem] h-[3.5rem] shrink-0 rounded-[1.6rem] bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 hover:scale-105 active:scale-95 transition-all group/back"
                                 >
-                                    <ArrowLeft className="h-5 w-5" />
+                                    <ArrowLeft className="h-5 w-5 group-hover/back:-translate-x-1 transition-transform" />
                                 </Button>
-                                <Button
-                                    className={cn(
-                                        "flex-1 text-white font-bold",
-                                        isDailyChallenge
-                                            ? (isUserWinner
-                                                ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 shadow-[0_0_15px_rgba(245,158,11,0.4)]"
-                                                : "bg-slate-700/50 border-slate-800 text-slate-500 cursor-not-allowed opacity-50 shadow-none")
-                                            : "bg-gradient-to-r from-emerald-600 to-teal-600"
-                                    )}
-                                    disabled={isDailyChallenge && !isUserWinner}
-                                    onClick={isDailyChallenge ? handleBackToMenu : rematch}
+                                <PremiumTiltButton
+                                    className="flex-1"
+                                    gradientFrom={isUserWinner ? "from-amber-400" : "from-slate-600"}
+                                    gradientTo={isUserWinner ? "to-orange-600" : "to-slate-800"}
+                                    shadowColor={isUserWinner ? "shadow-amber-500/40" : "shadow-slate-500/20"}
+                                    onClick={() => handleBackToMenu(isDailyChallenge)}
                                 >
-                                    {isDailyChallenge ? (
-                                        <>
-                                            <Star className="h-4 w-4 mr-2 fill-current" />
-                                            Terminer le défi
-                                        </>
-                                    ) : (
-                                        <>
-                                            <RotateCcw className="h-4 w-4 mr-1" />
-                                            Nouvelle partie
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
+                                    <Trophy className="h-5 w-5" />
+                                    {isDailyChallenge ? "TERMINER" : "REVENIR AU MENU"}
+                                </PremiumTiltButton>
+                            </motion.div>
                         </CardContent>
                     </Card>
                 </div>
@@ -2643,40 +2634,37 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                             </span>
                         </div>
 
-                        <div className="flex gap-3 pt-2">
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
+                            className="flex gap-3 p-1.5 bg-black/30 backdrop-blur-xl rounded-[2rem] border border-white/10 shadow-2xl mt-4 group/tray"
+                        >
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={handleBackToMenu}
-                                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 hover:scale-110 active:scale-95 transition-all shadow-lg"
+                                className="w-[3.5rem] h-[3.5rem] shrink-0 rounded-[1.6rem] bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 hover:scale-105 active:scale-95 transition-all group/back"
                             >
-                                <ArrowLeft className="h-5 w-5" />
+                                <ArrowLeft className="h-5 w-5 group-hover/back:-translate-x-1 transition-transform" />
                             </Button>
-                            <Button
-                                className="flex-1 bg-skyjo-blue hover:bg-skyjo-blue/90 text-white"
+
+                            <PremiumTiltButton
+                                className="flex-1"
                                 disabled={isOnlineMode && isNextRoundPending && !(onlineTimeoutExpired && onlineIsHost)}
+                                gradientFrom={gameEndsAfterThisRound ? "from-amber-400" : "from-sky-500"}
+                                gradientTo={gameEndsAfterThisRound ? "to-orange-600" : "to-blue-700"}
+                                shadowColor={gameEndsAfterThisRound ? "shadow-amber-500/40" : "shadow-blue-500/40"}
                                 onClick={() => {
                                     if (isOnlineMode) {
-                                        // XP is now handled by the useEffect hook to prevent duplicates
-
-                                        // If host and timeout expired, force start
                                         if (isNextRoundPending && onlineTimeoutExpired && onlineIsHost) {
                                             forceOnlineNextRound();
                                         } else {
-                                            // Normal flow: emit ready status
                                             setIsNextRoundPending(true);
                                             startOnlineNextRound();
                                         }
                                     } else {
-                                        // Local mode: use local store
-
-                                        // XP Awarding removed here - unified in store endRound() to avoid duplicates
-                                        // (The store handles both 1 XP for rounds and 5 XP for Daily Challenge)
-
-                                        // Capture results directly to ensure we have the latest state for archiving
                                         const result = endRound();
-
-                                        // If game is over, archive immediately with the fresh scores
                                         if (result && result.isGameOver) {
                                             archiveVirtualGame({
                                                 players: activeGameState.players,
@@ -2685,12 +2673,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                                 roundsPlayed: roundNumber,
                                                 gameType: aiMode ? 'ai' : 'local'
                                             });
-
-                                            // Award EXTRA XP if Game Winner (Bonus)
-                                            // We already gave XP for round win above.
-                                            // Should we give more for game win?
-                                            // Let's say yes, Game Win is +2 XP ? Or just another +1.
-                                            // Original code gave +1. Let's keep +1 for Game Win.
                                             if (result.gameWinner) {
                                                 if (aiMode && result.gameWinner.id === 'human-1') {
                                                     addXP(1);
@@ -2699,29 +2681,28 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                                 }
                                             }
                                         } else {
-                                            // Start next round if game continues
                                             startNextRound();
                                         }
                                     }
-                                    setInitialReveals({}); // Reset initial reveals for new round
+                                    setInitialReveals({});
                                 }}
                             >
                                 {gameEndsAfterThisRound ? (
                                     <>
                                         {isDailyChallenge ? (
                                             <>
-                                                <Star className="h-4 w-4 mr-2 fill-current" />
-                                                Terminer
+                                                <CheckCircle className="h-5 w-5" />
+                                                TERMINER
                                             </>
                                         ) : activeGameState?.challengeJustWon ? (
                                             <>
-                                                <Star className="h-4 w-4 mr-2 fill-current" />
-                                                Terminer le défi
+                                                <Award className="h-5 w-5" />
+                                                TERMINER LE DÉFI
                                             </>
                                         ) : (
                                             <>
-                                                <Trophy className="h-4 w-4 mr-1" />
-                                                Finir la partie
+                                                <Trophy className="h-5 w-5" />
+                                                FINIR LA PARTIE
                                             </>
                                         )}
                                     </>
@@ -2731,29 +2712,20 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                             <>
                                                 {isNextRoundPending ? (
                                                     <>
-                                                        {onlineTimeoutExpired && onlineIsHost ? (
-                                                            <>
-                                                                <Play className="h-4 w-4 mr-1" />
-                                                                Lancer maintenant ({onlineReadyStatus.readyCount}/{onlineReadyStatus.totalPlayers > 0 ? onlineReadyStatus.totalPlayers : activeGameState.players.length})
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1" />
-                                                                Attendez... ({onlineReadyStatus.readyCount}/{onlineReadyStatus.totalPlayers > 0 ? onlineReadyStatus.totalPlayers : activeGameState.players.length})
-                                                            </>
-                                                        )}
+                                                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1" />
+                                                        {onlineTimeoutExpired && onlineIsHost ? "LANCER" : "ATTENDEZ..."}
                                                     </>
                                                 ) : (
                                                     <>
                                                         {onlineIsHost ? (
                                                             <>
-                                                                <Play className="h-4 w-4 mr-1" />
-                                                                Manche suivante
+                                                                <Play className="h-5 w-5 fill-white" />
+                                                                CONTINUER
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <CheckCircle className="h-4 w-4 mr-1" />
-                                                                Proposer la suite
+                                                                <CheckCircle className="h-5 w-5" />
+                                                                PRÊT ?
                                                             </>
                                                         )}
                                                     </>
@@ -2764,20 +2736,20 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                                 {isNextRoundPending ? (
                                                     <>
                                                         <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1" />
-                                                        Attendez...
+                                                        CHARGEMENT...
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <Play className="h-4 w-4 mr-1" />
-                                                        Manche suivante
+                                                        <Play className="h-5 w-5 fill-white" />
+                                                        CONTINUER
                                                     </>
                                                 )}
                                             </>
                                         )}
                                     </>
                                 )}
-                            </Button>
-                        </div>
+                            </PremiumTiltButton>
+                        </motion.div>
                     </CardContent>
                 </Card>
             </div>
@@ -2888,7 +2860,17 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
             {/* Opponent at TOP for thumb zone optimization */}
             {activeGameState.players[opponentIndex] && (
-                <div className="relative rounded-2xl transition-all duration-500">
+                <motion.div
+                    initial={{ y: -80, opacity: 0, scale: 0.95, rotateX: -10 }}
+                    animate={{ y: 0, opacity: 1, scale: 1, rotateX: 0 }}
+                    transition={{
+                        type: "spring",
+                        stiffness: 100,
+                        damping: 18,
+                        delay: 0.2
+                    }}
+                    className="relative rounded-2xl"
+                >
                     <PlayerHand
                         player={activeGameState.players[opponentIndex]}
                         isCurrentPlayer={!isInitialReveal && activeGameState.currentPlayerIndex === opponentIndex}
@@ -2899,7 +2881,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                         onCardClick={(index) => handleCardClick(index, opponentIndex)} // Support swap selection
                         size="sm"
                     />
-                </div>
+                </motion.div>
             )}
 
             {/* MIDDLE ACTION AREA - Centered between hands */}
@@ -3017,7 +2999,17 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
             {/* Local Player at BOTTOM for thumb zone optimization */}
             {activeGameState.players[myPlayerIndex] && (
-                <div className="relative rounded-2xl transition-all duration-500">
+                <motion.div
+                    initial={{ y: 80, opacity: 0, scale: 0.95, rotateX: 10 }}
+                    animate={{ y: 0, opacity: 1, scale: 1, rotateX: 0 }}
+                    transition={{
+                        type: "spring",
+                        stiffness: 100,
+                        damping: 18,
+                        delay: 0.2
+                    }}
+                    className="relative rounded-2xl"
+                >
                     <PlayerHand
                         player={activeGameState.players[myPlayerIndex]}
                         isCurrentPlayer={!isInitialReveal && activeGameState.currentPlayerIndex === myPlayerIndex}
@@ -3044,7 +3036,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                         size="sm"
                         shakingCardIndex={shakingCard?.playerIndex === myPlayerIndex ? shakingCard.cardIndex : null}
                     />
-                </div>
+                </motion.div>
             )}
 
             {/* Additional players (if more than 2 - players at index 2+) */}

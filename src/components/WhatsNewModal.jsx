@@ -1,12 +1,19 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, Zap, Flame, Cloud } from 'lucide-react';
+import { X, Sparkles, Zap, Flame, Cloud, Sprout } from 'lucide-react';
 import { Button } from './ui/Button';
 
-export const CURRENT_NEWS_VERSION = 8;
+export const CURRENT_NEWS_VERSION = 9;
 
 const FEATURES = [
+    {
+        title: "Floraisons de Zéros",
+        description: "Le nouveau défi hebdomadaire est disponible ! Cumulez les cartes '0' pour débloquer des bonus exclusifs et dominer le classement.",
+        icon: Sprout,
+        color: "text-emerald-400",
+        bg: "bg-emerald-400/10"
+    },
     {
         title: "Sauvegarde Cloud",
         description: "Connectez votre compte Google pour sécuriser votre progression et jouer sur tous vos appareils.",

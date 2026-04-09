@@ -34,9 +34,9 @@ export const PremiumTiltButton = ({
         >
             {/* Outer Glow / Shadow */}
             <div className={cn(
-                "absolute inset-0 rounded-2xl opacity-50 blur-xl transition-opacity duration-300",
-                shadowColor.replace('/20', '/40'), // Intensify shadow
-                "group-hover:opacity-75"
+                "absolute inset-0 rounded-2xl opacity-40 blur-lg transition-opacity duration-300",
+                shadowColor.replace('/20', '/30'), // Slightly more intense shadow for glow
+                "group-hover:opacity-60"
             )} />
 
             {/* Main Button Body */}
@@ -44,19 +44,35 @@ export const PremiumTiltButton = ({
                 "relative rounded-2xl overflow-hidden",
                 "bg-gradient-to-br",
                 gradientFrom, gradientTo,
-                "shadow-[0_4px_0_rgba(0,0,0,0.2),0_2px_4px_rgba(0,0,0,0.2)]", // Subtle physical depth via shadow
+                "shadow-[0_2px_0_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.1)]", // Thinner physical depth
                 "border-t border-white/20" // Top rim light
             )}>
                 {/* Glass Sheen */}
-                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent opacity-50 pointer-events-none" />
+                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent opacity-40 pointer-events-none" />
+
+                {/* Shimmer Effect */}
+                {!disabled && (
+                    <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent w-[200%] -translate-x-full skew-x-[-25deg]"
+                        animate={{
+                            translateX: ["-100%", "100%"]
+                        }}
+                        transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            repeatDelay: 5,
+                            ease: "easeInOut"
+                        }}
+                    />
+                )}
 
                 {/* Content Container */}
                 <div className={cn(
-                    "relative px-7 py-5 flex items-center justify-center w-full",
+                    "relative px-5 py-3.5 flex items-center justify-center w-full",
                     contentClassName
                 )}>
                     {/* Content wrapper */}
-                    <div className="font-black text-white uppercase tracking-widest drop-shadow-md text-xl flex items-center justify-center gap-3 leading-none w-full">
+                    <div className="font-bold text-white uppercase tracking-wider drop-shadow-sm text-lg flex items-center justify-center gap-2.5 leading-none w-full whitespace-nowrap">
                         {children}
                     </div>
                 </div>

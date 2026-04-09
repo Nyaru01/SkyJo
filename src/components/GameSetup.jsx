@@ -152,7 +152,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                             <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[80%] bg-[#242464] blur-[80px] rounded-full animate-[pulse_8s_ease-in-out_infinite_reverse] opacity-40" />
 
                             {/* Texture grainée dynamique */}
-                            <div className="absolute inset-0 opacity-[0.15] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay" />
+                            <div className="absolute inset-0 opacity-[0.15] bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')] mix-blend-overlay" />
 
                             {/* Particules de lumière (Poussière d'étoiles) */}
                             {[...Array(12)].map((_, i) => (
