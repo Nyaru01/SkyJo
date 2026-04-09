@@ -42,7 +42,7 @@ export const useGameStore = create(
             vibrationEnabled: true,
             hasSeenTutorial: false,
             hasSeenNewOnlineModeAnnouncement: false,
-            hasSeenWeeklyChallengeAnnouncement: false,
+            hasSeenWeeklyChallengeAnnouncementV2: false,
             migratedToV2: false, // Flag for LocalStorage -> DB migration
             isRehydrated: false, // Flag to track when store is ready
             profileLoadedFromBackend: false, // Prevent early sync from overwriting DB
@@ -105,7 +105,7 @@ export const useGameStore = create(
 
             setHasSeenNewOnlineModeAnnouncement: (seen) => set({ hasSeenNewOnlineModeAnnouncement: seen }),
 
-            setHasSeenWeeklyChallengeAnnouncement: (seen) => set({ hasSeenWeeklyChallengeAnnouncement: seen }),
+            setHasSeenWeeklyChallengeAnnouncement: (seen) => set({ hasSeenWeeklyChallengeAnnouncementV2: seen }),
 
             setIsAdminOpen: (open) => set({ isAdminOpen: open }),
 

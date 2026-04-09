@@ -1139,25 +1139,36 @@ export const decideDrawSource = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
         }
 
         // Check for column completion (Primary strat for Hardcore)
+        // BUG FIX: Only take from discard for IMMEDIATE completion (2 matches), NOT mere potential
         for (let i = 0; i < currentPlayer.hand.length; i++) {
             if (currentPlayer.hand[i] && !(currentPlayer.hand[i].lockCount > 0) && checkColumnPotential(currentPlayer.hand, i, discardValue, false, difficulty)) {
                 // Fix: Don't take from discard if we would just replace same value
                 if (currentPlayer.hand[i].isRevealed && currentPlayer.hand[i].value === discardValue) continue;
 
-                // PROTECTION: Don't replace a GOOD revealed card (<= 2) for a column completion of a WORSE card
-                if (currentPlayer.hand[i].isRevealed && currentPlayer.hand[i].value < discardValue && currentPlayer.hand[i].value <= 2) continue;
+                // PROTECTION: Don't replace a GOOD revealed card (<= 4) for a column completion of a WORSE card
+                if (currentPlayer.hand[i].isRevealed && currentPlayer.hand[i].value < discardValue && currentPlayer.hand[i].value <= 4) continue;
+
+                // BUG FIX: For high-value cards (> 4), ONLY take if it's an IMMEDIATE column completion
+                if (discardValue > 4) {
+                    const col = Math.floor(i / 3);
+                    const colStart = col * 3;
+                    const immediateMatches = [colStart, colStart + 1, colStart + 2]
+                        .filter(idx => idx !== i)
+                        .filter(idx => currentPlayer.hand[idx] && currentPlayer.hand[idx].isRevealed && (currentPlayer.hand[idx].value === discardValue || currentPlayer.hand[idx].value === 'C' || discardValue === 'C'))
+                        .length;
+                    if (immediateMatches < 2) continue; // Not immediate → skip
+                }
 
                 return 'DISCARD_PILE';
             }
         }
 
         // ANTICIPATION: Denial Strategy (Block the opponent)
-        // If the discard would give a huge benefit to the opponent, take it even if it's mediocre for us
-        if (wouldHelpOpponent(gameState, discardValue, difficulty)) {
-            // Only block if our own hand isn't already "perfect" (avoid taking high card if we are winning)
+        // BUG FIX: Only block with LOW-value cards (<= 5). Taking a 12 to "block" is self-harm.
+        if (discardValue <= 5 && wouldHelpOpponent(gameState, discardValue, difficulty)) {
             const myHighest = findHighestRevealedCard(currentPlayer.hand);
-            if (myHighest.value >= discardValue) {
-                aiLog(difficulty, `Blocking opponent by taking ${discardValue} from discard!`);
+            if (myHighest.value > discardValue + 2) {
+                aiLog(difficulty, `Blocking opponent by taking ${discardValue} from discard (replacing ${myHighest.value})!`);
                 return 'DISCARD_PILE';
             }
         }
@@ -1266,15 +1277,25 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
         if (replaceIndex === -1) {
             const highest = findHighestRevealedCard(hand);
 
-            // Priority 1: Replace a revealed card that is strictly worse
+            // Priority 1: Replace a revealed card that is strictly worse than what we're placing
             if (highest.index !== -1 && highest.value > drawnValue) {
                 replaceIndex = highest.index;
             }
-            // Priority 2: Replace a hidden card (gamble)
+            // Priority 2: Replace a hidden card (gamble) — but ONLY if our drawn card isn't terrible
             else {
                 const hiddenIndices = getHiddenCardIndices(hand);
                 if (hiddenIndices.length > 0) {
-                    replaceIndex = getRandomElement(hiddenIndices);
+                    // BUG FIX: Don't gamble with a terrible card (> 8) on a hidden slot
+                    // unless we have no other choice
+                    if (drawnValue <= 8) {
+                        replaceIndex = getRandomElement(hiddenIndices);
+                    } else if (highest.index !== -1 && highest.value >= drawnValue) {
+                        // If our highest is as bad or worse, at least replace that
+                        replaceIndex = highest.index;
+                    } else {
+                        // Last resort: still use hidden to avoid damaging known good cards
+                        replaceIndex = getRandomElement(hiddenIndices);
+                    }
                 }
                 // Priority 3: Absolute last resort - replace highest revealed (minimize damage)
                 else if (highest.index !== -1) {

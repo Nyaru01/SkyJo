@@ -33,7 +33,7 @@ export default function GameMenu({
     const isDailyAvailable = useGameStore(selectIsDailyAvailable);
     const isWeeklyAvailable = useGameStore(selectIsWeeklyAvailable);
     const weeklyChallengeWinDate = useGameStore(state => state.weeklyChallengeWinDate);
-    const hasSeenWeeklyAnnouncement = useGameStore(state => state.hasSeenWeeklyChallengeAnnouncement);
+    const hasSeenWeeklyAnnouncement = useGameStore(state => state.hasSeenWeeklyChallengeAnnouncementV2);
     const setHasSeenWeeklyAnnouncement = useGameStore(state => state.setHasSeenWeeklyChallengeAnnouncement);
     
     const [showWeeklyAnnouncement, setShowWeeklyAnnouncement] = React.useState(false);
@@ -208,9 +208,8 @@ export default function GameMenu({
                     onClick={() => {
                         if (!isWeeklyAvailable) return;
                         playClick();
-                        // Direct start of a game with special check for weekly
-                        // For simplicity, we'll just start a normal AI game and the logic in virtualGameStore will handle the win
-                        startAIGame({ name: userProfile.name, avatarId: userProfile.avatarId }, 1, AI_DIFFICULTY.HARD);
+                        // Weekly challenge: Tourment mode (bonus cards + hard AI)
+                        startAIGame({ name: userProfile.name, avatarId: userProfile.avatarId }, 1, AI_DIFFICULTY.BONUS, { isBonusMode: true });
                         setScreen('game');
                     }}
                     disabled={!isWeeklyAvailable}
@@ -233,7 +232,7 @@ export default function GameMenu({
                                 isWeeklyAvailable ? "text-emerald-100" : "text-slate-400"
                             )}>
                                 {isWeeklyAvailable ? (
-                                    <>Gardez 3x "0" + <span className="text-white">Gagner la manche</span> = +10 XP</>
+                                    <>🎮 Mode <span className="text-white">Tourment</span> • Gardez 3x "0" + <span className="text-white">Gagner</span> = +10 XP</>
                                 ) : (
                                     <>Réinitialisation dans <span className="text-emerald-400">{getWeeklyRemainingDays()} jours</span></>
                                 )}
@@ -629,11 +628,12 @@ export default function GameMenu({
                             
                             <div className="space-y-4 mb-8 text-center">
                                 <p className="text-slate-300 text-sm leading-relaxed">
-                                    Célébrez le printemps avec ce défi corsé ! Gardez <strong className="text-white">3 cartes "0"</strong> sur votre grille finale ET <strong className="text-white">remportez la victoire</strong> contre l'IA.
+                                    Célébrez le printemps avec ce défi corsé ! En <strong className="text-rose-400">mode Tourment</strong>, gardez <strong className="text-white">3 cartes "0"</strong> sur votre grille finale ET <strong className="text-white">remportez la victoire</strong> contre l'IA.
                                 </p>
                                 <p className="text-[10px] text-emerald-400/80 font-bold italic -mt-2">
                                     (Attention : ne les mettez pas dans la même colonne !)
                                 </p>
+
                                 <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl py-3 px-4 inline-flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black shadow-lg">
                                         +10
