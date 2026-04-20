@@ -511,9 +511,7 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false, di
         return false;
     }
 
-    let matchCount = 0;
-    let jokerCount = 0;
-    let hiddenCount = 0;
+        let hiddenCount = 0;
     const nonJokerValues = [];
 
     colIndices.forEach(idx => {
@@ -524,7 +522,7 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false, di
         if (!card.isRevealed) {
             hiddenCount++;
         } else if (card.specialType === 'C' || card.value === 'C') {
-            jokerCount++;
+            // jokerCount++;
         } else {
             nonJokerValues.push(Number(card.value));
         }
@@ -606,7 +604,7 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false, di
 
         // STRATEGY REFINEMENT: In advanced mode, don't build potential with mediocre cards (5-9)
         // UNLESS we already have a matching revealed card. 
-        if (isAdvanced && cardValue > 4 && matchCount === 0) {
+        if (isAdvanced && cardValue > 4) {
             return false;
         }
         return true;
@@ -718,7 +716,6 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
 
             if (matches < 2) {
                 // Not an immediate completion, so we protect the low card
-                // aiLog(difficulty, `Protection: Refusing to replace good card ${hand[idx].value} with ${cardValue} (potential only)`);
                 continue;
             }
         }
@@ -743,8 +740,6 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
     // If we have very bad revealed cards (>= 10), replace them before thinking about strategy
     // UNLESS the grouping strategy would trigger an immediate elimination (handled above in column completion loop)
     if (highest.index !== -1 && highest.value >= 10 && cardValue < highest.value) {
-        // Double check: if cardValue is also bad (e.g. 9), maybe don't replace an 11 if we can group the 9?
-        // Actually no, getting rid of 10+ is almost always better than a potential grouping of a 9.
         return highest.index;
     }
 
@@ -1114,8 +1109,6 @@ export const decideDrawSource = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
 
     // Hard / Hardcore: Sophisticated analysis
     if (isAdvancedLevel(difficulty) || difficulty === AI_DIFFICULTY.HARD) {
-        const avgValue = getProbabilisticAverageValue(gameState);
-
         // Always take negative cards or the Swap card
         if (discardValue <= 0 || discardTop.specialType === 'S') {
             return 'DISCARD_PILE';
@@ -1322,6 +1315,7 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
 
         // [CRITICAL FIX] Never discard a very good negative card (<= -2)
         if (drawnValue <= -2) {
+            const highest = findHighestRevealedCard(hand);
             const finalReplaceIdx = replaceIndex !== -1 ? replaceIndex : (
                 highest.index !== -1 ? highest.index : (
                     getHiddenCardIndices(hand).length > 0 ? getHiddenCardIndices(hand)[0] : 0
@@ -1330,6 +1324,7 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
             return { action: 'REPLACE', cardIndex: finalReplaceIdx };
         }
 
+        const highest = findHighestRevealedCard(hand);
         if (highest.index !== -1 && drawnValue < highest.value - 2) {
             return { action: 'REPLACE', cardIndex: highest.index };
         }
@@ -1447,10 +1442,6 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
     const validIndices = hand.map((c, i) => (c !== null && !(c.lockCount > 0)) ? i : -1).filter(i => i !== -1);
     // Try to minimize damage
     let bestIdx = validIndices[0];
-    let minDiff = Infinity; // We want minimum (new - old) which is negative or small positive
-    // Actually we want to replace the card where (drawn - current) is minimized?
-    // No, we want to replace the HIGHEST value card to minimize total score.
-
     // We already checked "highest" above. If we are here, drawnValue >= highest.value.
     // So we just replace the highest value card to minimize the GAIN.
     bestIdx = findHighestRevealedCard(hand).index;

@@ -21,7 +21,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
     return (
         <div className="fixed bottom-0 left-0 right-0 z-[80] pointer-events-none p-4 pb-8 flex justify-center safe-area-bottom">
             <nav
-                className="w-full max-w-lg glass-v3 rounded-[2.5rem] p-1.5 shadow-[0_25px_60px_rgba(0,0,0,0.5)] pointer-events-auto relative overflow-hidden"
+                className="w-full max-w-lg glass-v3 rounded-[2.5rem] p-1.5 shadow-[0_25px_60px_rgba(0,0,0,0.5)] pointer-events-auto relative overflow-hidden border border-white/20 ring-1 ring-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
                 role="tablist"
                 aria-label="Navigation principale"
             >

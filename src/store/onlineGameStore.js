@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { io } from 'socket.io-client';
 import { AVATARS } from '../lib/avatars';
@@ -116,7 +115,7 @@ export const useOnlineGameStore = create((set, get) => ({
                 set({ isPaused: !!isPaused });
             });
 
-            socket.on('new_player_joined', ({ playerName, emoji }) => {
+            socket.on('new_player_joined', ({ playerName }) => {
                 // Convert avatarId to real emoji (emoji field contains the avatar ID like 'cat')
                 // Avatar removed from notification text as per user request for cleaner UI
 
@@ -289,7 +288,7 @@ export const useOnlineGameStore = create((set, get) => ({
             });
 
             // Handle player leaving
-            socket.on('player_left', ({ playerId, playerName, playerEmoji, newHost }) => {
+            socket.on('player_left', ({ playerId, playerName, newHost }) => {
                 const { players } = get();
                 const updatedPlayers = players.filter(p => p.id !== playerId);
 
@@ -337,7 +336,7 @@ export const useOnlineGameStore = create((set, get) => ({
             });
 
             // Handle player ready for next round
-            socket.on('player_ready_next_round', ({ playerId, playerName, playerEmoji, readyCount, totalPlayers }) => {
+            socket.on('player_ready_next_round', ({ playerId, playerName, readyCount, totalPlayers }) => {
                 console.log(`[Socket] ${playerName} is ready (${readyCount}/${totalPlayers})`);
                 const { socketId } = get();
 
@@ -350,14 +349,10 @@ export const useOnlineGameStore = create((set, get) => ({
                 // Check if it's me (playerId from server might be socketId or dbId)
                 const isMe = playerId === socketId || playerId === socket.id;
                 if (!isMe) {
-                    // Convert avatarId to real emoji
-                    const avatar = AVATARS.find(a => a.id === playerEmoji);
-                    const displayEmoji = avatar?.emoji || '👤';
-
                     set({
                         lastNotification: {
                             type: 'info',
-                            message: `${displayEmoji} ${playerName} veut continuer (${readyCount}/${totalPlayers})`,
+                            message: `${playerName} veut continuer (${readyCount}/${totalPlayers})`,
                             timestamp: Date.now()
                         }
                     });
@@ -413,24 +408,6 @@ export const useOnlineGameStore = create((set, get) => ({
             roundNumber: 1,
             gameMode: null,
             error: null
-        });
-    },
-
-    leaveRoom: () => {
-        const { roomCode } = get();
-        if (roomCode) {
-            socket.emit('leave_room', roomCode);
-        }
-        set({
-            roomCode: null,
-            gameState: null,
-            activeState: null,
-            gameStarted: false,
-            onlineStarted: false,
-            isGameOver: false,
-            gameWinner: null,
-            players: [],
-            roundNumber: 1
         });
     },
 

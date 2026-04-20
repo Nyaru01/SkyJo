@@ -140,12 +140,11 @@ export const useVirtualGameStore = create(
 
                     // Check for eliminations after swap
                     if (newState.lastEliminatedCards) {
-                        const type = newState.eliminationType === 'column' ? 'une colonne' : 'une ligne';
                         // Notification removed as per user request (redundant with visual effect)
                         // set({
                         //     lastNotification: {
                         //         type: 'info',
-                        //         message: `💥 Vous avez complété ${type} !`,
+                        //         message: `💥 Vous avez complété ${eliminationType} !`,
                         //         timestamp: Date.now()
                         //     }
                         // });
@@ -328,7 +327,7 @@ export const useVirtualGameStore = create(
                     if (turnPhase === 'DRAW') {
                         // Step 1: Decide where to draw from
                         const drawSource = decideDrawSource(gameState, aiDifficulty);
-                        let newState;
+                        let newState; // eslint-disable-line no-unused-vars
                         // Animation setup (currentPlayer already defined above)
 
                         // Helper to execute draw with animation
@@ -438,15 +437,7 @@ export const useVirtualGameStore = create(
 
                                         // Notification for elimination
                                         if (ns.lastEliminatedCards) {
-                                            const type = ns.eliminationType === 'column' ? 'une colonne' : 'une ligne';
                                             // Notification removed as per user request
-                                            // set({
-                                            //     lastNotification: {
-                                            //         type: 'info',
-                                            //         message: `💥 ${currentPlayer.name} a complété ${type} !`,
-                                            //         timestamp: Date.now()
-                                            //     }
-                                            // });
                                         }
 
                                         set({
@@ -497,15 +488,7 @@ export const useVirtualGameStore = create(
 
                                         // Notification for elimination
                                         if (ns.lastEliminatedCards) {
-                                            const type = ns.eliminationType === 'column' ? 'une colonne' : 'une ligne';
                                             // Notification removed as per user request
-                                            // set({
-                                            //     lastNotification: {
-                                            //         type: 'info',
-                                            //         message: `💥 ${currentPlayer.name} a complété ${type} !`,
-                                            //         timestamp: Date.now()
-                                            //     }
-                                            // });
                                         }
 
                                         set({
@@ -549,7 +532,7 @@ export const useVirtualGameStore = create(
 
                         // Check for eliminations after swap
                         if (ns.lastEliminatedCards) {
-                            const type = ns.eliminationType === 'column' ? 'une colonne' : 'une ligne';
+                            // Notification removed as per user request
                         }
 
                         const nsFinal = applyGameEndLogic(ns);
@@ -650,15 +633,7 @@ export const useVirtualGameStore = create(
 
                 // Notification for elimination
                 if (newState.lastEliminatedCards) {
-                    const type = newState.eliminationType === 'column' ? 'une colonne' : 'une ligne';
                     // Notification removed as per user request
-                    // set({
-                    //     lastNotification: {
-                    //         type: 'info',
-                    //         message: `💥 Vous avez complété ${type} !`,
-                    //         timestamp: Date.now()
-                    //     }
-                    // });
                 }
 
                 set({ gameState: newState, selectedCardIndex: null, drawnCardSource: null });
@@ -688,15 +663,7 @@ export const useVirtualGameStore = create(
 
                 // Notification for elimination
                 if (newState.lastEliminatedCards) {
-                    const type = newState.eliminationType === 'column' ? 'une colonne' : 'une ligne';
                     // Notification removed as per user request
-                    // set({
-                    //     lastNotification: {
-                    //         type: 'info',
-                    //         message: `💥 Vous avez complété ${type} !`,
-                    //         timestamp: Date.now()
-                    //     }
-                    // });
                 }
 
                 set({ gameState: newState, selectedCardIndex: null, drawnCardSource: null });
@@ -941,7 +908,7 @@ export const useVirtualGameStore = create(
              * End current round, update cumulative scores, check for game end
              */
             endRound: () => {
-                const { gameState, totalScores, roundNumber, aiPlayers } = get();
+                const { gameState, totalScores } = get();
                 // Accept both FINISHED and REVEALING_CHESTS (bonus mode with chests already revealed)
                 if (!gameState || (gameState.phase !== 'FINISHED' && gameState.phase !== 'REVEALING_CHESTS')) return;
 

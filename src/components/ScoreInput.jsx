@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Check, AlertCircle, Trophy, Zap } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
@@ -8,8 +7,8 @@ import { cn } from '../lib/utils';
 import { useFeedback } from '../hooks/useFeedback';
 import { getAvatarPath } from '../lib/avatars';
 
-export default function ScoreInput({ players, onSave, onCancel, isEmbedded = false, rounds = [] }) {
-    const { playSuccess, playError, playClick } = useFeedback();
+export default function ScoreInput({ players, onSave, onCancel: _onCancel, isEmbedded = false, rounds = [] }) {
+    const { playSuccess, playError } = useFeedback();
     const [scores, setScores] = useState(
         players.reduce((acc, p) => ({ ...acc, [p.id]: '' }), {})
     );

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, X, User, Sparkles, Gamepad2, RefreshCw, CheckCircle, Edit2, ArrowRight, HelpCircle, Trophy, Target, Play, Settings, Download, Zap } from 'lucide-react';
 import { Button } from './ui/Button';
@@ -53,6 +53,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
         { name: '', avatarId: 'frog' }
     ]);
     const [openAvatarSelector, setOpenAvatarSelector] = useState(null); // Index of player selecting
+    
     const setConfiguration = useGameStore(state => state.setConfiguration);
     const updateUserProfile = useGameStore(state => state.updateUserProfile);
     const { playStart } = useFeedback();
@@ -77,7 +78,20 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
 
     // Unified Skyjo Score Container animation refs
     const scoreContainerRef = useSyncedAnimation();
-    const virtualContainerRef = useRef(null);
+
+    const [particleStyles, setParticleStyles] = useState([]);
+
+    useEffect(() => {
+        const styles = [...Array(12)].map((_, i) => ({
+            width: `${Math.random() * 2 + 1}px`,
+            height: `${Math.random() * 2 + 1}px`,
+            top: `${Math.random() * 100}%`,
+            left: `${Math.random() * 100}%`,
+            animationDelay: `${i * -1.2}s`,
+            animationDuration: `${8 + Math.random() * 8}s`
+        }));
+        setParticleStyles(styles);
+    }, []);
 
     const addPlayer = () => {
         if (players.length < 8) {
@@ -117,7 +131,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
             return;
         }
 
-        const finalPlayers = players.map((p, i) => ({
+        const finalPlayers = players.map((p) => ({
             name: p.name.trim(),
             avatarId: p.avatarId
         }));
@@ -155,18 +169,11 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                             <div className="absolute inset-0 opacity-[0.15] bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')] mix-blend-overlay" />
 
                             {/* Particules de lumière (Poussière d'étoiles) */}
-                            {[...Array(12)].map((_, i) => (
+                            {particleStyles.map((style, i) => (
                                 <div
                                     key={i}
                                     className="absolute rounded-full bg-blue-200/40 blur-[1px] animate-[float_15s_linear_infinite]"
-                                    style={{
-                                        width: `${Math.random() * 2 + 1}px`,
-                                        height: `${Math.random() * 2 + 1}px`,
-                                        top: `${Math.random() * 100}%`,
-                                        left: `${Math.random() * 100}%`,
-                                        animationDelay: `${i * -1.2}s`,
-                                        animationDuration: `${8 + Math.random() * 8}s`
-                                    }}
+                                    style={style}
                                 />
                             ))}
                         </div>

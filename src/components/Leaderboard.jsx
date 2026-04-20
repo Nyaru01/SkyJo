@@ -36,44 +36,28 @@ const PodiumStep = ({ user, rank, delay }) => {
         <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay, duration: 0.5, type: 'spring' }}
-            className={`flex flex-col items-center relative ${isFirst ? 'z-10 -mt-20' : 'mt-8'}`}
+            transition={{ 
+                delay, 
+                type: "spring", 
+                stiffness: 100, 
+                damping: 15 
+            }}
+            className={cn(
+                "flex flex-col items-center relative cursor-pointer group transform-gpu",
+                isFirst ? 'z-10 -mt-20' : 'mt-8'
+            )}
         >
-            <motion.div
-                className="relative mb-4 group perspective-1000"
-                animate={{
-                    y: isFirst ? [0, -10, 0] : [0, -5, 0],
-                    rotateX: isFirst ? [2, -2, 2] : [1, -1, 1],
-                    rotateY: isFirst ? [-3, 3, -3] : [-2, 2, -2]
-                }}
-                transition={{
-                    duration: isFirst ? 5 : 6,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                }}
-            >
-                {/* Divine Aura (Particles & Glow) */}
+            <div className="relative mb-4 perspective-1000 transition-transform duration-500 group-hover:-translate-y-2 group-hover:scale-105">
+                {/* Divine Aura (Simplified) */}
                 <div className="absolute inset-0 z-[-1]">
                     <div className="divine-aura" style={{
                         background: `radial-gradient(circle, ${theme.aura} 0%, transparent 70%)`,
                         opacity: isFirst ? 1 : 0.5
                     }} />
-
-                    {/* Particles - More for First, less for others */}
-                    {isFirst && [...Array(15)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="particle-gold"
-                            style={{
-                                left: `${Math.random() * 100}%`,
-                                top: `${Math.random() * 100}%`,
-                                backgroundColor: theme.particle,
-                                boxShadow: `0 0 5px ${theme.particle}`,
-                                animation: `float-particle ${2 + Math.random() * 3}s linear infinite`,
-                                animationDelay: `${Math.random() * 5}s`
-                            }}
-                        />
-                    ))}
+                    
+                    {isFirst && (
+                        <div className="absolute inset-0 animate-pulse opacity-50 bg-amber-400/20 blur-2xl rounded-full" />
+                    )}
                 </div>
 
                 {/* Outer Rings & Chrome */}
@@ -81,63 +65,56 @@ const PodiumStep = ({ user, rank, delay }) => {
                     <div className={cn("absolute inset-0 rounded-full", theme.chrome)} />
                     <div className="absolute inset-[2px] rounded-full bg-slate-950" />
                 </div>
-                <div className={cn("absolute inset-[-6px] rounded-full p-[2px] shadow-lg", theme.chrome)}>
-                    <div className="w-full h-full rounded-full bg-slate-900 overflow-hidden relative">
-                        <div className="shine-effect opacity-20" />
-                    </div>
-                </div>
-
+                
                 <div className={cn(
-                    "relative rounded-full border-4 overflow-hidden bg-slate-900 transition-all duration-700 preserve-3d",
+                    "relative rounded-full border-4 overflow-hidden bg-slate-900 transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(56,189,248,0.4)]",
                     theme.border,
                     theme.glow,
                     isFirst ? 'w-32 h-32' : 'w-20 h-20'
                 )}>
                     {user ? (
                         <>
-                            <img src={avatar} alt={user.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                            <img 
+                                src={avatar} 
+                                alt={user.name} 
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                            />
                             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
-                            <div className="absolute inset-0 bg-gradient-to-tr from-white/20 via-transparent to-transparent pointer-events-none" />
-                            <div className="shine-effect opacity-10" />
                         </>
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-600">?</div>
                     )}
                 </div>
 
-                {/* 3D Crown/Rank Badge */}
-                <motion.div
-                    className={cn(
-                        "absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center shadow-2xl border-2 border-slate-900 z-20",
-                        isFirst ? "bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 scale-110 ring-4 ring-amber-500/20" :
-                            isSecond ? "bg-gradient-to-br from-slate-200 via-slate-100 to-slate-400" :
-                                "bg-gradient-to-br from-amber-600 via-amber-700 to-amber-900"
-                    )}
-                    animate={isFirst ? {
-                        rotateZ: [-5, 5, -5],
-                        scale: [1.1, 1.2, 1.1]
-                    } : {}}
-                    transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                    }}
-                >
-                    {isFirst ? <Crown className="w-7 h-7 text-amber-950 drop-shadow-md" /> : <span className="text-sm font-black text-slate-950">{rank}</span>}
-                </motion.div>
-            </motion.div>
+                {/* Rank Badge / Crown - Static for better performance */}
+                <div className={cn(
+                    "absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center shadow-2xl border-2 border-slate-900 z-20 transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-1",
+                    isFirst ? "bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 scale-110 ring-4 ring-amber-500/10" :
+                        isSecond ? "bg-gradient-to-br from-slate-200 via-slate-100 to-slate-400" :
+                            "bg-gradient-to-br from-amber-600 via-amber-700 to-amber-900"
+                )}>
+                    {isFirst ? <Crown className="w-7 h-7 text-amber-950 drop-shadow-md animate-pulse" /> : <span className="text-sm font-black text-slate-950">{rank}</span>}
+                </div>
+            </div>
 
-            <div className="text-center relative z-10">
-                <p className={`font-black truncate w-24 mb-0.5 ${isFirst ? 'text-lg text-white' : 'text-sm text-slate-300'}`}>
+            <div className="text-center relative z-10 transition-all duration-500 group-hover:scale-105">
+                <p className={cn(
+                    "font-black truncate w-24 mb-0.5 transition-colors",
+                    isFirst ? 'text-lg text-white' : 'text-sm text-slate-300'
+                )}>
                     {user?.name || '---'}
                 </p>
                 <div className="flex flex-col items-center gap-1">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isFirst ? 'text-amber-300' : 'text-slate-500'}`}>
+                    <span className={cn(
+                        "text-[10px] font-bold uppercase tracking-wider transition-colors",
+                        isFirst ? 'text-amber-300' : 'text-slate-500',
+                        "group-hover:text-amber-400"
+                    )}>
                         Niveau {user?.level || 1}
                     </span>
-                    <div className="flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md shadow-inner transition-transform hover:scale-105">
+                    <div className="flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md transition-all group-hover:bg-skyjo-blue/20 group-hover:border-skyjo-blue/40">
                         <span className="text-[10px] font-black text-white tracking-tighter mr-0.5 opacity-80">XP</span>
-                        <span className={`font-black ${isFirst ? 'text-sm text-white' : 'text-[11px] text-slate-200'}`}>
+                        <span className={isFirst ? 'text-sm text-white' : 'text-[11px] text-slate-200'}>
                             {user?.xp || 0}
                         </span>
                     </div>

@@ -28,3 +28,11 @@ dist-ssr
 firebase_log.txt
 test-key.js
 
+# AI & Temp
+brain/
+lint_output.txt
+remaining_lint.txt
+task.md
+implementation_plan.md
+walkthrough.md
+

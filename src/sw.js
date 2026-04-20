@@ -11,13 +11,6 @@ precacheAndRoute(self.__WB_MANIFEST, {
     ignoreURLParametersMatching: [/.*/]
 });
 
-// Forcer la mise à jour immédiate pour appliquer les nouveaux SenderID
-// REMOVED (2024-02-14) : Cause un redémarrage forcé brutal pour l'utilisateur. 
-// On laisse le prompt PWA (UpdatePrompt.jsx) gérer l'activation via SKIP_WAITING message.
-// self.addEventListener('install', () => {
-//     self.skipWaiting();
-// });
-
 // Cleanup old caches
 cleanupOutdatedCaches();
 
@@ -136,7 +129,7 @@ self.addEventListener('notificationclick', (event) => {
     // Stratégie ultra-robuste pour mobile :
     // On tente d'ouvrir ou de recharger immédiatement.
     event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true })
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true })
             .then((clientList) => {
                 // Si une fenêtre est déjà là, on tente de la réactiver
                 for (let client of clientList) {
@@ -150,20 +143,20 @@ self.addEventListener('notificationclick', (event) => {
                 }
 
                 // Sinon, ou si le focus a échoué, on ouvre une nouvelle fenêtre (le plus fiable sur mobile)
-                if (clients.openWindow) {
+                if (self.clients.openWindow) {
                     const fullUrl = new URL(targetUrl, self.location.origin).href;
                     console.log('🆕 [SW] Ouverture directe:', fullUrl);
-                    return clients.openWindow(fullUrl);
+                    return self.clients.openWindow(fullUrl);
                 }
             })
             .catch(err => {
                 console.error('❌ [SW] Erreur de navigation:', err);
                 // Dernier recours : tenter au moins d'ouvrir l'accueil
-                if (clients.openWindow) return clients.openWindow('/');
+                if (self.clients.openWindow) return self.clients.openWindow('/');
             })
     );
 });
 
-self.addEventListener('notificationclose', (event) => {
+self.addEventListener('notificationclose', () => {
     console.log('✖️ [SW] Notification fermée');
 });

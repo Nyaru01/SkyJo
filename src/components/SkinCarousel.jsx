@@ -1,12 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Lock, CheckCircle } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { useGameStore } from '../store/gameStore';
 
 export default function SkinCarousel({ skins, selectedSkinId, onSelect, playerLevel }) {
     const [activeIndex, setActiveIndex] = useState(0);
-    const containerRef = useRef(null);
 
     // Find index of selected skin on mount or prop change
     useEffect(() => {

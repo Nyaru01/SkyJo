@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { Settings, Trophy, Sparkles, History, Undo2, BarChart3, Play, LogOut, CheckCircle2, Users, HelpCircle, X, ArrowLeft, Palette, Check } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useGameStore, selectPlayers, selectRounds, selectThreshold, selectGameStatus } from '../store/gameStore';
 import { useVirtualGameStore } from '../store/virtualGameStore';
-import { useOnlineGameStore, socket } from '../store/onlineGameStore';
+import { useOnlineGameStore } from '../store/onlineGameStore';
 import { useFeedback } from '../hooks/useFeedback';
 import { Button } from './ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
@@ -24,7 +24,7 @@ import Tutorial from './Tutorial';
 import LevelUpCelebration from './LevelUpCelebration';
 import Changelog from './Changelog';
 import GameMenu from './GameMenu';
-import { useBackgroundMusic } from '../hooks/useBackgroundMusic';
+// import { useBackgroundMusic } from '../hooks/useBackgroundMusic';
 import { useSocialStore } from '../store/socialStore';
 import { FeedbackModal } from './FeedbackModal';
 import { AdminDashboard } from './AdminDashboard';
@@ -63,9 +63,9 @@ export default function Dashboard() {
     const addRound = useGameStore(state => state.addRound);
     const resetGame = useGameStore(state => state.resetGame);
     const undoLastRound = useGameStore(state => state.undoLastRound);
-    const level = useGameStore(state => state.level);
-    const lastAcknowledgedLevel = useGameStore(state => state.lastAcknowledgedLevel);
-    const acknowledgeLevelUp = useGameStore(state => state.acknowledgeLevelUp);
+    // const level = useGameStore(state => state.level);
+    // const lastAcknowledgedLevel = useGameStore(state => state.lastAcknowledgedLevel);
+    // const acknowledgeLevelUp = useGameStore(state => state.acknowledgeLevelUp);
     const hasSeenTutorial = useGameStore(state => state.hasSeenTutorial);
     const setHasSeenTutorial = useGameStore(state => state.setHasSeenTutorial);
     const achievements = useGameStore(state => state.achievements);
@@ -82,7 +82,7 @@ export default function Dashboard() {
     const isAdminOpen = useGameStore(state => state.isAdminOpen);
     const setIsAdminOpen = useGameStore(state => state.setIsAdminOpen);
     const adminAuthToken = useGameStore(state => state.adminAuthToken);
-    const setAdminAuthToken = useGameStore(state => state.setAdminAuthToken);
+    // const setAdminAuthToken = useGameStore(state => state.setAdminAuthToken);
     const hasSeenNewOnlineModeAnnouncement = useGameStore(state => state.hasSeenNewOnlineModeAnnouncement);
     const setHasSeenNewOnlineModeAnnouncement = useGameStore(state => state.setHasSeenNewOnlineModeAnnouncement);
     const background = useGameStore(state => state.background);
@@ -94,12 +94,12 @@ export default function Dashboard() {
 
     // 🔥 États du jeu en ligne (Store synchro avec le plan de fix)
     const onlineGameStarted = useOnlineGameStore(state => state.gameStarted);
-    const onlineStarted = useOnlineGameStore(state => state.onlineStarted);
+    // const onlineStarted = useOnlineGameStore(state => state.onlineStarted);
     const activeState = useOnlineGameStore(state => state.activeState);
-    const leaveRoom = useOnlineGameStore(state => state.leaveRoom);
+    // const leaveRoom = useOnlineGameStore(state => state.leaveRoom);
     const roomCode = useOnlineGameStore(state => state.roomCode);
 
-    const disconnectOnline = useOnlineGameStore(state => state.disconnect);
+    // const disconnectOnline = useOnlineGameStore(state => state.disconnect);
     const joinRoom = useOnlineGameStore(state => state.joinRoom);
     const setOnlinePlayerInfo = useOnlineGameStore(state => state.setPlayerInfo);
 
@@ -110,7 +110,7 @@ export default function Dashboard() {
     const friends = useSocialStore(state => state.friends);
     const activeChatId = useSocialStore(state => state.activeChatId);
     const setActiveChatId = useSocialStore(state => state.setActiveChatId);
-    const { playClick, playAchievement, playSocialNotify } = useFeedback();
+    const { playAchievement, playSocialNotify } = useFeedback();
 
     const setActiveTab = useGameStore(state => state.setActiveTab);
     const activeTab = useGameStore(state => state.activeTab);
@@ -165,7 +165,7 @@ export default function Dashboard() {
             syncProfileWithBackend(userProfile);
             fetchFriends(String(userProfile.id));
         }
-    }, [userProfile?.id, userProfile?.vibeId, syncProfileWithBackend, fetchFriends, generateSkyId]);
+    }, [userProfile?.id, userProfile?.vibeId, userProfile, syncProfileWithBackend, fetchFriends, generateSkyId]);
     // Migration Local -> DB pour la V2
     useEffect(() => {
         if (!migratedToV2) {
@@ -183,7 +183,7 @@ export default function Dashboard() {
         if (achievements && achievements.length > 0) {
             playAchievement();
         }
-    }, [achievements?.length, playAchievement]);
+    }, [achievements?.length, achievements, playAchievement]);
 
     // Debug logs pour le plan de fix
     useEffect(() => {
@@ -200,18 +200,7 @@ export default function Dashboard() {
 
     // Presence is now handled in SocketProvider - no duplicate logic here
 
-    const handleQuitOnlineGame = () => {
-        setConfirmConfig({
-            isOpen: true,
-            title: "Quitter la partie ?",
-            message: "Es-tu sûr de vouloir quitter la session en ligne ?",
-            variant: "danger",
-            onConfirm: () => {
-                leaveRoom();
-                setActiveTab('home');
-            }
-        });
-    };
+    // const handleQuitOnlineGame = () => { ... } moved/removed if unused
 
     // Presence is now handled in SocketProvider - no duplicate logic here
 
@@ -222,7 +211,7 @@ export default function Dashboard() {
         };
     }, []); // Empty dependency array for mount/unmount logs
 
-    const handleBackToMenu = useCallback((wasDaily) => {
+    const handleBackToMenu = useCallback(() => {
         setVirtualScreen('menu');
         setActiveTab('home');
     }, [setActiveTab]);
@@ -255,7 +244,7 @@ export default function Dashboard() {
         return () => {
             navigator.serviceWorker?.removeEventListener('message', handleSWMessage);
         };
-    }, [userProfile?.name, roomCode, joinRoom, setOnlinePlayerInfo]);
+    }, [userProfile?.name, userProfile?.avatarId, roomCode, joinRoom, setOnlinePlayerInfo, setActiveTab]);
 
     // --- DEEP-LINKING LOGIC (URL-based fallback) ---
     useEffect(() => {
@@ -302,7 +291,7 @@ export default function Dashboard() {
             window.removeEventListener('focus', checkDeepLink);
             clearInterval(interval);
         };
-    }, [userProfile?.name, roomCode, activeTab, joinRoom, setOnlinePlayerInfo]);
+    }, [userProfile?.name, userProfile?.avatarId, roomCode, activeTab, joinRoom, setOnlinePlayerInfo, setActiveTab]);
 
     useEffect(() => {
         console.log(`[DASH] ActiveTab set to: ${activeTab}, effectiveTab: ${effectiveTab}`);
@@ -314,7 +303,7 @@ export default function Dashboard() {
             console.log("[DASH] gameStatus is PLAYING and not in virtual tab, auto-switching to 'game' tab");
             setTimeout(() => setActiveTab('game'), 0);
         }
-    }, [gameStatus, activeTab, isInOnlineSession]);
+    }, [gameStatus, activeTab, isInOnlineSession, setActiveTab, userProfile?.avatarId]);
 
     // Reset scroll when switching tabs (delayed to avoid flash during animation)
     useEffect(() => {
@@ -339,7 +328,7 @@ export default function Dashboard() {
             case 'home':
                 if (gameStatus === 'SETUP') {
                     return (
-                        <motion.div
+                        <Motion.div
                             key="setup"
                             variants={pageVariants}
                             initial="initial"
@@ -352,11 +341,11 @@ export default function Dashboard() {
                                 onNavigate={setActiveTab}
                                 onOpenTutorial={() => setIsTutorialOpen(true)}
                             />
-                        </motion.div>
+                        </Motion.div>
                     );
                 }
                 return (
-                    <motion.div
+                    <Motion.div
                         key="home"
                         variants={pageVariants}
                         initial="initial"
@@ -423,12 +412,12 @@ export default function Dashboard() {
                                 <div className="text-4xl font-black text-emerald-600 drop-shadow-sm">{leadingPlayer?.score}</div>
                             </CardContent>
                         </Card>
-                    </motion.div>
+                    </Motion.div>
                 );
 
             case 'rounds':
                 return (
-                    <motion.div
+                    <Motion.div
                         key="rounds"
                         variants={pageVariants}
                         initial="initial"
@@ -445,7 +434,7 @@ export default function Dashboard() {
                                 Aucune manche jouée.
                             </div>
                         )}
-                    </motion.div>
+                    </Motion.div>
                 );
 
 
@@ -454,7 +443,7 @@ export default function Dashboard() {
                 // On ne vérifie plus !virtualGameState ici pour permettre d'accéder au bouton "Reprendre" dans GameMenu
                 if (!onlineGameStarted && virtualScreen === 'menu') {
                     return (
-                        <motion.div
+                        <Motion.div
                             key="game-menu"
                             variants={pageVariants}
                             initial="initial"
@@ -471,11 +460,11 @@ export default function Dashboard() {
                                 playerLevel={playerLevel}
                                 setCardSkin={setCardSkin}
                             />
-                        </motion.div>
+                        </Motion.div>
                     );
                 }
                 return (
-                    <motion.div
+                    <Motion.div
                         key="virtual"
                         variants={pageVariants}
                         initial="initial"
@@ -503,12 +492,12 @@ export default function Dashboard() {
                             initialScreen={virtualScreen}
                             onBackToMenu={handleBackToMenu}
                         />
-                    </motion.div>
+                    </Motion.div>
                 );
 
             case 'pastGames':
                 return (
-                    <motion.div
+                    <Motion.div
                         key="pastGames"
                         variants={pageVariants}
                         initial="initial"
@@ -517,12 +506,12 @@ export default function Dashboard() {
                         transition={pageTransition}
                     >
                         <GameHistory />
-                    </motion.div>
+                    </Motion.div>
                 );
 
             case 'social':
                 return (
-                    <motion.div
+                    <Motion.div
                         key="social"
                         variants={pageVariants}
                         initial="initial"
@@ -534,12 +523,12 @@ export default function Dashboard() {
                             setActiveTab={setActiveTab}
                             setVirtualScreen={setVirtualScreen}
                         />
-                    </motion.div>
+                    </Motion.div>
                 );
 
             case 'stats':
                 return (
-                    <motion.div
+                    <Motion.div
                         key="stats"
                         variants={pageVariants}
                         initial="initial"
@@ -548,12 +537,12 @@ export default function Dashboard() {
                         transition={pageTransition}
                     >
                         <Stats />
-                    </motion.div>
+                    </Motion.div>
                 );
 
             case 'settings':
                 return (
-                    <motion.div
+                    <Motion.div
                         key="settings"
                         variants={pageVariants}
                         initial="initial"
@@ -562,12 +551,12 @@ export default function Dashboard() {
                         transition={pageTransition}
                     >
                         <SettingsPage onViewChangelog={() => setActiveTab('changelog')} />
-                    </motion.div>
+                    </Motion.div>
                 );
 
             case 'changelog':
                 return (
-                    <motion.div
+                    <Motion.div
                         key="changelog"
                         variants={pageVariants}
                         initial="initial"
@@ -584,13 +573,13 @@ export default function Dashboard() {
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
                         <Changelog />
-                    </motion.div>
+                    </Motion.div>
                 );
 
             case 'game':
             default:
                 return (
-                    <motion.div
+                    <Motion.div
                         key="game"
                         variants={pageVariants}
                         initial="initial"
@@ -690,7 +679,7 @@ export default function Dashboard() {
                                 />
                             </div>
                         </Card>
-                    </motion.div>
+                    </Motion.div>
                 );
         }
     };
@@ -739,7 +728,7 @@ export default function Dashboard() {
 
             <AnimatePresence>
                 {gameInvitation && (
-                    <motion.div
+                    <Motion.div
                         initial={{ opacity: 0, y: 50, scale: 0.9, x: '-50%' }}
                         animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
                         exit={{ opacity: 0, scale: 0.8, x: '-50%' }}
@@ -780,19 +769,19 @@ export default function Dashboard() {
                                 <X className="h-6 w-6" />
                             </button>
                         </div>
-                    </motion.div>
+                    </Motion.div>
                 )}
             </AnimatePresence>
 
             {/* Global Chat Notification Banner */}
             <AnimatePresence>
                 {unreadCount > 0 && activeTab !== 'social' && !activeChatId && (
-                    <motion.div
+                    <Motion.div
                         initial={{ opacity: 0, y: 100, x: '-50%' }}
                         animate={{ opacity: 1, y: 0, x: '-50%' }}
                         exit={{ opacity: 0, y: 50, transition: { duration: 0.2 } }}
                         onClick={() => {
-                            const unreadEntries = Object.entries(useSocialStore.getState().unreadMessages).filter(([_, count]) => count > 0);
+                            const unreadEntries = Object.entries(useSocialStore.getState().unreadMessages).filter(([_, count]) => count >= 2);
                             if (unreadEntries.length === 1) {
                                 const [friendId] = unreadEntries[0];
                                 useSocialStore.getState().setActiveChatId(friendId);
@@ -824,7 +813,7 @@ export default function Dashboard() {
                                 <Play className="h-5 w-5 ml-1" fill="currentColor" />
                             </div>
                         </div>
-                    </motion.div>
+                    </Motion.div>
                 )}
             </AnimatePresence>
 
@@ -858,14 +847,14 @@ export default function Dashboard() {
             <AnimatePresence>
                 {isWallpaperModalOpen && (
                     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-                        <motion.div
+                        <Motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
                             onClick={() => setIsWallpaperModalOpen(false)}
                         />
-                        <motion.div
+                        <Motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -919,7 +908,7 @@ export default function Dashboard() {
                                     ))}
                                 </div>
                             </div>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>
