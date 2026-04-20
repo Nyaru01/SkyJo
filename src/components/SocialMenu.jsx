@@ -31,7 +31,7 @@ export default function SocialDashboard(props) {
     const [isAvatarSelectorOpen, setIsAvatarSelectorOpen] = useState(false);
     const [newName, setNewName] = useState(userProfile.name);
     const [copySuccess, setCopySuccess] = useState(false);
-    const [activeTab, setActiveTab] = useState('friends');
+    const [activeTab, setActiveTab] = useState('leaderboard');
     const [friendToDelete, setFriendToDelete] = useState(null);
     const [hasNotificationsEnabled, setHasNotificationsEnabled] = useState(true);
     const [isCheckingNotifications, setIsCheckingNotifications] = useState(true);
@@ -338,18 +338,18 @@ export default function SocialDashboard(props) {
             {/* Tabs Navigation */}
             <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/5">
                 <button
-                    onClick={() => { setActiveTab('friends'); playClick(); }}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${activeTab === 'friends' ? 'bg-skyjo-blue text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                >
-                    <Users className="w-4 h-4" />
-                    Amis
-                </button>
-                <button
                     onClick={() => { setActiveTab('leaderboard'); playClick(); }}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${activeTab === 'leaderboard' ? 'bg-skyjo-blue text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                 >
                     <Trophy className="w-4 h-4" />
                     Classement
+                </button>
+                <button
+                    onClick={() => { setActiveTab('friends'); playClick(); }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${activeTab === 'friends' ? 'bg-skyjo-blue text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                    <Users className="w-4 h-4" />
+                    Amis
                 </button>
             </div>
 

@@ -72,7 +72,7 @@ export const PremiumTiltButton = ({
                     contentClassName
                 )}>
                     {/* Content wrapper */}
-                    <div className="font-bold text-white uppercase tracking-wider drop-shadow-sm text-lg flex items-center justify-center gap-2.5 leading-none w-full whitespace-nowrap">
+                    <div className="font-bold text-white uppercase tracking-wider drop-shadow-sm text-lg flex items-center justify-center gap-2.5 leading-tight w-full">
                         {children}
                     </div>
                 </div>

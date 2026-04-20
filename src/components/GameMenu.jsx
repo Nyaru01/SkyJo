@@ -232,7 +232,7 @@ export default function GameMenu({
                                 isWeeklyAvailable ? "text-emerald-100" : "text-slate-400"
                             )}>
                                 {isWeeklyAvailable ? (
-                                    <>🎮 Mode <span className="text-white">Tourment</span> • Gardez 3x "0" + <span className="text-white">Gagner</span> = +10 XP</>
+                                    <> Gardez 3x "0" et <span className="text-white">Gagner</span> = +10 XP</>
                                 ) : (
                                     <>Réinitialisation dans <span className="text-emerald-400">{getWeeklyRemainingDays()} jours</span></>
                                 )}
