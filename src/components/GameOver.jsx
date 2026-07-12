@@ -99,27 +99,27 @@ export default function GameOver() {
     const breakers = totals.filter(p => p.score >= threshold);
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-            <Card className="w-full max-w-lg border-none shadow-2xl bg-white dark:bg-slate-800 animate-scale-in">
+        <div className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-hidden">
+            <Card className="w-full max-w-lg max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-2rem)] border-none shadow-2xl bg-white dark:bg-slate-800 animate-scale-in flex flex-col overflow-hidden">
                 {/* Header Victoire Premium */}
-                <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 p-8 text-center text-white rounded-t-2xl relative overflow-hidden">
+                <div className="shrink-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 p-5 sm:p-8 text-center text-white rounded-t-2xl relative overflow-hidden">
                     {/* Effet shimmer overlay */}
                     <div className="absolute inset-0 animate-shimmer opacity-30 pointer-events-none" />
 
                     {/* Trophée animé */}
                     <div className="relative z-10">
-                        <div className="bg-white/20 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 shadow-glow-gold backdrop-blur-md animate-float">
-                            <Trophy className="h-12 w-12 text-yellow-300 drop-shadow-lg" />
+                        <div className="bg-white/20 w-16 h-16 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4 shadow-glow-gold backdrop-blur-md animate-float">
+                            <Trophy className="h-9 w-9 sm:h-12 sm:w-12 text-yellow-300 drop-shadow-lg" />
                         </div>
                         <h2 className="text-3xl font-extrabold mb-1 drop-shadow-md">🏆 Victoire !</h2>
                         <p className="text-emerald-50 font-semibold text-lg">{winner.name} remporte la partie</p>
-                        <div className="mt-5 text-7xl font-black tracking-tighter drop-shadow-lg">
+                        <div className="mt-2 sm:mt-5 text-5xl sm:text-7xl font-black tracking-tighter drop-shadow-lg">
                             {winner.score} <span className="text-2xl font-medium opacity-80">pts</span>
                         </div>
                     </div>
                 </div>
 
-                <CardContent className="pt-6 space-y-6">
+                <CardContent className="flex-1 min-h-0 overflow-y-auto overscroll-contain pt-4 sm:pt-6 space-y-4 sm:space-y-6">
                     {/* Alerte dépassement seuil */}
                     {breakers.length > 0 && (
                         <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-start gap-3 shadow-sm">
@@ -174,8 +174,10 @@ export default function GameOver() {
                         </div>
                     </div>
 
-                    {/* Boutons d'action */}
-                    <div className="grid grid-cols-2 gap-3 pt-4">
+                </CardContent>
+
+                {/* Actions toujours visibles, même sur les petits écrans */}
+                <div className="shrink-0 grid grid-cols-2 gap-3 p-4 border-t border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md pb-[calc(1rem+env(safe-area-inset-bottom))]">
                         <Button
                             variant="outline"
                             onClick={resetGame}
@@ -189,8 +191,7 @@ export default function GameOver() {
                         >
                             <RefreshCw className="h-4 w-4" /> Rejouer
                         </Button>
-                    </div>
-                </CardContent>
+                </div>
             </Card>
         </div>
     );
