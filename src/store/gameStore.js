@@ -42,7 +42,7 @@ export const useGameStore = create(
             vibrationEnabled: true,
             hasSeenTutorial: false,
             hasSeenNewOnlineModeAnnouncement: false,
-            hasSeenWeeklyChallengeAnnouncementV2: false,
+            hasSeenWeeklyChallengeAnnouncementV3: false,
             migratedToV2: false, // Flag for LocalStorage -> DB migration
             isRehydrated: false, // Flag to track when store is ready
             profileLoadedFromBackend: false, // Prevent early sync from overwriting DB
@@ -105,7 +105,7 @@ export const useGameStore = create(
 
             setHasSeenNewOnlineModeAnnouncement: (seen) => set({ hasSeenNewOnlineModeAnnouncement: seen }),
 
-            setHasSeenWeeklyChallengeAnnouncement: (seen) => set({ hasSeenWeeklyChallengeAnnouncementV2: seen }),
+            setHasSeenWeeklyChallengeAnnouncement: (seen) => set({ hasSeenWeeklyChallengeAnnouncementV3: seen }),
 
             setIsAdminOpen: (open) => set({ isAdminOpen: open }),
 
@@ -591,7 +591,7 @@ export const useGameStore = create(
         }),
         {
             name: 'skyjo-storage',
-            version: 6,
+            version: 7,
             migrate: (persistedState, version) => {
                 // ... migration
                 if (version < 5) {
@@ -604,6 +604,12 @@ export const useGameStore = create(
                     persistedState = {
                         ...persistedState,
                         background: '/Wallpapers/bg-skyjo.png'
+                    };
+                }
+                if (version < 7) {
+                    persistedState = {
+                        ...persistedState,
+                        hasSeenWeeklyChallengeAnnouncementV3: false
                     };
                 }
                 // Ensure usedProfile exists and has an ID during migration
