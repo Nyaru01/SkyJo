@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, Zap, Flame, Cloud, Sprout } from 'lucide-react';
+import { X, Sparkles, Zap, Flame, Cloud, Sun } from 'lucide-react';
 import { Button } from './ui/Button';
 
-export const CURRENT_NEWS_VERSION = 10;
+export const CURRENT_NEWS_VERSION = 11;
 
 const FEATURES = [
     {
@@ -22,11 +22,11 @@ const FEATURES = [
         bg: "bg-slate-400/10"
     },
     {
-        title: "Floraisons de Zéros",
-        description: "Le nouveau défi hebdomadaire est disponible ! Cumulez les 3 cartes minimum '0' pour gagner la partie.",
-        icon: Sprout,
-        color: "text-emerald-400",
-        bg: "bg-emerald-400/10"
+        title: "Mode Été · 40 °C",
+        description: "Le défi hebdomadaire passe à l'heure d'été : terminez avec au moins 2 cartes '0' et 2 cartes '4', puis remportez la partie.",
+        icon: Sun,
+        color: "text-amber-400",
+        bg: "bg-amber-400/10"
     },
     {
         title: "Sauvegarde Cloud",
