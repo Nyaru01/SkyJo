@@ -32,7 +32,7 @@ export default function GameMenu({
     const isDailyAvailable = useGameStore(selectIsDailyAvailable);
     const isWeeklyAvailable = useGameStore(selectIsWeeklyAvailable);
     const weeklyChallengeWinDate = useGameStore(state => state.weeklyChallengeWinDate);
-    const hasSeenWeeklyAnnouncement = useGameStore(state => state.hasSeenWeeklyChallengeAnnouncementV2);
+    const hasSeenWeeklyAnnouncement = useGameStore(state => state.hasSeenWeeklyChallengeAnnouncementV3);
     const setHasSeenWeeklyAnnouncement = useGameStore(state => state.setHasSeenWeeklyChallengeAnnouncement);
     
     const [showWeeklyAnnouncement, setShowWeeklyAnnouncement] = React.useState(false);
@@ -202,7 +202,7 @@ export default function GameMenu({
                             )} />
                         </div>
                     </div>
-                </PremiumTiltButton>                {/* Défi Hebdo - Floraison de Zéros */}
+                </PremiumTiltButton>                {/* Défi Hebdo - Mode Été 40 °C */}
                 <PremiumTiltButton
                     onClick={() => {
                         if (!isWeeklyAvailable) return;
@@ -221,7 +221,7 @@ export default function GameMenu({
                     <div className="flex items-center justify-between w-full relative z-10 text-left">
                         <div className="flex flex-col justify-center">
                             <div className="flex items-center gap-2">
-                                <h3 className="text-lg font-bold text-white leading-tight">FLORAISON DE ZÉROS</h3>
+                                <h3 className="text-lg font-bold text-white leading-tight">MODE ÉTÉ · 40 °C</h3>
                                 {isWeeklyAvailable && (
                                     <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                                 )}
@@ -231,7 +231,7 @@ export default function GameMenu({
                                 isWeeklyAvailable ? "text-emerald-100" : "text-slate-400"
                             )}>
                                 {isWeeklyAvailable ? (
-                                    <> Gardez 3x "0" et <span className="text-white">Gagner</span> = +10 XP</>
+                                    <> Gardez 2x "0" + 2x "4" et <span className="text-white">Gagnez</span> = +10 XP</>
                                 ) : (
                                     <>Réinitialisation dans <span className="text-emerald-400">{getWeeklyRemainingDays()} jours</span></>
                                 )}
@@ -614,7 +614,7 @@ export default function GameMenu({
                             {/* Icon */}
                             <div className="relative mb-6 inline-block">
                                 <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 transform -rotate-6">
-                                    <span className="text-4xl animate-float-3d">🌸</span>
+                                    <span className="text-4xl animate-float-3d">☀️</span>
                                 </div>
                                 <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center border-4 border-slate-900">
                                     <Sparkles className="w-4 h-4 text-white" />
@@ -622,12 +622,12 @@ export default function GameMenu({
                             </div>
 
                             {/* Text content */}
-                            <h2 className="text-2xl font-black text-white mb-2 tracking-tight">FLORAISON DE ZÉROS</h2>
+                            <h2 className="text-2xl font-black text-white mb-2 tracking-tight">MODE ÉTÉ · 40 °C</h2>
                             <p className="text-emerald-400 font-bold text-sm uppercase tracking-widest mb-6">Nouvel Événement Hebdo</p>
                             
                             <div className="space-y-4 mb-8 text-center">
                                 <p className="text-slate-300 text-sm leading-relaxed">
-                                    Célébrez le printemps avec ce défi corsé ! En <strong className="text-rose-400">mode Tourment</strong>, gardez <strong className="text-white">3 cartes "0"</strong> sur votre grille finale ET <strong className="text-white">remportez la victoire</strong> contre l'IA.
+                                    Affrontez la canicule avec ce défi corsé ! En <strong className="text-rose-400">mode Tourment</strong>, gardez au moins <strong className="text-white">2 cartes "0" et 2 cartes "4"</strong> sur votre grille finale pour former 40 °C, ET <strong className="text-white">remportez la victoire</strong> contre l'IA.
                                 </p>
                                 <p className="text-[10px] text-emerald-400/80 font-bold italic -mt-2">
                                     (Attention : ne les mettez pas dans la même colonne !)

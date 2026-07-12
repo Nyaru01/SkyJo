@@ -781,23 +781,23 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     // --- Challenge Success Celebration ---
     useEffect(() => {
-        if (challengeJustWon === 'floraison_zeros') {
+        if (challengeJustWon === 'ete_40_degres') {
             // Explose de confettis !
             confetti({
                 particleCount: 150,
                 spread: 70,
                 origin: { y: 0.6 },
-                colors: ['#10b981', '#34d399', '#6ee7b7', '#fff']
+                colors: ['#f59e0b', '#f97316', '#facc15', '#fff']
             });
 
-            toast.success("🌸 DÉFI RÉUSSI : FLORAISON DE ZÉROS ! +10 XP", {
+            toast.success("☀️ DÉFI RÉUSSI : MODE ÉTÉ 40 °C ! +10 XP", {
                 duration: 6000,
-                icon: '🌸',
+                icon: '☀️',
                 style: {
-                    border: '1px solid #10b981',
+                    border: '1px solid #f59e0b',
                     padding: '20px',
                     color: '#fff',
-                    background: '#064e3b',
+                    background: '#7c2d12',
                     fontWeight: 'black',
                     fontSize: '16px'
                 }
