@@ -61,7 +61,7 @@ const applyGameEndLogic = (newState) => {
             });
         });
 
-        // --- Weekly Challenge: Floraison de Zéros 🌸 ---
+        // --- Weekly Challenge: Mode Été — 40 °C ☀️ ---
         const gameStore = useGameStore.getState();
         const lastWinStr = gameStore.weeklyChallengeWinDate;
         const isAvailable = !lastWinStr || (Math.ceil(Math.abs(new Date() - new Date(lastWinStr)) / (1000 * 60 * 60 * 24)) >= 7);
@@ -70,17 +70,18 @@ const applyGameEndLogic = (newState) => {
             const human = newState.players.find(p => p.id === 'human-1');
             if (human) {
                 const zeros = human.hand.filter(c => c && c.isRevealed && c.value === 0).length;
-                if (zeros >= 3) {
+                const fours = human.hand.filter(c => c && c.isRevealed && c.value === 4).length;
+                if (zeros >= 2 && fours >= 2) {
                     // Check if human won the round
                     const roundScores = calculateFinalScores(newState);
                     const minScore = Math.min(...roundScores.map(s => s.finalScore));
                     const humanScore = roundScores.find(s => s.playerId === human.id)?.finalScore;
 
                     if (humanScore === minScore) {
-                        console.log('[CHALLENGE] 🌸 Floraison de Zéros & Victoire ! +10 XP');
+                        console.log('[CHALLENGE] ☀️ Mode Été 40 °C & Victoire ! +10 XP');
                         gameStore.markWeeklyWin();
                         gameStore.addXP(10);
-                        newState.challengeJustWon = 'floraison_zeros';
+                        newState.challengeJustWon = 'ete_40_degres';
                     }
                 }
             }
@@ -107,7 +108,7 @@ export const useVirtualGameStore = create(
             selectedCardIndex: null,
             showScores: false,
             animatingCards: [],
-            challengeJustWon: null, // 'floraison_zeros' or null
+            challengeJustWon: null, // 'ete_40_degres' or null
 
             // AI mode state
             aiMode: false,
