@@ -3,7 +3,7 @@ import { clientsClaim } from 'workbox-core';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
 
 // Version marker
-const SW_VERSION = '1.3.1-update-migration';
+const SW_VERSION = '1.3.2-no-store-migration';
 console.log(`⚙️ [SW] Service Worker ${SW_VERSION} Loading...`);
 
 // One-time migration bridge for clients stuck on the broken 3.2.x update
