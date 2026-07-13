@@ -22,6 +22,11 @@ export function UpdateProvider({ children }) {
         needRefresh: [needRefresh, setNeedRefresh],
         updateServiceWorker,
     } = useRegisterSW({
+        onNeedRefresh() {
+            setShowPrompt(true);
+            setCheckResult('update-available');
+            setIsChecking(false);
+        },
         onRegisteredSW(swUrl, reg) {
             console.log('[SW] Registered:', swUrl);
             setRegistration(reg);
@@ -46,15 +51,6 @@ export function UpdateProvider({ children }) {
         const intervalId = window.setInterval(() => registration.update(), 5 * 60 * 1000);
         return () => window.clearInterval(intervalId);
     }, [registration]);
-
-    // Show prompt when update is available
-    useEffect(() => {
-        if (needRefresh) {
-            setShowPrompt(true);
-            setCheckResult('update-available');
-            setIsChecking(false);
-        }
-    }, [needRefresh]);
 
     const waitForWaitingWorker = useCallback((reg, timeout = 12000) => new Promise((resolve) => {
         if (!reg) {
@@ -106,7 +102,15 @@ export function UpdateProvider({ children }) {
                     : null
             );
 
-            if (!reg) throw new Error('Service worker indisponible');
+            if (!reg) {
+                // Some Android WebAPK installations lose their registration
+                // while continuing to display an HTTP-cached shell. A unique
+                // navigation fetches the no-store index served by Express.
+                const url = new URL(window.location.href);
+                url.searchParams.set('force-update', Date.now().toString());
+                window.location.replace(url.toString());
+                return;
+            }
 
             let hasReloaded = false;
             const reloadOnce = () => {
