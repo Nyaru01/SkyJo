@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, RefreshCw, Sparkles, ArrowRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from './ui/Button';
+import { RefreshCw, Sparkles, ArrowRight } from 'lucide-react';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { useUpdateCheck } from './UpdatePrompt';
+
+/* global __APP_VERSION__ */
 
 export function VersionCheck() {
     const [serverVersion, setServerVersion] = useState(null);
     const [isOutdated, setIsOutdated] = useState(false);
     const clientVersion = __APP_VERSION__;
+    const { applyUpdate, isUpdating, updateError } = useUpdateCheck();
 
     useEffect(() => {
         const checkVersion = async () => {
@@ -51,35 +54,22 @@ export function VersionCheck() {
 
     if (!isOutdated) return null;
 
-    const handleUpdate = () => {
-        // We no longer force a brutal reload. 
-        // We just inform the user or rely on the standard PWA UpdatePrompt which is more gentle.
-        toast.success("Mise à jour disponible ! Utilisez le bouton de mise à jour en bas de l'écran.", {
-            icon: '🚀',
-            duration: 5000
-        });
-
-        // Trigger SW update check again to make sure UpdatePrompt sees it
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function (registrations) {
-                for (let registration of registrations) {
-                    registration.update();
-                }
-            });
-        }
-    };
-
     return (
         <AnimatePresence>
             {isOutdated && (
-                <motion.div
+                <Motion.div
                     initial={{ opacity: 0, y: -50, x: '-50%' }}
                     animate={{ opacity: 1, y: 0, x: '-50%' }}
                     exit={{ opacity: 0, y: -50, x: '-50%' }}
-                    className="fixed top-6 left-1/2 z-[200] w-[90%] max-w-xs cursor-pointer"
-                    onClick={handleUpdate}
+                    className="fixed top-6 left-1/2 z-[200] w-[90%] max-w-xs"
                 >
-                    <div className="relative group">
+                    <button
+                        type="button"
+                        onClick={applyUpdate}
+                        disabled={isUpdating}
+                        aria-label={`Installer la mise à jour ${serverVersion}`}
+                        className="relative group w-full text-left disabled:cursor-wait"
+                    >
                         {/* Outer Glow */}
                         <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full group-hover:bg-emerald-500/30 transition-all animate-pulse" />
 
@@ -92,7 +82,9 @@ export function VersionCheck() {
                             </div>
 
                             <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] leading-none mb-1">Update Ready</p>
+                                <p className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] leading-none mb-1">
+                                    {isUpdating ? 'Mise à jour…' : updateError ? 'Réessayer' : 'Update Ready'}
+                                </p>
                                 <div className="flex items-center gap-1.5">
                                     <span className="text-[11px] font-bold text-slate-400">v{clientVersion}</span>
                                     <ArrowRight className="w-3 h-3 text-slate-600" />
@@ -101,11 +93,16 @@ export function VersionCheck() {
                             </div>
 
                             <div className="h-8 w-8 rounded-full bg-emerald-500 flex items-center justify-center text-slate-900 group-hover:scale-110 transition-transform">
-                                <RefreshCw className="w-4 h-4" />
+                                <RefreshCw className={`w-4 h-4 ${isUpdating ? 'animate-spin' : ''}`} />
                             </div>
                         </div>
-                    </div>
-                </motion.div>
+                        {updateError && (
+                            <span className="block mt-2 px-4 text-center text-[10px] font-bold text-rose-300">
+                                {updateError}
+                            </span>
+                        )}
+                    </button>
+                </Motion.div>
             )}
         </AnimatePresence>
     );
