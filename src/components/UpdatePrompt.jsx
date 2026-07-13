@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, createContext, useContext, useRef } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, X, CheckCircle } from 'lucide-react';
 
 // Context to share update functions across components
@@ -14,6 +14,9 @@ export function UpdateProvider({ children }) {
     const [isChecking, setIsChecking] = useState(false);
     const [checkResult, setCheckResult] = useState(null); // 'up-to-date' | 'update-available' | null
     const [registration, setRegistration] = useState(null);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [updateError, setUpdateError] = useState(null);
+    const updateInProgressRef = useRef(false);
 
     const {
         needRefresh: [needRefresh, setNeedRefresh],
@@ -22,18 +25,27 @@ export function UpdateProvider({ children }) {
         onRegisteredSW(swUrl, reg) {
             console.log('[SW] Registered:', swUrl);
             setRegistration(reg);
-
-            // Check for updates every 5 minutes
-            if (reg) {
-                setInterval(() => {
-                    reg.update();
-                }, 5 * 60 * 1000);
-            }
         },
         onRegisterError(error) {
             console.error('[SW] Registration error:', error);
         },
     });
+
+    // Keep a registration available even when the PWA hook registered before
+    // React finished mounting, and periodically check for a new worker.
+    useEffect(() => {
+        if (!('serviceWorker' in navigator)) return undefined;
+
+        if (!registration) {
+            navigator.serviceWorker.ready.then(setRegistration).catch((error) => {
+                console.error('[SW] Unable to access registration:', error);
+            });
+            return undefined;
+        }
+
+        const intervalId = window.setInterval(() => registration.update(), 5 * 60 * 1000);
+        return () => window.clearInterval(intervalId);
+    }, [registration]);
 
     // Show prompt when update is available
     useEffect(() => {
@@ -44,11 +56,90 @@ export function UpdateProvider({ children }) {
         }
     }, [needRefresh]);
 
-    const handleUpdate = () => {
-        updateServiceWorker(true);
-    };
+    const waitForWaitingWorker = useCallback((reg, timeout = 12000) => new Promise((resolve) => {
+        if (!reg) {
+            resolve(null);
+            return;
+        }
+
+        if (reg.waiting) {
+            resolve(reg.waiting);
+            return;
+        }
+
+        let settled = false;
+        let timeoutId;
+        const finish = (worker = null) => {
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(timeoutId);
+            resolve(worker || reg.waiting || null);
+        };
+
+        const watchWorker = (worker) => {
+            if (!worker) return;
+            if (worker.state === 'installed') {
+                finish(reg.waiting || worker);
+                return;
+            }
+            worker.addEventListener('statechange', () => {
+                if (worker.state === 'installed') finish(reg.waiting || worker);
+            });
+        };
+
+        watchWorker(reg.installing);
+        reg.addEventListener('updatefound', () => watchWorker(reg.installing), { once: true });
+        timeoutId = window.setTimeout(() => finish(reg.waiting), timeout);
+    }), []);
+
+    const applyUpdate = useCallback(async () => {
+        if (updateInProgressRef.current) return;
+
+        updateInProgressRef.current = true;
+        setIsUpdating(true);
+        setUpdateError(null);
+
+        try {
+            const reg = registration || (
+                'serviceWorker' in navigator
+                    ? await navigator.serviceWorker.getRegistration()
+                    : null
+            );
+
+            if (!reg) throw new Error('Service worker indisponible');
+
+            let hasReloaded = false;
+            const reloadOnce = () => {
+                if (hasReloaded) return;
+                hasReloaded = true;
+                window.location.reload();
+            };
+
+            navigator.serviceWorker.addEventListener('controllerchange', reloadOnce, { once: true });
+
+            // Ask the browser to fetch the latest sw.js, then wait until it is
+            // actually installed before sending SKIP_WAITING.
+            await reg.update();
+            const waitingWorker = await waitForWaitingWorker(reg);
+            waitingWorker?.postMessage({ type: 'SKIP_WAITING' });
+
+            // Also use Workbox's supported activation path. It reloads when the
+            // new worker takes control.
+            await updateServiceWorker(true);
+
+            // Mobile WebViews occasionally miss controllerchange. Keep a safe
+            // fallback so the user is never left on a frozen update button.
+            window.setTimeout(reloadOnce, 6000);
+        } catch (error) {
+            console.error('[SW] Update failed:', error);
+            setUpdateError('Impossible d’installer la mise à jour. Vérifiez votre connexion puis réessayez.');
+            setIsUpdating(false);
+            updateInProgressRef.current = false;
+        }
+    }, [registration, updateServiceWorker, waitForWaitingWorker]);
 
     const handleDismiss = () => {
+        if (isUpdating) return;
         setShowPrompt(false);
         setNeedRefresh(false);
     };
@@ -99,6 +190,9 @@ export function UpdateProvider({ children }) {
         isChecking,
         checkResult,
         needRefresh,
+        applyUpdate,
+        isUpdating,
+        updateError,
     };
 
     return (
@@ -107,7 +201,7 @@ export function UpdateProvider({ children }) {
             {/* Update Toast */}
             <AnimatePresence>
                 {showPrompt && (
-                    <motion.div
+                    <Motion.div
                         initial={{ opacity: 0, y: 50, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 50, scale: 0.9 }}
@@ -122,22 +216,25 @@ export function UpdateProvider({ children }) {
                             <div className="relative flex items-start gap-4">
                                 {/* Icon */}
                                 <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 rounded-xl shrink-0 shadow-inner">
-                                    <RefreshCw className="w-6 h-6 text-blue-400 animate-spin-slow" />
+                                    <RefreshCw className={`w-6 h-6 text-blue-400 ${isUpdating ? 'animate-spin' : 'animate-spin-slow'}`} />
                                 </div>
 
                                 {/* Content */}
                                 <div className="flex-1 min-w-0 pt-1">
                                     <h3 className="font-bold text-white text-base leading-none mb-1">
-                                        Mise à jour disponible
+                                        {isUpdating ? 'Installation en cours…' : 'Mise à jour disponible'}
                                     </h3>
                                     <p className="text-slate-400 text-xs">
-                                        Une nouvelle version de Skyjo est prête à être installée.
+                                        {updateError || (isUpdating
+                                            ? 'Skyjo va redémarrer automatiquement.'
+                                            : 'Une nouvelle version de Skyjo est prête à être installée.')}
                                     </p>
                                 </div>
 
                                 {/* Close button */}
                                 <button
                                     onClick={handleDismiss}
+                                    disabled={isUpdating}
                                     className="p-1 -mr-2 -mt-2 hover:bg-white/10 text-slate-400 hover:text-white rounded-full transition-colors shrink-0"
                                 >
                                     <X className="w-5 h-5" />
@@ -146,16 +243,17 @@ export function UpdateProvider({ children }) {
 
                             {/* Action button */}
                             <button
-                                onClick={handleUpdate}
-                                className="relative w-full mt-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-sm rounded-xl hover:from-blue-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-blue-500/25 active:scale-[0.98]"
+                                onClick={applyUpdate}
+                                disabled={isUpdating}
+                                className="relative w-full mt-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-sm rounded-xl hover:from-blue-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-blue-500/25 active:scale-[0.98] disabled:opacity-70 disabled:cursor-wait"
                             >
                                 <span className="flex items-center justify-center gap-2">
                                     <CheckCircle className="w-4 h-4" />
-                                    Mettre à jour maintenant
+                                    {isUpdating ? 'Mise à jour…' : updateError ? 'Réessayer' : 'Mettre à jour maintenant'}
                                 </span>
                             </button>
                         </div>
-                    </motion.div>
+                    </Motion.div>
                 )}
             </AnimatePresence>
         </UpdateContext.Provider>
@@ -165,6 +263,8 @@ export function UpdateProvider({ children }) {
 /**
  * Hook to access update functions from any component
  */
+// The provider and its companion hook intentionally share this module.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useUpdateCheck() {
     const context = useContext(UpdateContext);
     if (!context) {
@@ -174,6 +274,9 @@ export function useUpdateCheck() {
             isChecking: false,
             checkResult: null,
             needRefresh: false,
+            applyUpdate: () => { },
+            isUpdating: false,
+            updateError: null,
         };
     }
     return context;
