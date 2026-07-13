@@ -631,7 +631,7 @@ export default function GameMenu({
                                     Affrontez la canicule avec ce défi corsé ! En <strong className="text-rose-400">mode Tourment</strong>, gardez au moins <strong className="text-white">2 cartes "0" et 2 cartes "4"</strong> sur votre grille finale pour former 40 °C, ET <strong className="text-white">remportez la victoire</strong> contre l'IA.
                                 </p>
                                 <p className="text-[10px] text-emerald-400/80 font-bold italic -mt-2">
-                                    (Attention : ne les mettez pas dans la même colonne !)
+                                    (Attention : évitez d'aligner 3 cartes identiques dans une même colonne, sinon elles seront supprimées !)
                                 </p>
 
                                 <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl py-3 px-4 inline-flex items-center gap-3">
