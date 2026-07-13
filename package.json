@@ -1,7 +1,7 @@
 {
   "name": "skyjo-score-app",
   "private": true,
-  "version": "3.3.0",
+  "version": "3.3.1",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"node --watch server/index.js\" \"vite\"",
