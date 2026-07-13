@@ -41,7 +41,16 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../dist')));
+app.use(express.static(path.join(__dirname, '../dist'), {
+    setHeaders: (res, filePath) => {
+        const fileName = path.basename(filePath);
+        if (['sw.js', 'index.html', 'manifest.webmanifest'].includes(fileName)) {
+            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+        }
+    }
+}));
 
 // --- Database Configuration ---
 
@@ -152,6 +161,9 @@ initDb();
 // --- API ROUTES ---
 
 app.get(['/api/config/version', '/api/version'], (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     try {
         const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
         res.json({ version: packageJson.version, status: 'online' });
@@ -718,7 +730,13 @@ io.on('connection', (socket) => {
 
 app.get('*', (req, res) => {
     if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'Not found' });
-    res.sendFile(path.join(__dirname, '../dist', 'index.html'), (err) => {
+    res.sendFile(path.join(__dirname, '../dist', 'index.html'), {
+        headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        }
+    }, (err) => {
         if (err) res.status(200).send('<h1>SkyJo Server Running</h1>');
     });
 });
