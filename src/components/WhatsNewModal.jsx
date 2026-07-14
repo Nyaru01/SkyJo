@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, Zap, Flame, Cloud, Sun } from 'lucide-react';
+import React from 'react';
+import { Sparkles, Zap, Flame, Cloud, Sun } from 'lucide-react';
 import { Button } from './ui/Button';
+import ModalShell, { ModalCloseButton } from './ui/ModalShell';
 
 export const CURRENT_NEWS_VERSION = 11;
 
@@ -72,12 +71,9 @@ const FEATURES = [
     }
 ];
 
-const FeatureCard = ({ feature, index }) => (
-    <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: index * 0.1 }}
-        className="flex items-start gap-4 p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all duration-200"
+const FeatureCard = ({ feature }) => (
+    <div
+        className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10"
     >
         <div
             className={`shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${feature.bg}`}
@@ -93,60 +89,13 @@ const FeatureCard = ({ feature, index }) => (
                 {feature.description}
             </p>
         </div>
-    </motion.div>
+    </div>
 );
 
 export default function WhatsNewModal({ isOpen, onClose }) {
-    // Gestion du scroll et de l'accessibilité
-    useEffect(() => {
-        if (isOpen) {
-            // Désactive le scroll du body
-            document.body.style.overflow = 'hidden';
-
-            // Gestion de la touche Échap
-            const handleEscape = (e) => {
-                if (e.key === 'Escape') onClose();
-            };
-
-            document.addEventListener('keydown', handleEscape);
-
-            return () => {
-                document.body.style.overflow = '';
-                document.removeEventListener('keydown', handleEscape);
-            };
-        }
-    }, [isOpen, onClose]);
-
-    return createPortal(
-        <AnimatePresence>
-            {isOpen && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
-                    onClick={onClose}
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="modal-title"
-                    style={{ willChange: 'opacity' }}
-                >
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        transition={{
-                            type: "spring",
-                            damping: 25,
-                            stiffness: 300,
-                            duration: 0.3
-                        }}
-                        className="w-full max-w-md relative"
-                        onClick={(e) => e.stopPropagation()}
-                        style={{ willChange: 'transform, opacity' }}
-                    >
-                        <div className="relative overflow-hidden bg-slate-900 rounded-3xl border border-white/10 shadow-2xl">
+    return (
+        <ModalShell isOpen={isOpen} onClose={onClose} labelledBy="whats-new-title">
+                        <div className="relative flex max-h-[calc(100dvh-1.5rem)] flex-col overflow-hidden">
                             {/* Effets de fond */}
                             <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-slate-900 to-purple-900/40 pointer-events-none" />
                             <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-purple-500/10 to-transparent pointer-events-none" />
@@ -155,18 +104,13 @@ export default function WhatsNewModal({ isOpen, onClose }) {
                             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
                             {/* Header */}
-                            <div className="relative p-6 pb-3 text-center">
-                                <motion.div
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-                                    className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 mb-3 shadow-lg shadow-purple-500/50"
-                                >
+                            <div className="relative p-5 pb-3 text-center sm:p-6 sm:pb-3">
+                                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 mb-3 shadow-lg shadow-purple-500/20">
                                     <Sparkles className="w-6 h-6 text-white" />
-                                </motion.div>
+                                </div>
 
                                 <h2
-                                    id="modal-title"
+                                    id="whats-new-title"
                                     className="text-2xl font-black text-white uppercase tracking-tight mb-1"
                                 >
                                     Quoi de neuf ?
@@ -175,41 +119,30 @@ export default function WhatsNewModal({ isOpen, onClose }) {
                                     Découvrez les dernières améliorations
                                 </p>
 
-                                <button
-                                    onClick={onClose}
-                                    className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-all duration-200 hover:rotate-90"
-                                    aria-label="Fermer"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
+                                <ModalCloseButton onClick={onClose} className="absolute top-3 right-3" />
                             </div>
 
                             {/* Contenu */}
-                            <div className="relative p-5 pt-2 space-y-2.5 max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                            <div className="relative min-h-0 flex-1 p-4 pt-2 sm:p-5 sm:pt-2 space-y-2.5 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                                 {FEATURES.map((feature, idx) => (
                                     <FeatureCard
                                         key={`feature-${idx}`}
                                         feature={feature}
-                                        index={idx}
                                     />
                                 ))}
                             </div>
 
                             {/* Footer */}
-                            <div className="relative p-5 pt-3">
+                            <div className="relative border-t border-white/10 bg-slate-950/60 p-4 sm:p-5">
                                 <Button
                                     size="lg"
                                     onClick={onClose}
-                                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-purple-500/25 transition-all duration-200 hover:shadow-purple-500/40"
+                                    className="premium-focus-ring w-full min-h-12 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-purple-500/20 transition-all duration-200"
                                 >
                                     C'est parti !
                                 </Button>
                             </div>
                         </div>
-                    </motion.div>
-                </motion.div>
-            )}
-        </AnimatePresence>,
-        document.body
+        </ModalShell>
     );
 }
