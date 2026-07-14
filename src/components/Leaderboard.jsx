@@ -1,15 +1,16 @@
 import React from 'react';
 import { Trophy, Medal, Crown, Star, TrendingUp } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { Card, CardContent } from './ui/Card';
 import { AVATARS } from '../lib/avatars';
 import { cn } from '../lib/utils'; // Assuming cn utility is available here
+import { getCareerIdentity } from '../lib/masterCareer';
 
 const PodiumStep = ({ user, rank, delay }) => {
     const isFirst = rank === 1;
     const isSecond = rank === 2;
-    const isThird = rank === 3;
     const avatar = AVATARS.find(a => a.id === user?.avatar_id)?.path || '/avatars/cat.png';
+    const identity = getCareerIdentity(user?.level || 1);
 
     // Color Theme Mapping
     const theme = isFirst ? {
@@ -33,7 +34,7 @@ const PodiumStep = ({ user, rank, delay }) => {
     };
 
     return (
-        <motion.div
+        <Motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ 
@@ -110,7 +111,7 @@ const PodiumStep = ({ user, rank, delay }) => {
                         isFirst ? 'text-amber-300' : 'text-slate-500',
                         "group-hover:text-amber-400"
                     )}>
-                        Niveau {user?.level || 1}
+                        {identity.label} {identity.prestigeLabel || ''}
                     </span>
                     <div className="flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md transition-all group-hover:bg-skyjo-blue/20 group-hover:border-skyjo-blue/40">
                         <span className="text-[10px] font-black text-white tracking-tighter mr-0.5 opacity-80">XP</span>
@@ -120,11 +121,11 @@ const PodiumStep = ({ user, rank, delay }) => {
                     </div>
                 </div>
             </div>
-        </motion.div>
+        </Motion.div>
     );
 };
 
-export default function Leaderboard({ data, currentUserId, type, setType }) {
+export default function Leaderboard({ data, currentUserId }) {
     const top3Arr = [
         data[1] || null, // Silver (2nd)
         data[0] || null, // Gold (1st)
@@ -157,9 +158,10 @@ export default function Leaderboard({ data, currentUserId, type, setType }) {
                         const rank = index + 4;
                         const isMe = user.id === currentUserId;
                         const avatar = AVATARS.find(a => a.id === user.avatar_id)?.path || '/avatars/cat.png';
+                        const identity = getCareerIdentity(user.level);
 
                         return (
-                            <motion.div
+                            <Motion.div
                                 key={user.id}
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -182,7 +184,7 @@ export default function Leaderboard({ data, currentUserId, type, setType }) {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-xs font-black text-white uppercase tracking-tighter">Niveau {user.level}</p>
+                                            <p className="text-xs font-black text-white uppercase tracking-tighter">{identity.label} {identity.prestigeLabel || ''}</p>
                                             <div className="flex items-center justify-end gap-1 px-2 py-0.5 rounded-lg bg-white/5 border border-white/5">
                                                 <span className="text-[9px] font-black text-white/60 mr-0.5">XP</span>
                                                 <span className="text-[11px] font-bold text-slate-300">{user.xp}</span>
@@ -190,7 +192,7 @@ export default function Leaderboard({ data, currentUserId, type, setType }) {
                                         </div>
                                     </CardContent>
                                 </Card>
-                            </motion.div>
+                            </Motion.div>
                         );
                     })}
 

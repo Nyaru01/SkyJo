@@ -19,8 +19,36 @@ export const getCardSkinPath = (skinId) => {
             return '/card-back-gold.png';
         case 'galaxy':
             return '/card-back-galaxy.png';
+        case 'astral-sigil':
+            return '/master/card-back-astral-sigil.webp';
+        case 'nebula-core':
+            return '/master/card-back-nebula-core.webp';
+        case 'cosmic-dragon':
+            return '/master/card-back-cosmic-dragon.webp';
+        case 'eternal-prism':
+            return '/master/card-back-eternal-prism.webp';
+        case 'transcendent-void':
+            return '/master/card-back-transcendent-void.webp';
         case 'classic':
         default:
             return '/card-back.png?v=2';
     }
 };
+
+const SKIN_REQUIRED_LEVELS = {
+    classic: 1,
+    papyrus: 3,
+    neon: 5,
+    cyberpunk: 6,
+    carbon: 8,
+    obsidian: 12,
+    gold: 13,
+    galaxy: 18,
+    'astral-sigil': 110,
+    'nebula-core': 130,
+    'cosmic-dragon': 150,
+    'eternal-prism': 170,
+    'transcendent-void': 190
+};
+
+export const getCardSkinRequiredLevel = (skinId) => SKIN_REQUIRED_LEVELS[skinId] || 1;

@@ -1,5 +1,5 @@
 
-export const LEVEL_REWARDS = {
+export const CAREER_REWARDS = {
     2: {
         type: 'emoji',
         content: '🍪',
@@ -161,11 +161,60 @@ export const LEVEL_REWARDS = {
     100: { type: 'ultime', content: '🌌', name: 'TRANSCENDANCE TOTALE', description: 'Vous n\'êtes plus un joueur. Vous êtes devenu l\'Esprit Pur du Skyjo.', rarity: 'transcendant' },
 };
 
+// Backward-compatible name used by older consumers.
+export const LEVEL_REWARDS = CAREER_REWARDS;
+
+const MASTER_CHAPTERS = [
+    { name: 'Éveil Astral', icon: '✨', rarity: 'legendary', titles: ['Étincelle', 'Veilleur', 'Messager', 'Éclaireur', 'Voyageur', 'Gardien', 'Oracle', 'Tisseur', 'Héraut', 'Sceau'] },
+    { name: 'Portes Célestes', icon: '🌠', rarity: 'legendary', titles: ['Passage', 'Arche', 'Clé', 'Sentinelle', 'Pilier', 'Marcheur', 'Cartographe', 'Pèlerin', 'Architecte', 'Porte'] },
+    { name: 'Cœur de Nébuleuse', icon: '🌌', rarity: 'mythic', titles: ['Poussière', 'Souffle', 'Nuage', 'Flamme', 'Écho', 'Vortex', 'Noyau', 'Alchimiste', 'Souverain', 'Cœur'] },
+    { name: 'Temple des Étoiles', icon: '🏛️', rarity: 'mythic', titles: ['Acolyte', 'Scribe', 'Prêtre', 'Vigie', 'Colonne', 'Autel', 'Sanctuaire', 'Hiérophante', 'Divinité', 'Temple'] },
+    { name: 'Dragon Cosmique', icon: '🐉', rarity: 'divine', titles: ['Écaille', 'Griffe', 'Souffle', 'Aile', 'Regard', 'Rugissement', 'Cavalier', 'Dominateur', 'Empereur', 'Dragon'] },
+    { name: 'Constellation Infinie', icon: '♾️', rarity: 'divine', titles: ['Étoile', 'Astre', 'Comète', 'Orbite', 'Zodiaque', 'Amas', 'Couronne', 'Firmament', 'Infini', 'Constellation'] },
+    { name: 'Prisme Éternel', icon: '🔮', rarity: 'éternel', titles: ['Éclat', 'Rayon', 'Spectre', 'Cristal', 'Reflet', 'Faisceau', 'Réfraction', 'Diamant', 'Lumière', 'Prisme'] },
+    { name: 'Horizon des Événements', icon: '🕳️', rarity: 'éternel', titles: ['Signal', 'Onde', 'Gravité', 'Paradoxe', 'Faille', 'Singularité', 'Abîme', 'Voyageur', 'Point Zéro', 'Horizon'] },
+    { name: 'Vide Transcendant', icon: '🌑', rarity: 'transcendant', titles: ['Silence', 'Ombre', 'Néant', 'Essence', 'Âme', 'Monolithe', 'Entité', 'Souverain', 'Absolu', 'Vide'] },
+    { name: 'Ascension Skyjo', icon: '👑', rarity: 'transcendant', titles: ['Élu', 'Prodige', 'Parangon', 'Légende', 'Immortel', 'Avatar', 'Démiurge', 'Omniscient', 'Esprit Pur', 'Ascension'] }
+];
+
+const MASTER_MILESTONES = {
+    10: { type: 'skin', skinId: 'astral-sigil', image: '/master/card-back-astral-sigil.webp', name: 'Dos Sceau Astral', content: '🎨' },
+    20: { type: 'background', backgroundId: 'celestial-gate', image: '/master/wallpaper-celestial-gate.webp', name: 'Fond Porte Céleste', content: '🖼️' },
+    30: { type: 'skin', skinId: 'nebula-core', image: '/master/card-back-nebula-core.webp', name: 'Dos Cœur de Nébuleuse', content: '🎨' },
+    40: { type: 'background', backgroundId: 'star-temple', image: '/master/wallpaper-star-temple.webp', name: 'Fond Temple des Étoiles', content: '🖼️' },
+    50: { type: 'skin', skinId: 'cosmic-dragon', image: '/master/card-back-cosmic-dragon.webp', name: 'Dos Dragon Cosmique', content: '🎨' },
+    60: { type: 'background', backgroundId: 'infinite-constellation', image: '/master/wallpaper-infinite-constellation.webp', name: 'Fond Constellation Infinie', content: '🖼️' },
+    70: { type: 'skin', skinId: 'eternal-prism', image: '/master/card-back-eternal-prism.webp', name: 'Dos Prisme Éternel', content: '🎨' },
+    80: { type: 'background', backgroundId: 'event-horizon', image: '/master/wallpaper-event-horizon.webp', name: 'Fond Horizon des Événements', content: '🖼️' },
+    90: { type: 'skin', skinId: 'transcendent-void', image: '/master/card-back-transcendent-void.webp', name: 'Dos Vide Transcendant', content: '🎨' },
+    100: { type: 'background', backgroundId: 'skyjo-ascension', image: '/master/wallpaper-skyjo-ascension.webp', name: 'Fond Ascension Skyjo', content: '🖼️' }
+};
+
+export const MASTER_REWARDS = Object.fromEntries(
+    MASTER_CHAPTERS.flatMap((chapter, chapterIndex) =>
+        chapter.titles.map((title, titleIndex) => {
+            const masterLevel = chapterIndex * 10 + titleIndex + 1;
+            const milestone = MASTER_MILESTONES[masterLevel];
+            return [masterLevel, {
+                type: milestone?.type || 'generic',
+                content: milestone?.content || chapter.icon,
+                name: milestone?.name || `${title} — ${chapter.name}`,
+                description: milestone
+                    ? `${chapter.name} maîtrisé : ce cosmétique est désormais disponible.`
+                    : `${title} du chapitre ${chapter.name}, un nouveau pas vers la maîtrise absolue.`,
+                rarity: chapter.rarity,
+                chapter: chapter.name,
+                ...milestone
+            }];
+        })
+    )
+);
+
 /**
  * Helper to get rewards as an array for UI lists
  */
 export const getRewardsList = () => {
-    return Object.entries(LEVEL_REWARDS).map(([level, reward]) => ({
+    return Object.entries(CAREER_REWARDS).map(([level, reward]) => ({
         level: parseInt(level),
         ...reward,
         // Map types to legacy icon format for ExperienceBar if needed
@@ -175,3 +224,10 @@ export const getRewardsList = () => {
                     reward.type === 'generic' ? reward.content : '🎁'
     })).sort((a, b) => a.level - b.level);
 };
+
+export const getMasterRewardsList = () => Object.entries(MASTER_REWARDS).map(([level, reward]) => ({
+    level: Number(level),
+    globalLevel: 100 + Number(level),
+    icon: reward.content || '⭐',
+    ...reward
+})).sort((a, b) => a.level - b.level);

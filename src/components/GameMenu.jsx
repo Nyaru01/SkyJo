@@ -326,7 +326,12 @@ export default function GameMenu({
                             { id: 'carbon', name: 'Carbon', img: '/card-back-carbon.png', level: 8 },
                             { id: 'obsidian', name: 'Obsidian', img: '/card-back-obsidian.png', level: 12 },
                             { id: 'gold', name: 'Gold', img: '/card-back-gold.png', level: 13 },
-                            { id: 'galaxy', name: 'Galaxy', img: '/card-back-galaxy.png', level: 18 }
+                            { id: 'galaxy', name: 'Galaxy', img: '/card-back-galaxy.png', level: 18 },
+                            { id: 'astral-sigil', name: 'Sceau Astral', img: '/master/card-back-astral-sigil.webp', level: 110 },
+                            { id: 'nebula-core', name: 'Cœur de Nébuleuse', img: '/master/card-back-nebula-core.webp', level: 130 },
+                            { id: 'cosmic-dragon', name: 'Dragon Cosmique', img: '/master/card-back-cosmic-dragon.webp', level: 150 },
+                            { id: 'eternal-prism', name: 'Prisme Éternel', img: '/master/card-back-eternal-prism.webp', level: 170 },
+                            { id: 'transcendent-void', name: 'Vide Transcendant', img: '/master/card-back-transcendent-void.webp', level: 190 }
                         ]}
                         selectedSkinId={playerCardSkin}
                         onSelect={setCardSkin}

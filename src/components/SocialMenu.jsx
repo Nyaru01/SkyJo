@@ -15,9 +15,12 @@ import ConfirmModal from './ui/ConfirmModal';
 import { auth, googleProvider } from '../lib/firebase';
 import { signInWithPopup } from 'firebase/auth';
 import { toast } from 'react-hot-toast';
+import { getCareerIdentity } from '../lib/masterCareer';
 
 export default function SocialDashboard(props) {
     const { userProfile, updateUserProfile, generateSkyId } = useGameStore();
+    const playerLevel = useGameStore(state => state.level);
+    const careerIdentity = getCareerIdentity(playerLevel);
     const {
         friends, fetchFriends, searchResults, isSearching,
         searchUsers, sendFriendRequest, acceptFriendRequest,
@@ -236,7 +239,7 @@ export default function SocialDashboard(props) {
                             </div>
                         </div>
                         <div className="text-right">
-                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">Niveau {useGameStore.getState().level || 1}</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{careerIdentity.label} {careerIdentity.prestigeLabel || ''}</p>
                             <div className="w-20 h-1.5 bg-slate-700 rounded-full mt-1 overflow-hidden">
                                 <div
                                     className="h-full bg-gradient-to-r from-skyjo-blue to-emerald-400"
