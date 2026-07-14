@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Lock, CheckCircle } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -9,7 +9,14 @@ export default function SkinCarousel({ skins, selectedSkinId, onSelect, playerLe
     // Find index of selected skin on mount or prop change
     useEffect(() => {
         const index = skins.findIndex(s => s.id === selectedSkinId);
-        if (index !== -1) setActiveIndex(index);
+        if (index === -1) return;
+        let active = true;
+        queueMicrotask(() => {
+            if (active) setActiveIndex(index);
+        });
+        return () => {
+            active = false;
+        };
     }, [selectedSkinId, skins]);
 
     const handleNext = () => {
@@ -70,7 +77,7 @@ export default function SkinCarousel({ skins, selectedSkinId, onSelect, playerLe
                         const rotateY = offset * -25;
 
                         return (
-                            <motion.div
+                            <Motion.div
                                 key={skin.id}
                                 layout
                                 initial={false}
@@ -149,19 +156,19 @@ export default function SkinCarousel({ skins, selectedSkinId, onSelect, playerLe
                                     )}
                                 </div>
 
-                                {/* Label - Moved Below */}
+                                {/* Keep long cosmetic names readable as a single pill. */}
                                 <div className={cn(
-                                    "absolute -bottom-8 inset-x-0 text-center transition-opacity duration-300",
+                                    "absolute left-1/2 top-[calc(100%+12px)] w-max max-w-[200px] -translate-x-1/2 text-center transition-opacity duration-300",
                                     isActive ? "opacity-100" : "opacity-0"
                                 )}>
                                     <span className={cn(
-                                        "font-bold text-sm bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10",
+                                        "inline-flex whitespace-nowrap rounded-full border border-white/10 bg-slate-950/85 px-3 py-1 text-[13px] font-bold leading-none shadow-lg",
                                         isSelected ? "text-white" : "text-slate-300"
                                     )}>
                                         {skin.name}
                                     </span>
                                 </div>
-                            </motion.div>
+                            </Motion.div>
                         );
                     })}
                 </AnimatePresence>

@@ -867,7 +867,7 @@ export default function Dashboard() {
                     && hasSeenTutorial
                     && !hasUnreadNews
                     && !hasSeenNewOnlineModeAnnouncement
-                    && (playerLevel < 100 || hasSeenMasterCareerAnnouncement)
+                    && hasSeenMasterCareerAnnouncement
                     && effectiveTab === 'home'
                     && !isTutorialOpen
                     && !isWhatsNewOpen
@@ -877,7 +877,6 @@ export default function Dashboard() {
             <MasterCareerPopup
                 isOpen={
                     isRehydrated
-                    && playerLevel >= 100
                     && hasSeenTutorial
                     && !hasUnreadNews
                     && !hasSeenMasterCareerAnnouncement
@@ -885,6 +884,7 @@ export default function Dashboard() {
                     && !isTutorialOpen
                     && !isWhatsNewOpen
                 }
+                playerLevel={playerLevel}
                 onClose={() => setHasSeenMasterCareerAnnouncement(true)}
                 onDiscover={() => {
                     setHasSeenMasterCareerAnnouncement(true);
