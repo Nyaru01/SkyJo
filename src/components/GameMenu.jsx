@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { Bot, ChevronRight, Users, Wifi, HelpCircle, Palette, X, Sparkles, RotateCcw, Zap, Swords, Flame, Image as ImageIcon } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Button } from './ui/Button';
@@ -85,12 +85,12 @@ export default function GameMenu({
 
 
     return (
-        <div className="max-w-md mx-auto p-4 space-y-4 min-h-[600px] flex flex-col pt-8">
+        <div className="max-w-md mx-auto px-3 sm:px-4 space-y-4 min-h-[600px] flex flex-col pt-6 sm:pt-8">
             {/* Sticky header + progression */}
-            <div className="sticky top-0 z-20 bg-gradient-to-b from-slate-950 via-slate-950/95 to-transparent pb-4 -mx-4 px-4 pt-4 -mt-4 rounded-t-[2.5rem]">
+            <div className="sticky top-0 z-20 bg-gradient-to-b from-slate-950 via-slate-950/95 to-transparent pb-4 -mx-3 sm:-mx-4 px-3 sm:px-4 pt-4 -mt-4 rounded-t-[2rem]">
                 {/* Header section */}
                 <div className="text-center mb-4 space-y-1">
-                    <h2 className="text-3xl font-black text-white tracking-tighter">MODE VIRTUEL</h2>
+                    <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">MODE VIRTUEL</h2>
                     <div className="h-1 w-12 bg-skyjo-blue mx-auto rounded-full" />
                 </div>
 
@@ -109,19 +109,19 @@ export default function GameMenu({
                         gradientTo="to-teal-600"
                         shadowColor="shadow-emerald-500/20"
                         className="w-full mb-2"
-                        contentClassName="h-auto pl-8 pr-6"
+                        contentClassName="game-mode-card-content"
                     >
                         <div className="flex items-center justify-between w-full relative z-10">
                             <div className="text-left">
-                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                <h3 className="game-mode-card-title text-white flex items-center gap-2">
                                     <RotateCcw className="h-5 w-5 animate-spin-slow" />
                                     REPRENDRE LA PARTIE
                                 </h3>
-                                <p className="text-[10px] text-emerald-100 font-medium uppercase tracking-wider mt-1">
+                                <p className="game-mode-card-meta text-emerald-100 uppercase">
                                     Continuez votre combat contre l'IA
                                 </p>
                             </div>
-                            <div className="w-12 h-12 rounded-2xl bg-emerald-500/30 border border-emerald-400/50 flex items-center justify-center">
+                            <div className="game-mode-icon bg-emerald-500/30 border border-emerald-400/50 flex items-center justify-center">
                                 <ChevronRight className="h-6 w-6 text-white group-hover:translate-x-1 transition-transform" />
                             </div>
                         </div>
@@ -134,19 +134,19 @@ export default function GameMenu({
                     gradientTo="to-indigo-600"
                     shadowColor="shadow-purple-500/20"
                     className="w-full"
-                    contentClassName="h-auto pl-8 pr-6"
+                    contentClassName="game-mode-card-content"
                 >
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="flex items-center justify-between w-full relative z-10 text-left">
                         <div className="flex flex-col justify-center">
-                            <h3 className="text-lg font-bold text-white leading-tight">
+                            <h3 className="game-mode-card-title text-white">
                                 JOUER CONTRE L'IA
                             </h3>
-                            <p className="text-[10px] text-indigo-200 font-bold uppercase mt-0.5 tracking-wide">
+                            <p className="game-mode-card-meta text-indigo-200 uppercase">
                                 Entraînez-vous en solo
                             </p>
                         </div>
-                        <div className="w-12 h-12 rounded-2xl bg-purple-500/30 border border-purple-400/50 flex items-center justify-center shrink-0 icon-3d-container">
+                        <div className="game-mode-icon bg-purple-500/30 border border-purple-400/50 flex items-center justify-center icon-3d-container">
                             <Bot className="h-6 w-6 text-white icon-3d animate-float-3d" />
                         </div>
                     </div>
@@ -164,18 +164,18 @@ export default function GameMenu({
                     gradientTo={isDailyAvailable ? "to-[#d946ef]" : "to-slate-800"}
                     shadowColor={isDailyAvailable ? "shadow-[#f971fb]/25" : "shadow-transparent"}
                     className={cn("w-full transition-all duration-500 group", !isDailyAvailable && "opacity-60 grayscale-[0.3]")}
-                    contentClassName="h-auto pl-8 pr-6"
+                    contentClassName="game-mode-card-content"
                 >
                     <div className="flex items-center justify-between w-full relative z-10 text-left">
                         <div className="flex flex-col justify-center">
                             <div className="flex items-center gap-2">
-                                <h3 className="text-lg font-bold text-white leading-tight">DÉFI QUOTIDIEN</h3>
+                                <h3 className="game-mode-card-title text-white">DÉFI QUOTIDIEN</h3>
                                 {isDailyAvailable && (
                                     <span className="flex h-1.5 w-1.5 rounded-full bg-white animate-ping" />
                                 )}
                             </div>
                             <p className={cn(
-                                "text-[10px] font-bold uppercase tracking-wider mt-0.5",
+                                "game-mode-card-meta uppercase",
                                 isDailyAvailable ? "text-amber-100" : "text-slate-400"
                             )}>
                                 {isDailyAvailable ? (
@@ -187,7 +187,7 @@ export default function GameMenu({
                         </div>
 
                         <div className={cn(
-                            "w-12 h-12 rounded-2xl border flex items-center justify-center transition-all duration-500 relative overflow-hidden shrink-0 icon-3d-container",
+                            "game-mode-icon border flex items-center justify-center transition-all duration-500 relative overflow-hidden icon-3d-container",
                             isDailyAvailable
                                 ? "bg-amber-500/20 border-amber-400/30 shadow-[0_0_15px_rgba(251,191,36,0.2)]"
                                 : "bg-slate-800/50 border-white/5"
@@ -217,18 +217,18 @@ export default function GameMenu({
                     gradientTo={isWeeklyAvailable ? "to-orange-600" : "to-slate-800"}
                     shadowColor={isWeeklyAvailable ? "shadow-amber-500/20" : "shadow-transparent"}
                     className={cn("w-full transition-all duration-500 group", !isWeeklyAvailable && "opacity-60 grayscale-[0.3]")}
-                    contentClassName="h-auto min-h-[6.5rem] px-5 sm:pl-8 sm:pr-6"
+                    contentClassName="game-mode-card-content"
                 >
                     <div className="flex items-center justify-between gap-4 w-full relative z-10 text-left">
                         <div className="flex min-w-0 flex-col justify-center">
                             <div className="flex items-center gap-2">
-                                <h3 className="text-base sm:text-lg font-bold text-white leading-tight">MODE ÉTÉ · 40 °C</h3>
+                                <h3 className="game-mode-card-title text-white">MODE ÉTÉ · 40 °C</h3>
                                 {isWeeklyAvailable && (
                                     <span className="flex h-1.5 w-1.5 shrink-0 rounded-full bg-amber-300 animate-pulse" />
                                 )}
                             </div>
                             <p className={cn(
-                                "text-[10px] sm:text-xs font-bold uppercase tracking-wider leading-relaxed mt-1",
+                                "game-mode-card-meta uppercase",
                                 isWeeklyAvailable ? "text-amber-100" : "text-slate-400"
                             )}>
                                 {isWeeklyAvailable ? (
@@ -243,7 +243,7 @@ export default function GameMenu({
                         </div>
 
                         <div className={cn(
-                            "w-12 h-12 rounded-2xl border flex items-center justify-center transition-all duration-500 relative overflow-hidden shrink-0 icon-3d-container",
+                            "game-mode-icon border flex items-center justify-center transition-all duration-500 relative overflow-hidden icon-3d-container",
                             isWeeklyAvailable
                                 ? "bg-amber-500/20 border-amber-300/40 shadow-[0_0_18px_rgba(245,158,11,0.25)]"
                                 : "bg-slate-800/50 border-white/5"
@@ -269,14 +269,14 @@ export default function GameMenu({
                     gradientTo="to-blue-600"
                     shadowColor="shadow-sky-500/20"
                     className="w-full"
-                    contentClassName="h-auto pl-8 pr-6"
+                    contentClassName="game-mode-card-content"
                 >
                     <div className="flex items-center justify-between w-full relative z-10 text-left">
                         <div className="flex flex-col justify-center">
-                            <h3 className="text-lg font-bold text-white leading-tight">JOUER EN LIGNE</h3>
-                            <p className="text-[10px] text-blue-100/90 font-bold uppercase mt-0.5 tracking-wide">Affrontez vos amis à distance</p>
+                            <h3 className="game-mode-card-title text-white">JOUER EN LIGNE</h3>
+                            <p className="game-mode-card-meta text-blue-100/90 uppercase">Affrontez vos amis à distance</p>
                         </div>
-                        <div className="w-12 h-12 rounded-2xl bg-sky-500/30 border border-sky-400/50 flex items-center justify-center shrink-0 icon-3d-container">
+                        <div className="game-mode-icon bg-sky-500/30 border border-sky-400/50 flex items-center justify-center icon-3d-container">
                             <Wifi className="h-6 w-6 text-white icon-3d animate-float-3d" />
                         </div>
                     </div>
@@ -286,20 +286,20 @@ export default function GameMenu({
                 <div className="grid grid-cols-2 gap-3">
                     <button
                         onClick={() => setShowRulesModal(true)}
-                        className="flex-1 flex items-center justify-center gap-3 p-4 rounded-2xl bg-slate-900/80 hover:bg-slate-900 border border-white/10 transition-all active:scale-95 group backdrop-blur-md"
+                        className="premium-focus-ring surface-card min-h-14 flex-1 flex items-center justify-center gap-3 p-3.5 hover:border-white/20 transition-all active:scale-[0.98] group"
                     >
                         <HelpCircle className="h-5 w-5 text-amber-500" />
-                        <span className="font-bold text-slate-200">Règles</span>
+                        <span className="text-sm font-bold text-slate-200">Règles</span>
                     </button>
                     <button
                         onClick={() => {
                             playClick();
                             useGameStore.getState().setIsWallpaperModalOpen(true);
                         }}
-                        className="flex-1 flex items-center justify-center gap-3 p-4 rounded-2xl bg-slate-900/80 hover:bg-slate-900 border border-white/10 transition-all active:scale-95 group backdrop-blur-md"
+                        className="premium-focus-ring surface-card min-h-14 flex-1 flex items-center justify-center gap-3 p-3.5 hover:border-white/20 transition-all active:scale-[0.98] group"
                     >
                         <ImageIcon className="h-5 w-5 text-indigo-400" />
-                        <span className="font-bold text-slate-200">Fond</span>
+                        <span className="text-sm font-bold text-slate-200">Fond</span>
                     </button>
                 </div>
             </div>
@@ -596,7 +596,7 @@ export default function GameMenu({
             {/* Weekly Challenge Announcement Modal */}
             {showWeeklyAnnouncement && createPortal(
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <motion.div
+                    <Motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -604,7 +604,7 @@ export default function GameMenu({
                         onClick={handleCloseAnnouncement}
                     />
                     
-                    <motion.div
+                    <Motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         className="relative w-full max-w-sm overflow-hidden"
@@ -660,7 +660,7 @@ export default function GameMenu({
                                 Disponible chaque semaine • Reset : 7 jours
                             </p>
                         </div>
-                    </motion.div>
+                    </Motion.div>
                 </div>,
                 document.body
             )}
