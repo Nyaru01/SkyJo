@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion as Motion } from 'framer-motion';
 import { Plus, X, User, Sparkles, Gamepad2, RefreshCw, CheckCircle, Edit2, ArrowRight, HelpCircle, Trophy, Target, Play, Settings, Download, Zap } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
@@ -17,6 +17,8 @@ import WhatsNewModal, { CURRENT_NEWS_VERSION } from './WhatsNewModal';
 import { TiltCard } from './ui/TiltCard';
 import { PremiumTiltButton } from './ui/PremiumTiltButton';
 import SkyjoVirtuelButton from './ui/SkyjoVirtuelButton';
+
+/* global __APP_VERSION__ */
 
 // Couleurs uniques pour chaque joueur
 const PLAYER_COLORS = [
@@ -48,7 +50,12 @@ const useSyncedAnimation = () => {
     return ref;
 };
 
-export default function GameSetup({ onNavigate, onOpenTutorial }) {
+export default function GameSetup({
+    onNavigate,
+    onOpenTutorial,
+    allowAutoNews = true,
+    onWhatsNewVisibilityChange
+}) {
     const [players, setPlayers] = useState([
         { name: '', avatarId: 'frog' }
     ]);
@@ -65,33 +72,36 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
     // refs already defined below
 
     // News State
-    const [showWhatsNew, setShowWhatsNew] = useState(false);
-    const [hasUnreadNews, setHasUnreadNews] = useState(false);
+    const [isNewsManuallyOpen, setIsNewsManuallyOpen] = useState(false);
+    const [hasDismissedAutoNews, setHasDismissedAutoNews] = useState(false);
+    const hasUnreadNews = Number.parseInt(
+        localStorage.getItem('skyjo_news_version') || '0',
+        10
+    ) < CURRENT_NEWS_VERSION;
+    const showWhatsNew = isNewsManuallyOpen
+        || (allowAutoNews && hasUnreadNews && !hasDismissedAutoNews);
 
     useEffect(() => {
-        const lastSeenVersion = parseInt(localStorage.getItem('skyjo_news_version') || '0');
-        if (lastSeenVersion < CURRENT_NEWS_VERSION) {
-            setHasUnreadNews(true);
-            setShowWhatsNew(true); // Auto-open for new updates
-        }
-    }, []);
+        onWhatsNewVisibilityChange?.(showWhatsNew);
+    }, [onWhatsNewVisibilityChange, showWhatsNew]);
+
+    useEffect(() => (
+        () => onWhatsNewVisibilityChange?.(false)
+    ), [onWhatsNewVisibilityChange]);
 
     // Unified Skyjo Score Container animation refs
     const scoreContainerRef = useSyncedAnimation();
 
-    const [particleStyles, setParticleStyles] = useState([]);
-
-    useEffect(() => {
-        const styles = [...Array(12)].map((_, i) => ({
+    const [particleStyles] = useState(() => (
+        [...Array(12)].map((_, i) => ({
             width: `${Math.random() * 2 + 1}px`,
             height: `${Math.random() * 2 + 1}px`,
             top: `${Math.random() * 100}%`,
             left: `${Math.random() * 100}%`,
             animationDelay: `${i * -1.2}s`,
             animationDuration: `${8 + Math.random() * 8}s`
-        }));
-        setParticleStyles(styles);
-    }, []);
+        }))
+    ));
 
     const addPlayer = () => {
         if (players.length < 8) {
@@ -344,8 +354,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                 <Button
                     variant="premium"
                     onClick={() => {
-                        setShowWhatsNew(true);
-                        setHasUnreadNews(false);
+                        setIsNewsManuallyOpen(true);
                         localStorage.setItem('skyjo_news_version', CURRENT_NEWS_VERSION.toString());
                     }}
                     className={cn(
@@ -358,7 +367,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                 </Button>
 
                 <div className="col-span-2 flex gap-3">
-                    <motion.button
+                    <Motion.button
                         onClick={checkForUpdates}
                         disabled={isChecking}
                         className={cn(
@@ -389,7 +398,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
                                 MISE À JOUR
                             </>
                         )}
-                    </motion.button>
+                    </Motion.button>
 
                     <InstallPWA
                         className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-[#9850E1]/10 hover:bg-[#9850E1]/20 border border-[#9850E1]/30 hover:border-[#9850E1]/50 rounded-xl text-[#9850E1] hover:text-[#d09dfc] transition-all text-xs font-bold uppercase tracking-wider"
@@ -407,9 +416,9 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
             <WhatsNewModal
                 isOpen={showWhatsNew}
                 onClose={() => {
-                    setShowWhatsNew(false);
+                    setIsNewsManuallyOpen(false);
+                    setHasDismissedAutoNews(true);
                     if (hasUnreadNews) {
-                        setHasUnreadNews(false);
                         localStorage.setItem('skyjo_news_version', CURRENT_NEWS_VERSION.toString());
                     }
                 }}
@@ -427,7 +436,7 @@ export default function GameSetup({ onNavigate, onOpenTutorial }) {
 
                     // Check if everything is now valid to start
                     if (updatedPlayers.every(p => p.name.trim() && p.name.trim().toLowerCase() !== 'joueur')) {
-                        const finalPlayers = updatedPlayers.map((p, i) => ({
+                        const finalPlayers = updatedPlayers.map((p) => ({
                             name: p.name.trim(),
                             avatarId: p.avatarId
                         }));

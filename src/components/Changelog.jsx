@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Sparkles, Calendar, CheckCircle2, Zap, AlertCircle, Info } from 'lucide-react';
 import { Card, CardContent } from './ui/Card';
 import { UPDATES } from '../data/updates';
@@ -18,12 +17,9 @@ export default function Changelog() {
             </div>
 
             <div className="space-y-8 relative before:absolute before:left-[1.25rem] before:top-4 before:bottom-4 before:w-0.5 before:bg-white/5">
-                {UPDATES.map((update, index) => (
-                    <motion.div
+                {UPDATES.map((update) => (
+                    <div
                         key={update.version}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
                         className="relative pl-12"
                     >
                         {/* Timeline Dot */}
@@ -70,7 +66,7 @@ export default function Changelog() {
                                 </div>
                             </CardContent>
                         </Card>
-                    </motion.div>
+                    </div>
                 ))}
             </div>
         </div>
