@@ -14,6 +14,7 @@ import { useFeedback } from '../hooks/useFeedback';
 import { cn } from '../lib/utils';
 import { AI_DIFFICULTY } from '../lib/skyjoAI';
 import RobotAvatar from './ui/RobotAvatar';
+import ModalShell from './ui/ModalShell';
 
 export default function GameMenu({
     setScreen,
@@ -335,13 +336,13 @@ export default function GameMenu({
             </Card>
 
             {/* Rules Modal */}
-            {showRulesModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div
-                        className="absolute inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-300"
-                        onClick={() => setShowRulesModal(false)}
-                    />
-                    <div className="relative w-full max-w-lg bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300">
+            <ModalShell
+                isOpen={showRulesModal}
+                onClose={() => setShowRulesModal(false)}
+                labelledBy="game-rules-title"
+                maxWidth="max-w-lg"
+                className="flex max-h-[85dvh] flex-col rounded-[2.5rem] bg-slate-950"
+            >
                         {/* Background Gradients */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 blur-[80px] rounded-full pointer-events-none" />
                         <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-500/5 blur-[80px] rounded-full pointer-events-none" />
@@ -349,7 +350,7 @@ export default function GameMenu({
                         {/* Header */}
                         <div className="relative p-6 px-8 border-b border-white/5 flex items-center justify-between shrink-0">
                             <div>
-                                <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
+                                <h2 id="game-rules-title" className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
                                     <span className="text-3xl">📜</span> Règles du Skyjo
                                 </h2>
                                 <p className="text-xs font-medium text-white/40 uppercase tracking-widest mt-1">Manuel de jeu officiel v2.0</p>
@@ -444,9 +445,7 @@ export default function GameMenu({
                         <div className="p-4 border-t border-white/5 bg-slate-950/30 text-center">
                             <p className="text-[10px] text-white/20 font-medium">Bonne chance, que le meilleur gagne !</p>
                         </div>
-                    </div>
-                </div>
-            )}
+            </ModalShell>
 
             {/* Daily Challenge Difficulty Modal - Portal to Body */}
             {showDailyChallengeModal && createPortal(

@@ -43,7 +43,7 @@ export function AboutSection({ onAdminUnlock, appVersion = 'v2.1.0' }) {
                     <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500 to-purple-600 blur-lg opacity-40 group-hover:opacity-60 transition-opacity duration-500" />
                     <div className="relative w-16 h-16 bg-gradient-to-tr from-indigo-600/20 via-indigo-500/20 to-purple-600/20 rounded-2xl flex items-center justify-center shadow-xl backdrop-blur-xl border border-white/20 overflow-hidden transition-transform duration-500">
                         <img
-                            src={`/info_premium.png?v=${Date.now()}`}
+                            src="/info_premium.png"
                             alt="Information"
                             className="w-full h-full object-cover rounded-2xl scale-110"
                         />

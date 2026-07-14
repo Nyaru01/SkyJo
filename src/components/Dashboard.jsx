@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { Settings, Trophy, Sparkles, History, Undo2, BarChart3, Play, LogOut, CheckCircle2, Users, HelpCircle, X, ArrowLeft, Palette, Check } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
@@ -30,18 +30,19 @@ import { FeedbackModal } from './FeedbackModal';
 import { AdminDashboard } from './AdminDashboard';
 import ChatPopup from './ChatPopup';
 import NewOnlineModePopup from './NewOnlineModePopup';
+import { CURRENT_NEWS_VERSION } from './WhatsNewModal';
 
-// Variants d'animation pour les transitions de pages
+// Stable page states: avoid full-page opacity/transform transitions around
+// glass surfaces, which can flash on mobile compositors.
 const pageVariants = {
-    initial: { opacity: 0 },
+    initial: { opacity: 1 },
     animate: { opacity: 1 },
-    exit: { opacity: 0 }
+    exit: { opacity: 1 }
 };
 
 const pageTransition = {
     type: "tween",
-    duration: 0.3,
-    ease: [0.25, 0.46, 0.45, 0.94]
+    duration: 0
 };
 
 const WALLPAPERS = [
@@ -116,7 +117,14 @@ export default function Dashboard() {
     const activeTab = useGameStore(state => state.activeTab);
 
     const [virtualScreen, setVirtualScreen] = useState('menu');
-    const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+    const [isTutorialManuallyOpen, setIsTutorialManuallyOpen] = useState(false);
+    const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
+    const previousGameStatusRef = useRef(gameStatus);
+    const isTutorialOpen = isTutorialManuallyOpen || (isRehydrated && !hasSeenTutorial);
+    const hasUnreadNews = Number.parseInt(
+        window.localStorage.getItem('skyjo_news_version') || '0',
+        10
+    ) < CURRENT_NEWS_VERSION;
 
     // 🔥 LOGIQUE DE VERROUILLAGE (Fix Plan)
     // On considère qu'on est en session si on a un code de room
@@ -147,15 +155,6 @@ export default function Dashboard() {
         onConfirm: () => { },
         variant: "danger"
     });
-
-    useEffect(() => {
-        if (!hasSeenTutorial) {
-            setTimeout(() => {
-                setIsTutorialOpen(true);
-                setHasSeenTutorial(true);
-            }, 0);
-        }
-    }, [hasSeenTutorial, setHasSeenTutorial]);
 
     useEffect(() => {
         if (!userProfile?.vibeId) {
@@ -297,20 +296,21 @@ export default function Dashboard() {
         console.log(`[DASH] ActiveTab set to: ${activeTab}, effectiveTab: ${effectiveTab}`);
     }, [activeTab, effectiveTab]);
 
-    // Auto-switch to 'game' tab when the game starts (but NOT if we are in virtual mode)
+    // Auto-switch only when a local game actually transitions to PLAYING.
+    // Depending on activeTab here used to bounce every menu back to the game.
     useEffect(() => {
-        if (gameStatus === 'PLAYING' && activeTab !== 'virtual' && !isInOnlineSession) {
-            console.log("[DASH] gameStatus is PLAYING and not in virtual tab, auto-switching to 'game' tab");
-            setTimeout(() => setActiveTab('game'), 0);
-        }
-    }, [gameStatus, activeTab, isInOnlineSession, setActiveTab, userProfile?.avatarId]);
+        const didStartGame = previousGameStatusRef.current !== 'PLAYING' && gameStatus === 'PLAYING';
+        previousGameStatusRef.current = gameStatus;
 
-    // Reset scroll when switching tabs (delayed to avoid flash during animation)
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            window.scrollTo(0, 0);
-        }, 200);
-        return () => clearTimeout(timer);
+        if (didStartGame && activeTab !== 'virtual' && !isInOnlineSession) {
+            console.log("[DASH] gameStatus is PLAYING and not in virtual tab, auto-switching to 'game' tab");
+            setActiveTab('game');
+        }
+    }, [gameStatus, activeTab, isInOnlineSession, setActiveTab]);
+
+    // Reset before the browser paints the new tab, avoiding a mid-transition jump.
+    useLayoutEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     }, [activeTab]);
 
     // Calculate totals
@@ -339,7 +339,9 @@ export default function Dashboard() {
                         >
                             <GameSetup
                                 onNavigate={setActiveTab}
-                                onOpenTutorial={() => setIsTutorialOpen(true)}
+                                onOpenTutorial={() => setIsTutorialManuallyOpen(true)}
+                                allowAutoNews={hasSeenTutorial}
+                                onWhatsNewVisibilityChange={setIsWhatsNewOpen}
                             />
                         </Motion.div>
                     );
@@ -361,7 +363,7 @@ export default function Dashboard() {
                                         <Settings className="h-5 w-5 text-emerald-600 dark:text-emerald-400" /> Menu Principal
                                     </div>
                                     <button
-                                        onClick={() => setIsTutorialOpen(true)}
+                                        onClick={() => setIsTutorialManuallyOpen(true)}
                                         className="p-2 hover:bg-sky-500/10 rounded-xl transition-colors text-skyjo-blue group"
                                         title="Revoir le tutoriel"
                                     >
@@ -604,7 +606,7 @@ export default function Dashboard() {
                                 </h2>
                                 <div className="flex gap-2 items-center">
                                     <button
-                                        onClick={() => setIsTutorialOpen(true)}
+                                        onClick={() => setIsTutorialManuallyOpen(true)}
                                         className="p-2 text-slate-400 hover:text-skyjo-blue transition-colors"
                                         title="Règles du jeu"
                                     >
@@ -699,7 +701,7 @@ export default function Dashboard() {
             {/* Bouton Quitter Spécifique au jeu en ligne (Fix Plan) */}
 
             <div className={`max-w-3xl mx-auto p-3 ${isVirtualGameActive ? 'pb-2' : 'pb-24'}`}>
-                <AnimatePresence mode="wait" initial={false}>
+                <AnimatePresence initial={false}>
                     {renderContent()}
                 </AnimatePresence>
                 {gameStatus === 'FINISHED' && <GameOver />}
@@ -723,7 +725,10 @@ export default function Dashboard() {
 
             <Tutorial
                 isOpen={isTutorialOpen}
-                onClose={() => setIsTutorialOpen(false)}
+                onClose={() => {
+                    setIsTutorialManuallyOpen(false);
+                    setHasSeenTutorial(true);
+                }}
             />
 
             <AnimatePresence>
@@ -840,7 +845,15 @@ export default function Dashboard() {
             </AnimatePresence>
 
             <NewOnlineModePopup
-                isOpen={!hasSeenNewOnlineModeAnnouncement}
+                isOpen={
+                    isRehydrated
+                    && hasSeenTutorial
+                    && !hasUnreadNews
+                    && !hasSeenNewOnlineModeAnnouncement
+                    && effectiveTab === 'home'
+                    && !isTutorialOpen
+                    && !isWhatsNewOpen
+                }
                 onClose={() => setHasSeenNewOnlineModeAnnouncement(true)}
             />
             {/* Wallpaper Selection Modal - Accessible depuis partout */}

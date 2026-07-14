@@ -1,6 +1,7 @@
 /* Glassmorphisme premium avec halo animé */
 .glass-premium {
     position: relative;
+    isolation: isolate;
     background: transparent !important;
     backdrop-filter: blur(12px) saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
@@ -68,4 +69,27 @@
 
 .animate-pulse-slow {
     animation: pulse-slow 2.5s ease-in-out infinite;
+}
+
+/*
+ * Touch devices are much more prone to compositor flicker when an animated
+ * negative-z halo is combined with backdrop-filter. Keep the desktop effect,
+ * but render one stable, opaque surface on the touch path.
+ */
+@media (hover: none), (pointer: coarse) {
+    .glass-premium {
+        background: rgba(15, 23, 42, 0.96) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    .glass-premium::before,
+    .glass-premium::after {
+        content: none;
+        animation: none !important;
+    }
+
+    .animate-pulse-slow {
+        animation: none !important;
+    }
 }

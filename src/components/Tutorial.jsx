@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, ChevronLeft, HelpCircle, Info, Sparkles, Target, Zap, ArrowRight, Users, Globe } from 'lucide-react';
 import { Button } from './ui/Button';
 import SkyjoCard from './virtual/SkyjoCard';
@@ -31,7 +31,7 @@ const STEPS = [
             <div className="flex flex-col items-center gap-4 py-4">
                 <div className="flex gap-3">
                     {[-2, 0, 12].map((n, i) => (
-                        <motion.div
+                        <Motion.div
                             key={n}
                             animate={{ y: n < 0 ? [0, -5, 0] : 0 }}
                             transition={{ repeat: Infinity, duration: 2, delay: i * 0.2 }}
@@ -45,7 +45,7 @@ const STEPS = [
                             <div className="absolute -bottom-6 left-0 right-0 text-center text-[8px] font-black uppercase text-slate-500">
                                 {n < 0 ? 'Génial' : n === 0 ? 'Parfait' : 'Aïe'}
                             </div>
-                        </motion.div>
+                        </Motion.div>
                     ))}
                 </div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mt-4">Visez les cartes vertes et bleues !</p>
@@ -61,7 +61,7 @@ const STEPS = [
         content: (
             <div className="grid grid-cols-4 gap-2 py-4">
                 {[...Array(12)].map((_, i) => (
-                    <motion.div
+                    <Motion.div
                         key={i}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -72,7 +72,7 @@ const STEPS = [
                             size="xs"
                             isClickable={false}
                         />
-                    </motion.div>
+                    </Motion.div>
                 ))}
             </div>
         )
@@ -87,7 +87,7 @@ const STEPS = [
             <div className="flex flex-col gap-1 py-1 relative group items-center justify-center">
                 <div className="absolute inset-0 bg-emerald-500/10 blur-3xl rounded-full scale-50 group-hover:scale-100 transition-transform" />
                 {[9, 9, 9].map((n, i) => (
-                    <motion.div
+                    <Motion.div
                         key={i}
                         animate={{
                             scale: [1, 1.05, 1],
@@ -101,7 +101,7 @@ const STEPS = [
                             size="xs"
                             isClickable={false}
                         />
-                    </motion.div>
+                    </Motion.div>
                 ))}
                 <div className="text-center text-emerald-400 font-black text-xs mt-2 z-10 tracking-widest animate-pulse">CLEAN !</div>
             </div>
@@ -141,14 +141,14 @@ const STEPS = [
                     <div className="text-3xl font-bold text-slate-500 line-through decoration-red-500/50">15</div>
                     <ArrowRight className="text-white opacity-50 w-6 h-6" />
                     <div className="relative">
-                        <motion.div
+                        <Motion.div
                             initial={{ scale: 0.5, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.2 }}
                             className="text-5xl font-black text-red-500"
                         >
                             30
-                        </motion.div>
+                        </Motion.div>
                         <div className="absolute -top-4 -right-8 bg-black/50 text-[10px] font-bold px-2 py-0.5 rounded-full text-red-400 border border-red-500/30 tracking-tight whitespace-nowrap">
                             x2 PENALTY
                         </div>
@@ -239,8 +239,6 @@ const STEPS = [
 export default function Tutorial({ isOpen, onClose }) {
     const [currentStep, setCurrentStep] = useState(0);
 
-    if (!isOpen) return null;
-
     const step = STEPS[currentStep];
     const Icon = step.icon;
 
@@ -260,21 +258,22 @@ export default function Tutorial({ isOpen, onClose }) {
 
     return (
         <AnimatePresence>
-            <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={onClose}
-                    className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"
-                />
+            {isOpen && (
+                <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+                    <Motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="absolute inset-0 bg-slate-950/90"
+                    />
 
-                <motion.div
-                    initial={{ scale: 0.9, y: 20, opacity: 0 }}
-                    animate={{ scale: 1, y: 0, opacity: 1 }}
-                    exit={{ scale: 0.9, y: 20, opacity: 0 }}
-                    className="relative w-full max-w-md glass-premium overflow-hidden rounded-[3rem] shadow-2xl border-white/20"
-                >
+                    <Motion.div
+                        initial={{ scale: 0.9, y: 20, opacity: 0 }}
+                        animate={{ scale: 1, y: 0, opacity: 1 }}
+                        exit={{ scale: 0.9, y: 20, opacity: 0 }}
+                        className="relative w-full max-w-md bg-slate-900 overflow-hidden rounded-[3rem] shadow-2xl border border-white/20"
+                    >
                     {/* Header Decoration */}
                     <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-skyjo-blue/5 to-transparent pointer-events-none" />
 
@@ -318,14 +317,9 @@ export default function Tutorial({ isOpen, onClose }) {
                         </p>
 
                         <div className="flex-1 flex items-center justify-center w-full">
-                            <motion.div
-                                key={currentStep}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ type: "spring", damping: 15 }}
-                            >
+                            <div>
                                 {step.content}
-                            </motion.div>
+                            </div>
                         </div>
                     </div>
 
@@ -349,8 +343,9 @@ export default function Tutorial({ isOpen, onClose }) {
                             {currentStep < STEPS.length - 1 && <ChevronRight className="w-5 h-5 ml-1" />}
                         </Button>
                     </div>
-                </motion.div>
-            </div>
+                    </Motion.div>
+                </div>
+            )}
         </AnimatePresence>
     );
 }

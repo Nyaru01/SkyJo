@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, ChevronLeft, Star, Skull, TrendingUp, Swords, RefreshCw, Eraser, Zap, Flame, HelpCircle } from 'lucide-react';
 import { Button } from './ui/Button';
 import SkyjoCard from './virtual/SkyjoCard';
@@ -55,7 +55,7 @@ const BONUS_STEPS = [
         bg: "bg-violet-400/10",
         content: (
             <div className="flex flex-col items-center gap-4 py-4">
-                <motion.div
+                <Motion.div
                     animate={{ y: [0, -10, 0], scale: [1, 1.05, 1] }}
                     transition={{ repeat: Infinity, duration: 2 }}
                     className="relative z-10"
@@ -65,7 +65,7 @@ const BONUS_STEPS = [
                         size="sm"
                         isClickable={false}
                     />
-                </motion.div>
+                </Motion.div>
                 <p className="text-[10px] font-bold text-violet-400 uppercase tracking-widest">Votre meilleure alliée !</p>
             </div>
         )
@@ -78,7 +78,7 @@ const BONUS_STEPS = [
         bg: "bg-rose-600/10",
         content: (
             <div className="flex flex-col items-center gap-4 py-4">
-                <motion.div
+                <Motion.div
                     animate={{ rotate: [0, -2, 2, 0], x: [0, -1, 1, 0] }}
                     transition={{ repeat: Infinity, duration: 0.5 }}
                     className="relative z-10"
@@ -88,7 +88,7 @@ const BONUS_STEPS = [
                         size="sm"
                         isClickable={false}
                     />
-                </motion.div>
+                </Motion.div>
                 <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">Débarrassez-vous en vite !</p>
             </div>
         )
@@ -117,7 +117,7 @@ const BONUS_STEPS = [
                     <div className="w-4 h-[1px] bg-white/20" />
 
                     <div className="flex items-center gap-3">
-                        <motion.div
+                        <Motion.div
                             animate={{ x: [0, 20, 0], opacity: [1, 0.5, 1] }}
                             transition={{ repeat: Infinity, duration: 2 }}
                         >
@@ -126,9 +126,9 @@ const BONUS_STEPS = [
                                 size="xs"
                                 isClickable={false}
                             />
-                        </motion.div>
+                        </Motion.div>
                         <RefreshCw className="w-4 h-4 text-indigo-400 animate-spin-slow" />
-                        <motion.div
+                        <Motion.div
                             animate={{ x: [0, -20, 0], opacity: [1, 0.5, 1] }}
                             transition={{ repeat: Infinity, duration: 2 }}
                         >
@@ -137,7 +137,7 @@ const BONUS_STEPS = [
                                 size="xs"
                                 isClickable={false}
                             />
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 </div>
                 <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Échangez votre pire carte contre sa meilleure !</p>
@@ -163,7 +163,7 @@ const BONUS_STEPS = [
                         size="xs"
                         isClickable={false}
                     />
-                    <motion.div
+                    <Motion.div
                         animate={{ scale: [1, 1.1, 1] }}
                         transition={{ repeat: Infinity, duration: 2 }}
                     >
@@ -172,7 +172,7 @@ const BONUS_STEPS = [
                             size="xs"
                             isClickable={false}
                         />
-                    </motion.div>
+                    </Motion.div>
                 </div>
                 <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Faites place nette dans votre jeu !</p>
             </div>
@@ -186,7 +186,7 @@ const BONUS_STEPS = [
         bg: "bg-amber-500/10",
         content: (
             <div className="flex flex-col items-center gap-4 py-4">
-                <motion.div
+                <Motion.div
                     animate={{
                         rotateY: [0, 180, 0],
                         scale: [1, 1.1, 1]
@@ -199,7 +199,7 @@ const BONUS_STEPS = [
                         size="sm"
                         isClickable={false}
                     />
-                </motion.div>
+                </Motion.div>
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col items-center">
                         <span className="text-xl font-black text-emerald-400">-15</span>
@@ -239,8 +239,6 @@ const BONUS_STEPS = [
 export default function BonusTutorial({ isOpen, onClose, mode = 'tourment' }) {
     const [currentStep, setCurrentStep] = useState(0);
 
-    if (!isOpen) return null;
-
     // Filter steps based on mode
     const filteredSteps = mode === 'hardcore'
         ? BONUS_STEPS.filter(step => step.title === "Le Nettoyage de Colonne")
@@ -265,21 +263,22 @@ export default function BonusTutorial({ isOpen, onClose, mode = 'tourment' }) {
 
     return (
         <AnimatePresence>
-            <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={onClose}
-                    className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl"
-                />
+            {isOpen && (
+                <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+                    <Motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="absolute inset-0 bg-slate-950/95"
+                    />
 
-                <motion.div
-                    initial={{ scale: 0.9, y: 20, opacity: 0 }}
-                    animate={{ scale: 1, y: 0, opacity: 1 }}
-                    exit={{ scale: 0.9, y: 20, opacity: 0 }}
-                    className="relative w-full max-w-md glass-premium overflow-hidden rounded-[3rem] shadow-2xl border-rose-500/30 border"
-                >
+                    <Motion.div
+                        initial={{ scale: 0.9, y: 20, opacity: 0 }}
+                        animate={{ scale: 1, y: 0, opacity: 1 }}
+                        exit={{ scale: 0.9, y: 20, opacity: 0 }}
+                        className="relative w-full max-w-md bg-slate-900 overflow-hidden rounded-[3rem] shadow-2xl border-rose-500/30 border"
+                    >
                     <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-rose-500/10 to-transparent pointer-events-none" />
 
                     <div className="p-6 pb-2 flex items-center justify-between relative z-10">
@@ -319,16 +318,9 @@ export default function BonusTutorial({ isOpen, onClose, mode = 'tourment' }) {
                         </p>
 
                         <div className="flex-1 flex items-center justify-center w-full">
-                            <motion.div
-                                key={currentStep}
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                transition={{ type: "spring", damping: 20 }}
-                                className="w-full"
-                            >
+                            <div className="w-full">
                                 {step.content}
-                            </motion.div>
+                            </div>
                         </div>
                     </div>
 
@@ -351,8 +343,9 @@ export default function BonusTutorial({ isOpen, onClose, mode = 'tourment' }) {
                             {currentStep < filteredSteps.length - 1 && <ChevronRight className="w-5 h-5 ml-1" />}
                         </Button>
                     </div>
-                </motion.div>
-            </div>
+                    </Motion.div>
+                </div>
+            )}
         </AnimatePresence>
     );
 }
