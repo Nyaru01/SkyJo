@@ -101,34 +101,20 @@ function App() {
                 toastOptions={{
                   icon: null,
                   duration: 3500,
-                  className: '!bg-slate-900/60 !backdrop-blur-2xl !text-white !rounded-[2rem] !shadow-[0_20px_50px_rgba(0,0,0,0.5)] !pointer-events-auto !overflow-hidden !border-2 !border-white/20',
+                  className: 'toast-surface !pointer-events-auto',
                   style: {
-                    background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6))',
-                    color: '#fff',
-                    backdropFilter: 'blur(24px) saturate(180%)',
-                    borderRadius: '32px',
-                    padding: '16px 24px',
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(255, 255, 255, 0.05)',
-                    fontSize: '15px',
-                    fontWeight: '700',
-                    letterSpacing: '0.01em',
-                    maxWidth: '450px',
-                    textAlign: 'center',
+                    pointerEvents: 'auto',
                   },
                   success: {
                     icon: null,
                     style: {
                       border: '1px solid rgba(16, 185, 129, 0.4)',
-                      background: 'linear-gradient(135deg, rgba(6, 78, 59, 0.8), rgba(6, 78, 59, 0.5))',
-                      boxShadow: '0 0 30px rgba(16, 185, 129, 0.15)',
                     }
                   },
                   error: {
                     icon: null,
                     style: {
                       border: '1px solid rgba(239, 68, 68, 0.4)',
-                      background: 'linear-gradient(135deg, rgba(127, 29, 29, 0.8), rgba(127, 29, 29, 0.5))',
-                      boxShadow: '0 0 30px rgba(239, 68, 68, 0.15)',
                     }
                   },
                 }}

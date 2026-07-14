@@ -210,16 +210,13 @@ export function UpdateProvider({ children }) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 50, scale: 0.9 }}
                         transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-                        className="fixed bottom-24 left-4 right-4 z-[200] max-w-md mx-auto"
+                        className="fixed bottom-24 left-3 right-3 z-[200] max-w-md mx-auto"
                     >
-                        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-2xl p-5">
-                            {/* Glow effect */}
-                            <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
-                            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+                        <div className="surface-card relative overflow-hidden rounded-3xl p-4 sm:p-5">
 
                             <div className="relative flex items-start gap-4">
                                 {/* Icon */}
-                                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 rounded-xl shrink-0 shadow-inner">
+                                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 rounded-xl shrink-0">
                                     <RefreshCw className={`w-6 h-6 text-blue-400 ${isUpdating ? 'animate-spin' : 'animate-spin-slow'}`} />
                                 </div>
 
@@ -239,7 +236,8 @@ export function UpdateProvider({ children }) {
                                 <button
                                     onClick={handleDismiss}
                                     disabled={isUpdating}
-                                    className="p-1 -mr-2 -mt-2 hover:bg-white/10 text-slate-400 hover:text-white rounded-full transition-colors shrink-0"
+                                    aria-label="Fermer la mise à jour"
+                                    className="modal-close-button premium-focus-ring -mr-1 -mt-1 shrink-0"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
@@ -249,7 +247,7 @@ export function UpdateProvider({ children }) {
                             <button
                                 onClick={applyUpdate}
                                 disabled={isUpdating}
-                                className="relative w-full mt-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-sm rounded-xl hover:from-blue-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-blue-500/25 active:scale-[0.98] disabled:opacity-70 disabled:cursor-wait"
+                                className="premium-focus-ring relative w-full min-h-12 mt-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-sm rounded-xl hover:from-blue-500 hover:to-purple-500 transition-all shadow-lg active:scale-[0.98] disabled:opacity-70 disabled:cursor-wait"
                             >
                                 <span className="flex items-center justify-center gap-2">
                                     <CheckCircle className="w-4 h-4" />
