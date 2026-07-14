@@ -30,6 +30,7 @@ import { useFeedback } from '../hooks/useFeedback';
 // import { useBackgroundMusic } from '../hooks/useBackgroundMusic';
 import { useNotifications } from '../hooks/useNotifications';
 import { cn } from '../lib/utils';
+import { getCardSkinRequiredLevel } from '../lib/skinUtils';
 
 import { AVATARS, getAvatarPath } from '../lib/avatars';
 import AvatarSelector from './AvatarSelector';
@@ -238,8 +239,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     // Enforce Level Requirements for Skins
     useEffect(() => {
-        if (playerLevel < 3 && playerCardSkin !== 'classic') {
-            // If user is below level 3 but has a non-classic skin (e.g. from previous high level or bug), reset it.
+        if (playerLevel < getCardSkinRequiredLevel(playerCardSkin)) {
+            // Keep persisted selections valid if a profile is restored at a lower level.
             useGameStore.getState().setCardSkin('classic');
         }
     }, [playerLevel, playerCardSkin]);

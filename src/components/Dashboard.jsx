@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
-import { Settings, Trophy, Sparkles, History, Undo2, BarChart3, Play, LogOut, CheckCircle2, Users, HelpCircle, X, ArrowLeft, Palette, Check } from 'lucide-react';
+import { Settings, Trophy, Sparkles, History, Undo2, BarChart3, Play, LogOut, CheckCircle2, Users, HelpCircle, X, ArrowLeft, Palette, Check, Lock } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useGameStore, selectPlayers, selectRounds, selectThreshold, selectGameStatus } from '../store/gameStore';
 import { useVirtualGameStore } from '../store/virtualGameStore';
@@ -30,6 +30,8 @@ import { FeedbackModal } from './FeedbackModal';
 import { AdminDashboard } from './AdminDashboard';
 import ChatPopup from './ChatPopup';
 import NewOnlineModePopup from './NewOnlineModePopup';
+import MasterCareerPopup from './MasterCareerPopup';
+import ExperienceBar from './ExperienceBar';
 import { CURRENT_NEWS_VERSION } from './WhatsNewModal';
 
 // Stable page states: avoid full-page opacity/transform transitions around
@@ -53,6 +55,11 @@ const WALLPAPERS = [
     { id: 'stellaire', name: 'Stellaire', url: '/Wallpapers/stellaire.png', color: 'bg-indigo-900' },
     { id: 'cybernature', name: 'Cyber Nature', url: '/Wallpapers/Cyber_nature.png', color: 'bg-emerald-950' },
     { id: 'cybercity', name: 'Cyber City', url: '/Wallpapers/Cyber_City.png', color: 'bg-slate-950' },
+    { id: 'celestial-gate', name: 'Porte Céleste', url: '/master/wallpaper-celestial-gate.webp', color: 'bg-fuchsia-950', level: 120 },
+    { id: 'star-temple', name: 'Temple des Étoiles', url: '/master/wallpaper-star-temple.webp', color: 'bg-indigo-950', level: 140 },
+    { id: 'infinite-constellation', name: 'Constellation Infinie', url: '/master/wallpaper-infinite-constellation.webp', color: 'bg-cyan-950', level: 160 },
+    { id: 'event-horizon', name: 'Horizon des Événements', url: '/master/wallpaper-event-horizon.webp', color: 'bg-violet-950', level: 180 },
+    { id: 'skyjo-ascension', name: 'Ascension Skyjo', url: '/master/wallpaper-skyjo-ascension.webp', color: 'bg-amber-950', level: 200 },
 ];
 
 export default function Dashboard() {
@@ -86,6 +93,9 @@ export default function Dashboard() {
     // const setAdminAuthToken = useGameStore(state => state.setAdminAuthToken);
     const hasSeenNewOnlineModeAnnouncement = useGameStore(state => state.hasSeenNewOnlineModeAnnouncement);
     const setHasSeenNewOnlineModeAnnouncement = useGameStore(state => state.setHasSeenNewOnlineModeAnnouncement);
+    const hasSeenMasterCareerAnnouncement = useGameStore(state => state.hasSeenMasterCareerAnnouncementV1);
+    const setHasSeenMasterCareerAnnouncement = useGameStore(state => state.setHasSeenMasterCareerAnnouncement);
+    const openCareerPlan = useGameStore(state => state.openCareerPlan);
     const background = useGameStore(state => state.background);
     const setBackground = useGameStore(state => state.setBackground);
     const isWallpaperModalOpen = useGameStore(state => state.isWallpaperModalOpen);
@@ -125,6 +135,13 @@ export default function Dashboard() {
         window.localStorage.getItem('skyjo_news_version') || '0',
         10
     ) < CURRENT_NEWS_VERSION;
+
+    useEffect(() => {
+        const selectedWallpaper = WALLPAPERS.find(wallpaper => wallpaper.url === background);
+        if (selectedWallpaper?.level && playerLevel < selectedWallpaper.level) {
+            setBackground('/Wallpapers/bg-skyjo.png');
+        }
+    }, [background, playerLevel, setBackground]);
 
     // 🔥 LOGIQUE DE VERROUILLAGE (Fix Plan)
     // On considère qu'on est en session si on a un code de room
@@ -850,12 +867,31 @@ export default function Dashboard() {
                     && hasSeenTutorial
                     && !hasUnreadNews
                     && !hasSeenNewOnlineModeAnnouncement
+                    && (playerLevel < 100 || hasSeenMasterCareerAnnouncement)
                     && effectiveTab === 'home'
                     && !isTutorialOpen
                     && !isWhatsNewOpen
                 }
                 onClose={() => setHasSeenNewOnlineModeAnnouncement(true)}
             />
+            <MasterCareerPopup
+                isOpen={
+                    isRehydrated
+                    && playerLevel >= 100
+                    && hasSeenTutorial
+                    && !hasUnreadNews
+                    && !hasSeenMasterCareerAnnouncement
+                    && effectiveTab === 'home'
+                    && !isTutorialOpen
+                    && !isWhatsNewOpen
+                }
+                onClose={() => setHasSeenMasterCareerAnnouncement(true)}
+                onDiscover={() => {
+                    setHasSeenMasterCareerAnnouncement(true);
+                    openCareerPlan('master');
+                }}
+            />
+            {effectiveTab === 'home' && <ExperienceBar className="hidden" />}
             {/* Wallpaper Selection Modal - Accessible depuis partout */}
             <AnimatePresence>
                 {isWallpaperModalOpen && (
@@ -887,10 +923,13 @@ export default function Dashboard() {
                             </div>
                             <div className="p-6 overflow-y-auto max-h-[70vh]">
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                    {WALLPAPERS.map((wp) => (
+                                    {WALLPAPERS.map((wp) => {
+                                        const isLocked = playerLevel < (wp.level || 1);
+                                        return (
                                         <button
                                             key={wp.id}
-                                            onClick={() => setBackground(wp.url)}
+                                            disabled={isLocked}
+                                            onClick={() => !isLocked && setBackground(wp.url)}
                                             className={`relative group flex flex-col items-center gap-2 p-3 rounded-2xl transition-all duration-300 border-2 hover:scale-[1.02] active:scale-95 ${background === wp.url
                                                 ? "bg-white/10 border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]"
                                                 : "bg-white/5 border-transparent hover:bg-white/8 hover:border-white/10"
@@ -912,13 +951,19 @@ export default function Dashboard() {
                                                         </div>
                                                     </div>
                                                 )}
+                                                {isLocked && (
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/75">
+                                                        <Lock className="mb-1 h-5 w-5 text-fuchsia-300" />
+                                                        <span className="text-[9px] font-black uppercase text-white">Niveau {wp.level}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                             <span className={`text-[11px] font-black uppercase tracking-widest transition-colors ${background === wp.url ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"
                                                 }`}>
                                                 {wp.name}
                                             </span>
                                         </button>
-                                    ))}
+                                    );})}
                                 </div>
                             </div>
                         </Motion.div>

@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo, memo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { Trophy } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { cn } from '../lib/utils';
 import { PremiumTiltButton } from './ui/PremiumTiltButton';
 import Confetti from 'react-confetti';
 import useWindowSize from '../hooks/useWindowSize';
-import { LEVEL_REWARDS } from '../lib/rewards';
+import { LEVEL_REWARDS, MASTER_REWARDS } from '../lib/rewards';
+import { getMasterProgress } from '../lib/masterCareer';
 
 /**
  * LevelUpCelebration - v3 (Stable & Simple)
@@ -24,13 +25,42 @@ const LevelUpCelebration = () => {
 
     useEffect(() => {
         if (storeLevel > lastAcknowledgedLevel && !isVisible && !celebratedLevel) {
-            setCelebratedLevel(storeLevel);
-            setIsVisible(true);
+            let active = true;
+            queueMicrotask(() => {
+                if (!active) return;
+                setCelebratedLevel(storeLevel);
+                setIsVisible(true);
+            });
+            return () => {
+                active = false;
+            };
         }
     }, [storeLevel, lastAcknowledgedLevel, isVisible, celebratedLevel]);
 
     const reward = useMemo(() => {
         if (!celebratedLevel) return null;
+        if (celebratedLevel > 100) {
+            const progress = getMasterProgress(celebratedLevel);
+            if (progress.masterLevel === 100) {
+                const finalReward = MASTER_REWARDS[100];
+                return {
+                    ...finalReward,
+                    type: 'generic',
+                    content: '⭐',
+                    name: `Étoile de Prestige ${progress.completedPrestiges}`,
+                    description: `${finalReward.name} débloqué. Le cycle ${progress.cycle} est terminé : votre prestige rayonne encore davantage.`,
+                    rarity: 'transcendant'
+                };
+            }
+            if (progress.cycle === 1) return MASTER_REWARDS[progress.masterLevel];
+            return {
+                type: 'generic',
+                content: '✦',
+                name: `Maître ${progress.masterLevel} · Cycle ${progress.cycle}`,
+                description: `Progression vers votre prochaine Étoile de Prestige.`,
+                rarity: 'éternel'
+            };
+        }
         return LEVEL_REWARDS[celebratedLevel] || {
             type: 'generic',
             content: '🎁',
@@ -39,6 +69,8 @@ const LevelUpCelebration = () => {
             rarity: 'common'
         };
     }, [celebratedLevel]);
+
+    const celebratedMaster = useMemo(() => getMasterProgress(celebratedLevel || 1), [celebratedLevel]);
 
     const handleClaim = useCallback(() => {
         acknowledgeLevelUp();
@@ -60,12 +92,13 @@ const LevelUpCelebration = () => {
         mythic: 'text-rose-400',
         divine: 'text-fuchsia-400 drop-shadow-[0_0_10px_rgba(232,121,249,0.8)]',
         éternel: 'text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]',
+        transcendant: 'text-fuchsia-300 drop-shadow-[0_0_18px_rgba(232,121,249,0.9)]',
     };
 
     return createPortal(
         <AnimatePresence onExitComplete={onExitComplete}>
             {isVisible && reward && (
-                <motion.div
+                <Motion.div
                     key="celebration"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -94,7 +127,7 @@ const LevelUpCelebration = () => {
                     />
 
                     {/* Main Content Container - Centered & Floating */}
-                    <motion.div
+                    <Motion.div
                         initial={{ scale: 0.5, opacity: 0, y: 50 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.9, opacity: 0, y: -50 }}
@@ -108,7 +141,7 @@ const LevelUpCelebration = () => {
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Level Up Title with Glow */}
-                        <motion.div
+                        <Motion.div
                             initial={{ y: -50, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.4, type: "spring" }}
@@ -118,12 +151,12 @@ const LevelUpCelebration = () => {
                                 LEVEL UP !
                             </h1>
                             <div className="text-2xl md:text-3xl font-bold text-white tracking-[0.5em] uppercase mt-2 opacity-90">
-                                Niveau {celebratedLevel}
+                                {celebratedLevel > 100 ? `Maître ${celebratedMaster.masterLevel} · Cycle ${celebratedMaster.cycle}` : `Niveau ${celebratedLevel}`}
                             </div>
-                        </motion.div>
+                        </Motion.div>
 
                         {/* Reward Card */}
-                        <motion.div
+                        <Motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ delay: 0.6, type: "spring" }}
@@ -132,14 +165,15 @@ const LevelUpCelebration = () => {
                             {/* Rarity & Icon Halo */}
                             <div className={cn(
                                 "absolute inset-0 rounded-[3rem] opacity-30 blur-2xl",
-                                reward.rarity === 'éternel' ? "bg-cyan-500" :
+                                reward.rarity === 'transcendant' ? "bg-fuchsia-400" :
+                                    reward.rarity === 'éternel' ? "bg-cyan-500" :
                                     reward.rarity === 'divine' ? "bg-fuchsia-500" :
                                         reward.rarity === 'mythic' ? "bg-rose-500" :
                                             reward.rarity === 'legendary' ? "bg-amber-500" :
                                                 "bg-blue-500"
                             )} />
 
-                            <motion.div
+                            <Motion.div
                                 animate={{
                                     y: [0, -15, 0],
                                     rotate: [0, 5, -5, 0]
@@ -159,7 +193,7 @@ const LevelUpCelebration = () => {
                                         {reward.type === 'emoji' || reward.type === 'generic' ? reward.content : '🎁'}
                                     </span>
                                 </div>
-                            </motion.div>
+                            </Motion.div>
 
                             {/* Reward Text */}
                             <span className={cn(
@@ -190,9 +224,9 @@ const LevelUpCelebration = () => {
                                     RÉCUPÉRER
                                 </PremiumTiltButton>
                             </div>
-                        </motion.div>
-                    </motion.div>
-                </motion.div>
+                        </Motion.div>
+                    </Motion.div>
+                </Motion.div>
             )}
         </AnimatePresence>,
         document.body

@@ -43,6 +43,7 @@ export const useGameStore = create(
             hasSeenTutorial: false,
             hasSeenNewOnlineModeAnnouncement: false,
             hasSeenWeeklyChallengeAnnouncementV3: false,
+            hasSeenMasterCareerAnnouncementV1: false,
             migratedToV2: false, // Flag for LocalStorage -> DB migration
             isRehydrated: false, // Flag to track when store is ready
             profileLoadedFromBackend: false, // Prevent early sync from overwriting DB
@@ -53,6 +54,10 @@ export const useGameStore = create(
             musicShuffleTrigger: 0, // Increment to trigger track shuffle
             activeTab: 'home', // 'home', 'game', 'stats', 'community', 'virtual'
             setActiveTab: (tab) => set({ activeTab: tab }),
+            isCareerPlanOpen: false,
+            careerPlanTab: 'career',
+            openCareerPlan: (tab = 'career') => set({ isCareerPlanOpen: true, careerPlanTab: tab }),
+            closeCareerPlan: () => set({ isCareerPlanOpen: false }),
             lastDailyWinDate: null, // ISO date string of last daily challenge win
             weeklyChallengeWinDate: null, // ISO date string of last weekly challenge win
             userProfile: {
@@ -106,6 +111,8 @@ export const useGameStore = create(
             setHasSeenNewOnlineModeAnnouncement: (seen) => set({ hasSeenNewOnlineModeAnnouncement: seen }),
 
             setHasSeenWeeklyChallengeAnnouncement: (seen) => set({ hasSeenWeeklyChallengeAnnouncementV3: seen }),
+
+            setHasSeenMasterCareerAnnouncement: (seen) => set({ hasSeenMasterCareerAnnouncementV1: seen }),
 
             setIsAdminOpen: (open) => set({ isAdminOpen: open }),
 
@@ -591,7 +598,7 @@ export const useGameStore = create(
         }),
         {
             name: 'skyjo-storage',
-            version: 7,
+            version: 8,
             migrate: (persistedState, version) => {
                 // ... migration
                 if (version < 5) {
@@ -610,6 +617,12 @@ export const useGameStore = create(
                     persistedState = {
                         ...persistedState,
                         hasSeenWeeklyChallengeAnnouncementV3: false
+                    };
+                }
+                if (version < 8) {
+                    persistedState = {
+                        ...persistedState,
+                        hasSeenMasterCareerAnnouncementV1: false
                     };
                 }
                 // Ensure usedProfile exists and has an ID during migration
@@ -649,7 +662,12 @@ export const useGameStore = create(
             },
             partialize: (state) =>
                 Object.fromEntries(
-                    Object.entries(state).filter(([key]) => !['profileLoadedFromBackend', 'isRehydrated'].includes(key))
+                    Object.entries(state).filter(([key]) => ![
+                        'profileLoadedFromBackend',
+                        'isRehydrated',
+                        'isCareerPlanOpen',
+                        'careerPlanTab'
+                    ].includes(key))
                 ),
         }
     )
