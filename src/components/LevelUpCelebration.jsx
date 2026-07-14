@@ -70,8 +70,6 @@ const LevelUpCelebration = () => {
         };
     }, [celebratedLevel]);
 
-    const celebratedMaster = useMemo(() => getMasterProgress(celebratedLevel || 1), [celebratedLevel]);
-
     const handleClaim = useCallback(() => {
         acknowledgeLevelUp();
         setIsVisible(false);
@@ -151,7 +149,7 @@ const LevelUpCelebration = () => {
                                 LEVEL UP !
                             </h1>
                             <div className="text-2xl md:text-3xl font-bold text-white tracking-[0.5em] uppercase mt-2 opacity-90">
-                                {celebratedLevel > 100 ? `Maître ${celebratedMaster.masterLevel} · Cycle ${celebratedMaster.cycle}` : `Niveau ${celebratedLevel}`}
+                                {celebratedLevel >= 100 ? `Maître ${celebratedLevel}` : `Niveau ${celebratedLevel}`}
                             </div>
                         </Motion.div>
 
