@@ -1,5 +1,5 @@
 import { Home, Archive, BarChart3, Dices, Settings, Users } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { useGameStore } from '../store/gameStore';
 import { useSocialStore } from '../store/socialStore';
@@ -19,13 +19,13 @@ export default function BottomNav({ activeTab, onTabChange }) {
     ];
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-[80] pointer-events-none p-4 pb-8 flex justify-center safe-area-bottom">
+        <div className="fixed bottom-0 left-0 right-0 z-[80] pointer-events-none px-3 pt-3 pb-5 sm:px-4 sm:pb-7 flex justify-center safe-area-bottom">
             <nav
-                className="w-full max-w-lg glass-v3 rounded-[2.5rem] p-1.5 shadow-[0_25px_60px_rgba(0,0,0,0.5)] pointer-events-auto relative overflow-hidden border border-white/20 ring-1 ring-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
+                className="w-full max-w-lg glass-v3 rounded-[2rem] p-1 pointer-events-auto relative overflow-hidden"
                 role="tablist"
                 aria-label="Navigation principale"
             >
-                <div className="flex items-center justify-around relative px-2">
+                <div className="grid grid-cols-6 items-center relative">
                     {tabs.map((tab) => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
@@ -45,13 +45,13 @@ export default function BottomNav({ activeTab, onTabChange }) {
                                     }
                                 }}
                                 className={cn(
-                                    "relative flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300",
+                                    "premium-focus-ring relative min-h-12 min-w-0 rounded-[1.25rem] flex flex-col items-center justify-center py-1.5 transition-all duration-300",
                                     isDisabled && "opacity-20 cursor-not-allowed grayscale"
                                 )}
                             >
                                 {/* Active Glass Glow Indicator */}
                                 {isActive && (
-                                    <motion.div
+                                    <Motion.div
                                         layoutId="navbar-indicator-glow"
                                         className="glass-glow-indicator"
                                         initial={false}
@@ -61,7 +61,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
 
                                 <div className={cn(
                                     "relative z-10 flex flex-col items-center justify-center transition-all duration-300",
-                                    isActive ? "scale-110 -translate-y-0.5" : "scale-100 opacity-60"
+                                    isActive ? "scale-[1.04] -translate-y-px" : "scale-100 opacity-70"
                                 )}>
                                     <Icon
                                         className={cn(
@@ -77,7 +77,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
                                     )}
 
                                     <span className={cn(
-                                        "text-[8px] font-black tracking-tighter transition-all duration-300 uppercase mt-1",
+                                        "max-w-full truncate px-0.5 text-[9px] sm:text-[10px] leading-none font-extrabold tracking-[-0.02em] transition-all duration-300 uppercase mt-1.5",
                                         isActive ? "text-blue-400 nav-label-active" : "text-slate-500"
                                     )}>
                                         {tab.label}
