@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import React from 'react';
+import { motion as Motion, useReducedMotion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 
 export const PremiumTiltButton = ({
@@ -12,15 +12,16 @@ export const PremiumTiltButton = ({
     shadowColor = "shadow-sky-500/20",
     disabled = false
 }) => {
+    const prefersReducedMotion = useReducedMotion();
     // "Modern Kinetic" style:
     // - Subtle depth (2px-4px)
     // - Focus on gradient sheen and inner glows
     // - Clean, not blocky
 
     return (
-        <motion.button
+        <Motion.button
             className={cn(
-                "relative group isolate w-full touch-manipulation outline-none select-none",
+                "premium-focus-ring relative group isolate w-full touch-manipulation outline-none select-none rounded-[1.625rem]",
                 disabled ? "cursor-not-allowed opacity-50 grayscale" : "cursor-pointer",
                 className
             )}
@@ -28,15 +29,15 @@ export const PremiumTiltButton = ({
                 if (navigator.vibrate) navigator.vibrate(20);
                 onClick?.(e);
             }}
-            whileHover={disabled ? {} : { scale: 1.02 }}
-            whileTap={disabled ? {} : { scale: 0.98 }}
+            whileHover={disabled || prefersReducedMotion ? {} : { scale: 1.012 }}
+            whileTap={disabled || prefersReducedMotion ? {} : { scale: 0.985 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
             {/* Outer Glow / Shadow */}
             <div className={cn(
-                "absolute inset-0 rounded-2xl opacity-40 blur-lg transition-opacity duration-300",
+                "absolute inset-1 rounded-2xl opacity-25 blur-lg transition-opacity duration-300",
                 shadowColor.replace('/20', '/30'), // Slightly more intense shadow for glow
-                "group-hover:opacity-60"
+                "group-hover:opacity-45"
             )} />
 
             {/* Main Button Body */}
@@ -45,14 +46,14 @@ export const PremiumTiltButton = ({
                 "bg-gradient-to-br",
                 gradientFrom, gradientTo,
                 "shadow-[0_2px_0_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.1)]", // Thinner physical depth
-                "border-t border-white/20" // Top rim light
+                "border border-white/15" // Consistent rim and focus boundary
             )}>
                 {/* Glass Sheen */}
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent opacity-40 pointer-events-none" />
 
                 {/* Shimmer Effect */}
-                {!disabled && (
-                    <motion.div
+                {!disabled && !prefersReducedMotion && (
+                    <Motion.div
                         className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent w-[200%] -translate-x-full skew-x-[-25deg]"
                         animate={{
                             translateX: ["-100%", "100%"]
@@ -60,7 +61,7 @@ export const PremiumTiltButton = ({
                         transition={{
                             duration: 3,
                             repeat: Infinity,
-                            repeatDelay: 5,
+                            repeatDelay: 7,
                             ease: "easeInOut"
                         }}
                     />
@@ -80,6 +81,6 @@ export const PremiumTiltButton = ({
                 {/* Hover Flash Effect */}
                 <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300" />
             </div>
-        </motion.button>
+        </Motion.button>
     );
 };

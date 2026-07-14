@@ -19,6 +19,19 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Visual system v3.3.5 — shared, conservative tokens */
+  --ui-surface: rgba(15, 23, 42, 0.82);
+  --ui-surface-raised: rgba(30, 41, 59, 0.92);
+  --ui-surface-strong: rgba(15, 23, 42, 0.96);
+  --ui-border: rgba(255, 255, 255, 0.12);
+  --ui-border-strong: rgba(255, 255, 255, 0.2);
+  --ui-text-muted: #94a3b8;
+  --ui-focus: #38bdf8;
+  --ui-radius-card: 1.5rem;
+  --ui-radius-control: 1rem;
+  --ui-shadow-card: 0 18px 45px -24px rgba(0, 0, 0, 0.85);
+  --ui-blur: 20px;
 }
 
 /* Force light text globally - override system theme */
@@ -115,19 +128,60 @@ body.pwa {
 
 /* Glassmorphisme premium */
 .glass-premium {
-  background: rgba(30, 41, 59, 0.95);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(71, 85, 105, 0.5);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  background: var(--ui-surface-raised);
+  backdrop-filter: blur(var(--ui-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--ui-blur)) saturate(160%);
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow-card);
 }
 
 /* Classe explicite pour forcer le mode sombre */
 .glass-dark {
-  background: rgba(30, 41, 59, 0.95);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(71, 85, 105, 0.5);
+  background: var(--ui-surface-raised);
+  backdrop-filter: blur(var(--ui-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--ui-blur)) saturate(160%);
+  border: 1px solid var(--ui-border);
+}
+
+.surface-card {
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-card);
+  box-shadow: var(--ui-shadow-card);
+  backdrop-filter: blur(var(--ui-blur)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--ui-blur)) saturate(150%);
+}
+
+.game-mode-card-content {
+  min-height: 5.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.game-mode-card-title {
+  font-size: 1rem;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.game-mode-card-meta {
+  margin-top: 0.3rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+}
+
+.game-mode-icon {
+  width: 3rem;
+  height: 3rem;
+  flex: 0 0 3rem;
+  border-radius: var(--ui-radius-control);
+}
+
+.premium-focus-ring:focus-visible {
+  outline: 3px solid rgba(56, 189, 248, 0.7);
+  outline-offset: 3px;
 }
 
 /* =============================================== */
@@ -730,31 +784,56 @@ body,
 /* =============================================== */
 
 .glass-v3 {
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--ui-surface-strong);
+  backdrop-filter: blur(var(--ui-blur)) saturate(165%);
+  -webkit-backdrop-filter: blur(var(--ui-blur)) saturate(165%);
+  border: 1px solid var(--ui-border-strong);
   box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 10px 25px -5px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 18px 40px -18px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .glass-glow-indicator {
   position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center,
-      rgba(56, 189, 248, 0.15) 0%,
-      rgba(56, 189, 248, 0.05) 50%,
-      transparent 100%);
-  border-radius: 1.5rem;
+  inset: 0.2rem;
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.15), rgba(59, 130, 246, 0.08));
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 1.15rem;
   box-shadow:
-    0 0 15px rgba(56, 189, 248, 0.1),
-    inset 0 0 8px rgba(255, 255, 255, 0.05);
+    0 8px 20px -12px rgba(56, 189, 248, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .nav-label-active {
-  text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.32);
+}
+
+@media (max-width: 359px) {
+  .game-mode-card-content {
+    min-height: 5.5rem;
+    padding-inline: 1rem;
+  }
+
+  .game-mode-card-meta {
+    font-size: 0.6875rem;
+    letter-spacing: 0.035em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-3d,
+  .animate-breathing,
+  .animate-pulse,
+  .animate-ping,
+  .animate-bounce {
+    animation: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
 }
 
 /* =============================================== */
