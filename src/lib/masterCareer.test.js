@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getMasterProgress } from './masterCareer.js';
+import { getCareerIdentity, getMasterProgress } from './masterCareer.js';
 
 const cases = [
     [99, false, 0, 0, 0],
@@ -18,3 +18,11 @@ for (const [level, isUnlocked, masterLevel, cycle, completedPrestiges] of cases)
         assert.deepEqual(getMasterProgress(level), { isUnlocked, masterLevel, cycle, completedPrestiges });
     });
 }
+
+test('affiche le niveau global dans le grade Maître', () => {
+    assert.equal(getCareerIdentity(99).label, 'Niveau 99');
+    assert.equal(getCareerIdentity(100).label, 'Maître 100');
+    assert.equal(getCareerIdentity(162).label, 'Maître 162');
+    assert.equal(getCareerIdentity(200).label, 'Maître 200');
+    assert.equal(getCareerIdentity(201).label, 'Maître 201');
+});

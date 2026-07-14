@@ -5,7 +5,7 @@ import { Zap, Trophy, Lock, Check, X, Crown, Star } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { cn } from '../lib/utils';
 import { getMasterRewardsList, getRewardsList } from '../lib/rewards';
-import { getCareerIdentity, getMasterProgress } from '../lib/masterCareer';
+import { getMasterProgress } from '../lib/masterCareer';
 
 const CAREER_REWARDS = getRewardsList();
 const MASTER_REWARDS = getMasterRewardsList();
@@ -68,7 +68,6 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
     const progressPercent = Math.min(100, Math.max(0, currentXP * 10));
     const listRef = useRef(null);
     const masterProgress = useMemo(() => getMasterProgress(level), [level]);
-    const identity = useMemo(() => getCareerIdentity(level), [level]);
     const isMasterTab = selectedTab === 'master';
     const masterCyclePercent = masterProgress.masterLevel === 100
         ? 100
@@ -91,9 +90,8 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                     <div className="flex items-center justify-between">
                         <button onClick={() => openCareerPlan(level >= 100 ? 'master' : 'career')} className="text-left">
                             <p className="text-3xl font-black uppercase leading-none tracking-tighter text-white">
-                                NIVEAU <span className="text-4xl text-amber-500">{level}</span>
+                                {level >= 100 ? 'MAÎTRE' : 'NIVEAU'} <span className="text-4xl text-amber-500">{level}</span>
                             </p>
-                            {level >= 100 && <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-fuchsia-400">{identity.label} {identity.prestigeLabel}</p>}
                         </button>
                         <button onClick={() => openCareerPlan(level >= 100 ? 'master' : 'career')} className="flex items-center gap-2 rounded-2xl border border-white/10 bg-slate-900 px-3 py-2 shadow-xl">
                             <Zap className="h-5 w-5 text-amber-400" />

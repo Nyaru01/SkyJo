@@ -239,7 +239,7 @@ export default function SocialDashboard(props) {
                             </div>
                         </div>
                         <div className="text-right">
-                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{careerIdentity.label} {careerIdentity.prestigeLabel || ''}</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{careerIdentity.label}</p>
                             <div className="w-20 h-1.5 bg-slate-700 rounded-full mt-1 overflow-hidden">
                                 <div
                                     className="h-full bg-gradient-to-r from-skyjo-blue to-emerald-400"

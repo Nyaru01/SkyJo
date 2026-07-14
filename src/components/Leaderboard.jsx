@@ -111,7 +111,7 @@ const PodiumStep = ({ user, rank, delay }) => {
                         isFirst ? 'text-amber-300' : 'text-slate-500',
                         "group-hover:text-amber-400"
                     )}>
-                        {identity.label} {identity.prestigeLabel || ''}
+                        {identity.label}
                     </span>
                     <div className="flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md transition-all group-hover:bg-skyjo-blue/20 group-hover:border-skyjo-blue/40">
                         <span className="text-[10px] font-black text-white tracking-tighter mr-0.5 opacity-80">XP</span>
@@ -184,7 +184,7 @@ export default function Leaderboard({ data, currentUserId }) {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-xs font-black text-white uppercase tracking-tighter">{identity.label} {identity.prestigeLabel || ''}</p>
+                                            <p className="text-xs font-black text-white uppercase tracking-tighter">{identity.label}</p>
                                             <div className="flex items-center justify-end gap-1 px-2 py-0.5 rounded-lg bg-white/5 border border-white/5">
                                                 <span className="text-[9px] font-black text-white/60 mr-0.5">XP</span>
                                                 <span className="text-[11px] font-bold text-slate-300">{user.xp}</span>
