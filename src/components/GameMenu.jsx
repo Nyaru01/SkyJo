@@ -232,7 +232,7 @@ export default function GameMenu({
                                 isWeeklyAvailable ? "text-emerald-100" : "text-slate-400"
                             )}>
                                 {isWeeklyAvailable ? (
-                                    <> Gardez 2x "0" + 2x "4" et <span className="text-white">Gagnez</span> = +10 XP</>
+                                    <> Gardez 2× "4" + 2× "0" et <span className="text-white">Gagnez</span> = +10 XP</>
                                 ) : (
                                     <>Réinitialisation dans <span className="text-emerald-400">{getWeeklyRemainingDays()} jours</span></>
                                 )}
@@ -628,7 +628,7 @@ export default function GameMenu({
                             
                             <div className="space-y-4 mb-8 text-center">
                                 <p className="text-slate-300 text-sm leading-relaxed">
-                                    Affrontez la canicule avec ce défi corsé ! En <strong className="text-rose-400">mode Tourment</strong>, gardez au moins <strong className="text-white">2 cartes "0" et 2 cartes "4"</strong> sur votre grille finale pour former 40 °C, ET <strong className="text-white">remportez la victoire</strong> contre l'IA.
+                                    Affrontez la canicule avec ce défi corsé ! En <strong className="text-rose-400">mode Tourment</strong>, gardez au moins <strong className="text-white">2 cartes "4" et 2 cartes "0"</strong> sur votre grille finale pour former 40 °C, ET <strong className="text-white">remportez la victoire</strong> contre l'IA.
                                 </p>
                                 <p className="text-[10px] text-emerald-400/80 font-bold italic -mt-2">
                                     (Attention : évitez d'aligner 3 cartes identiques dans une même colonne, sinon elles seront supprimées !)
