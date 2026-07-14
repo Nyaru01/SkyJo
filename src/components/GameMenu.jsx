@@ -213,28 +213,31 @@ export default function GameMenu({
                         setScreen('game');
                     }}
                     disabled={!isWeeklyAvailable}
-                    gradientFrom={isWeeklyAvailable ? "from-emerald-400" : "from-slate-700"}
-                    gradientTo={isWeeklyAvailable ? "from-emerald-600" : "to-slate-800"}
-                    shadowColor={isWeeklyAvailable ? "shadow-emerald-500/20" : "shadow-transparent"}
+                    gradientFrom={isWeeklyAvailable ? "from-amber-400" : "from-slate-700"}
+                    gradientTo={isWeeklyAvailable ? "to-orange-600" : "to-slate-800"}
+                    shadowColor={isWeeklyAvailable ? "shadow-amber-500/20" : "shadow-transparent"}
                     className={cn("w-full transition-all duration-500 group", !isWeeklyAvailable && "opacity-60 grayscale-[0.3]")}
-                    contentClassName="h-auto pl-8 pr-6"
+                    contentClassName="h-auto min-h-[6.5rem] px-5 sm:pl-8 sm:pr-6"
                 >
-                    <div className="flex items-center justify-between w-full relative z-10 text-left">
-                        <div className="flex flex-col justify-center">
+                    <div className="flex items-center justify-between gap-4 w-full relative z-10 text-left">
+                        <div className="flex min-w-0 flex-col justify-center">
                             <div className="flex items-center gap-2">
-                                <h3 className="text-lg font-bold text-white leading-tight">MODE ÉTÉ · 40 °C</h3>
+                                <h3 className="text-base sm:text-lg font-bold text-white leading-tight">MODE ÉTÉ · 40 °C</h3>
                                 {isWeeklyAvailable && (
-                                    <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                    <span className="flex h-1.5 w-1.5 shrink-0 rounded-full bg-amber-300 animate-pulse" />
                                 )}
                             </div>
                             <p className={cn(
-                                "text-[10px] font-bold uppercase tracking-wider mt-0.5",
-                                isWeeklyAvailable ? "text-emerald-100" : "text-slate-400"
+                                "text-[10px] sm:text-xs font-bold uppercase tracking-wider leading-relaxed mt-1",
+                                isWeeklyAvailable ? "text-amber-100" : "text-slate-400"
                             )}>
                                 {isWeeklyAvailable ? (
-                                    <> Gardez 2x "0" + 2x "4" et <span className="text-white">Gagnez</span> = +10 XP</>
+                                    <>
+                                        <span className="block">Gardez 2× "4" + 2× "0"</span>
+                                        <span className="block whitespace-nowrap text-white">Victoire = +10 XP</span>
+                                    </>
                                 ) : (
-                                    <>Réinitialisation dans <span className="text-emerald-400">{getWeeklyRemainingDays()} jours</span></>
+                                    <>Réinitialisation dans <span className="text-amber-400">{getWeeklyRemainingDays()} jours</span></>
                                 )}
                             </p>
                         </div>
@@ -242,11 +245,11 @@ export default function GameMenu({
                         <div className={cn(
                             "w-12 h-12 rounded-2xl border flex items-center justify-center transition-all duration-500 relative overflow-hidden shrink-0 icon-3d-container",
                             isWeeklyAvailable
-                                ? "bg-emerald-500/20 border-emerald-400/30 shadow-[0_0_15px_rgba(52,211,153,0.2)]"
+                                ? "bg-amber-500/20 border-amber-300/40 shadow-[0_0_18px_rgba(245,158,11,0.25)]"
                                 : "bg-slate-800/50 border-white/5"
                         )}>
                             {isWeeklyAvailable && (
-                                <div className="absolute inset-0 bg-gradient-to-tr from-emerald-400/20 to-transparent animate-pulse" />
+                                <div className="absolute inset-0 bg-gradient-to-tr from-amber-300/25 to-transparent animate-pulse" />
                             )}
                             <span className={cn(
                                 "text-2xl transition-all duration-500 flex items-center justify-center",
@@ -254,7 +257,7 @@ export default function GameMenu({
                                     ? "scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] icon-3d animate-float-3d"
                                     : "opacity-40 grayscale"
                             )}>
-                                🌸
+                                ☀️
                             </span>
                         </div>
                     </div>
@@ -606,40 +609,40 @@ export default function GameMenu({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         className="relative w-full max-w-sm overflow-hidden"
                     >
-                        <div className="bg-gradient-to-b from-slate-900 to-slate-950 border border-emerald-500/30 rounded-[2.5rem] shadow-2xl p-8 text-center relative">
+                        <div className="bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/30 rounded-[2.5rem] shadow-2xl p-8 text-center relative">
                             {/* Decorative elements */}
-                            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-emerald-500/10 to-transparent pointer-events-none" />
-                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-pink-500/10 blur-3xl rounded-full" />
-                            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-500/10 blur-3xl rounded-full" />
+                            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-amber-500/10 to-transparent pointer-events-none" />
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/10 blur-3xl rounded-full" />
+                            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-amber-500/10 blur-3xl rounded-full" />
 
                             {/* Icon */}
                             <div className="relative mb-6 inline-block">
-                                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 transform -rotate-6">
+                                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20 transform -rotate-6">
                                     <span className="text-4xl animate-float-3d">☀️</span>
                                 </div>
-                                <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center border-4 border-slate-900">
+                                <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center border-4 border-slate-900">
                                     <Sparkles className="w-4 h-4 text-white" />
                                 </div>
                             </div>
 
                             {/* Text content */}
                             <h2 className="text-2xl font-black text-white mb-2 tracking-tight">MODE ÉTÉ · 40 °C</h2>
-                            <p className="text-emerald-400 font-bold text-sm uppercase tracking-widest mb-6">Nouvel Événement Hebdo</p>
+                            <p className="text-amber-400 font-bold text-sm uppercase tracking-widest mb-6">Nouvel Événement Hebdo</p>
                             
                             <div className="space-y-4 mb-8 text-center">
                                 <p className="text-slate-300 text-sm leading-relaxed">
-                                    Affrontez la canicule avec ce défi corsé ! En <strong className="text-rose-400">mode Tourment</strong>, gardez au moins <strong className="text-white">2 cartes "0" et 2 cartes "4"</strong> sur votre grille finale pour former 40 °C, ET <strong className="text-white">remportez la victoire</strong> contre l'IA.
+                                    Affrontez la canicule avec ce défi corsé ! En <strong className="text-rose-400">mode Tourment</strong>, gardez au moins <strong className="text-white">2 cartes "4" et 2 cartes "0"</strong> sur votre grille finale pour former 40 °C, ET <strong className="text-white">remportez la victoire</strong> contre l'IA.
                                 </p>
-                                <p className="text-[10px] text-emerald-400/80 font-bold italic -mt-2">
+                                <p className="text-[10px] text-amber-400/80 font-bold italic -mt-2">
                                     (Attention : évitez d'aligner 3 cartes identiques dans une même colonne, sinon elles seront supprimées !)
                                 </p>
 
-                                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl py-3 px-4 inline-flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black shadow-lg">
+                                <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl py-3 px-4 inline-flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-lg">
                                         +10
                                     </div>
                                     <div className="text-left">
-                                        <div className="text-white font-bold text-xs uppercase tracking-wider text-emerald-400">Récompense</div>
+                                        <div className="font-bold text-xs uppercase tracking-wider text-amber-400">Récompense</div>
                                         <div className="text-white font-black text-sm">Points d'XP</div>
                                     </div>
                                 </div>
@@ -648,7 +651,7 @@ export default function GameMenu({
                             {/* Footer */}
                             <Button 
                                 onClick={handleCloseAnnouncement}
-                                className="w-full h-14 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black uppercase tracking-widest shadow-xl shadow-emerald-600/20 border-t border-white/20"
+                                className="w-full h-14 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black uppercase tracking-widest shadow-xl shadow-amber-600/20 border-t border-white/30"
                             >
                                 C'est parti !
                             </Button>

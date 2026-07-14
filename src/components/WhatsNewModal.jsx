@@ -23,7 +23,7 @@ const FEATURES = [
     },
     {
         title: "Mode Été · 40 °C",
-        description: "Le défi hebdomadaire passe à l'heure d'été : terminez avec au moins 2 cartes '0' et 2 cartes '4', puis remportez la partie.",
+        description: "Le défi hebdomadaire passe à l'heure d'été : terminez avec au moins 2 cartes '4' et 2 cartes '0', puis remportez la partie.",
         icon: Sun,
         color: "text-amber-400",
         bg: "bg-amber-400/10"
