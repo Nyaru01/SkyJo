@@ -184,6 +184,64 @@ body.pwa {
   outline-offset: 3px;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(0.75rem, env(safe-area-inset-top)) 0.75rem max(0.75rem, env(safe-area-inset-bottom));
+  background: rgba(2, 6, 23, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.modal-surface {
+  position: relative;
+  width: 100%;
+  max-height: calc(100dvh - 1.5rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow: hidden;
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--ui-radius-card);
+  background: var(--ui-surface-strong);
+  box-shadow: 0 30px 80px -28px rgba(0, 0, 0, 0.95);
+}
+
+.modal-close-button {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ui-border);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.modal-close-button:hover {
+  border-color: var(--ui-border-strong);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.toast-surface {
+  max-width: min(28rem, calc(100vw - 1.5rem)) !important;
+  padding: 0.875rem 1.125rem !important;
+  border: 1px solid var(--ui-border-strong) !important;
+  border-radius: 1.25rem !important;
+  background: var(--ui-surface-strong) !important;
+  color: #fff !important;
+  box-shadow: 0 20px 48px -24px rgba(0, 0, 0, 0.95) !important;
+  backdrop-filter: blur(var(--ui-blur)) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(var(--ui-blur)) saturate(150%) !important;
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  text-align: center !important;
+}
+
 /* =============================================== */
 /* DESIGN SYSTEM - Semantic Colors & Typography   */
 /* =============================================== */
