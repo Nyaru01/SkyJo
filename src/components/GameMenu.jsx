@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { motion as Motion } from 'framer-motion';
+import { motion as Motion, useReducedMotion } from 'framer-motion';
 import { Bot, ChevronRight, Users, Wifi, HelpCircle, Palette, X, Sparkles, RotateCcw, Zap, Swords, Flame, Image as ImageIcon } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Button } from './ui/Button';
@@ -19,6 +19,25 @@ import {
 } from '../lib/weeklyChallenge';
 import RobotAvatar from './ui/RobotAvatar';
 import ModalShell from './ui/ModalShell';
+
+const EquinoxOrbitIcon = ({ active }) => {
+    const prefersReducedMotion = useReducedMotion();
+    const shouldAnimate = active && !prefersReducedMotion;
+
+    return (
+        <div className="relative flex h-9 w-9 items-center justify-center" aria-hidden="true">
+            <div className="absolute inset-1 rounded-full border border-white/20" />
+            <span className="relative z-10 text-[20px] drop-shadow-[0_0_7px_rgba(255,255,255,0.45)]">🌍</span>
+            <Motion.span
+                className="absolute inset-0"
+                animate={shouldAnimate ? { rotate: 360 } : { rotate: 28 }}
+                transition={shouldAnimate ? { duration: 5, ease: 'linear', repeat: Infinity } : { duration: 0 }}
+            >
+                <span className="absolute left-1/2 top-[-1px] h-2.5 w-2.5 -translate-x-1/2 rounded-full border border-white/50 bg-gradient-to-br from-amber-100 via-slate-200 to-indigo-400 shadow-[0_0_8px_rgba(251,191,36,0.65)]" />
+            </Motion.span>
+        </div>
+    );
+};
 
 export default function GameMenu({
     setScreen,
@@ -222,13 +241,20 @@ export default function GameMenu({
                     shadowColor={isWeeklyAvailable ? "shadow-indigo-500/25" : "shadow-transparent"}
                     className={cn("w-full transition-all duration-500 group", !isWeeklyAvailable && "opacity-60 grayscale-[0.3]")}
                     contentClassName="game-mode-card-content"
+                    bodyClassName={isWeeklyAvailable
+                        ? "border-amber-100/30 ring-1 ring-inset ring-indigo-200/20 shadow-[0_8px_28px_rgba(79,70,229,0.22)]"
+                        : "border-white/10"
+                    }
                 >
+                    {isWeeklyAvailable && (
+                        <div className="pointer-events-none absolute -right-10 -top-16 h-32 w-32 rounded-full bg-amber-200/20 blur-2xl" />
+                    )}
                     <div className="flex items-center justify-between gap-4 w-full relative z-10 text-left">
                         <div className="flex min-w-0 flex-col justify-center">
                             <div className="flex items-center gap-2">
-                                <h3 className="game-mode-card-title text-white">{CURRENT_WEEKLY_CHALLENGE.title}</h3>
+                                <h3 className="game-mode-card-title text-white">{CURRENT_WEEKLY_CHALLENGE.shortTitle}</h3>
                                 {isWeeklyAvailable && (
-                                    <span className="flex h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-200 animate-pulse" />
+                                    <span className="rounded-full bg-white/15 px-1.5 py-0.5 text-[8px] font-black tracking-wider text-amber-100 ring-1 ring-inset ring-white/15">HEBDO</span>
                                 )}
                             </div>
                             <p className={cn(
@@ -237,8 +263,8 @@ export default function GameMenu({
                             )}>
                                 {isWeeklyAvailable ? (
                                     <>
-                                        <span className="block">{CURRENT_WEEKLY_CHALLENGE.requirementLabel}</span>
-                                        <span className="block whitespace-nowrap text-white">Victoire = +{CURRENT_WEEKLY_CHALLENGE.rewardXP} XP</span>
+                                        <span className="block text-indigo-50">Conservez <strong className="text-white">−2 · 0 · 0 · +2</strong></span>
+                                        <span className="mt-0.5 block whitespace-nowrap text-amber-100">Tourment · Victoire <strong className="text-white">+{CURRENT_WEEKLY_CHALLENGE.rewardXP} XP</strong></span>
                                     </>
                                 ) : (
                                     <>Réinitialisation dans <span className="text-indigo-300">{getWeeklyRemainingDays()} jours</span></>
@@ -249,20 +275,10 @@ export default function GameMenu({
                         <div className={cn(
                             "game-mode-icon border flex items-center justify-center transition-all duration-500 relative overflow-hidden icon-3d-container",
                             isWeeklyAvailable
-                                ? "bg-gradient-to-br from-amber-400/25 to-indigo-600/30 border-indigo-300/40 shadow-[0_0_18px_rgba(99,102,241,0.30)]"
+                                ? "bg-slate-950/20 border-amber-100/30 shadow-[inset_0_0_14px_rgba(255,255,255,0.08),0_0_18px_rgba(99,102,241,0.30)]"
                                 : "bg-slate-800/50 border-white/5"
                         )}>
-                            {isWeeklyAvailable && (
-                                <div className="absolute inset-0 bg-gradient-to-tr from-amber-300/25 via-transparent to-indigo-300/25 animate-pulse" />
-                            )}
-                            <span className={cn(
-                                "text-2xl transition-all duration-500 flex items-center justify-center",
-                                isWeeklyAvailable
-                                    ? "scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] icon-3d animate-float-3d"
-                                    : "opacity-40 grayscale"
-                            )}>
-                                {CURRENT_WEEKLY_CHALLENGE.icon}
-                            </span>
+                            <EquinoxOrbitIcon active={isWeeklyAvailable} />
                         </div>
                     </div>
                 </PremiumTiltButton>

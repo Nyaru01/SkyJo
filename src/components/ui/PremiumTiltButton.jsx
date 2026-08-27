@@ -7,6 +7,7 @@ export const PremiumTiltButton = ({
     onClick,
     className,
     contentClassName,
+    bodyClassName,
     gradientFrom = "from-sky-600",
     gradientTo = "to-blue-600",
     shadowColor = "shadow-sky-500/20",
@@ -46,7 +47,8 @@ export const PremiumTiltButton = ({
                 "bg-gradient-to-br",
                 gradientFrom, gradientTo,
                 "shadow-[0_2px_0_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.1)]", // Thinner physical depth
-                "border border-white/15" // Consistent rim and focus boundary
+                "border border-white/15", // Consistent rim and focus boundary
+                bodyClassName
             )}>
                 {/* Glass Sheen */}
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent opacity-40 pointer-events-none" />

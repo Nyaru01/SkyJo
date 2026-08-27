@@ -3,9 +3,17 @@ import { Sparkles, Zap, Flame, Cloud, SunMoon } from 'lucide-react';
 import { Button } from './ui/Button';
 import ModalShell, { ModalCloseButton } from './ui/ModalShell';
 
-export const CURRENT_NEWS_VERSION = 12;
+export const CURRENT_NEWS_VERSION = 13;
 
 const FEATURES = [
+    {
+        title: "Mode Équinoxe · Équilibre",
+        description: "Entre ombre et lumière : conservez -2, 0, 0 et 2 sur votre grille finale, puis décrochez la victoire en mode Tourment.",
+        icon: SunMoon,
+        color: "text-amber-100",
+        bg: "bg-gradient-to-br from-amber-400/25 to-indigo-500/30",
+        featured: true
+    },
     {
         title: "Comportement IA",
         description: "L'intelligence artificielle a été affinée pour une stratégie plus humaine et des défis plus relevés.",
@@ -19,13 +27,6 @@ const FEATURES = [
         icon: Zap,
         color: "text-slate-400",
         bg: "bg-slate-400/10"
-    },
-    {
-        title: "Mode Équinoxe · Équilibre",
-        description: "Entre ombre et lumière : gardez au moins une carte '-2', deux cartes '0' et une carte '2', puis remportez la partie.",
-        icon: SunMoon,
-        color: "text-indigo-300",
-        bg: "bg-gradient-to-br from-amber-400/10 to-indigo-500/15"
     },
     {
         title: "Sauvegarde Cloud",
@@ -73,17 +74,28 @@ const FEATURES = [
 
 const FeatureCard = ({ feature }) => (
     <div
-        className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10"
+        className={feature.featured
+            ? "relative flex items-start gap-3 overflow-hidden rounded-xl border border-amber-300/35 bg-gradient-to-r from-amber-500/15 via-indigo-500/15 to-violet-500/15 p-3 shadow-[0_0_24px_rgba(99,102,241,0.16)] ring-1 ring-inset ring-white/5"
+            : "flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10"
+        }
     >
+        {feature.featured && (
+            <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-amber-200/90 to-transparent" />
+        )}
         <div
-            className={`shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${feature.bg}`}
+            className={`relative shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${feature.bg}`}
             aria-hidden="true"
         >
             <feature.icon className={`w-5 h-5 ${feature.color}`} />
         </div>
         <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-white text-sm mb-0.5">
+            <h3 className="flex items-center gap-2 font-bold text-white text-sm mb-0.5">
                 {feature.title}
+                {feature.featured && (
+                    <span className="rounded-full bg-amber-300/15 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-amber-200 ring-1 ring-inset ring-amber-200/20">
+                        Nouveau
+                    </span>
+                )}
             </h3>
             <p className="text-xs text-slate-400 leading-relaxed">
                 {feature.description}
