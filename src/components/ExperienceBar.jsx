@@ -84,7 +84,7 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
         <>
             <div className={cn('relative z-30 w-full', className)}>
                 <div className="mb-4 min-h-[85px]">
-                    <p className="mb-3 text-[10px] font-black uppercase leading-none tracking-[0.3em] text-slate-500">
+                    <p className="mb-3 text-center text-[10px] font-black uppercase leading-none tracking-[0.3em] text-slate-500">
                         Progression de Carrière
                     </p>
                     <div className="flex items-center justify-between">
