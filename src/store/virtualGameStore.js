@@ -23,6 +23,10 @@ import {
 } from '../lib/skyjoEngine';
 import { useGameStore } from './gameStore';
 import {
+    canAwardWeeklyChallenge,
+    CURRENT_WEEKLY_CHALLENGE,
+} from '../lib/weeklyChallenge';
+import {
     AI_DIFFICULTY,
     AI_NAMES,
     chooseInitialCardsToReveal,
@@ -61,29 +65,28 @@ const applyGameEndLogic = (newState) => {
             });
         });
 
-        // --- Weekly Challenge: Mode Été — 40 °C ☀️ ---
+        // Seasonal challenge is awarded only from the dedicated weekly entry point.
         const gameStore = useGameStore.getState();
-        const lastWinStr = gameStore.weeklyChallengeWinDate;
-        const isAvailable = !lastWinStr || (Math.ceil(Math.abs(new Date() - new Date(lastWinStr)) / (1000 * 60 * 60 * 24)) >= 7);
+        const human = newState.players.find(player => player.id === 'human-1');
+        const roundScores = human ? calculateFinalScores(newState) : [];
 
-        if (isAvailable) {
-            const human = newState.players.find(p => p.id === 'human-1');
-            if (human) {
-                const zeros = human.hand.filter(c => c && c.isRevealed && c.value === 0).length;
-                const fours = human.hand.filter(c => c && c.isRevealed && c.value === 4).length;
-                if (zeros >= 2 && fours >= 2) {
-                    // Check if human won the round
-                    const roundScores = calculateFinalScores(newState);
-                    const minScore = Math.min(...roundScores.map(s => s.finalScore));
-                    const humanScore = roundScores.find(s => s.playerId === human.id)?.finalScore;
+        if (human && canAwardWeeklyChallenge({
+            isWeeklyChallenge: newState.isWeeklyChallenge,
+            hand: human.hand,
+            roundScores,
+            humanPlayerId: human.id,
+            weeklyChallengeWinDate: gameStore.weeklyChallengeWinDate,
+            weeklyChallengeId: gameStore.weeklyChallengeId,
+        })) {
+            const awarded = gameStore.awardWeeklyChallenge(
+                CURRENT_WEEKLY_CHALLENGE.id,
+                CURRENT_WEEKLY_CHALLENGE.rewardXP,
+            );
 
-                    if (humanScore === minScore) {
-                        console.log('[CHALLENGE] ☀️ Mode Été 40 °C & Victoire ! +10 XP');
-                        gameStore.markWeeklyWin();
-                        gameStore.addXP(10);
-                        newState.challengeJustWon = 'ete_40_degres';
-                    }
-                }
+            if (awarded) {
+                console.log(`[CHALLENGE] ${CURRENT_WEEKLY_CHALLENGE.icon} ${CURRENT_WEEKLY_CHALLENGE.shortTitle} réussi ! +${CURRENT_WEEKLY_CHALLENGE.rewardXP} XP`);
+                newState.challengeJustWon = CURRENT_WEEKLY_CHALLENGE.id;
+                useVirtualGameStore.setState({ challengeJustWon: CURRENT_WEEKLY_CHALLENGE.id });
             }
         }
     }
@@ -108,7 +111,7 @@ export const useVirtualGameStore = create(
             selectedCardIndex: null,
             showScores: false,
             animatingCards: [],
-            challengeJustWon: null, // 'ete_40_degres' or null
+            challengeJustWon: null, // Current seasonal challenge ID or null
 
             // AI mode state
             aiMode: false,
@@ -117,6 +120,7 @@ export const useVirtualGameStore = create(
             isAIThinking: false,
             drawnCardSource: null, // 'pile' or 'discard'
             isDailyChallenge: false,
+            isWeeklyChallenge: false,
             isShowingGame: false, // UI flag to indicate if we are on the game screen
             humanTurnStartState: null, // Track state for turn observation
 
@@ -227,6 +231,7 @@ export const useVirtualGameStore = create(
                 const isHardcoreMode = difficulty === AI_DIFFICULTY.HARDCORE;
 
                 const gameState = initializeGame(players, { isBonusMode, isHardcoreMode });
+                gameState.isWeeklyChallenge = options.isWeeklyChallenge === true;
 
                 // Reset AI memory for new game
                 resetOpponentMemory();
@@ -255,6 +260,8 @@ export const useVirtualGameStore = create(
                     drawnCardSource: null,
                     isPaused: false,
                     isDailyChallenge: options.isDailyChallenge || false,
+                    isWeeklyChallenge: options.isWeeklyChallenge || false,
+                    challengeJustWon: null,
                     humanTurnStartState: null,
                 });
             },
@@ -902,6 +909,9 @@ export const useVirtualGameStore = create(
                     aiDifficulty: AI_DIFFICULTY.NORMAL,
                     isAIThinking: false,
                     isPaused: false,
+                    isDailyChallenge: false,
+                    isWeeklyChallenge: false,
+                    challengeJustWon: null,
                 });
             },
 
@@ -931,9 +941,13 @@ export const useVirtualGameStore = create(
                     // Human won or tied for win in this round!
                     try {
                         const isDaily = get().isDailyChallenge;
+                        const weeklyJustWon = gameState.challengeJustWon === CURRENT_WEEKLY_CHALLENGE.id;
                         const isDailyAvailable = useGameStore.getState().lastDailyWinDate !== new Date().toISOString().split('T')[0];
 
-                        if (isDaily && isDailyAvailable) {
+                        if (weeklyJustWon) {
+                            // The seasonal reward was granted atomically during final scoring.
+                            xpAwardedValue = CURRENT_WEEKLY_CHALLENGE.rewardXP;
+                        } else if (isDaily && isDailyAvailable) {
                             // XP depends on difficulty for daily challenge
                             const difficulty = get().aiDifficulty;
                             xpAwardedValue = difficulty === 'bonus' ? 6 : 3;
@@ -1134,6 +1148,7 @@ export const useVirtualGameStore = create(
                     isBonusMode: get().isBonusMode,
                     isHardcoreMode: get().isHardcoreMode
                 });
+                newGameState.isWeeklyChallenge = get().isWeeklyChallenge;
                 set({
                     gameState: newGameState,
                     roundNumber: roundNumber + 1,
@@ -1194,6 +1209,7 @@ export const useVirtualGameStore = create(
                 isBonusMode: state.isBonusMode,
                 isPaused: state.isPaused,
                 isDailyChallenge: state.isDailyChallenge,
+                isWeeklyChallenge: state.isWeeklyChallenge,
             }),
         }
     )

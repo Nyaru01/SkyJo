@@ -13,6 +13,10 @@ import { useOnlineGameStore } from '../store/onlineGameStore';
 import { useFeedback } from '../hooks/useFeedback';
 import { cn } from '../lib/utils';
 import { AI_DIFFICULTY } from '../lib/skyjoAI';
+import {
+    CURRENT_WEEKLY_CHALLENGE,
+    getWeeklyChallengeRemainingDays as calculateWeeklyRemainingDays,
+} from '../lib/weeklyChallenge';
 import RobotAvatar from './ui/RobotAvatar';
 import ModalShell from './ui/ModalShell';
 
@@ -34,7 +38,8 @@ export default function GameMenu({
     const isDailyAvailable = useGameStore(selectIsDailyAvailable);
     const isWeeklyAvailable = useGameStore(selectIsWeeklyAvailable);
     const weeklyChallengeWinDate = useGameStore(state => state.weeklyChallengeWinDate);
-    const hasSeenWeeklyAnnouncement = useGameStore(state => state.hasSeenWeeklyChallengeAnnouncementV3);
+    const weeklyChallengeId = useGameStore(state => state.weeklyChallengeId);
+    const hasSeenWeeklyAnnouncement = useGameStore(state => state.hasSeenWeeklyChallengeAnnouncementV4);
     const setHasSeenWeeklyAnnouncement = useGameStore(state => state.setHasSeenWeeklyChallengeAnnouncement);
     
     const [showWeeklyAnnouncement, setShowWeeklyAnnouncement] = React.useState(false);
@@ -53,14 +58,7 @@ export default function GameMenu({
     };
 
     const getWeeklyRemainingDays = () => {
-        if (!weeklyChallengeWinDate) return 0;
-        const lastWin = new Date(weeklyChallengeWinDate);
-        const nextAvailable = new Date(lastWin);
-        nextAvailable.setDate(lastWin.getDate() + 7);
-        const today = new Date();
-        const diffTime = nextAvailable - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays > 0 ? diffDays : 0;
+        return calculateWeeklyRemainingDays({ weeklyChallengeWinDate, weeklyChallengeId });
     };
 
     const handleStartAIBattle = () => {
@@ -204,41 +202,46 @@ export default function GameMenu({
                             )} />
                         </div>
                     </div>
-                </PremiumTiltButton>                {/* Défi Hebdo - Mode Été 40 °C */}
+                </PremiumTiltButton>                {/* Défi Hebdo - Mode Équinoxe */}
                 <PremiumTiltButton
                     onClick={() => {
                         if (!isWeeklyAvailable) return;
                         playClick();
                         // Weekly challenge: Tourment mode (bonus cards + hard AI)
-                        startAIGame({ name: userProfile.name, avatarId: userProfile.avatarId }, 1, AI_DIFFICULTY.BONUS, { isBonusMode: true });
+                        startAIGame(
+                            { name: userProfile.name, avatarId: userProfile.avatarId },
+                            1,
+                            AI_DIFFICULTY.BONUS,
+                            { isBonusMode: true, isWeeklyChallenge: true },
+                        );
                         setScreen('game');
                     }}
                     disabled={!isWeeklyAvailable}
-                    gradientFrom={isWeeklyAvailable ? "from-amber-400" : "from-slate-700"}
-                    gradientTo={isWeeklyAvailable ? "to-orange-600" : "to-slate-800"}
-                    shadowColor={isWeeklyAvailable ? "shadow-amber-500/20" : "shadow-transparent"}
+                    gradientFrom={isWeeklyAvailable ? "from-indigo-700" : "from-slate-700"}
+                    gradientTo={isWeeklyAvailable ? "to-amber-500" : "to-slate-800"}
+                    shadowColor={isWeeklyAvailable ? "shadow-indigo-500/25" : "shadow-transparent"}
                     className={cn("w-full transition-all duration-500 group", !isWeeklyAvailable && "opacity-60 grayscale-[0.3]")}
                     contentClassName="game-mode-card-content"
                 >
                     <div className="flex items-center justify-between gap-4 w-full relative z-10 text-left">
                         <div className="flex min-w-0 flex-col justify-center">
                             <div className="flex items-center gap-2">
-                                <h3 className="game-mode-card-title text-white">MODE ÉTÉ · 40 °C</h3>
+                                <h3 className="game-mode-card-title text-white">{CURRENT_WEEKLY_CHALLENGE.title}</h3>
                                 {isWeeklyAvailable && (
-                                    <span className="flex h-1.5 w-1.5 shrink-0 rounded-full bg-amber-300 animate-pulse" />
+                                    <span className="flex h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-200 animate-pulse" />
                                 )}
                             </div>
                             <p className={cn(
                                 "game-mode-card-meta uppercase",
-                                isWeeklyAvailable ? "text-amber-100" : "text-slate-400"
+                                isWeeklyAvailable ? "text-indigo-100" : "text-slate-400"
                             )}>
                                 {isWeeklyAvailable ? (
                                     <>
-                                        <span className="block">Gardez 2× "4" + 2× "0"</span>
-                                        <span className="block whitespace-nowrap text-white">Victoire = +10 XP</span>
+                                        <span className="block">{CURRENT_WEEKLY_CHALLENGE.requirementLabel}</span>
+                                        <span className="block whitespace-nowrap text-white">Victoire = +{CURRENT_WEEKLY_CHALLENGE.rewardXP} XP</span>
                                     </>
                                 ) : (
-                                    <>Réinitialisation dans <span className="text-amber-400">{getWeeklyRemainingDays()} jours</span></>
+                                    <>Réinitialisation dans <span className="text-indigo-300">{getWeeklyRemainingDays()} jours</span></>
                                 )}
                             </p>
                         </div>
@@ -246,11 +249,11 @@ export default function GameMenu({
                         <div className={cn(
                             "game-mode-icon border flex items-center justify-center transition-all duration-500 relative overflow-hidden icon-3d-container",
                             isWeeklyAvailable
-                                ? "bg-amber-500/20 border-amber-300/40 shadow-[0_0_18px_rgba(245,158,11,0.25)]"
+                                ? "bg-gradient-to-br from-amber-400/25 to-indigo-600/30 border-indigo-300/40 shadow-[0_0_18px_rgba(99,102,241,0.30)]"
                                 : "bg-slate-800/50 border-white/5"
                         )}>
                             {isWeeklyAvailable && (
-                                <div className="absolute inset-0 bg-gradient-to-tr from-amber-300/25 to-transparent animate-pulse" />
+                                <div className="absolute inset-0 bg-gradient-to-tr from-amber-300/25 via-transparent to-indigo-300/25 animate-pulse" />
                             )}
                             <span className={cn(
                                 "text-2xl transition-all duration-500 flex items-center justify-center",
@@ -258,7 +261,7 @@ export default function GameMenu({
                                     ? "scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] icon-3d animate-float-3d"
                                     : "opacity-40 grayscale"
                             )}>
-                                ☀️
+                                {CURRENT_WEEKLY_CHALLENGE.icon}
                             </span>
                         </div>
                     </div>
@@ -613,40 +616,40 @@ export default function GameMenu({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         className="relative w-full max-w-sm overflow-hidden"
                     >
-                        <div className="bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/30 rounded-[2.5rem] shadow-2xl p-8 text-center relative">
+                        <div className="bg-gradient-to-b from-slate-900 to-slate-950 border border-indigo-400/30 rounded-[2.5rem] shadow-2xl p-8 text-center relative">
                             {/* Decorative elements */}
-                            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-amber-500/10 to-transparent pointer-events-none" />
-                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/10 blur-3xl rounded-full" />
-                            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-amber-500/10 blur-3xl rounded-full" />
+                            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-indigo-500/15 via-amber-500/5 to-transparent pointer-events-none" />
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-500/15 blur-3xl rounded-full" />
+                            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-amber-500/15 blur-3xl rounded-full" />
 
                             {/* Icon */}
                             <div className="relative mb-6 inline-block">
-                                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20 transform -rotate-6">
-                                    <span className="text-4xl animate-float-3d">☀️</span>
+                                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-400 via-violet-500 to-indigo-700 flex items-center justify-center shadow-lg shadow-indigo-500/25 transform -rotate-6">
+                                    <span className="text-4xl animate-float-3d">{CURRENT_WEEKLY_CHALLENGE.icon}</span>
                                 </div>
-                                <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center border-4 border-slate-900">
+                                <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center border-4 border-slate-900">
                                     <Sparkles className="w-4 h-4 text-white" />
                                 </div>
                             </div>
 
                             {/* Text content */}
-                            <h2 className="text-2xl font-black text-white mb-2 tracking-tight">MODE ÉTÉ · 40 °C</h2>
-                            <p className="text-amber-400 font-bold text-sm uppercase tracking-widest mb-6">Nouvel Événement Hebdo</p>
+                            <h2 className="text-2xl font-black text-white mb-2 tracking-tight">{CURRENT_WEEKLY_CHALLENGE.title}</h2>
+                            <p className="text-indigo-300 font-bold text-sm uppercase tracking-widest mb-6">{CURRENT_WEEKLY_CHALLENGE.subtitle}</p>
                             
                             <div className="space-y-4 mb-8 text-center">
                                 <p className="text-slate-300 text-sm leading-relaxed">
-                                    Affrontez la canicule avec ce défi corsé ! En <strong className="text-rose-400">mode Tourment</strong>, gardez au moins <strong className="text-white">2 cartes "4" et 2 cartes "0"</strong> sur votre grille finale pour former 40 °C, ET <strong className="text-white">remportez la victoire</strong> contre l'IA.
+                                    Entre ombre et lumière, trouvez l'équilibre ! En <strong className="text-violet-400">mode Tourment</strong>, gardez au moins <strong className="text-white">1 carte "-2", 2 cartes "0" et 1 carte "2"</strong> sur votre grille finale, puis <strong className="text-white">remportez la victoire</strong> contre l'IA.
                                 </p>
-                                <p className="text-[10px] text-amber-400/80 font-bold italic -mt-2">
+                                <p className="text-[10px] text-indigo-300/80 font-bold italic -mt-2">
                                     (Attention : évitez d'aligner 3 cartes identiques dans une même colonne, sinon elles seront supprimées !)
                                 </p>
 
-                                <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl py-3 px-4 inline-flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-lg">
-                                        +10
+                                <div className="bg-indigo-500/10 border border-indigo-400/20 rounded-2xl py-3 px-4 inline-flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-indigo-500 text-white flex items-center justify-center font-black shadow-lg">
+                                        +{CURRENT_WEEKLY_CHALLENGE.rewardXP}
                                     </div>
                                     <div className="text-left">
-                                        <div className="font-bold text-xs uppercase tracking-wider text-amber-400">Récompense</div>
+                                        <div className="font-bold text-xs uppercase tracking-wider text-indigo-300">Récompense</div>
                                         <div className="text-white font-black text-sm">Points d'XP</div>
                                     </div>
                                 </div>
@@ -655,7 +658,7 @@ export default function GameMenu({
                             {/* Footer */}
                             <Button 
                                 onClick={handleCloseAnnouncement}
-                                className="w-full h-14 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black uppercase tracking-widest shadow-xl shadow-amber-600/20 border-t border-white/30"
+                                className="w-full h-14 rounded-2xl bg-gradient-to-r from-indigo-600 to-amber-500 hover:from-indigo-500 hover:to-amber-400 text-white font-black uppercase tracking-widest shadow-xl shadow-indigo-600/20 border-t border-white/30"
                             >
                                 C'est parti !
                             </Button>

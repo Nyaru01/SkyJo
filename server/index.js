@@ -8,6 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import admin from 'firebase-admin';
 import pool from './db.js';
+import { runColumnMigrations } from './dbMigrations.js';
 
 import { initFirebase, getFirebaseAdmin } from './firebase.js';
 
@@ -70,7 +71,8 @@ const initDb = async () => {
                 last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 migrated_to_v2 BOOLEAN DEFAULT FALSE,
                 firebase_uid TEXT UNIQUE,
-                weekly_challenge_win_date DATE
+                weekly_challenge_win_date DATE,
+                weekly_challenge_id TEXT
             );
         `);
         console.log('[DB] ✓ Users table ready');
@@ -131,27 +133,7 @@ const initDb = async () => {
         console.log('[DB] ✓ Feedbacks table ready');
     } catch (e) { console.error('[DB] Feedbacks table error:', e.message); }
 
-    const migrations = [
-        { table: 'users', col: 'firebase_uid', sql: 'ALTER TABLE users ADD COLUMN firebase_uid TEXT UNIQUE' },
-        { table: 'feedbacks', col: 'type', sql: "ALTER TABLE feedbacks ADD COLUMN type VARCHAR(50) DEFAULT 'general'" },
-        { table: 'feedbacks', col: 'status', sql: "ALTER TABLE feedbacks ADD COLUMN status VARCHAR(20) DEFAULT 'new'" },
-        { table: 'feedbacks', col: 'device_info', sql: 'ALTER TABLE feedbacks ADD COLUMN device_info JSONB' },
-        { table: 'push_subscriptions', col: 'username', sql: 'ALTER TABLE push_subscriptions ADD COLUMN username VARCHAR(100)' },
-        { table: 'users', col: 'weekly_challenge_win_date', sql: 'ALTER TABLE users ADD COLUMN weekly_challenge_win_date DATE' },
-    ];
-
-    for (const m of migrations) {
-        try {
-            const check = await pool.query(
-                `SELECT 1 FROM information_schema.columns WHERE table_name = $1 AND column_name = $2`,
-                [m.table, m.col]
-            );
-            if (check.rows.length === 0) {
-                await pool.query(m.sql);
-                console.log(`[DB] ✓ Added ${m.table}.${m.col}`);
-            }
-        } catch (e) { /* silent if already exists */ }
-    }
+    await runColumnMigrations(pool);
 
     console.log('[DB] Database initialization complete!');
 };
@@ -190,19 +172,20 @@ app.post('/api/social/migrate', async (req, res) => {
 // --- Profile API ---
 
 app.post('/api/social/profile', async (req, res) => {
-    let { id, name, emoji, avatarId, vibeId, level, xp, weeklyChallengeWinDate } = req.body;
-    console.log(`[PROFILE] Update request for ${name} (${id}): Level ${level}, XP ${xp}, WeeklyChallenge: ${weeklyChallengeWinDate}`);
+    let { id, name, emoji, avatarId, vibeId, level, xp, weeklyChallengeWinDate, weeklyChallengeId } = req.body;
+    console.log(`[PROFILE] Update request for ${name} (${id}): Level ${level}, XP ${xp}, WeeklyChallenge: ${weeklyChallengeId || 'none'} @ ${weeklyChallengeWinDate || 'never'}`);
     try {
         await pool.query(`
-            INSERT INTO users (id, name, emoji, avatar_id, vibe_id, level, xp, weekly_challenge_win_date, last_seen)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP)
+            INSERT INTO users (id, name, emoji, avatar_id, vibe_id, level, xp, weekly_challenge_win_date, weekly_challenge_id, last_seen)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
             ON CONFLICT (id) DO UPDATE SET
                 name = EXCLUDED.name, emoji = EXCLUDED.emoji,
                 avatar_id = EXCLUDED.avatar_id, vibe_id = EXCLUDED.vibe_id,
                 level = EXCLUDED.level, xp = EXCLUDED.xp, 
                 weekly_challenge_win_date = EXCLUDED.weekly_challenge_win_date,
+                weekly_challenge_id = EXCLUDED.weekly_challenge_id,
                 last_seen = CURRENT_TIMESTAMP
-        `, [id, name, emoji, avatarId, vibeId, level, xp, weeklyChallengeWinDate]);
+        `, [id, name, emoji, avatarId, vibeId, level, xp, weeklyChallengeWinDate, weeklyChallengeId]);
         console.log(`[PROFILE] ✓ Saved ${name} (${id})`);
         res.json({ status: 'ok' });
     } catch (err) {

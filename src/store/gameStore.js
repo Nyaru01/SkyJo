@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { calculateRoundScore, checkStrictlyLowest } from '../lib/scoreUtils';
+import { buildProfileSyncPayload, mergeCloudProfile } from '../lib/profileSync';
+import {
+    applyXpReward,
+    CURRENT_WEEKLY_CHALLENGE,
+    isWeeklyChallengeAvailable,
+} from '../lib/weeklyChallenge';
 
 /**
  * Calculate total scores for all players across all rounds
@@ -42,7 +48,7 @@ export const useGameStore = create(
             vibrationEnabled: true,
             hasSeenTutorial: false,
             hasSeenNewOnlineModeAnnouncement: false,
-            hasSeenWeeklyChallengeAnnouncementV3: false,
+            hasSeenWeeklyChallengeAnnouncementV4: false,
             hasSeenMasterCareerAnnouncementV1: false,
             migratedToV2: false, // Flag for LocalStorage -> DB migration
             isRehydrated: false, // Flag to track when store is ready
@@ -60,6 +66,7 @@ export const useGameStore = create(
             closeCareerPlan: () => set({ isCareerPlanOpen: false }),
             lastDailyWinDate: null, // ISO date string of last daily challenge win
             weeklyChallengeWinDate: null, // ISO date string of last weekly challenge win
+            weeklyChallengeId: null, // Seasonal challenge identifier associated with the last win
             userProfile: {
                 id: `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 name: '',
@@ -110,7 +117,7 @@ export const useGameStore = create(
 
             setHasSeenNewOnlineModeAnnouncement: (seen) => set({ hasSeenNewOnlineModeAnnouncement: seen }),
 
-            setHasSeenWeeklyChallengeAnnouncement: (seen) => set({ hasSeenWeeklyChallengeAnnouncementV3: seen }),
+            setHasSeenWeeklyChallengeAnnouncement: (seen) => set({ hasSeenWeeklyChallengeAnnouncementV4: seen }),
 
             setHasSeenMasterCareerAnnouncement: (seen) => set({ hasSeenMasterCareerAnnouncementV1: seen }),
 
@@ -177,7 +184,7 @@ export const useGameStore = create(
 
             syncProfileWithBackend: async () => {
                 const state = get();
-                let { userProfile, level, currentXP, profileLoadedFromBackend } = state;
+                let { userProfile, profileLoadedFromBackend } = state;
 
                 // CRITICAL: If we haven't loaded from backend yet in this session, 
                 // do NOT sync local state to backend as it might overwrite higher values 
@@ -206,13 +213,8 @@ export const useGameStore = create(
                     userProfile = get().userProfile;
                 }
 
-                // CRITICAL: Map currentXP to xp for backend column naming
-                const profileWithLatestStats = {
-                    ...userProfile,
-                    level: level,
-                    xp: currentXP,
-                    weeklyChallengeWinDate: state.weeklyChallengeWinDate
-                };
+                // Map local names to the profile API contract using the latest state.
+                const profileWithLatestStats = buildProfileSyncPayload(get(), userProfile);
 
                 try {
                     const response = await fetch('/api/social/profile', {
@@ -242,37 +244,11 @@ export const useGameStore = create(
                         const data = await res.json();
                         console.log('[STORE] Profile data received from backend:', data);
 
-                        // Mark as loaded even if no update needed, so subsequent syncs are allowed
-                        set({ profileLoadedFromBackend: true });
-
-                        // Only update if data is valid and different
                         if (data) {
-                            // Ensure we have numbers and not NULLs from DB
-                            const newLevel = (data.level !== undefined && data.level !== null) ? Number(data.level) : get().level;
-                            const newXP = (data.xp !== undefined && data.xp !== null) ? Number(data.xp) : get().currentXP;
-
-                            if (newLevel !== get().level || newXP !== get().currentXP) {
-                                console.log(`[STORE] 🔄 LOCAL STATE UPDATE from backend: Level ${get().level}->${newLevel}, XP ${get().currentXP}->${newXP}`);
-
-                                const currentLastAck = get().lastAcknowledgedLevel;
-                                const fixedLastAck = currentLastAck > newLevel ? newLevel : currentLastAck;
-
-                                set(state => ({
-                                    level: newLevel,
-                                    currentXP: newXP,
-                                    lastAcknowledgedLevel: fixedLastAck,
-                                    userProfile: {
-                                        ...state.userProfile,
-                                        name: data.name || state.userProfile.name,
-                                        emoji: data.emoji || state.userProfile.emoji,
-                                        avatarId: data.avatar_id || state.userProfile.avatarId,
-                                        vibeId: data.vibe_id || state.userProfile.vibeId,
-                                        level: newLevel,
-                                        currentXP: newXP
-                                    },
-                                    weeklyChallengeWinDate: data.weekly_challenge_win_date ? new Date(data.weekly_challenge_win_date).toISOString().split('T')[0] : state.weeklyChallengeWinDate
-                                }));
-                            }
+                            const previousState = get();
+                            const mergedState = mergeCloudProfile(previousState, data);
+                            console.log(`[STORE] 🔄 CLOUD SYNC: Level ${previousState.level}->${mergedState.level}, XP ${previousState.currentXP}->${mergedState.currentXP}, Challenge ${mergedState.weeklyChallengeId || 'none'}`);
+                            set(mergedState);
                         }
                     } else if (res.status === 404) {
                         // User not in DB yet, allowed to sync local state
@@ -324,12 +300,34 @@ export const useGameStore = create(
             },
 
             /**
-             * Mark weekly challenge as completed for today
+             * Atomically award the current weekly challenge and sync once.
              */
-            markWeeklyWin: () => {
-                set({ weeklyChallengeWinDate: new Date().toISOString().split('T')[0] });
-                // Trigger sync to persist in DB
-                get().syncProfileWithBackend();
+            awardWeeklyChallenge: (
+                challengeId = CURRENT_WEEKLY_CHALLENGE.id,
+                rewardXP = CURRENT_WEEKLY_CHALLENGE.rewardXP,
+            ) => {
+                let awarded = false;
+
+                set(state => {
+                    if (!isWeeklyChallengeAvailable(state)) return state;
+
+                    awarded = true;
+                    const reward = applyXpReward(state.currentXP, state.level, rewardXP);
+                    return {
+                        weeklyChallengeWinDate: new Date().toISOString().split('T')[0],
+                        weeklyChallengeId: challengeId,
+                        currentXP: reward.currentXP,
+                        level: reward.level,
+                        userProfile: {
+                            ...state.userProfile,
+                            level: reward.level,
+                            currentXP: reward.currentXP,
+                        },
+                    };
+                });
+
+                if (awarded) get().syncProfileWithBackend();
+                return awarded;
             },
 
             /**
@@ -598,7 +596,7 @@ export const useGameStore = create(
         }),
         {
             name: 'skyjo-storage',
-            version: 8,
+            version: 9,
             migrate: (persistedState, version) => {
                 // ... migration
                 if (version < 5) {
@@ -613,16 +611,17 @@ export const useGameStore = create(
                         background: '/Wallpapers/bg-skyjo.png'
                     };
                 }
-                if (version < 7) {
-                    persistedState = {
-                        ...persistedState,
-                        hasSeenWeeklyChallengeAnnouncementV3: false
-                    };
-                }
                 if (version < 8) {
                     persistedState = {
                         ...persistedState,
                         hasSeenMasterCareerAnnouncementV1: false
+                    };
+                }
+                if (version < 9) {
+                    persistedState = {
+                        ...persistedState,
+                        weeklyChallengeId: null,
+                        hasSeenWeeklyChallengeAnnouncementV4: false
                     };
                 }
                 // Ensure usedProfile exists and has an ID during migration
@@ -681,6 +680,7 @@ export const selectGameStatus = (state) => state.gameStatus;
 export const selectGameHistory = (state) => state.gameHistory;
 export const selectLastDailyWinDate = (state) => state.lastDailyWinDate;
 export const selectWeeklyChallengeWinDate = (state) => state.weeklyChallengeWinDate;
+export const selectWeeklyChallengeId = (state) => state.weeklyChallengeId;
 
 /**
  * Check if the daily challenge is available for today
@@ -695,16 +695,7 @@ export const selectIsDailyAvailable = (state) => {
  * Check if the weekly challenge is available
  */
 export const selectIsWeeklyAvailable = (state) => {
-    if (!state.weeklyChallengeWinDate) return true;
-    
-    const lastWin = new Date(state.weeklyChallengeWinDate);
-    const today = new Date();
-    
-    // Difference in days
-    const diffTime = Math.abs(today - lastWin);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    return diffDays >= 7;
+    return isWeeklyChallengeAvailable(state);
 };
 
 /**

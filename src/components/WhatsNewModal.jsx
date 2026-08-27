@@ -1,9 +1,9 @@
 import React from 'react';
-import { Sparkles, Zap, Flame, Cloud, Sun } from 'lucide-react';
+import { Sparkles, Zap, Flame, Cloud, SunMoon } from 'lucide-react';
 import { Button } from './ui/Button';
 import ModalShell, { ModalCloseButton } from './ui/ModalShell';
 
-export const CURRENT_NEWS_VERSION = 11;
+export const CURRENT_NEWS_VERSION = 12;
 
 const FEATURES = [
     {
@@ -21,11 +21,11 @@ const FEATURES = [
         bg: "bg-slate-400/10"
     },
     {
-        title: "Mode Été · 40 °C",
-        description: "Le défi hebdomadaire passe à l'heure d'été : terminez avec au moins 2 cartes '4' et 2 cartes '0', puis remportez la partie.",
-        icon: Sun,
-        color: "text-amber-400",
-        bg: "bg-amber-400/10"
+        title: "Mode Équinoxe · Équilibre",
+        description: "Entre ombre et lumière : gardez au moins une carte '-2', deux cartes '0' et une carte '2', puis remportez la partie.",
+        icon: SunMoon,
+        color: "text-indigo-300",
+        bg: "bg-gradient-to-br from-amber-400/10 to-indigo-500/15"
     },
     {
         title: "Sauvegarde Cloud",

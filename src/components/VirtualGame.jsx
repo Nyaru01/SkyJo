@@ -31,6 +31,7 @@ import { useFeedback } from '../hooks/useFeedback';
 import { useNotifications } from '../hooks/useNotifications';
 import { cn } from '../lib/utils';
 import { getCardSkinRequiredLevel } from '../lib/skinUtils';
+import { CURRENT_WEEKLY_CHALLENGE } from '../lib/weeklyChallenge';
 
 import { AVATARS, getAvatarPath } from '../lib/avatars';
 import AvatarSelector from './AvatarSelector';
@@ -782,23 +783,23 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     // --- Challenge Success Celebration ---
     useEffect(() => {
-        if (challengeJustWon === 'ete_40_degres') {
+        if (challengeJustWon === CURRENT_WEEKLY_CHALLENGE.id) {
             // Explose de confettis !
             confetti({
                 particleCount: 150,
                 spread: 70,
                 origin: { y: 0.6 },
-                colors: ['#f59e0b', '#f97316', '#facc15', '#fff']
+                colors: ['#f59e0b', '#8b5cf6', '#4f46e5', '#fff']
             });
 
-            toast.success("☀️ DÉFI RÉUSSI : MODE ÉTÉ 40 °C ! +10 XP", {
+            toast.success(`${CURRENT_WEEKLY_CHALLENGE.icon} DÉFI RÉUSSI : ${CURRENT_WEEKLY_CHALLENGE.shortTitle} ! +${CURRENT_WEEKLY_CHALLENGE.rewardXP} XP`, {
                 duration: 6000,
-                icon: '☀️',
+                icon: CURRENT_WEEKLY_CHALLENGE.icon,
                 style: {
-                    border: '1px solid #f59e0b',
+                    border: '1px solid #818cf8',
                     padding: '20px',
                     color: '#fff',
-                    background: '#7c2d12',
+                    background: '#312e81',
                     fontWeight: 'black',
                     fontSize: '16px'
                 }
