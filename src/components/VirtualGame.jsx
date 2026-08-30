@@ -2423,24 +2423,18 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.5, type: "spring", stiffness: 100 }}
-                                className="flex gap-3 p-1.5 bg-black/30 backdrop-blur-xl rounded-[2rem] border border-white/10 shadow-2xl mt-6 group/tray"
+                                className="p-1.5 bg-black/30 backdrop-blur-xl rounded-[2rem] border border-white/10 shadow-2xl mt-6 group/tray"
                             >
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={handleBackToMenu}
-                                    className="w-[3.5rem] h-[3.5rem] shrink-0 rounded-[1.6rem] bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 hover:scale-105 active:scale-95 transition-all group/back"
-                                >
-                                    <ArrowLeft className="h-5 w-5 group-hover/back:-translate-x-1 transition-transform" />
-                                </Button>
                                 <PremiumTiltButton
-                                    className="flex-1"
+                                    className="w-full"
                                     gradientFrom={isUserWinner ? "from-amber-400" : "from-slate-600"}
                                     gradientTo={isUserWinner ? "to-orange-600" : "to-slate-800"}
                                     shadowColor={isUserWinner ? "shadow-amber-500/40" : "shadow-slate-500/20"}
                                     onClick={() => handleBackToMenu(isDailyChallenge)}
                                 >
-                                    <Trophy className="h-5 w-5" />
+                                    {isDailyChallenge
+                                        ? <CheckCircle className="h-5 w-5" />
+                                        : <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />}
                                     {isDailyChallenge ? "TERMINER" : "REVENIR AU MENU"}
                                 </PremiumTiltButton>
                             </motion.div>

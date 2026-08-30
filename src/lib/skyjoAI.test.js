@@ -65,3 +65,37 @@ test('Tourment conserve une colonne très négative au lieu de la supprimer', ()
 
     assert.notEqual(decision.cardIndex, 8);
 });
+
+test('Tourment sacrifie un -2 quand cela permet de supprimer deux 5', () => {
+    // Reproduction de la capture : remplacer le -2 efface 8 points visibles
+    // et gagne le bonus Tourment, ce qui vaut mieux que remplacer 12 par 5.
+    const aiHand = [
+        card(5), card(5), card(-2),
+        card(0), card(0, true, { specialType: '?' }), card(4),
+        card(-10), card(12), card(7, false),
+        null, null, null,
+    ];
+
+    const decision = decideCardAction(
+        buildTourmentState(aiHand, 5),
+        AI_DIFFICULTY.BONUS,
+    );
+
+    assert.deepEqual(decision, { action: 'REPLACE', cardIndex: 2 });
+});
+
+test('Tourment ne sacrifie pas un -10 pour supprimer seulement deux 2', () => {
+    const aiHand = [
+        card(2), card(2), card(-10),
+        card(0), card(0, true, { specialType: '?' }), card(4),
+        card(-10), card(12), card(7, false),
+        null, null, null,
+    ];
+
+    const decision = decideCardAction(
+        buildTourmentState(aiHand, 2),
+        AI_DIFFICULTY.BONUS,
+    );
+
+    assert.notEqual(decision.cardIndex, 2);
+});

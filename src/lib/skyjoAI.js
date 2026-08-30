@@ -639,7 +639,23 @@ const completesColumnImmediately = (hand, cardIndex, cardValue, difficulty) => {
     const allValuesMatch = nonJokerValues.length <= 1
         || nonJokerValues.every(value => value === nonJokerValues[0]);
 
+    // Compare the whole move, including the card sacrificed to make the clear.
+    // A fixed "never replace a negative card" rule misses profitable plays such
+    // as 5 + 5 - 2, while this also protects genuinely valuable columns such as
+    // 2 + 2 - 10. Hidden cards use the same 5.3 expectation as the AI engine.
+    const currentColumnScore = colIndices.reduce((total, index) => {
+        const card = hand[index];
+        if (!card) return total;
+        if (!card.isRevealed) return total + 5.3;
+
+        const value = Number(card.value);
+        return total + (Number.isFinite(value) ? value : 0);
+    }, 0);
+    const scoreAfterClear = isAdvancedLevel(difficulty) ? -3 : 0;
+    const clearImprovesScore = currentColumnScore > scoreAfterClear;
+
     return allValuesMatch
+        && clearImprovesScore
         && checkColumnPotential(hand, cardIndex, cardValue, false, difficulty);
 };
 
@@ -707,7 +723,6 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
         const targetCard = hand[idx];
         if (!targetCard || targetCard.lockCount > 0) continue;
         if (targetCard.isRevealed && Number(targetCard.value) === Number(cardValue)) continue;
-        if (targetCard.isRevealed && Number(targetCard.value) <= -2) continue;
 
         if (completesColumnImmediately(hand, idx, cardValue, difficulty)) {
             aiLog(difficulty, `Completing profitable column immediately with ${cardValue} at index ${idx}`);
@@ -742,8 +757,9 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
             if (matches < 2) continue;
         }
 
-        // CRITICAL PROTECTION: NEVER replace a very negative card (<= -2) for an elimination.
-        // A -10 is too valuable to be "cleaned" even to remove a column.
+        // Protect negative cards from speculative or unprofitable grouping.
+        // Profitable immediate clears were already compared above using the
+        // complete before/after score of the move.
         if (hand[idx] && hand[idx].isRevealed && hand[idx].value <= -2) {
             continue;
         }
