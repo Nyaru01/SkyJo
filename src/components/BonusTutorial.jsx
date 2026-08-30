@@ -26,6 +26,27 @@ const BONUS_STEPS = [
         )
     },
     {
+        title: "L'Objectif de Domination",
+        description: "OBJECTIF PERSONNEL : Les règles ne changent pas, mais votre victoire est désormais évaluée selon votre score quand l'adversaire atteint 100. Descendez à -100 ou moins pour obtenir le rang ultime : Domination absolue.",
+        icon: TrendingUp,
+        color: "text-violet-400",
+        bg: "bg-violet-400/10",
+        content: (
+            <div className="grid w-full grid-cols-2 gap-3 py-5">
+                <div className="rounded-2xl border border-violet-400/20 bg-violet-500/10 p-4 text-center">
+                    <div className="text-2xl font-black text-violet-300">≤ −100</div>
+                    <div className="mt-1 text-[9px] font-black uppercase tracking-wider text-violet-100">Domination absolue</div>
+                    <div className="mt-1 text-[9px] text-slate-500">Rang ultime</div>
+                </div>
+                <div className="rounded-2xl border border-rose-400/20 bg-rose-500/10 p-4 text-center">
+                    <div className="text-2xl font-black text-rose-300">+100</div>
+                    <div className="mt-1 text-[9px] font-black uppercase tracking-wider text-rose-100">Fin normale</div>
+                    <div className="mt-1 text-[9px] text-slate-500">Les règles restent identiques</div>
+                </div>
+            </div>
+        )
+    },
+    {
         title: "Le Nettoyage de Colonne",
         description: "NOUVELLE RÈGLE : Chaque fois que vous complétez et éliminez une colonne de 3 cartes identiques, vous recevez un bonus de -3 points sur votre score final. C'est le moment de viser le combo parfait !",
         icon: Eraser,

@@ -32,6 +32,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import { cn } from '../lib/utils';
 import { getCardSkinRequiredLevel } from '../lib/skinUtils';
 import { CURRENT_WEEKLY_CHALLENGE } from '../lib/weeklyChallenge';
+import { getTourmentPerformance } from '../lib/tourmentPerformance';
 
 import { AVATARS, getAvatarPath } from '../lib/avatars';
 import AvatarSelector from './AvatarSelector';
@@ -188,6 +189,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const archiveOnlineGame = useGameStore(s => s.archiveOnlineGame);
     const playerLevel = useGameStore(s => s.level);
     const playerCardSkin = useGameStore(s => s.cardSkin);
+    const hasSeenTourmentPerformanceGoal = useGameStore(s => s.hasSeenTourmentPerformanceGoalV1);
+    const setHasSeenTourmentPerformanceGoal = useGameStore(s => s.setHasSeenTourmentPerformanceGoal);
 
     // --- GAME LOGIC CONSOLIDATION (PRE-RENDER) ---
     // Moved here to satisfy Rules of Hooks (must be before any early returns)
@@ -201,6 +204,11 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     const activeDrawnCardSource = onlineGameStarted ? onlineDrawnCardSource : drawnCardSource;
     const activeTotalScores = onlineGameStarted ? onlineTotalScores : totalScores;
     const activeIsPaused = onlineGameStarted ? onlineIsPaused : isPaused;
+    const activeGameWinner = onlineGameStarted ? onlineGameWinner : gameWinner;
+    const showTourmentPerformanceGoal = screen === 'game'
+        && !!activeGameState
+        && effectiveIsBonusMode
+        && !hasSeenTourmentPerformanceGoal;
 
     // 2. Calculate the local player's index in the game state
     // In online mode, try to find by socket.id first, then fallback to dbId (for reconnects)
@@ -2245,11 +2253,18 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         // Check if game would end after this round
         const maxProjected = Math.max(...Object.values(projectedTotals), 0);
         const isDaily = isDailyChallenge;
-        const gameEndsAfterThisRound = maxProjected >= 100 || isDaily || !!activeGameState?.challengeJustWon;
+        const reachesScoreLimit = maxProjected >= 100;
+        const gameEndsAfterThisRound = reachesScoreLimit || isDaily || !!activeGameState?.challengeJustWon;
 
         // If game is already over (endRound was called), show final results
-        if (isGameOver && gameWinner) {
-            const isUserWinner = gameWinner?.id === activeGameState?.players?.[myPlayerIndex]?.id;
+        if (isGameOverState && activeGameWinner) {
+            const isUserWinner = activeGameWinner?.id === activeGameState?.players?.[myPlayerIndex]?.id;
+            const tourmentPerformance = effectiveIsBonusMode
+                && !isDailyChallenge
+                && reachesScoreLimit
+                && isUserWinner
+                ? getTourmentPerformance(activeGameWinner.score)
+                : null;
 
             return (
                 <div className="max-w-md mx-auto p-4 space-y-4 animate-in fade-in">
@@ -2317,13 +2332,29 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                         className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-20deg]"
                                     />
                                 )}
-                                <span className="text-4xl block mb-2">{gameWinner.emoji}</span>
+                                <span className="text-4xl block mb-2">{activeGameWinner.emoji}</span>
                                 <span className="text-xl font-bold text-amber-200">
-                                    {gameWinner.name} gagne !
+                                    {activeGameWinner.name} gagne !
                                 </span>
                                 <span className="text-sm text-amber-400 block mt-1">
-                                    Score final : {gameWinner.score} pts
+                                    Score final : {activeGameWinner.score} pts
                                 </span>
+                                {tourmentPerformance && (
+                                    <div className={cn(
+                                        "mt-3 rounded-xl border px-3 py-2",
+                                        tourmentPerformance.id === 'absolute'
+                                            ? "border-violet-300/30 bg-violet-500/15 text-violet-100"
+                                            : tourmentPerformance.id === 'mastery'
+                                                ? "border-emerald-300/25 bg-emerald-500/10 text-emerald-100"
+                                                : tourmentPerformance.id === 'progress'
+                                                    ? "border-sky-300/20 bg-sky-500/10 text-sky-100"
+                                                    : "border-amber-300/20 bg-amber-500/10 text-amber-100",
+                                    )}>
+                                        <span className="block text-[9px] font-black uppercase tracking-[0.2em] opacity-70">Performance Tourment</span>
+                                        <strong className="mt-0.5 block text-sm uppercase tracking-wide">{tourmentPerformance.label}</strong>
+                                        <span className="mt-0.5 block text-[10px] opacity-75">{tourmentPerformance.description}</span>
+                                    </div>
+                                )}
                             </motion.div>
 
                             {/* All players final scores */}
@@ -2456,7 +2487,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                         <CardTitle className="text-lg text-amber-400">
                             {isDailyChallenge ? "Défi Quotidien" : `Fin de la manche ${roundNumber}`}
                         </CardTitle>
-                        {gameEndsAfterThisRound && !isDailyChallenge && (
+                        {reachesScoreLimit && !isDailyChallenge && (
                             <p className="text-red-500 text-xs font-medium mt-0.5">
                                 ⚠️ Un joueur atteint 100 points !
                             </p>
@@ -2766,6 +2797,62 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 activeGameState?.players?.length <= 2 ? "justify-start gap-2 py-2" : "justify-start gap-2 py-1 pb-6"
             )}
         >
+
+            <AnimatePresence>
+                {showTourmentPerformanceGoal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-md"
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.92, y: 18 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.96 }}
+                            className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-violet-300/25 bg-gradient-to-b from-slate-900 to-slate-950 p-7 text-center shadow-[0_24px_80px_rgba(124,58,237,0.35)]"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="tourment-performance-goal-title"
+                        >
+                            <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-rose-500/15 via-violet-500/10 to-transparent" />
+                            <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-rose-600 shadow-lg shadow-violet-500/25">
+                                <Flame className="h-8 w-8 text-white" />
+                            </div>
+                            <h2 id="tourment-performance-goal-title" className="relative text-2xl font-black uppercase tracking-tight text-white">
+                                Objectif Tourment
+                            </h2>
+                            <p className="mt-2 text-sm font-medium leading-relaxed text-slate-300">
+                                Les règles restent identiques. À chaque victoire longue, votre score final détermine maintenant votre rang de performance.
+                            </p>
+                            <div className="my-6 grid grid-cols-2 gap-2 text-left">
+                                <div className="rounded-xl border border-amber-300/15 bg-amber-500/10 p-3">
+                                    <div className="text-sm font-black text-amber-200">Score positif</div>
+                                    <div className="text-[9px] text-slate-400">Victoire de justesse</div>
+                                </div>
+                                <div className="rounded-xl border border-sky-300/15 bg-sky-500/10 p-3">
+                                    <div className="text-sm font-black text-sky-200">0 à −49</div>
+                                    <div className="text-[9px] text-slate-400">Bon début</div>
+                                </div>
+                                <div className="rounded-xl border border-emerald-300/15 bg-emerald-500/10 p-3">
+                                    <div className="text-sm font-black text-emerald-200">−50 à −99</div>
+                                    <div className="text-[9px] text-slate-400">Maîtrise du Tourment</div>
+                                </div>
+                                <div className="rounded-xl border border-violet-300/20 bg-violet-500/15 p-3">
+                                    <div className="text-sm font-black text-violet-200">−100 ou moins</div>
+                                    <div className="text-[9px] text-slate-400">Domination absolue</div>
+                                </div>
+                            </div>
+                            <Button
+                                onClick={() => setHasSeenTourmentPerformanceGoal(true)}
+                                className="h-14 w-full rounded-2xl bg-gradient-to-r from-violet-600 to-rose-600 font-black uppercase tracking-widest text-white shadow-lg shadow-violet-600/20"
+                            >
+                                J'ai compris
+                            </Button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Header - ultra-thin single line with glass-style elements */}
             {/* Header - Unified Pill Container */}
