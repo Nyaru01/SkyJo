@@ -614,6 +614,36 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false, di
 };
 
 /**
+ * Distinguish a guaranteed column clear from a simple future grouping.
+ * A human player always evaluates the immediate clear before investing in
+ * another column, so this pass must run before the broader potential logic.
+ */
+const completesColumnImmediately = (hand, cardIndex, cardValue, difficulty) => {
+    const colStart = Math.floor(cardIndex / 3) * 3;
+    const colIndices = [colStart, colStart + 1, colStart + 2];
+    const projectedCards = colIndices.map(index => (
+        index === cardIndex
+            ? {
+                value: cardValue,
+                isRevealed: true,
+                specialType: cardValue === 'C' ? 'C' : null,
+            }
+            : hand[index]
+    ));
+
+    if (!projectedCards.every(card => card && card.isRevealed)) return false;
+
+    const nonJokerValues = projectedCards
+        .filter(card => card.specialType !== 'C' && card.value !== 'C')
+        .map(card => Number(card.value));
+    const allValuesMatch = nonJokerValues.length <= 1
+        || nonJokerValues.every(value => value === nonJokerValues[0]);
+
+    return allValuesMatch
+        && checkColumnPotential(hand, cardIndex, cardValue, false, difficulty);
+};
+
+/**
  * Check if a card would significantly help the opponent (human)
  * (Blocking logic)
  */
@@ -668,6 +698,21 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
         if (diff > 15) riskAdjustment = 2;   // Winning: a 4 is now "better", less likely to replace
 
         slowDown = !shouldAccelerateEndGame(gameState, hand);
+    }
+
+    // Human-like priority: take a profitable guaranteed clear before any
+    // speculative grouping. Hidden targets come first to avoid wasting an
+    // already revealed card when both placements would clear the column.
+    for (const idx of [...hiddenIndices, ...revealedIndices]) {
+        const targetCard = hand[idx];
+        if (!targetCard || targetCard.lockCount > 0) continue;
+        if (targetCard.isRevealed && Number(targetCard.value) === Number(cardValue)) continue;
+        if (targetCard.isRevealed && Number(targetCard.value) <= -2) continue;
+
+        if (completesColumnImmediately(hand, idx, cardValue, difficulty)) {
+            aiLog(difficulty, `Completing profitable column immediately with ${cardValue} at index ${idx}`);
+            return idx;
+        }
     }
 
     // Check for column completion opportunities first
