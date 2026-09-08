@@ -49,10 +49,20 @@
 .round-actions-content svg { width:17px;height:17px; }
 .round-actions button:focus-visible { outline:2px solid #a8d9ff;outline-offset:3px; }
 /* Keep actions inside the dynamic viewport, independently of result length. */
-.round-results-viewport { position:fixed;inset:0;z-index:80;height:100dvh;box-sizing:border-box;padding:8px 10px max(8px,env(safe-area-inset-bottom));background:#091220b3;display:flex;justify-content:center; }
-.round-results-viewport .round-results-shell { width:100%;max-width:448px;height:100%;min-height:0!important;margin:0;display:flex;flex-direction:column; }
+.round-results-viewport { position:fixed;inset:0;z-index:80;height:100dvh;box-sizing:border-box;padding:max(16px,env(safe-area-inset-top)) 14px max(16px,env(safe-area-inset-bottom));background:#091220b3;display:flex;align-items:center;justify-content:center; }
+.round-results-viewport .round-results-shell { width:100%;max-width:448px;max-height:100%;min-height:0!important;margin:0;display:flex;flex-direction:column;border-radius:24px; }
 .round-results-viewport .round-results-heading { flex-shrink:0;padding:14px 12px 12px!important; }
-.round-results-content { display:flex;flex-direction:column;flex:1;min-height:0;padding-bottom:10px!important; }
-.round-results-scroll { flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;padding:2px 0 6px;scrollbar-width:thin;scrollbar-color:#7a91aa55 transparent; }
-.round-results-content > .round-actions { flex-shrink:0;margin-top:6px!important;padding-top:10px;background:#111c2b; }
+.round-results-content { display:flex;flex-direction:column;min-height:0;padding:0 12px 14px!important; }
+.round-results-scroll { min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;padding:2px 0 6px;scrollbar-width:thin;scrollbar-color:#7a91aa55 transparent; }
+.round-results-content > .round-actions { flex-shrink:0;margin-top:8px!important;padding:12px 2px 0;background:transparent; }
+.round-results-viewport .round-player-header { padding:10px 12px; }
+.round-results-viewport .round-player-body { padding:10px 12px; }
+.round-results-viewport .round-player-footer { padding:7px 12px; }
+.round-results-viewport .round-results-list { gap:10px; }
+.round-results-viewport .round-board { width:174px; }
+.round-results-viewport .round-card-cell { height:47px; }
+.round-results-viewport .round-actions-back { width:44px;height:48px;border-radius:14px;background:#ffffff06;box-shadow:none; }
+.round-results-viewport .round-actions-content { min-height:48px;padding:9px 14px!important; }
+.round-results-viewport .round-actions-content > div { letter-spacing:.025em!important; }
+.round-results-viewport .round-results-legend { margin:3px 0;font-size:9px; }
 @media(max-height:700px){.round-results-viewport .round-results-heading{padding:10px!important}.round-results-heading::before{display:none}.round-results-viewport .round-results-heading h3{font-size:20px!important}}
