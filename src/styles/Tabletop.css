@@ -1,0 +1,101 @@
+.skyjo-card { isolation: isolate; outline: none; touch-action: manipulation; }
+.skyjo-card--selected::after, .skyjo-card:focus-visible::after {
+    content: ''; position: absolute; inset: -4px; border: 1px solid #fde7ae;
+    border-radius: 14px; box-shadow: 0 0 18px #f6cd7438; pointer-events: none;
+}
+.skyjo-card-slot { background: #030a153d; border: 1px solid #ffffff09; box-shadow: inset 0 2px 5px #0003; }
+.skyjo-hand {
+    --turn-accent: #7ee7cc;
+    background: radial-gradient(ellipse at 50% 0%, #7b99ba17, transparent 65%), repeating-linear-gradient(115deg, #ffffff02 0 1px, transparent 1px 5px), linear-gradient(155deg, #152330f2, #0b1420f5) !important;
+    border: 1px solid #ffffff14 !important;
+    box-shadow: 0 18px 45px #0005, inset 0 1px 0 #ffffff10 !important;
+    transition: border-color .35s ease, box-shadow .35s ease !important;
+}
+.skyjo-hand--opponent { --turn-accent: #9faeff; }
+.skyjo-player-badge {
+    background: linear-gradient(180deg, #243447f5, #101b29fa) !important;
+    border: 1px solid #b8cee529 !important;
+    color: #d5dfec !important;
+    box-shadow: 0 4px 12px #0005, inset 0 1px 0 #ffffff12 !important;
+}
+.skyjo-player-badge--active {
+    border-color: color-mix(in srgb, var(--turn-accent) 65%, transparent) !important;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--turn-accent) 14%, #152330), #101b29) !important;
+    color: #f4f8ff !important;
+    box-shadow: 0 4px 14px #0006, 0 0 12px color-mix(in srgb, var(--turn-accent) 12%, transparent), inset 0 1px 0 #ffffff15 !important;
+}
+.skyjo-player-score {
+    font-variant-numeric: tabular-nums;
+    min-width: 2ch;
+    text-align: center;
+    letter-spacing: -.03em;
+    color: #f4f8ff;
+}
+.skyjo-player-badge--active .skyjo-player-score { color: var(--turn-accent); }
+.skyjo-turn-indicator {
+    display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--turn-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--turn-accent) 10%, transparent), 0 0 8px color-mix(in srgb, var(--turn-accent) 45%, transparent);
+}
+.skyjo-draw-button:not(:disabled) {
+    background: linear-gradient(145deg, #233848f5, #142130f5) !important;
+    border-color: #85dcc066 !important;
+    box-shadow: 0 6px 18px #0005, inset 0 1px 0 #e4f6ff24, inset 0 -1px 0 #0004 !important;
+}
+.skyjo-draw-button:focus-visible { outline: 2px solid #b6ffe6; outline-offset: 3px; }
+.skyjo-pile-zone::before {
+    content: ''; position: absolute; inset: -20px 5% -8px;
+    border-radius: 50%; pointer-events: none;
+    background: radial-gradient(ellipse, #789ab51a, transparent 70%);
+}
+.skyjo-pile-group { --pile-accent: #99dacb; }
+.skyjo-pile-group--discard { --pile-accent: #e4c68e; }
+.skyjo-pile-label {
+    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+    color: var(--pile-accent); font: 700 8px/1 system-ui; letter-spacing: .1em;
+    white-space: nowrap; text-shadow: 0 2px 5px #000; pointer-events: none;
+}
+.skyjo-pile-count {
+    font-variant-numeric: tabular-nums;
+    color: var(--pile-accent) !important;
+    background: #101b29e6 !important;
+    border-color: color-mix(in srgb, var(--pile-accent) 25%, transparent) !important;
+    box-shadow: inset 0 1px 0 #ffffff0a, 0 3px 8px #0003 !important;
+}
+@media (max-width: 360px) {
+    .skyjo-pile-label { font-size: 7px; letter-spacing: .04em; }
+}
+.skyjo-empty-pile {
+    background: #08111b55;
+    border: 1px dashed #d9c29840 !important;
+    box-shadow: inset 0 2px 6px #0003;
+}
+.skyjo-card-source {
+    background: linear-gradient(180deg, #203044f2, #101b29f2) !important;
+    box-shadow: inset 0 1px 0 #ffffff0d, 0 4px 10px #0003 !important;
+}
+.skyjo-hand--active {
+    border-color: color-mix(in srgb, var(--turn-accent) 65%, transparent) !important;
+    box-shadow: 0 18px 45px #0005, 0 0 28px color-mix(in srgb, var(--turn-accent) 12%, transparent), inset 0 1px 0 #ffffff20 !important;
+}
+.skyjo-hand--active::before {
+    content: ''; position: absolute; top: -1px; left: 25%; right: 25%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--turn-accent), transparent);
+    box-shadow: 0 0 12px var(--turn-accent); pointer-events: none;
+}
+.skyjo-clear { position: absolute; inset: 0; pointer-events: none; }
+.skyjo-clear-glow { position: absolute; inset: -4px; border-radius: 12px; background: linear-gradient(0deg, #efbb5210, #fff1b580, #efbb5210); animation: skyjo-clear-glow .85s ease-out both; }
+.skyjo-clear-particle { position: absolute; top: 50%; left: 50%; width: 3px; height: 3px; border-radius: 50%; background: #fff1bd; box-shadow: 0 0 6px #ffd982; animation: skyjo-clear-particle .7s .2s ease-out both; }
+.skyjo-clear-label { position: absolute; top: 42%; left: 50%; transform: translateX(-50%); padding: 5px 9px; border: 1px solid #f6d59366; border-radius: 20px; background: #15212cf2; color: #ffe8ae; white-space: nowrap; font: 800 9px/1.3 system-ui; letter-spacing: .12em; box-shadow: 0 5px 20px #0005; animation: skyjo-clear-label .9s ease-out both; }
+@keyframes skyjo-clear-glow { 0% { opacity: 0; transform: scaleX(.8); } 30% { opacity: .8; } 100% { opacity: 0; transform: scaleX(1.15); } }
+@keyframes skyjo-clear-particle { 0% { opacity: 0; transform: translate(0, 0) scale(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--spark-x), var(--spark-y)) scale(.3); } }
+@keyframes skyjo-clear-label { 0%, 15% { opacity: 0; translate: 0 8px; } 35%, 70% { opacity: 1; } 100% { opacity: 0; translate: 0 -15px; } }
+@media (prefers-reduced-motion: reduce) {
+    .skyjo-hand, .skyjo-clear * { animation: none !important; transition: none !important; }
+    .skyjo-clear-particle { display: none; }
+    .skyjo-clear-glow { opacity: .25; }
+}
+.skyjo-clear-flash { position: absolute; inset: 0 12%; border-radius: 12px; background: linear-gradient(0deg, transparent, #fff0b677, transparent); }
+.skyjo-clear-spark { position: absolute; top: 50%; left: 50%; width: 3px; height: 3px; border-radius: 50%; background: #ffe9a1; box-shadow: 0 0 5px #ffce70; }
+.skyjo-clear-result { position: absolute; top: calc(50% - 14px); left: 0; right: 0; text-align: center; color: #fff0b8; font: 900 24px/28px system-ui; text-shadow: 0 2px 6px #000, 0 0 12px #ffce7080; }

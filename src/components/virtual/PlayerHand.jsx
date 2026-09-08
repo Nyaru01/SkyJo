@@ -1,5 +1,5 @@
 import { memo, useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, useReducedMotion } from 'framer-motion';
 import { Bot, HelpCircle } from 'lucide-react';
 import SkyjoCard from './SkyjoCard';
 import { cn } from '../../lib/utils';
@@ -24,7 +24,10 @@ const PlayerHand = memo(function PlayerHand({
 
     size = 'md',
     shakingCardIndex = null,
+    columnBonus = false,
+    eliminatedCards = null,
 }) {
+    const reducedMotion = useReducedMotion();
     // Skyjo grid: 4 columns x 3 rows = 12 cards
     // Layout: column-first (0,1,2 = col1, 3,4,5 = col2, etc.)
     const getCardIndex = (row, col) => col * 3 + row;
@@ -33,32 +36,36 @@ const PlayerHand = memo(function PlayerHand({
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
+            transition: { staggerChildren: reducedMotion ? 0 : 0.035 },
         },
     };
 
     const cardVariants = {
-        hidden: { opacity: 0 },
-        visible: { opacity: 1 },
+        hidden: { opacity: 0, y: reducedMotion ? 0 : -20, scale: reducedMotion ? 1 : 0.92 },
+        visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 320, damping: 26 } },
     };
 
     // Safety check for undefined player (e.g. during state transitions or sync issues)
-    if (!player || !player.hand) {
-        return null;
-    }
 
     // Calculate score for display
-    const currentScore = player.hand
+    const currentScore = (player?.hand || [])
         .filter((c) => c?.isRevealed)
         .reduce((sum, c) => sum + (c.value !== undefined ? Number(c.value) : 0), 0);
 
-    const chestCount = player.hand.filter(c => c && c.isRevealed && (c.specialType === 'CH' || c.value === 'CH')).length;
+    const chestCount = (player?.hand || []).filter(c => c && c.isRevealed && (c.specialType === 'CH' || c.value === 'CH')).length;
 
     // Track previous hand to detect cleared columns
-    const prevHandRef = useRef(player.hand);
+    const prevHandRef = useRef(player?.hand);
+    const clearTimers = useRef(new Set());
     const [clearedCols, setClearedCols] = useState([]);
+    useEffect(() => {
+        const timers = clearTimers.current;
+        return () => timers.forEach(clearTimeout);
+    }, []);
 
     useEffect(() => {
-        const currentHand = player.hand;
+        const currentHand = player?.hand;
+        if (!currentHand) return;
         const prevHand = prevHandRef.current;
 
         if (!prevHand) {
@@ -80,7 +87,17 @@ const PlayerHand = memo(function PlayerHand({
             const wasCardsThere = indices.some(i => prevHand[i] !== null);
 
             if (isAllNullHere && wasCardsThere) {
-                newCleared.push(col);
+                const previousCards = indices.map(i => prevHand[i]);
+                let cards = previousCards;
+                // Use the actual removed trio, including the card just placed.
+                for (let i = 0; i < (eliminatedCards?.length || 0); i += 3) {
+                    const trio = eliminatedCards.slice(i, i + 3);
+                    if (trio.length === 3 && trio.filter(c => previousCards.some(p => p?.id === c.id)).length >= 2) {
+                        cards = trio;
+                        break;
+                    }
+                }
+                newCleared.push({ col, cards });
                 // Play specific clean sound for Protocol OMEGA
                 const audio = new Audio('/Sounds/clean.mp3');
                 audio.play().catch(e => console.log("Audio play blocked", e));
@@ -88,22 +105,29 @@ const PlayerHand = memo(function PlayerHand({
         }
 
         if (newCleared.length > 0) {
-            // Add to cleared state to trigger animation
-            setClearedCols(prev => [...prev, ...newCleared.map(col => ({ col, id: Date.now() + col }))]);
+            // Preserve removed cards for the exit animation after the engine commits.
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setClearedCols(prev => [...prev, ...newCleared.map(item => ({ ...item, id: Date.now() + item.col }))]);
 
             // Remove from state after animation
-            setTimeout(() => {
-                setClearedCols(prev => prev.filter(item => !newCleared.some(nc => nc === item.col)));
-            }, 1000);
+            const timer = setTimeout(() => {
+                setClearedCols(prev => prev.filter(item => !newCleared.some(nc => nc.col === item.col)));
+                clearTimers.current.delete(timer);
+            }, 650);
+            clearTimers.current.add(timer);
         }
 
         prevHandRef.current = currentHand;
-    }, [player.hand]); // Dependency on hand structure
+    }, [player?.hand, eliminatedCards]);
+
+    if (!player?.hand) return null;
 
     return (
         <div
             className={cn(
-                "relative transition-all duration-300",
+                "skyjo-hand relative transition-all duration-300",
+                isCurrentPlayer && 'skyjo-hand--active',
+                isOpponent && 'skyjo-hand--opponent',
                 isCurrentPlayer && !isOpponent
                     ? "border-2 border-emerald-400"
                     : isCurrentPlayer && isOpponent
@@ -115,7 +139,7 @@ const PlayerHand = memo(function PlayerHand({
                 backgroundColor: 'rgba(15, 23, 42, 0.7)',
                 backdropFilter: 'blur(25px)',
                 WebkitBackdropFilter: 'blur(25px)',
-                padding: '8px 6px 2px 6px',
+                padding: '8px 6px 8px 6px', // Compact, balanced spacing around the cards.
                 borderRadius: '20px',
                 // 3D RELIEF BOX SHADOWS
                 boxShadow: `
@@ -128,20 +152,6 @@ const PlayerHand = memo(function PlayerHand({
                 `
             }}
         >
-            {/* DIVINE LIGHT AMBIENCE (Soft Golden Glow) */}
-            <AnimatePresence>
-                {clearedCols.length > 0 && (
-                    <motion.div
-                        key="ambient-glow"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 1 }}
-                        className="absolute inset-0 bg-gradient-to-b from-amber-900/20 to-transparent z-[45] pointer-events-none rounded-[20px]"
-                    />
-                )}
-            </AnimatePresence>
-
             {/* NEON BEAM OVERLAY */}
             <div className="absolute inset-0 pointer-events-none z-50 overflow-visible rounded-[16px]">
                 {/* 1. LASER BEAMS PER COLUMN */}
@@ -150,57 +160,26 @@ const PlayerHand = memo(function PlayerHand({
                     gridTemplateColumns: 'repeat(4, 1fr)',
                     gap: '5px',
                     height: '100%',
-                    padding: '10px 6px 2px 6px', // Sync with cards grid (8px padding + 2px margin)
+                    padding: '10px 6px 8px 6px', // Match the hand padding and grid's 2px top margin.
                 }}>
                     {[0, 1, 2, 3].map(col => (
                         <div key={col} className="relative w-full h-full overflow-hidden rounded-xl">
                             {clearedCols.some(c => c.col === col) && (
-                                <ColumnBeam />
+                                <ColumnBeam bonus={columnBonus} />
                             )}
                         </div>
                     ))}
                 </div>
 
-                <AnimatePresence>
-                    {clearedCols.length > 0 && (
-                        <motion.div
-                            key="clean-text-divine"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 1.05, filter: "blur(4px)" }}
-                            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                            className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-[80] pointer-events-none"
-                        >
-                            {/* Ligne décorative haut */}
-                            <motion.div
-                                initial={{ width: 0, opacity: 0 }}
-                                animate={{ width: "80%", opacity: 1 }}
-                                transition={{ duration: 0.8, delay: 0.1 }}
-                                className="h-[1px] bg-gradient-to-r from-transparent via-amber-200/40 to-transparent"
-                            />
 
-                            <span
-                                className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-50 to-amber-300 drop-shadow-[0_0_20px_rgba(251,191,36,0.6)] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] tracking-[0.2em] pl-[0.2em] uppercase"
-                            >
-                                Clean
-                            </span>
-
-                            {/* Ligne décorative bas */}
-                            <motion.div
-                                initial={{ width: 0, opacity: 0 }}
-                                animate={{ width: "80%", opacity: 1 }}
-                                transition={{ duration: 0.8, delay: 0.1 }}
-                                className="h-[1px] bg-gradient-to-r from-transparent via-amber-200/40 to-transparent"
-                            />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
             </div>
 
             {/* Player label with score - 16px margin from grid */}
             {showName && (
                 <div
                     className={cn(
+                        'skyjo-player-badge',
+                        isCurrentPlayer && 'skyjo-player-badge--active',
                         "absolute left-1/2 -translate-x-1/2 px-6 py-0 rounded-full font-bold shadow-xl whitespace-nowrap uppercase tracking-widest flex items-center justify-center gap-4 min-w-[200px] w-fit max-w-[90vw] transition-all duration-300 border-2 backdrop-blur-xl",
                         isCurrentPlayer && !isOpponent
                             ? "bg-emerald-500/80 border-emerald-400 text-white shadow-emerald-500/30"
@@ -262,7 +241,7 @@ const PlayerHand = memo(function PlayerHand({
                     {/* SCORE SECTION */}
                     <div className="flex items-center gap-3 shrink-0">
                         <span
-                            className="font-black"
+                            className="skyjo-player-score font-black"
                             style={{
                                 fontSize: '16px',
                                 fontFamily: "'Outfit', system-ui, sans-serif",
@@ -280,7 +259,7 @@ const PlayerHand = memo(function PlayerHand({
                                     </div>
                                 )}
                                 {isCurrentPlayer && (
-                                    <span className="animate-pulse text-sm">🎯</span>
+                                    <span className="skyjo-turn-indicator" role="img" aria-label="Tour en cours" title="Tour en cours" />
                                 )}
                             </div>
                         )}
@@ -289,7 +268,7 @@ const PlayerHand = memo(function PlayerHand({
             )}
 
             {/* Card grid: 10px margin from badge, strict 12px gap */}
-            <motion.div
+            <Motion.div
                 style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(4, 1fr)',
@@ -315,7 +294,7 @@ const PlayerHand = memo(function PlayerHand({
                             : card;
 
                         return (
-                            <motion.div
+                            <Motion.div
                                 key={`${row}-${col}`}
                                 variants={cardVariants}
                                 style={{ position: 'relative', zIndex: 1 }}
@@ -331,11 +310,21 @@ const PlayerHand = memo(function PlayerHand({
                                     isLocked={card && card.lockCount > 0}
                                     onClick={() => onCardClick?.(cardIndex)}
                                 />
-                            </motion.div>
+                                {card === null && clearedCols.find(item => item.col === col)?.cards[row] && (
+                                    <Motion.div
+                                        className="absolute inset-0 pointer-events-none"
+                                        initial={{ opacity: 1, scale: 1, y: 0 }}
+                                        animate={{ opacity: [1, 1, 1, 0], scale: [1, 1.025, .92, .65], y: ['0%', '0%', `${(1 - row) * 107}%`, `${(1 - row) * 107}%`], filter: ['brightness(1)', 'brightness(1.5)', 'brightness(1.2)', 'brightness(1)'] }}
+                                        transition={{ duration: .6, times: [0, .2, .65, 1], ease: 'easeInOut' }}
+                                    >
+                                        <SkyjoCard card={{ ...clearedCols.find(item => item.col === col).cards[row], isRevealed: true }} size={size} />
+                                    </Motion.div>
+                                )}
+                            </Motion.div>
                         );
                     })
                 )}
-            </motion.div>
+            </Motion.div>
         </div>
     );
 });

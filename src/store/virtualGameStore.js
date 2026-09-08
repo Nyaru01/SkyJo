@@ -624,7 +624,7 @@ export const useVirtualGameStore = create(
              */
             replaceHandCard: (cardIndex) => {
                 const { gameState, humanTurnStartState, aiPlayers } = get();
-                if (!gameState) return;
+                if (!gameState || get().pendingAnimation) return;
                 if (gameState.turnPhase !== 'REPLACE_OR_DISCARD' && gameState.turnPhase !== 'MUST_REPLACE') return;
 
                 const isHuman = !aiPlayers.includes(gameState.currentPlayerIndex);
@@ -633,18 +633,19 @@ export const useVirtualGameStore = create(
                 newState = endTurn(newState);
                 newState = applyGameEndLogic(newState);
 
-                // Observe turn if human finished
-                if (isHuman && humanTurnStartState) {
-                    observeOpponentTurn(humanTurnStartState, newState);
-                    set({ humanTurnStartState: null });
-                }
-
-                // Notification for elimination
-                if (newState.lastEliminatedCards) {
-                    // Notification removed as per user request
-                }
-
-                set({ gameState: newState, selectedCardIndex: null, drawnCardSource: null });
+                set({ pendingAnimation: {
+                    sourceId: 'drawn-card-slot',
+                    targetId: `card-${gameState.players[gameState.currentPlayerIndex].id}-${cardIndex}`,
+                    card: { ...gameState.drawnCard, isRevealed: true },
+                    onComplete: () => {
+                        // Ignore completion if the player left or restarted the game.
+                        if (get().gameState !== gameState) return;
+                        if (isHuman && humanTurnStartState) {
+                            observeOpponentTurn(humanTurnStartState, newState);
+                        }
+                        set({ gameState: newState, selectedCardIndex: null, drawnCardSource: null, humanTurnStartState: null });
+                    },
+                } });
             },
 
             /**

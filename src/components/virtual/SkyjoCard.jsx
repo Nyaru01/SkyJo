@@ -1,8 +1,8 @@
-import { memo } from 'react';
-import { X, Lock, RefreshCw, Eraser, Sparkles, HelpCircle, Orbit } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { memo, useId } from 'react';
+import { Lock, RefreshCw, Sparkles, HelpCircle, Orbit } from 'lucide-react';
+import { motion as Motion, useReducedMotion } from 'framer-motion';
 import { cn } from '../../lib/utils';
-import { CARD_COLORS } from '../../lib/skyjoEngine';
+import '../../styles/Tabletop.css';
 import { useGameStore } from '../../store/gameStore';
 import { getCardSkinPath } from '../../lib/skinUtils';
 
@@ -150,7 +150,7 @@ const MosaicPattern = ({ colors, id }) => (
 
 // Shimmer effect component
 const ShimmerOverlay = () => (
-    <motion.div
+    <Motion.div
         className="absolute inset-0 z-10 pointer-events-none overflow-hidden"
         initial={{ x: '-150%', skewX: -20 }}
         animate={{
@@ -181,6 +181,8 @@ const SkyjoCard = memo(function SkyjoCard({
     className,
     style,
 }) {
+    const reducedMotion = useReducedMotion();
+    const instanceId = useId().replace(/:/g, '');
     // Shake animation variants
     const shakeVariants = {
         shake: {
@@ -229,7 +231,7 @@ const SkyjoCard = memo(function SkyjoCard({
         return (
             <div
                 className={cn(
-                    "rounded-lg border-2 border-dashed border-slate-300/50 dark:border-slate-600/50",
+                    "skyjo-card-slot rounded-lg",
                     className
                 )}
                 style={{
@@ -266,7 +268,7 @@ const SkyjoCard = memo(function SkyjoCard({
         mosaicColors = MOSAIC_COLORS.green;
     }
     const isRevealed = card.isRevealed;
-    const patternId = `${card.id}-${card.color}`;
+    const patternId = `${instanceId}-${card.id}-${card.color}`;
 
     // Determine display content (Value or Icon for special types)
     const displayValue = card.specialType || card.value;
@@ -278,21 +280,35 @@ const SkyjoCard = memo(function SkyjoCard({
     const SpecialIcon = isSpecial ? (isS ? RefreshCw : (isC ? Sparkles : (isCH ? HelpCircle : Orbit))) : null;
 
     return (
-        <motion.div
+        <Motion.div
             className={cn(
-                "perspective-1000 relative",
+                "skyjo-card perspective-1000 relative",
+                isSelected && "skyjo-card--selected",
+                isHighlighted && "skyjo-card--target",
                 isClickable ? "cursor-pointer" : "cursor-default",
                 className
             )}
             style={{
+                '--card-accent': mosaicColors.light,
                 width: size === 'custom' ? undefined : currentSize.width,
                 height: size === 'custom' ? undefined : currentSize.height,
                 ...style // Allow overriding style
             }}
             onClick={isClickable ? () => { triggerHaptic(); onClick?.(); } : undefined}
-            whileHover={isClickable ? { scale: 1.08, y: -4 } : undefined}
-            whileTap={isClickable ? { scale: 0.95 } : undefined}
-            animate={isShaking ? "shake" : undefined}
+            role={isClickable ? 'button' : undefined}
+            tabIndex={isClickable ? 0 : undefined}
+            aria-label={isRevealed ? `Carte ${displayValue}${isLocked ? ', verrouillée' : ''}` : 'Carte face cachée'}
+            aria-pressed={isClickable ? isSelected : undefined}
+            onKeyDown={isClickable ? (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onClick?.();
+                }
+            } : undefined}
+            whileHover={isClickable && !reducedMotion ? { scale: 1.045, y: -5, rotate: -1 } : undefined}
+            whileTap={isClickable && !reducedMotion ? { scale: 0.97, y: 0 } : undefined}
+            animate={isShaking && !reducedMotion ? 'shake' : { y: isSelected && !reducedMotion ? -5 : 0 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 28 }}
             variants={shakeVariants}
         >
             {/* Extended touch area */}
@@ -308,16 +324,17 @@ const SkyjoCard = memo(function SkyjoCard({
                 />
             )}
 
-            <motion.div
+            <Motion.div
                 className="relative w-full h-full preserve-3d"
                 animate={{ rotateY: isRevealed ? 0 : 180 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                 initial={false}
             >
                 {/* FRONT FACE - Skeuomorphic card design */}
                 <div
+                    aria-hidden={!isRevealed}
                     className={cn(
-                        "absolute inset-0 backface-hidden overflow-hidden transition-all duration-200",
+                        "skyjo-card-face absolute inset-0 backface-hidden overflow-hidden transition-all duration-200",
                         isSelected && "ring-2 ring-amber-400 ring-offset-1",
                     )}
                     style={{
@@ -339,7 +356,7 @@ const SkyjoCard = memo(function SkyjoCard({
                     <MosaicPattern colors={mosaicColors} id={patternId} />
 
                     {/* Shimmer effect */}
-                    <ShimmerOverlay />
+                    {isRevealed && isSpecial && !reducedMotion && <ShimmerOverlay />}
 
                     {/* Top-left corner number */}
                     <div
@@ -440,21 +457,22 @@ const SkyjoCard = memo(function SkyjoCard({
                     {/* Lock overlay */}
                     {isLocked && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[1px] z-20">
-                            <motion.div
+                            <Motion.div
                                 initial={{ scale: 0.5, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 className="bg-slate-900/80 p-1.5 rounded-full border border-white/20 shadow-lg"
                             >
                                 <Lock className="w-5 h-5 text-amber-400" />
-                            </motion.div>
+                            </Motion.div>
                         </div>
                     )}
                 </div>
 
                 {/* BACK FACE */}
                 <div
+                    aria-hidden={isRevealed}
                     className={cn(
-                        "absolute inset-0 backface-hidden flex items-center justify-center rotate-y-180 overflow-hidden transition-all duration-200",
+                        "skyjo-card-back absolute inset-0 backface-hidden flex items-center justify-center rotate-y-180 overflow-hidden transition-all duration-200",
                         isSelected && "ring-2 ring-amber-400 ring-offset-1",
                     )}
                     style={{
@@ -474,8 +492,8 @@ const SkyjoCard = memo(function SkyjoCard({
                         className="w-full h-full object-cover"
                     />
                 </div>
-            </motion.div>
-        </motion.div>
+            </Motion.div>
+        </Motion.div>
     );
 });
 

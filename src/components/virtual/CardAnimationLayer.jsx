@@ -1,5 +1,6 @@
-import { useEffect, useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { motion as Motion } from 'framer-motion';
 import SkyjoCard from './SkyjoCard';
 
 /**
@@ -16,9 +17,7 @@ export default function CardAnimationLayer({ pendingAnimation, onClear }) {
     const [animationState, setAnimationState] = useState(null);
 
     // Random rotation for natural card toss effect
-    const randomRotation = useMemo(() => {
-        return (Math.random() * 10 - 5); // ±5 degrees
-    }, [pendingAnimation]);
+    const randomRotation = 2;
 
     useEffect(() => {
         if (pendingAnimation) {
@@ -32,6 +31,8 @@ export default function CardAnimationLayer({ pendingAnimation, onClear }) {
                 const startRect = sourceEl.getBoundingClientRect();
                 const endRect = targetEl.getBoundingClientRect();
 
+                // Measure the committed source and target before animating.
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setAnimationState({
                     startRect,
                     endRect,
@@ -69,9 +70,9 @@ export default function CardAnimationLayer({ pendingAnimation, onClear }) {
         ease: "easeInOut",
     };
 
-    return (
-        <div className="fixed inset-0 pointer-events-none z-[100]">
-            <motion.div
+    return createPortal(
+        <div data-card-flight className="fixed inset-0 pointer-events-none z-[100]">
+            <Motion.div
                 initial={{
                     position: 'absolute',
                     top: animationState.startRect.top,
@@ -95,10 +96,10 @@ export default function CardAnimationLayer({ pendingAnimation, onClear }) {
             >
                 <SkyjoCard
                     card={animationState.card}
-                    isRevealed={animationState.card?.isRevealed}
-                    size="md"
+                    size="custom"
+                    style={{ width: '100%', height: '100%' }}
                 />
-            </motion.div>
-        </div>
+            </Motion.div>
+        </div>, document.body
     );
 }

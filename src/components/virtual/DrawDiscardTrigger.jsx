@@ -194,9 +194,10 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
     return (
         <>
             <div className="flex flex-col items-center gap-1 w-full">
-                <div className="relative flex items-center justify-center gap-3 w-full">
+                <div className="skyjo-pile-zone relative flex items-center justify-center gap-3 w-full">
                     {/* Draw pile section */}
-                    <div className="flex flex-col items-center gap-1.5 shrink-0">
+                    <div className="skyjo-pile-group skyjo-pile-group--draw relative flex flex-col items-center gap-1.5 shrink-0">
+                        <span className="skyjo-pile-label">PIOCHE</span>
                         <motion.div
                             className={cn(
                                 "w-10 h-14 rounded-lg flex items-center justify-center relative",
@@ -232,7 +233,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                 className="w-full h-full object-cover"
                             />
                         </motion.div>
-                        <span className="text-[11px] font-black text-white/90 bg-slate-900/60 px-2 py-0.5 rounded-md border border-white/10 backdrop-blur-sm min-w-[20px] text-center shadow-lg uppercase tracking-widest">
+                        <span aria-label={`${drawPileCount} cartes dans la pioche`} className="skyjo-pile-count text-[11px] font-black text-white/90 bg-slate-900/60 px-2 py-0.5 rounded-md border border-white/10 backdrop-blur-sm min-w-[20px] text-center shadow-lg uppercase tracking-widest">
                             {drawPileCount}
                         </span>
                     </div>
@@ -265,7 +266,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                 onClick={onClick}
                                 disabled={!canInteract}
                                 className={cn(
-                                    "flex items-center justify-center gap-3 w-full h-14 px-2 py-1.5 rounded-xl transition-all relative z-10 overflow-hidden",
+                                    "skyjo-draw-button flex items-center justify-center gap-3 w-full h-14 px-2 py-1.5 rounded-xl transition-all relative z-10 overflow-hidden",
                                     canInteract
                                         ? (instructionText && turnPhase === 'MUST_REVEAL' ? "cursor-default bg-indigo-600/80 backdrop-blur-md border border-indigo-400/50" : "cursor-pointer bg-slate-800/80 backdrop-blur-md hover:bg-slate-700/80 border border-emerald-500/50")
                                         : "cursor-not-allowed bg-slate-800/40 backdrop-blur-sm opacity-60 border border-slate-700/30"
@@ -342,7 +343,8 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                     )}
 
                     {/* Discard pile section */}
-                    <div className="flex flex-col items-center gap-1.5 shrink-0">
+                    <div className="skyjo-pile-group skyjo-pile-group--discard relative flex flex-col items-center gap-1.5 shrink-0">
+                        <span className="skyjo-pile-label">DÉFAUSSE</span>
                         <div className="w-10 h-14 flex items-center justify-center relative">
                             {showDiscardPreview ? (
                                 <motion.div
@@ -395,10 +397,10 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                     </span>
                                 </motion.div>
                             ) : (
-                                <div className="w-full h-full rounded-lg border-2 border-dashed border-slate-700/50 flex items-center justify-center" />
+                                <div className="skyjo-empty-pile w-full h-full rounded-lg border-2 border-dashed border-slate-700/50 flex items-center justify-center" />
                             )}
                         </div>
-                        <span className="text-[11px] font-black text-white/90 bg-slate-900/60 px-2 py-0.5 rounded-md border border-white/10 backdrop-blur-sm min-w-[20px] text-center shadow-lg uppercase tracking-widest">
+                        <span aria-label={`${discardPileCount} cartes dans la défausse`} className="skyjo-pile-count text-[11px] font-black text-white/90 bg-slate-900/60 px-2 py-0.5 rounded-md border border-white/10 backdrop-blur-sm min-w-[20px] text-center shadow-lg uppercase tracking-widest">
                             {discardPileCount}
                         </span>
                     </div>
@@ -408,7 +410,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                     // Helper text below the cards
                     <div className="whitespace-nowrap flex flex-col items-center gap-1 animate-in fade-in slide-in-from-top-2">
                         <span className={cn(
-                            "text-[12px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border shadow-lg backdrop-blur-sm transition-colors duration-300",
+                            "skyjo-card-source text-[12px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border shadow-lg backdrop-blur-sm transition-colors duration-300",
                             drawnCardSource === 'discard'
                                 ? "bg-amber-500/30 border-amber-500/50 text-amber-300 shadow-amber-500/10"
                                 : (drawnCardSource === 'pile'
@@ -434,4 +436,3 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
 });
 
 export default DrawDiscardTrigger;
-

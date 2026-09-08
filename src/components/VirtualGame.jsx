@@ -2957,6 +2957,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 >
                     <PlayerHand
                         player={activeGameState.players[opponentIndex]}
+                        columnBonus={activeGameState.isBonusMode || activeGameState.isHardcoreMode}
+                        eliminatedCards={activeGameState.lastEliminatedCards}
                         isCurrentPlayer={!isInitialReveal && activeGameState.currentPlayerIndex === opponentIndex}
                         isOpponent={true}
                         isOnlineOpponent={isOnlineMode} // Show real name for online opponents
@@ -3097,6 +3099,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 >
                     <PlayerHand
                         player={activeGameState.players[myPlayerIndex]}
+                        columnBonus={activeGameState.isBonusMode || activeGameState.isHardcoreMode}
+                        eliminatedCards={activeGameState.lastEliminatedCards}
                         isCurrentPlayer={!isInitialReveal && activeGameState.currentPlayerIndex === myPlayerIndex}
                         isOpponent={false}
                         selectedCardIndex={null}
