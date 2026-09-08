@@ -16,6 +16,7 @@ import CardAnimationLayer from './virtual/CardAnimationLayer';
 import SkyjoCard from './virtual/SkyjoCard';
 import HostLeftOverlay from './virtual/HostLeftOverlay';
 import ChestRevelationOverlay from './virtual/ChestRevelationOverlay';
+import RoundResultsPlayers from './virtual/RoundResultsPlayers';
 import RobotAvatar from './virtual/RobotAvatar';
 import GameMessageBanner from './virtual/GameMessageBanner';
 import ExperienceBar from './ExperienceBar';
@@ -2475,9 +2476,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 />
                 <HostLeftOverlay />
                 {/* Toast notifications REMOVED - using global Toaster */}{/* Toast removed */}
-                <Card className="glass-premium shadow-xl overflow-hidden min-h-fit flex flex-col">
+                <Card className="round-results-shell glass-premium shadow-xl overflow-hidden min-h-fit flex flex-col">
                     <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 to-orange-900/20" />
-                    <CardHeader className="text-center relative pt-4 pb-2">
+                    <CardHeader className="round-results-heading text-center relative pt-4 pb-2">
                         <CardTitle className="text-lg text-amber-400">
                             {isDailyChallenge ? "Défi Quotidien" : `Fin de la manche ${roundNumber}`}
                         </CardTitle>
@@ -2488,196 +2489,29 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                         )}
                     </CardHeader>
                     <CardContent className="relative space-y-3 flex-1 pb-3 px-3 sm:px-4">
-                        <div className="space-y-3">
-                            {scores?.map((score, index) => (
-                                <motion.div
-                                    key={score.playerId}
-                                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                    transition={{ delay: index * 0.1, duration: 0.4 }}
-                                    className={cn(
-                                        "relative group overflow-hidden p-3 rounded-2xl border transition-all duration-500",
-                                        index === 0
-                                            ? "bg-gradient-to-br from-amber-500/10 via-amber-400/5 to-amber-600/10 border-amber-500/40 shadow-[0_10px_30px_rgba(245,158,11,0.1)]"
-                                            : "bg-slate-900/60 border-white/5 backdrop-blur-2xl shadow-lg"
-                                    )}
-                                >
-                                    {/* Winner Shine Effect */}
-                                    {index === 0 && (
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/5 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
-                                    )}
-
-                                    <div className="relative z-10 flex flex-col gap-3">
-                                        {/* Ultra-Minimalist Score Strip */}
-                                        <div className="flex items-center justify-between gap-2">
-                                            {/* Player Ident & Badges */}
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <span className={cn(
-                                                    "font-black truncate text-lg tracking-tight leading-none",
-                                                    index === 0 ? "text-amber-200" : "text-slate-100"
-                                                )}>
-                                                    {score.playerName}
-                                                </span>
-
-                                                <div className="flex items-center gap-1.5">
-                                                    {score.isFinisher && (
-                                                        <div className="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/30 backdrop-blur-md flex items-center gap-1 shrink-0">
-                                                            <div className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
-                                                            <span className="text-[7px] font-black text-amber-500 uppercase tracking-widest leading-none">
-                                                                FINISSEUR
-                                                            </span>
-                                                        </div>
-                                                    )}
-
-                                                </div>
-                                            </div>
-
-                                            {/* Scores Group */}
-                                            <div className={cn(
-                                                "flex items-center gap-3 px-3 py-1.5 rounded-xl border backdrop-blur-xl transition-all shadow-lg",
-                                                index === 0
-                                                    ? "bg-amber-500/10 border-amber-500/30"
-                                                    : "bg-white/5 border-white/10"
-                                            )}>
-                                                <div className="flex flex-col items-center gap-0.5">
-                                                    <span className="text-[7px] font-black text-slate-500 uppercase tracking-[0.1em] leading-none">MANCHE</span>
-                                                    <div className="flex items-center gap-1">
-                                                        <span className={cn(
-                                                            "font-black text-base leading-none tracking-tight",
-                                                            score.penalized ? "text-red-400" : score.finalScore < 0 ? "text-emerald-400" : "text-white"
-                                                        )}>
-                                                            {(Number(score.finalScore) > 0 ? '+' : '') + score.finalScore}
-                                                        </span>
-                                                        {score.penalized && (
-                                                            <span className="text-[6px] font-black text-red-500 uppercase leading-none px-1 rounded-sm bg-red-500/10 border border-red-500/20">DOUBLÉ</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                <div className="w-px h-5 bg-white/10 self-center" />
-
-                                                <div className="flex flex-col items-center gap-0.5">
-                                                    <span className="text-[7px] font-black text-slate-500 uppercase tracking-[0.1em] leading-none">TOTAL</span>
-                                                    <span className={cn(
-                                                        "text-base font-mono font-black leading-none tracking-tighter",
-                                                        projectedTotals[score.playerId] >= 100 ? "text-red-400 animate-pulse" : "text-slate-300"
-                                                    )}>
-                                                        {projectedTotals[score.playerId]}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Column-based Card Grid with Cleaning Indicator */}
-                                        <div className="flex justify-center gap-1.5 p-2 bg-black/20 rounded-2xl w-fit mx-auto border border-white/5 backdrop-blur-sm">
-                                            {[0, 1, 2, 3].map(col => {
-                                                const player = activeGameState.players.find(p => p.id === score.playerId);
-                                                const colIndices = [col * 3, col * 3 + 1, col * 3 + 2];
-
-                                                // Check if all cards in this column are null (cleared)
-                                                // In skyjoEngine, cleared cards are set to null.
-                                                const isColumnCleared = colIndices.every(idx => player?.hand[idx] === null);
-
-                                                if (isColumnCleared) {
-                                                    return (
-                                                        <div key={`col-${col}`} className="w-12 h-[calc(3*3.5rem+0.5rem)] rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center relative overflow-hidden group/clean transition-all duration-500 hover:bg-emerald-500/20">
-                                                            <div className="absolute inset-0 bg-emerald-500/5 animate-pulse" />
-                                                            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-emerald-500/20 to-transparent" />
-                                                            <div className="flex flex-col items-center gap-3 relative z-10 w-full h-full justify-center">
-                                                                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] [writing-mode:vertical-rl] rotate-180 opacity-80 group-hover/clean:opacity-100 transition-opacity drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]">
-                                                                    CLEAN = -3
-                                                                </span>
-                                                                <Zap className="w-3 h-3 text-emerald-400 fill-emerald-400/50 animate-bounce drop-shadow-[0_0_5px_rgba(52,211,153,0.8)]" />
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                }
-
-                                                return (
-                                                    <div key={`col-${col}`} className="flex flex-col gap-1">
-                                                        {colIndices.map((cardIdx, row) => {
-                                                            const card = player?.hand[cardIdx];
-                                                            const isAutoRevealed = card && (card.wasAutoRevealed || !card.isRevealed);
-
-                                                            const chestResult = activeGameState.chestResults?.[card?.id];
-                                                            const resolvedCard = card ? {
-                                                                ...card,
-                                                                isRevealed: true,
-                                                                value: chestResult !== undefined ? chestResult : card.value,
-                                                                specialType: chestResult !== undefined ? null : card.specialType
-                                                            } : null;
-
-                                                            if (!card) return (
-                                                                <div key={cardIdx} className="w-12 h-14 rounded-md bg-white/5 border border-white/5 opacity-0" />
-                                                            );
-
-                                                            return (
-                                                                <div key={`${score.playerId}-card-${cardIdx}`} className="relative w-12 h-14 group/card">
-                                                                    <div className="absolute inset-0 w-full h-full">
-                                                                        <SkyjoCard
-                                                                            card={resolvedCard}
-                                                                            size="xs"
-                                                                            className={cn(
-                                                                                "w-full h-full opacity-95 shadow-md transition-all duration-500 group-hover/card:scale-110 z-0 group-hover/card:z-20 group-hover/card:brightness-110",
-                                                                                isAutoRevealed && "scale-105 z-10 brightness-110"
-                                                                            )}
-                                                                        />
-                                                                    </div>
-
-
-                                                                    {/* Global Auto-Reveal Badge (Sparkle) - Top Level for Z-Order */}
-                                                                    {isAutoRevealed && (
-                                                                        <div className="absolute -top-1.5 -right-1.5 flex items-center justify-center z-[100] pointer-events-none animate-in zoom-in-75 duration-700">
-                                                                            <div className="relative">
-                                                                                <div className="absolute inset-0 bg-amber-400 rounded-full animate-ping opacity-60 blur-[3px]" />
-                                                                                <div className="relative w-4.5 h-4.5 bg-gradient-to-tr from-amber-600 via-yellow-400 to-amber-200 rounded-full border-2 border-white shadow-[0_0_15px_rgba(245,158,11,0.6)] flex items-center justify-center ring-1 ring-amber-900/10">
-                                                                                    <Sparkles className="w-2.5 h-2.5 text-white fill-white/40 drop-shadow-[0_0_2px_rgba(0,0,0,0.3)] animate-pulse" />
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-
-                        {/* Legend for the auto-reveal cards */}
-                        <div className="flex items-center justify-center gap-3 pt-4 pb-1 border-t border-white/5 mt-3">
-                            <div className="relative w-4.5 h-4.5">
-                                <div className="absolute inset-0 bg-amber-400 rounded-full animate-pulse opacity-20 blur-sm" />
-                                <div className="relative w-full h-full bg-gradient-to-tr from-amber-600 to-yellow-300 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.3)] border border-white/60">
-                                    <Sparkles className="w-2.5 h-2.5 text-white fill-white/20" />
-                                </div>
-                            </div>
-                            <span className="text-[9px] text-amber-200/90 font-black uppercase tracking-[0.25em] italic drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                                Carte(s) révélée(s) en fin de manche
-                            </span>
-                        </div>
+                        <RoundResultsPlayers scores={scores} gameState={activeGameState} totals={projectedTotals} />
 
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
-                            className="flex gap-3 p-1.5 bg-black/30 backdrop-blur-xl rounded-[2rem] border border-white/10 shadow-2xl mt-4 group/tray"
+                            className="round-actions flex gap-3 mt-4 group/tray"
                         >
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={handleBackToMenu}
-                                className="w-[3.5rem] h-[3.5rem] shrink-0 rounded-[1.6rem] bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 hover:scale-105 active:scale-95 transition-all group/back"
+                                aria-label="Retour au menu"
+                                title="Retour au menu"
+                                className="round-actions-back shrink-0 transition-all group/back"
                             >
                                 <ArrowLeft className="h-5 w-5 group-hover/back:-translate-x-1 transition-transform" />
                             </Button>
 
                             <PremiumTiltButton
-                                className="flex-1"
+                                className="round-actions-next flex-1"
+                                bodyClassName="round-actions-body"
+                                contentClassName="round-actions-content"
                                 disabled={isOnlineMode && isNextRoundPending && !(onlineTimeoutExpired && onlineIsHost)}
                                 gradientFrom={gameEndsAfterThisRound ? "from-amber-400" : "from-sky-500"}
                                 gradientTo={gameEndsAfterThisRound ? "to-orange-600" : "to-blue-700"}

@@ -1,0 +1,49 @@
+.chest-reveal { --chest-accent:#f0a4a0; --chest-tone:#9f2639; position:fixed; inset:0; z-index:200; overflow-y:auto; display:grid; place-items:center; background:radial-gradient(ellipse at 50% 45%, #59203233, transparent 60%),#080e19f7; color:#f5f5f6; }
+.chest-reveal--treasure { --chest-accent:#aae9ce; --chest-tone:#18765e; background:radial-gradient(ellipse at 50% 45%, #18674b33, transparent 60%),#080e19f7; }
+.chest-reveal-content { width:min(100%,380px); padding:24px; display:flex; flex-direction:column; align-items:center; gap:24px; text-align:center; }
+.chest-reveal-eyebrow { display:flex; justify-content:center; align-items:center; gap:8px; font-size:10px; font-weight:800; letter-spacing:.18em; color:#d7bf88; }
+.chest-reveal h2 { font-size:clamp(24px,6vw,34px); font-weight:900; margin:12px 0 4px; overflow-wrap:anywhere; }
+.chest-reveal header p { color:#8c9bac; font-size:11px; letter-spacing:.12em; }
+.chest-reveal-stage { width:clamp(180px,55vw,244px); height:clamp(260px,44dvh,348px); perspective:1200px; flex-shrink:0; }
+.chest-reveal-flipper { width:100%; height:100%; position:relative; transform-style:preserve-3d; }
+.chest-reveal-front,.chest-reveal-result { position:absolute; inset:0; border-radius:20px; backface-visibility:hidden; -webkit-backface-visibility:hidden; overflow:hidden; }
+.chest-reveal-front img { width:100%; height:100%; object-fit:cover; }
+.chest-reveal-result { transform:rotateY(180deg); display:flex; flex-direction:column; align-items:center; justify-content:center; border:1px solid var(--chest-accent); background:radial-gradient(ellipse at 50% 20%,var(--chest-tone),transparent 70%),linear-gradient(150deg,#15222d,#080e18); box-shadow:inset 0 0 0 5px #0d1723, inset 0 0 0 6px #ffffff22,0 12px 30px #0007; }
+.chest-reveal-result::before { content:''; position:absolute; inset:12px; border:1px solid #ffffff15; border-radius:11px; pointer-events:none; }
+.chest-reveal-corner { position:absolute; top:19px; left:20px; color:var(--chest-accent); font-size:13px; font-weight:800; }
+.chest-reveal-emblem { width:64px; height:64px; margin-bottom:14px; padding:14px; border:1px solid #ffffff20; border-radius:50%; background:#ffffff07; color:var(--chest-accent); }
+.chest-reveal-emblem svg { width:100%; height:100%; }
+.chest-reveal-title { font-size:11px; letter-spacing:.3em; font-weight:800; color:var(--chest-accent); }
+.chest-reveal-result strong { font:900 clamp(58px,16vw,78px)/1.1 system-ui; letter-spacing:-.07em; margin-left:-.07em; color:#fff8ea; text-shadow:0 3px 0 #0005; }
+.chest-reveal-points { font-size:9px; letter-spacing:.3em; color:#aeb8c2; margin-top:3px; }
+.chest-reveal-rule { width:52%; height:1px; background:linear-gradient(90deg,transparent,var(--chest-accent),transparent); margin:18px 0 10px; }
+.chest-reveal-result p { font-size:10px; color:#c5cdd5; }
+.chest-reveal footer { width:100%; }
+.chest-reveal button { width:100%; min-height:52px; border-radius:16px; display:flex; justify-content:center; align-items:center; gap:10px; border:1px solid #ffffff25; background:var(--chest-tone); color:white; font-weight:800; box-shadow:inset 0 1px 0 #ffffff22; }
+.chest-reveal button:disabled { background:#ffffff08; color:#8c9bac; }
+.chest-reveal button:focus-visible { outline:2px solid var(--chest-accent); outline-offset:4px; }
+.chest-reveal-progress { display:flex; justify-content:center; gap:7px; margin-top:16px; }
+.chest-reveal-progress i { width:6px; height:4px; border-radius:4px; background:#ffffff20; }
+.chest-reveal-progress .current { width:24px; background:var(--chest-accent); }
+.chest-reveal-progress .done { background:var(--chest-tone); }
+@media(max-height:650px){.chest-reveal-content{gap:14px;padding:16px}.chest-reveal-stage{height:260px}.chest-reveal-emblem{width:46px;height:46px;padding:10px;margin-bottom:8px}.chest-reveal-result strong{font-size:58px}.chest-reveal-rule{margin:10px 0 7px}}
+/* Illustrated rare-card treatment. Art never contains the score. */
+.chest-reveal-stage { width:clamp(210px,67vw,280px); height:clamp(320px,49dvh,400px); }
+.chest-reveal-result { justify-content:flex-end; padding-bottom:25px; border:2px solid #98614f; border-radius:18px; background:#160d15; box-shadow:0 0 0 3px #070d17,0 0 0 4px #af876d66,0 18px 45px #000b,0 0 40px #96223825; }
+.chest-reveal--treasure .chest-reveal-result { border-color:#bca86b; box-shadow:0 0 0 3px #070d17,0 0 0 4px #bca86b66,0 18px 45px #000b,0 0 40px #199c7025; }
+.chest-reveal-art { position:absolute; inset:0; background-image:url('/chest-art-v2.png'); background-size:200% 100%; background-position:100% 0; }
+.chest-reveal--treasure .chest-reveal-art { background-position:0 0; }
+.chest-reveal-art-shade { position:absolute; inset:0; background:linear-gradient(180deg,#05091145,transparent 18%,transparent 42%,#090c1880 60%,#090c18fa 87%); }
+.chest-reveal-result::before { z-index:2; inset:7px; border:1px solid #e4c88666; border-radius:11px; background:linear-gradient(125deg,#fff4cd14,transparent 24%,transparent 75%,#fff4cd08); }
+.chest-reveal-result::after { content:''; position:absolute; z-index:2; inset:13px; border:1px solid #edc89022; border-radius:7px; pointer-events:none; }
+.chest-reveal-rarity { position:absolute; top:16px; z-index:3; padding:5px 13px; border:1px solid #e5c28155; border-radius:3px; background:#09111bd9; color:#e5d5af; font:800 8px/1 system-ui; letter-spacing:.22em; }
+.chest-reveal-corner { display:none; }
+.chest-reveal-emblem { position:absolute; right:17px; top:52px; z-index:3; width:24px;height:24px;padding:4px;background:#0a101cba;border-color:#d3b87a88; }
+.chest-reveal-title,.chest-reveal-result strong,.chest-reveal-points,.chest-reveal-rule,.chest-reveal-result p { position:relative;z-index:3; }
+.chest-reveal-title { font-size:10px;letter-spacing:.35em;text-shadow:0 2px 8px #000; }
+.chest-reveal-result strong { font-size:clamp(64px,19vw,82px);color:#fff0c4;text-shadow:0 2px 0 #543223,0 5px 14px #000; }
+.chest-reveal-rule { margin:10px 0 9px; }
+.chest-reveal-result p { font-size:10px;color:#dad3c5; }
+.chest-reveal button { background:linear-gradient(135deg,#732f3c,#3e202e);border-color:#d49b7266;box-shadow:inset 0 1px 0 #ffe7b52a,0 7px 20px #0005;color:#fff0d1; }
+.chest-reveal--treasure button { background:linear-gradient(135deg,#24654f,#173e36); }
+@media(max-height:650px){.chest-reveal-stage{height:300px;width:210px}.chest-reveal-result{padding-bottom:18px}.chest-reveal-result strong{font-size:62px}.chest-reveal-content{gap:18px}.chest-reveal-emblem{width:24px;height:24px;padding:4px}}
