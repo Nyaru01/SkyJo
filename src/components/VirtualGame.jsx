@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Users, ArrowLeft, RotateCcw, RefreshCw, Trophy, Info, HelpCircle, Sparkles, CheckCircle, BookOpen, X, Bot, Lock, Image as ImageIcon, Palette, Copy, Share2, Wifi, Globe, Plus, ChevronRight, WifiOff, Music, Music2, Leaf, Swords, Skull, Gem, SkipForward, Pause, PlayCircle, Star, Zap, Award, QrCode, Flame } from 'lucide-react';
@@ -2446,8 +2447,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         }
 
         // Regular end-of-round screen
-        return (
-            <div className="max-w-md mx-auto p-4 space-y-4 animate-in fade-in">
+        return createPortal(
+            <div className="round-results-viewport">
                 {/* Modals inserted at top */}
                 <ConfirmModal
                     isOpen={showExitConfirm}
@@ -2488,8 +2489,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                             </p>
                         )}
                     </CardHeader>
-                    <CardContent className="relative space-y-3 flex-1 pb-3 px-3 sm:px-4">
-                        <RoundResultsPlayers scores={scores} gameState={activeGameState} totals={projectedTotals} />
+                    <CardContent className="round-results-content relative px-3 sm:px-4">
+                        <div className="round-results-scroll"><RoundResultsPlayers scores={scores} gameState={activeGameState} totals={projectedTotals} /></div>
 
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }}
@@ -2614,7 +2615,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                     </CardContent>
                 </Card>
             </div>
-        );
+        , document.body);
     }
 
 
