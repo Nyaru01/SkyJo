@@ -50,7 +50,7 @@ export default function RobotAvatar({ customMessage, showBubble }) {
                     backgroundSize: '400% 400%',
                     backgroundPosition: position(0),
                     backgroundRepeat: 'no-repeat',
-                    imageRendering: 'pixelated',
+                    imageRendering: 'auto',
                 }}
             />
             <p className={`h-5 text-xs font-semibold text-cyan-200 ${showBubble ? 'visible' : 'invisible'}`}>
