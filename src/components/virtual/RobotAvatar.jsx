@@ -1,103 +1,69 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import normalSheet from '../../assets/sprites/ai-robot-normal.png';
+import hardSheet from '../../assets/sprites/ai-robot-hard.png';
+import hardcoreSheet from '../../assets/sprites/ai-robot-hardcore.png';
+import bonusSheet from '../../assets/sprites/ai-robot-bonus.png';
 
-/**
- * RobotAvatar - A sleek, minimal drone head for the AI
- * Mobile-focused, no hover needed, subtle idle animations.
- */
-const RobotAvatar = ({ className = "", difficulty = 'NORMAL', size = "md" }) => {
-  const [blink, setBlink] = useState(false);
+const SHEETS = { normal: normalSheet, hard: hardSheet, hardcore: hardcoreSheet, bonus: bonusSheet };
+const SIZES = { sm: 'w-12 h-12', md: 'w-20 h-20', lg: 'w-32 h-32' };
+const FPS = 8;
+const FRAME_COUNT = 16;
+const position = frame => `${(frame % 4) * 100 / 3}% ${Math.floor(frame / 4) * 100 / 3}%`;
+const frames = Array.from({ length: FRAME_COUNT }, (_, frame) => ({
+    backgroundPosition: position(frame),
+    offset: frame / FRAME_COUNT,
+    easing: 'steps(1, end)',
+}));
+frames.push({ backgroundPosition: position(0), offset: 1 });
 
-  // Difficulty to Color Theme Mapping (Matching values in AI_DIFFICULTY enum)
-  const themes = {
-    'normal': {
-      eye: 'bg-emerald-400 shadow-[0_0_8px_#34d399]',
-      aura: 'border-emerald-500/20',
-      side: 'bg-emerald-500/50'
-    },
-    'hard': {
-      eye: 'bg-amber-400 shadow-[0_0_8px_#fbbf24]',
-      aura: 'border-amber-500/20',
-      side: 'bg-amber-500/50'
-    },
-    'hardcore': {
-      eye: 'bg-purple-500 shadow-[0_0_8px_#a855f7]',
-      aura: 'border-purple-500/20',
-      side: 'bg-purple-500/50'
-    },
-    'bonus': {
-      eye: 'bg-red-500 shadow-[0_0_8px_#ef4444]',
-      aura: 'border-red-500/20',
-      side: 'bg-red-500/50'
-    }
-  };
+export default function RobotAvatar({ className = '', difficulty = 'normal', size = 'md' }) {
+    const spriteRef = useRef(null);
+    const animationRef = useRef(null);
+    const requestRef = useRef(0);
+    const sheet = SHEETS[difficulty.toLowerCase()] || normalSheet;
 
-  const theme = themes[difficulty] || themes.NORMAL;
+    const play = useCallback(async () => {
+        const request = ++requestRef.current;
+        animationRef.current?.cancel();
+        const image = new Image();
+        image.src = sheet;
+        try { await image.decode(); } catch { return; }
+        if (request !== requestRef.current || !spriteRef.current) return;
+        animationRef.current = spriteRef.current.animate(frames, {
+            duration: FRAME_COUNT / FPS * 1000,
+            iterations: 1,
+        });
+        // No fill: finishing restores the underlying idle frame (frame zero).
+    }, [sheet]);
 
-  // Random eye blinking
-  useEffect(() => {
-    const triggerBlink = () => {
-      setBlink(true);
-      setTimeout(() => setBlink(false), 200);
-      setTimeout(triggerBlink, Math.random() * 4000 + 2000); // Less frequent blinking
-    };
+    useEffect(() => {
+        play();
+        return () => {
+            requestRef.current += 1;
+            animationRef.current?.cancel();
+        };
+    }, [play]);
 
-    const timeoutId = setTimeout(triggerBlink, 3000);
-    return () => clearTimeout(timeoutId);
-  }, []);
-
-  const sizeClasses = {
-    sm: "w-12 h-12",
-    md: "w-20 h-20",
-    lg: "w-32 h-32"
-  };
-
-  return (
-    <div className={`relative flex items-center justify-center ${sizeClasses[size]} ${className}`}>
-      <style>{`
-                @keyframes drone-float {
-                    0%, 100% { transform: translateY(0px); }
-                    50% { transform: translateY(-5px); }
-                }
-                @keyframes pulse-ring {
-                    0% { transform: scale(0.8); opacity: 0.5; }
-                    100% { transform: scale(1.2); opacity: 0; }
-                }
-                .drone-main {
-                    animation: drone-float 3s ease-in-out infinite;
-                }
-                .eye-blink { transform: scaleY(0.1); }
-            `}</style>
-
-      {/* Subtle Aura (Pulse) */}
-      <div className={`absolute inset-0 rounded-full border-2 transition-colors duration-500 ${theme.aura} animate-[pulse-ring_2s_infinite]`} />
-
-      <div className="relative drone-main flex flex-col items-center">
-        {/* Head Body - Sleek Metal Sphere */}
-        <div className={`w-16 h-14 rounded-[2rem] bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950 shadow-2xl border-t border-slate-500 flex items-center justify-center relative z-10 overflow-hidden`}>
-
-          {/* Face Plate */}
-          <div className="w-12 h-8 bg-black/90 rounded-full flex items-center justify-center gap-2 border border-white/5 relative">
-            {/* Eyes */}
-            <div className={`w-3 h-1.5 transition-all duration-300 rounded-full ${theme.eye} ${blink ? 'eye-blink' : ''}`} />
-            <div className={`w-3 h-1.5 transition-all duration-300 rounded-full ${theme.eye} ${blink ? 'eye-blink' : ''}`} />
-
-            {/* Internal Reflection */}
-            <div className="absolute top-1 left-3 w-4 h-1 bg-white/10 rounded-full blur-[1px]" />
-          </div>
-
-          {/* Side Decorative Lights */}
-          <div className={`absolute left-1 top-1/2 -translate-y-1/2 w-1 h-3 rounded-full ${theme.side}`} />
-          <div className={`absolute right-1 top-1/2 -translate-y-1/2 w-1 h-3 rounded-full ${theme.side}`} />
-        </div>
-
-        {/* Drone Stand/Bottom Detail */}
-        <div className="w-8 h-2 bg-slate-800 rounded-full -mt-1 opacity-80" />
-
-        {/* Bottom Shadow (Floating) */}
-        <div className="w-6 h-1 bg-black/40 rounded-full blur-[2px] mt-2 animate-pulse" />
-      </div>
-    </div>
-  );
-};
-
-export default RobotAvatar;
+    return (
+        <button
+            type="button"
+            onClick={play}
+            aria-label="Relancer l’animation du robot IA"
+            title="Toucher pour animer le robot"
+            className={`block shrink-0 rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 ${SIZES[size] || SIZES.md} ${className}`}
+        >
+            <span
+                ref={spriteRef}
+                aria-hidden="true"
+                className="block w-full h-full"
+                style={{
+                    backgroundImage: `url(${sheet})`,
+                    backgroundSize: '400% 400%',
+                    backgroundPosition: position(0),
+                    backgroundRepeat: 'no-repeat',
+                    imageRendering: 'pixelated',
+                }}
+            />
+        </button>
+    );
+}

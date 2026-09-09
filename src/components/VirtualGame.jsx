@@ -1397,7 +1397,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
                 {/* Robot Avatar - Precision Placement (Red Box Area) */}
                 <div className="flex-1 flex items-end justify-end p-1 pr-1 pb-16 pointer-events-none">
-                    <div className="w-12 h-32 relative pointer-events-auto">
+                    <div className="w-32 h-32 shrink-0 relative pointer-events-auto">
                         <RobotAvatar
                             size="lg"
                             className="w-full h-full"
