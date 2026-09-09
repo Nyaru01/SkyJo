@@ -487,7 +487,7 @@ export default function GameMenu({
                         <div className="pt-2 pb-2 text-center relative z-10 flex flex-col items-center">
 
                             {/* ROBOT AVATAR INTEGRATION */}
-                            <div className="scale-50 -my-20 pointer-events-none transform-gpu origin-center">
+                            <div className="w-full">
                                 <RobotAvatar
                                     customMessage={selectedDifficulty === AI_DIFFICULTY.BONUS ? "Tu vas souffrir !" : selectedDifficulty === AI_DIFFICULTY.HARD ? "Ça va faire mal !" : "Choisis ton destin..."}
                                     showBubble={!!selectedDifficulty}
