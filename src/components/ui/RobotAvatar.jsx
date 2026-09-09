@@ -2,16 +2,19 @@ import { useEffect, useRef } from 'react';
 import spriteSheet from '../../assets/sprites/daily-robot.png';
 
 const FRAME_COUNT = 16;
-const FPS = 12;
+const FPS = 8;
+const PAUSE_MS = 2000;
+const CYCLE_MS = FRAME_COUNT / FPS * 1000 + PAUSE_MS;
 const position = frame => `${(frame % 4) * 100 / 3}% ${Math.floor(frame / 4) * 100 / 3}%`;
 
 // Equal cells from the complete sheet: no individual trimming or alignment changes.
 const frames = Array.from({ length: FRAME_COUNT }, (_, frame) => ({
     backgroundPosition: position(frame),
-    offset: frame / FRAME_COUNT,
+    offset: (frame / FPS * 1000) / CYCLE_MS,
     easing: 'steps(1, end)',
 }));
-frames.push({ backgroundPosition: position(0), offset: 1 });
+// Hold the last frame for the pause; the next iteration starts at frame zero.
+frames.push({ backgroundPosition: position(FRAME_COUNT - 1), offset: 1 });
 
 export default function RobotAvatar({ customMessage, showBubble }) {
     const spriteRef = useRef(null);
@@ -25,7 +28,7 @@ export default function RobotAvatar({ customMessage, showBubble }) {
         image.decode().then(() => {
             if (cancelled || !spriteRef.current) return;
             animation = spriteRef.current.animate(frames, {
-                duration: FRAME_COUNT / FPS * 1000,
+                duration: CYCLE_MS,
                 iterations: Infinity,
             });
         }).catch(() => { /* Keep the idle frame if the image cannot be decoded. */ });
