@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Zap, Flame, Cloud, SunMoon } from 'lucide-react';
+import { Sparkles, Zap, SunMoon } from 'lucide-react';
 import { Button } from './ui/Button';
 import ModalShell, { ModalCloseButton } from './ui/ModalShell';
 
@@ -27,48 +27,6 @@ const FEATURES = [
         icon: Zap,
         color: "text-slate-400",
         bg: "bg-slate-400/10"
-    },
-    {
-        title: "Sauvegarde Cloud",
-        description: "Connectez votre compte Google pour sécuriser votre progression et jouer sur tous vos appareils.",
-        icon: Cloud,
-        color: "text-sky-400",
-        bg: "bg-sky-400/10"
-    },
-    {
-        title: "Mode Tourment",
-        description: "Une expérience hardcore renouvelée ! 28 cartes spéciales, mécaniques de jeu impitoyables et stratégie poussée à l'extrême.",
-        icon: Flame,
-        color: "text-rose-500",
-        bg: "bg-rose-500/10"
-    },
-    {
-        title: "Notifications",
-        description: "Rejoignez une partie d'un simple tap sur la notification, même app fermée ! Plus besoin de chercher vos amis.",
-        icon: Zap,
-        color: "text-amber-400",
-        bg: "bg-amber-400/10"
-    },
-    {
-        title: "Fond d'écran",
-        description: "Ajout de nouveaux fonds d'écran pour personnaliser votre expérience.",
-        icon: Flame,
-        color: "text-cyan-400",
-        bg: "bg-cyan-400/10"
-    },
-    {
-        title: "Mode hors ligne contre l'IA",
-        description: "Jouez partout, même sans internet ! Le mode solo est désormais 100% fonctionnel hors ligne.",
-        icon: Sparkles,
-        color: "text-cyan-400",
-        bg: "bg-cyan-400/10"
-    },
-    {
-        title: "Pause & Persistance",
-        description: "Vos parties IA sont désormais sauvegardées. Le jeu se met en pause automatiquement quand vous quittez l'app.",
-        icon: Zap,
-        color: "text-emerald-400",
-        bg: "bg-emerald-400/10"
     }
 ];
 

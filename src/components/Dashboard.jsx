@@ -359,6 +359,7 @@ export default function Dashboard() {
                             <GameSetup
                                 onNavigate={setActiveTab}
                                 onOpenTutorial={() => setIsTutorialManuallyOpen(true)}
+                                showGuide={!hasSeenTutorial}
                                 allowAutoNews={hasSeenTutorial}
                                 onWhatsNewVisibilityChange={setIsWhatsNewOpen}
                             />
