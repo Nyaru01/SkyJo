@@ -1,3 +1,6 @@
+import SeasonalChallengeButton from './ui/SeasonalChallengeButton';
+import { HARVEST } from '../lib/weeklyChallenge';
+import { useOnlineGameStore } from '../store/onlineGameStore';
 import React, { useState, useEffect } from 'react';
 import { Users, MessageSquare, Eye, Archive, Trash2, RefreshCw, X, Check, ArrowUpCircle, Sparkles, Trophy, Gift, Play, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -22,6 +25,12 @@ export function AdminDashboard({ adminPassword, onClose }) {
     const [showColumnBeam, setShowColumnBeam] = useState(false);
     const [showSandbox, setShowSandbox] = useState(false);
     const [showChestTest, setShowChestTest] = useState(false);
+    const [confirmHarvest, setConfirmHarvest] = useState(false);
+    const launchHarvest = () => {
+        if (useOnlineGameStore.getState().roomCode) { toast.error('Quittez la partie en ligne avant cet aperçu.'); return; }
+        setConfirmHarvest(false);
+        if (useVirtualGameStore.getState().startSeasonalPreview()) onClose();
+    };
 
     const fetchFeedbacks = async () => {
         setLoading(true);
@@ -222,6 +231,14 @@ export function AdminDashboard({ adminPassword, onClose }) {
                     />
                 </div>
 
+                <div className="mb-6">
+                    <SeasonalChallengeButton challenge={HARVEST} preview onClick={() => {
+                        if (useVirtualGameStore.getState().gameState) setConfirmHarvest(true);
+                        else launchHarvest();
+                    }} />
+                    <ConfirmModal isOpen={confirmHarvest} onClose={() => setConfirmHarvest(false)} onConfirm={launchHarvest}
+                        title="Tester Récolte d’automne ?" message="La partie actuelle sera mise de côté pendant le test, puis restaurée. Aucun XP ni statistique ne sera enregistré." confirmText="Lancer l’aperçu" />
+                </div>
                 {/* TEST ACTIONS (Debug Simulator) */}
                 <div className="mb-8 p-6 bg-indigo-500/10 border border-indigo-500/20 rounded-[2rem] flex flex-col lg:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-2xl">
                     <div className="absolute top-0 left-0 w-32 h-32 bg-indigo-500/10 blur-[80px] -ml-16 -mt-16" />

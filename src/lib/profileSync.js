@@ -1,3 +1,4 @@
+import { getChallengeWins } from './weeklyChallenge.js';
 const normalizeCloudDate = (value, fallback) => {
     if (!value) return fallback;
     const parsed = new Date(value);
@@ -10,6 +11,7 @@ export const buildProfileSyncPayload = (state, userProfile = state.userProfile) 
     xp: state.currentXP,
     weeklyChallengeWinDate: state.weeklyChallengeWinDate,
     weeklyChallengeId: state.weeklyChallengeId,
+    seasonalChallengeWins: getChallengeWins(state),
 });
 
 export const mergeCloudProfile = (state, data) => {
@@ -39,5 +41,9 @@ export const mergeCloudProfile = (state, data) => {
             state.weeklyChallengeWinDate,
         ),
         weeklyChallengeId: data.weekly_challenge_id ?? state.weeklyChallengeId,
+        seasonalChallengeWins: Object.entries(data.seasonal_challenge_wins || {}).reduce((wins, [id, date]) => {
+            if (Number.isFinite(Date.parse(date)) && (!wins[id] || Date.parse(date) > Date.parse(wins[id]))) wins[id] = date;
+            return wins;
+        }, getChallengeWins(state)),
     };
 };

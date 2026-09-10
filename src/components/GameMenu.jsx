@@ -1,6 +1,9 @@
+import SeasonalChallengeButton from './ui/SeasonalChallengeButton';
+import { useSeasonalClock } from '../hooks/useSeasonalClock';
+import { getActiveWeeklyChallenge } from '../lib/weeklyChallenge';
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { motion as Motion, useReducedMotion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { Bot, ChevronRight, Users, Wifi, HelpCircle, Palette, X, Sparkles, RotateCcw, Zap, Swords, Flame, Image as ImageIcon } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Button } from './ui/Button';
@@ -8,36 +11,14 @@ import { PremiumTiltButton } from './ui/PremiumTiltButton';
 import SkinCarousel from './SkinCarousel';
 import ExperienceBar from './ExperienceBar';
 import { useVirtualGameStore } from '../store/virtualGameStore';
-import { useGameStore, selectIsDailyAvailable, selectIsWeeklyAvailable } from '../store/gameStore';
+import { useGameStore, selectIsDailyAvailable } from '../store/gameStore';
 import { useOnlineGameStore } from '../store/onlineGameStore';
 import { useFeedback } from '../hooks/useFeedback';
 import { cn } from '../lib/utils';
 import { AI_DIFFICULTY } from '../lib/skyjoAI';
-import {
-    CURRENT_WEEKLY_CHALLENGE,
-    getWeeklyChallengeRemainingDays as calculateWeeklyRemainingDays,
-} from '../lib/weeklyChallenge';
 import RobotAvatar from './ui/RobotAvatar';
 import ModalShell from './ui/ModalShell';
 
-const EquinoxOrbitIcon = ({ active }) => {
-    const prefersReducedMotion = useReducedMotion();
-    const shouldAnimate = active && !prefersReducedMotion;
-
-    return (
-        <div className="relative flex h-9 w-9 items-center justify-center" aria-hidden="true">
-            <div className="absolute inset-1 rounded-full border border-white/20" />
-            <span className="relative z-10 text-[20px] drop-shadow-[0_0_7px_rgba(255,255,255,0.45)]">🌍</span>
-            <Motion.span
-                className="absolute inset-0"
-                animate={shouldAnimate ? { rotate: 360 } : { rotate: 28 }}
-                transition={shouldAnimate ? { duration: 5, ease: 'linear', repeat: Infinity } : { duration: 0 }}
-            >
-                <span className="absolute left-1/2 top-[-1px] h-2.5 w-2.5 -translate-x-1/2 rounded-full border border-white/50 bg-gradient-to-br from-amber-100 via-slate-200 to-indigo-400 shadow-[0_0_8px_rgba(251,191,36,0.65)]" />
-            </Motion.span>
-        </div>
-    );
-};
 
 export default function GameMenu({
     setScreen,
@@ -55,7 +36,9 @@ export default function GameMenu({
     const connectOnline = useOnlineGameStore(state => state.connect);
     const setPlayerInfo = useOnlineGameStore(state => state.setPlayerInfo);
     const isDailyAvailable = useGameStore(selectIsDailyAvailable);
-    const isWeeklyAvailable = useGameStore(selectIsWeeklyAvailable);
+    const now = useSeasonalClock();
+    const challenge = getActiveWeeklyChallenge(now);
+    const seasonalChallengeWins = useGameStore(state => state.seasonalChallengeWins);
     const weeklyChallengeWinDate = useGameStore(state => state.weeklyChallengeWinDate);
     const weeklyChallengeId = useGameStore(state => state.weeklyChallengeId);
     const hasSeenWeeklyAnnouncement = useGameStore(state => state.hasSeenWeeklyChallengeAnnouncementV4);
@@ -76,9 +59,6 @@ export default function GameMenu({
         setHasSeenWeeklyAnnouncement(true);
     };
 
-    const getWeeklyRemainingDays = () => {
-        return calculateWeeklyRemainingDays({ weeklyChallengeWinDate, weeklyChallengeId });
-    };
 
     const handleStartAIBattle = () => {
         playClick();
@@ -222,66 +202,14 @@ export default function GameMenu({
                         </div>
                     </div>
                 </PremiumTiltButton>                {/* Défi Hebdo - Mode Équinoxe */}
-                <PremiumTiltButton
+                <SeasonalChallengeButton
+                    rewardState={{ weeklyChallengeWinDate, weeklyChallengeId, seasonalChallengeWins }}
                     onClick={() => {
-                        if (!isWeeklyAvailable) return;
                         playClick();
-                        // Weekly challenge: Tourment mode (bonus cards + hard AI)
-                        startAIGame(
-                            { name: userProfile.name, avatarId: userProfile.avatarId },
-                            1,
-                            AI_DIFFICULTY.BONUS,
-                            { isBonusMode: true, isWeeklyChallenge: true },
-                        );
-                        setScreen('game');
+                        const started = startAIGame({ name: userProfile.name, avatarId: userProfile.avatarId }, 1, AI_DIFFICULTY.BONUS, { isBonusMode: true, isWeeklyChallenge: true });
+                        if (started !== false) setScreen('game');
                     }}
-                    disabled={!isWeeklyAvailable}
-                    gradientFrom={isWeeklyAvailable ? "from-indigo-700" : "from-slate-700"}
-                    gradientTo={isWeeklyAvailable ? "to-amber-500" : "to-slate-800"}
-                    shadowColor={isWeeklyAvailable ? "shadow-indigo-500/25" : "shadow-transparent"}
-                    className={cn("w-full transition-all duration-500 group", !isWeeklyAvailable && "opacity-60 grayscale-[0.3]")}
-                    contentClassName="game-mode-card-content"
-                    bodyClassName={isWeeklyAvailable
-                        ? "border-amber-100/30 ring-1 ring-inset ring-indigo-200/20 shadow-[0_8px_28px_rgba(79,70,229,0.22)]"
-                        : "border-white/10"
-                    }
-                >
-                    {isWeeklyAvailable && (
-                        <div className="pointer-events-none absolute -right-10 -top-16 h-32 w-32 rounded-full bg-amber-200/20 blur-2xl" />
-                    )}
-                    <div className="flex items-center justify-between gap-4 w-full relative z-10 text-left">
-                        <div className="flex min-w-0 flex-col justify-center">
-                            <div className="flex items-center gap-2">
-                                <h3 className="game-mode-card-title text-white">{CURRENT_WEEKLY_CHALLENGE.shortTitle}</h3>
-                                {isWeeklyAvailable && (
-                                    <span className="rounded-full bg-white/15 px-1.5 py-0.5 text-[8px] font-black tracking-wider text-amber-100 ring-1 ring-inset ring-white/15">HEBDO</span>
-                                )}
-                            </div>
-                            <p className={cn(
-                                "game-mode-card-meta uppercase",
-                                isWeeklyAvailable ? "text-indigo-100" : "text-slate-400"
-                            )}>
-                                {isWeeklyAvailable ? (
-                                    <>
-                                        <span className="block text-indigo-50">Conservez <strong className="text-white">−2 · 0 · 0 · +2</strong></span>
-                                        <span className="mt-0.5 block whitespace-nowrap text-amber-100">Tourment · Victoire <strong className="text-white">+{CURRENT_WEEKLY_CHALLENGE.rewardXP} XP</strong></span>
-                                    </>
-                                ) : (
-                                    <>Réinitialisation dans <span className="text-indigo-300">{getWeeklyRemainingDays()} jours</span></>
-                                )}
-                            </p>
-                        </div>
-
-                        <div className={cn(
-                            "game-mode-icon border flex items-center justify-center transition-all duration-500 relative overflow-hidden icon-3d-container",
-                            isWeeklyAvailable
-                                ? "bg-slate-950/20 border-amber-100/30 shadow-[inset_0_0_14px_rgba(255,255,255,0.08),0_0_18px_rgba(99,102,241,0.30)]"
-                                : "bg-slate-800/50 border-white/5"
-                        )}>
-                            <EquinoxOrbitIcon active={isWeeklyAvailable} />
-                        </div>
-                    </div>
-                </PremiumTiltButton>
+                />
 
                 <PremiumTiltButton
                     onClick={handleStartOnline}
@@ -641,7 +569,7 @@ export default function GameMenu({
                             {/* Icon */}
                             <div className="relative mb-6 inline-block">
                                 <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-400 via-violet-500 to-indigo-700 flex items-center justify-center shadow-lg shadow-indigo-500/25 transform -rotate-6">
-                                    <span className="text-4xl animate-float-3d">{CURRENT_WEEKLY_CHALLENGE.icon}</span>
+                                    <span className="text-4xl animate-float-3d">{challenge.icon}</span>
                                 </div>
                                 <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center border-4 border-slate-900">
                                     <Sparkles className="w-4 h-4 text-white" />
@@ -649,20 +577,20 @@ export default function GameMenu({
                             </div>
 
                             {/* Text content */}
-                            <h2 className="text-2xl font-black text-white mb-2 tracking-tight">{CURRENT_WEEKLY_CHALLENGE.title}</h2>
-                            <p className="text-indigo-300 font-bold text-sm uppercase tracking-widest mb-6">{CURRENT_WEEKLY_CHALLENGE.subtitle}</p>
+                            <h2 className="text-2xl font-black text-white mb-2 tracking-tight">{challenge.title}</h2>
+                            <p className="text-indigo-300 font-bold text-sm uppercase tracking-widest mb-6">{challenge.subtitle}</p>
                             
                             <div className="space-y-4 mb-8 text-center">
                                 <p className="text-slate-300 text-sm leading-relaxed">
-                                    Entre ombre et lumière, trouvez l'équilibre ! En <strong className="text-violet-400">mode Tourment</strong>, gardez au moins <strong className="text-white">1 carte "-2", 2 cartes "0" et 1 carte "2"</strong> sur votre grille finale, puis <strong className="text-white">remportez la victoire</strong> contre l'IA.
+                                    En mode Tourment : <strong className="text-white">{challenge.requirementLabel}</strong>, puis obtenez le meilleur score contre l’IA en une manche. Les égalités comptent.
                                 </p>
                                 <p className="text-[10px] text-indigo-300/80 font-bold italic -mt-2">
-                                    (Attention : évitez d'aligner 3 cartes identiques dans une même colonne, sinon elles seront supprimées !)
+                                    Une récompense tous les sept jours. Réessayez immédiatement après une défaite.
                                 </p>
 
                                 <div className="bg-indigo-500/10 border border-indigo-400/20 rounded-2xl py-3 px-4 inline-flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-indigo-500 text-white flex items-center justify-center font-black shadow-lg">
-                                        +{CURRENT_WEEKLY_CHALLENGE.rewardXP}
+                                        +{challenge.rewardXP}
                                     </div>
                                     <div className="text-left">
                                         <div className="font-bold text-xs uppercase tracking-wider text-indigo-300">Récompense</div>

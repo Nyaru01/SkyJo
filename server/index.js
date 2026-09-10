@@ -172,20 +172,21 @@ app.post('/api/social/migrate', async (req, res) => {
 // --- Profile API ---
 
 app.post('/api/social/profile', async (req, res) => {
-    let { id, name, emoji, avatarId, vibeId, level, xp, weeklyChallengeWinDate, weeklyChallengeId } = req.body;
+    let { id, name, emoji, avatarId, vibeId, level, xp, weeklyChallengeWinDate, weeklyChallengeId, seasonalChallengeWins } = req.body;
     console.log(`[PROFILE] Update request for ${name} (${id}): Level ${level}, XP ${xp}, WeeklyChallenge: ${weeklyChallengeId || 'none'} @ ${weeklyChallengeWinDate || 'never'}`);
     try {
         await pool.query(`
-            INSERT INTO users (id, name, emoji, avatar_id, vibe_id, level, xp, weekly_challenge_win_date, weekly_challenge_id, last_seen)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
+            INSERT INTO users (id, name, emoji, avatar_id, vibe_id, level, xp, weekly_challenge_win_date, weekly_challenge_id, seasonal_challenge_wins, last_seen)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
             ON CONFLICT (id) DO UPDATE SET
                 name = EXCLUDED.name, emoji = EXCLUDED.emoji,
                 avatar_id = EXCLUDED.avatar_id, vibe_id = EXCLUDED.vibe_id,
                 level = EXCLUDED.level, xp = EXCLUDED.xp, 
                 weekly_challenge_win_date = EXCLUDED.weekly_challenge_win_date,
                 weekly_challenge_id = EXCLUDED.weekly_challenge_id,
+                seasonal_challenge_wins = users.seasonal_challenge_wins || EXCLUDED.seasonal_challenge_wins,
                 last_seen = CURRENT_TIMESTAMP
-        `, [id, name, emoji, avatarId, vibeId, level, xp, weeklyChallengeWinDate, weeklyChallengeId]);
+        `, [id, name, emoji, avatarId, vibeId, level, xp, weeklyChallengeWinDate, weeklyChallengeId, JSON.stringify(seasonalChallengeWins && typeof seasonalChallengeWins === 'object' && !Array.isArray(seasonalChallengeWins) ? seasonalChallengeWins : {})]);
         console.log(`[PROFILE] ✓ Saved ${name} (${id})`);
         res.json({ status: 'ok' });
     } catch (err) {

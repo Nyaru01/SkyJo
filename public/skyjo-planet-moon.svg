@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" aria-labelledby="title desc" role="img">
+<title id="title">Planète et lune animées</title>
+<desc id="desc">Emblème SVG premium avec planète turquoise, lune orbitale et halos lumineux.</desc>
+<defs>
+  <radialGradient id="planetCore" cx="34%" cy="28%" r="72%">
+    <stop offset="0%" stop-color="#8cfbff"/><stop offset="28%" stop-color="#35d9e7"/><stop offset="62%" stop-color="#168fcf"/><stop offset="100%" stop-color="#0b4b9d"/>
+  </radialGradient>
+  <linearGradient id="land" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#d6ff9d"/><stop offset="45%" stop-color="#73e87e"/><stop offset="100%" stop-color="#2ebf6f"/>
+  </linearGradient>
+  <radialGradient id="moon" cx="30%" cy="25%" r="75%">
+    <stop offset="0%" stop-color="#ffffff"/><stop offset="55%" stop-color="#d9e7ff"/><stop offset="100%" stop-color="#8ea7df"/>
+  </radialGradient>
+  <linearGradient id="orbitGlow" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#58f3ff" stop-opacity="0"/><stop offset="40%" stop-color="#58f3ff" stop-opacity=".85"/><stop offset="70%" stop-color="#8f7cff" stop-opacity=".9"/><stop offset="100%" stop-color="#8f7cff" stop-opacity="0"/>
+  </linearGradient>
+  <filter id="glowStrong" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="glowSoft" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2.4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <clipPath id="planetClip"><circle cx="62" cy="62" r="28"/></clipPath>
+</defs>
+<style><![CDATA[
+  .planetWrap{transform-box:fill-box;transform-origin:center;animation:planetFloat 4.8s ease-in-out infinite}
+  .planetSpin{transform-box:fill-box;transform-origin:center;animation:planetSpin 18s linear infinite}
+  .orbit{stroke-dasharray:22 14;animation:orbitDash 4.8s linear infinite}
+  .orbitSoft{stroke-dasharray:8 20;animation:orbitDashBack 6.5s linear infinite}
+  .moonOrbit{transform-origin:62px 62px;animation:moonOrbit 7.5s linear infinite}
+  .moonPulse{transform-box:fill-box;transform-origin:center;animation:moonPulse 2.5s ease-in-out infinite}
+  .halo{transform-box:fill-box;transform-origin:center;animation:haloPulse 3.2s ease-in-out infinite}
+  .star{transform-box:fill-box;transform-origin:center;animation:twinkle 2.2s ease-in-out infinite}.s2{animation-delay:-.7s}.s3{animation-delay:-1.35s}.s4{animation-delay:-1.8s}
+  .shine{animation:shine 5.5s ease-in-out infinite}
+  @keyframes planetFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-3px) rotate(1deg)}}
+  @keyframes planetSpin{to{transform:rotate(360deg)}}
+  @keyframes orbitDash{to{stroke-dashoffset:-144}}
+  @keyframes orbitDashBack{to{stroke-dashoffset:144}}
+  @keyframes moonOrbit{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  @keyframes moonPulse{0%,100%{transform:scale(1);opacity:.95}50%{transform:scale(1.12);opacity:1}}
+  @keyframes haloPulse{0%,100%{transform:scale(.93);opacity:.22}50%{transform:scale(1.08);opacity:.42}}
+  @keyframes twinkle{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.35)}}
+  @keyframes shine{0%,72%,100%{transform:translateX(-38px) rotate(12deg);opacity:0}78%{opacity:.35}88%{transform:translateX(90px) rotate(12deg);opacity:0}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important}}
+]]></style>
+
+<circle class="halo" cx="62" cy="62" r="43" fill="#24dfff" opacity=".22" filter="url(#glowStrong)"/>
+<circle cx="62" cy="62" r="35" fill="none" stroke="#57e9ff" stroke-opacity=".16" stroke-width="1.5"/>
+
+<ellipse class="orbit" cx="62" cy="62" rx="47" ry="23" fill="none" stroke="url(#orbitGlow)" stroke-width="2.8" transform="rotate(-17 62 62)" filter="url(#glowSoft)"/>
+<ellipse class="orbitSoft" cx="62" cy="62" rx="39" ry="18" fill="none" stroke="#6d75ff" stroke-opacity=".38" stroke-width="1.4" transform="rotate(19 62 62)"/>
+
+<g fill="#9ef7ff">
+  <circle class="star" cx="23" cy="30" r="1.7"/><circle class="star s2" cx="101" cy="31" r="1.4"/><circle class="star s3" cx="106" cy="85" r="1.8"/><circle class="star s4" cx="28" cy="96" r="1.2"/>
+</g>
+
+<g class="planetWrap">
+  <circle cx="62" cy="62" r="30.5" fill="#072e6d" opacity=".55" filter="url(#glowSoft)"/>
+  <circle cx="62" cy="62" r="28" fill="url(#planetCore)" stroke="#bffcff" stroke-width="2.2"/>
+  <g clip-path="url(#planetClip)">
+    <g class="planetSpin">
+      <path d="M44 45 C47 41 52 39 57 40 C60 41 60 44 63 45 C67 46 72 44 74 47 C77 51 73 54 70 55 C66 56 64 59 62 62 C60 66 55 66 52 63 C48 59 43 58 41 54 C39 51 41 48 44 45Z" fill="url(#land)" opacity=".97"/>
+      <path d="M73 64 C77 63 82 64 84 67 C87 71 84 74 81 76 C78 78 78 82 75 84 C72 86 69 83 69 79 C69 75 65 72 67 69 C68 67 70 65 73 64Z" fill="url(#land)" opacity=".92"/>
+      <path d="M47 72 C50 70 54 71 55 74 C57 77 55 80 53 82 C51 84 48 83 46 81 C43 78 44 74 47 72Z" fill="#87ef82" opacity=".82"/>
+      <path d="M86 46 C90 44 95 46 96 50 C98 53 95 56 92 58 C89 60 86 58 84 55 C82 52 83 48 86 46Z" fill="#75e778" opacity=".85"/>
+    </g>
+    <ellipse cx="53" cy="48" rx="17" ry="12" fill="#ffffff" opacity=".13"/>
+    <path d="M40 78 C55 90 76 93 90 75" fill="none" stroke="#03285e" stroke-opacity=".25" stroke-width="7"/>
+    <rect class="shine" x="31" y="29" width="13" height="66" rx="8" fill="#ffffff" opacity="0" transform="rotate(12 62 62)"/>
+  </g>
+</g>
+
+<g class="moonOrbit">
+  <g transform="translate(104 62)">
+    <g class="moonPulse" filter="url(#glowSoft)">
+      <circle cx="0" cy="0" r="7.5" fill="url(#moon)" stroke="#ffffff" stroke-width="1.2"/>
+      <circle cx="-2.2" cy="-1.5" r="1.2" fill="#a7b8dc" opacity=".65"/>
+      <circle cx="2.1" cy="2.4" r="1.6" fill="#8298c8" opacity=".5"/>
+    </g>
+  </g>
+</g>
+
+<g filter="url(#glowSoft)">
+  <path d="M91 40v7M87.5 43.5h7" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity=".85">
+    <animate attributeName="opacity" values=".15;1;.15" dur="2.8s" repeatCount="indefinite"/>
+  </path>
+</g>
+</svg>

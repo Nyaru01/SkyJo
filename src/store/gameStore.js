@@ -1,3 +1,5 @@
+import { isSeasonalPreview } from '../lib/seasonalPreview';
+import { getActiveWeeklyChallenge, getWeeklyChallengeById, getChallengeWins } from '../lib/weeklyChallenge';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { calculateRoundScore, checkStrictlyLowest } from '../lib/scoreUtils';
@@ -67,6 +69,7 @@ export const useGameStore = create(
             closeCareerPlan: () => set({ isCareerPlanOpen: false }),
             lastDailyWinDate: null, // ISO date string of last daily challenge win
             weeklyChallengeWinDate: null, // ISO date string of last weekly challenge win
+            seasonalChallengeWins: {},
             weeklyChallengeId: null, // Seasonal challenge identifier associated with the last win
             userProfile: {
                 id: `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -270,6 +273,7 @@ export const useGameStore = create(
              * @param {number} amount - XP to add (default 1)
              */
             addXP: (amount = 1) => {
+                if (isSeasonalPreview()) return;
                 const { currentXP, level, syncProfileWithBackend } = get();
                 let newXP = currentXP + amount;
                 let newLevel = level;
@@ -299,6 +303,7 @@ export const useGameStore = create(
              * Mark daily challenge as completed for today
              */
             markDailyWin: () => {
+                if (isSeasonalPreview()) return;
                 set({ lastDailyWinDate: new Date().toISOString().split('T')[0] });
             },
 
@@ -306,18 +311,22 @@ export const useGameStore = create(
              * Atomically award the current weekly challenge and sync once.
              */
             awardWeeklyChallenge: (
-                challengeId = CURRENT_WEEKLY_CHALLENGE.id,
+                challengeId = getActiveWeeklyChallenge().id,
                 rewardXP = CURRENT_WEEKLY_CHALLENGE.rewardXP,
             ) => {
+                if (isSeasonalPreview()) return false;
+                const challenge = getWeeklyChallengeById(challengeId);
+                if (!challenge) return false;
                 let awarded = false;
 
                 set(state => {
-                    if (!isWeeklyChallengeAvailable(state)) return state;
+                    if (!isWeeklyChallengeAvailable(state, new Date(), challenge)) return state;
 
                     awarded = true;
                     const reward = applyXpReward(state.currentXP, state.level, rewardXP);
                     return {
-                        weeklyChallengeWinDate: new Date().toISOString().split('T')[0],
+                        weeklyChallengeWinDate: new Date().toISOString(),
+                        seasonalChallengeWins: { ...getChallengeWins(state), [challengeId]: new Date().toISOString() },
                         weeklyChallengeId: challengeId,
                         currentXP: reward.currentXP,
                         level: reward.level,
@@ -532,6 +541,7 @@ export const useGameStore = create(
              * @param {string} params.gameType - Type of game: 'ai' or 'local'
              */
             archiveVirtualGame: ({ players, totalScores, winner, roundsPlayed, gameType = 'ai' }) => {
+                if (isSeasonalPreview()) return;
                 const { gameHistory } = get();
                 if (!players || players.length === 0) return;
 

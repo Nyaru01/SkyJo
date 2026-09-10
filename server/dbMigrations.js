@@ -5,6 +5,7 @@ export const COLUMN_MIGRATIONS = Object.freeze([
     { table: 'feedbacks', col: 'device_info', sql: 'ALTER TABLE feedbacks ADD COLUMN device_info JSONB' },
     { table: 'push_subscriptions', col: 'username', sql: 'ALTER TABLE push_subscriptions ADD COLUMN username VARCHAR(100)' },
     { table: 'users', col: 'weekly_challenge_win_date', sql: 'ALTER TABLE users ADD COLUMN weekly_challenge_win_date DATE' },
+    { table: 'users', col: 'seasonal_challenge_wins', sql: "ALTER TABLE users ADD COLUMN seasonal_challenge_wins JSONB NOT NULL DEFAULT '{}'::jsonb" },
     { table: 'users', col: 'weekly_challenge_id', sql: 'ALTER TABLE users ADD COLUMN weekly_challenge_id TEXT' },
 ]);
 

@@ -40,3 +40,10 @@ test('synchronise le défi cloud même si le niveau et les XP sont identiques', 
     assert.equal(merged.weeklyChallengeId, 'equinoxe_2026');
     assert.equal(merged.profileLoadedFromBackend, true);
 });
+
+test('seasonal reward timestamps survive cloud synchronization independently', () => {
+    const state = { level: 2, currentXP: 3, lastAcknowledgedLevel: 2, userProfile: {}, weeklyChallengeId: 'equinoxe_2026', weeklyChallengeWinDate: '2026-09-23', seasonalChallengeWins: { recolte_2026: '2026-09-25T12:00:00Z' } };
+    const merged = mergeCloudProfile(state, {seasonal_challenge_wins:{recolte_2026:'2026-09-24T12:00:00Z'}});
+    assert.equal(merged.seasonalChallengeWins.recolte_2026,'2026-09-25T12:00:00Z');
+    assert.equal(merged.seasonalChallengeWins.equinoxe_2026,'2026-09-23');
+});

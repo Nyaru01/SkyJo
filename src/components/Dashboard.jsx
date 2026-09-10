@@ -161,7 +161,8 @@ export default function Dashboard() {
 
     // const isManualGameActive = gameStatus === 'PLAYING' && (effectiveTab === 'game' || effectiveTab === 'home');
     // const isVirtualGameActive = effectiveTab === 'virtual' && (!!virtualGameState || onlineGameStarted);
-    const isVirtualGameActive = effectiveTab === 'virtual' && (!!virtualGameState || onlineGameStarted);
+    const isSeasonalPreview = useVirtualGameStore(state => !!state.gameState?.isSeasonalPreview);
+    const isVirtualGameActive = isSeasonalPreview || effectiveTab === 'virtual' && (!!virtualGameState || onlineGameStarted);
 
     // useBackgroundMusic(isManualGameActive);
 
@@ -339,6 +340,7 @@ export default function Dashboard() {
     const leadingPlayer = playerTotals[0];
 
     const renderContent = () => {
+        if (isSeasonalPreview) return <VirtualGame key="seasonal-preview" initialScreen="game" onBackToMenu={() => useVirtualGameStore.getState().exitSeasonalPreview()} />;
         if (!isRehydrated) return null;
 
         switch (effectiveTab) {
@@ -721,9 +723,9 @@ export default function Dashboard() {
                 <AnimatePresence initial={false}>
                     {renderContent()}
                 </AnimatePresence>
-                {gameStatus === 'FINISHED' && <GameOver />}
+                {!isSeasonalPreview && gameStatus === 'FINISHED' && <GameOver />}
             </div>
-            {!isInOnlineSession && !isVirtualGameActive && (
+            {!isSeasonalPreview && !isInOnlineSession && !isVirtualGameActive && (
                 <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
             )}
 

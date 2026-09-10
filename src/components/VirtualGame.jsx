@@ -33,7 +33,8 @@ import { useFeedback } from '../hooks/useFeedback';
 import { useNotifications } from '../hooks/useNotifications';
 import { cn } from '../lib/utils';
 import { getCardSkinRequiredLevel } from '../lib/skinUtils';
-import { CURRENT_WEEKLY_CHALLENGE } from '../lib/weeklyChallenge';
+import { getGameChallenge, getWeeklyChallengeById, hasChallengeObjective, hasBestRoundScore } from '../lib/weeklyChallenge';
+import { SeasonalProgress } from './ui/SeasonalChallengeButton';
 import { getTourmentPerformance } from '../lib/tourmentPerformance';
 
 import { AVATARS, getAvatarPath } from '../lib/avatars';
@@ -793,7 +794,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     // --- Challenge Success Celebration ---
     useEffect(() => {
-        if (challengeJustWon === CURRENT_WEEKLY_CHALLENGE.id) {
+        const challenge = getWeeklyChallengeById(challengeJustWon);
+        if (challenge) {
             // Explose de confettis !
             confetti({
                 particleCount: 150,
@@ -802,9 +804,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 colors: ['#f59e0b', '#8b5cf6', '#4f46e5', '#fff']
             });
 
-            toast.success(`${CURRENT_WEEKLY_CHALLENGE.icon} DÉFI RÉUSSI : ${CURRENT_WEEKLY_CHALLENGE.shortTitle} ! +${CURRENT_WEEKLY_CHALLENGE.rewardXP} XP`, {
+            toast.success(`${challenge.icon} DÉFI RÉUSSI : ${challenge.shortTitle} ! +${challenge.rewardXP} XP`, {
                 duration: 6000,
-                icon: CURRENT_WEEKLY_CHALLENGE.icon,
+                icon: challenge.icon,
                 style: {
                     border: '1px solid #818cf8',
                     padding: '20px',
@@ -864,11 +866,12 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         setAIThinking(true);
         // Slower delay for better readability (was 1200)
         const delay = 2000;
+        let checkNextAction;
         const timer = setTimeout(() => {
             executeAITurn();
 
             // If AI still needs to make another action (e.g., after drawing), set another timer
-            const checkNextAction = setTimeout(() => {
+            checkNextAction = setTimeout(() => {
                 const currentState = useVirtualGameStore.getState().gameState;
                 if (currentState &&
                     currentState.currentPlayerIndex !== undefined &&
@@ -880,10 +883,10 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 setAIThinking(false);
             }, 2500); // Wait longer before next action (was 800)
 
-            return () => clearTimeout(checkNextAction);
+
         }, delay);
 
-        return () => clearTimeout(timer);
+        return () => { clearTimeout(timer); clearTimeout(checkNextAction); };
     }, [aiMode, gameState?.currentPlayerIndex, gameState?.phase, gameState?.turnPhase, isCurrentPlayerAI, aiPlayers, executeAITurn, setAIThinking, gameState, aiDifficulty, revealInitial, isPaused]);
 
     // Add player
@@ -1112,6 +1115,10 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     const confirmExit = () => {
         setShowExitConfirm(false);
+        if (gameState?.isSeasonalPreview) {
+            useVirtualGameStore.getState().exitSeasonalPreview();
+            return;
+        }
         // Archive online game if it was started and has data (avoid duplicates)
         // Check our ref to see if we already auto-archived
         if (onlineGameStarted && onlinePlayers.length > 0 && !hasArchivedOnlineRef.current) {
@@ -1150,7 +1157,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                     const winningScore = sortedResults[0]?.finalScore;
                     const myPlayer = gameState.players.find(p => p.id === 'human-1');
 
-                    if (myPlayer && roundResults.find(r => r.playerId === myPlayer.id)?.finalScore === winningScore) {
+                    if (!gameState.isWeeklyChallenge && myPlayer && roundResults.find(r => r.playerId === myPlayer.id)?.finalScore === winningScore) {
                         const isDaily = isDailyChallenge;
                         const isDailyAvailable = useGameStore.getState().lastDailyWinDate !== new Date().toISOString().split('T')[0];
 
@@ -1210,6 +1217,29 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
     );
 
 
+
+    if (!onlineGameStarted && isFinished && activeGameState?.isWeeklyChallenge) {
+        const challenge = getGameChallenge(activeGameState);
+        const scores = calculateFinalScores(activeGameState);
+        const human = activeGameState.players.find(p => p.id === 'human-1');
+        const result = activeGameState.seasonalResult || {
+            success: hasChallengeObjective({ challenge, hand: human?.hand, columnsCleared: human?.columnsCleared }) && hasBestRoundScore(scores),
+            rewardXP: activeGameState.challengeJustWon ? challenge.rewardXP : 0,
+        };
+        const totals = Object.fromEntries(scores.map(s => [s.playerId, s.finalScore]));
+        return createPortal(<div className="round-results-viewport">
+            <Card className="round-results-shell overflow-hidden flex flex-col">
+                <CardHeader className="round-results-heading text-center">
+                    <CardTitle>{challenge?.shortTitle || 'Défi saisonnier'}</CardTitle>
+                    <p className="text-amber-200 text-sm">{activeGameState.isSeasonalPreview ? 'Aperçu admin · ' : ''}{result.success ? 'Défi réussi' : 'Défi non réussi'} · +{result.rewardXP} XP{activeGameState.isSeasonalPreview ? ' simulés' : ''}</p>
+                </CardHeader>
+                <CardContent className="round-results-content">
+                    <div className="round-results-scroll"><SeasonalProgress gameState={activeGameState} /><RoundResultsPlayers scores={scores} gameState={activeGameState} totals={totals} /></div>
+                    <div className="round-actions flex"><Button className="w-full" onClick={confirmExit}>{activeGameState.isSeasonalPreview ? 'Retour au panneau admin' : 'Terminer le défi'}</Button></div>
+                </CardContent>
+            </Card>
+        </div>, document.body);
+    }
 
     if (showSyncIssue) {
         return (
@@ -2627,6 +2657,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             )}
         >
 
+            <SeasonalProgress gameState={activeGameState} />
+            {activeGameState?.isSeasonalPreview && <button className="text-xs text-amber-200 underline py-1" onClick={() => useVirtualGameStore.getState().exitSeasonalPreview()}>Quitter l’aperçu · Retour admin</button>}
             <AnimatePresence>
                 {showTourmentPerformanceGoal && (
                     <motion.div

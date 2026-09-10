@@ -1,3 +1,6 @@
+import { getActiveWeeklyChallenge, getGameChallenge, HARVEST, hasChallengeObjective, hasBestRoundScore } from '../lib/weeklyChallenge';
+import { setSeasonalPreview } from '../lib/seasonalPreview';
+let previewSnapshot = null;
 /**
  * Virtual Skyjo Game Store
  * Manages state for the virtual card game mode
@@ -24,7 +27,7 @@ import {
 import { useGameStore } from './gameStore';
 import {
     canAwardWeeklyChallenge,
-    CURRENT_WEEKLY_CHALLENGE,
+    isWeeklyChallengeAvailable,
 } from '../lib/weeklyChallenge';
 import {
     AI_DIFFICULTY,
@@ -42,6 +45,7 @@ import {
  */
 const applyGameEndLogic = (newState) => {
     if (newState.phase === 'FINISHED' || newState.phase === 'REVEALING_CHESTS') {
+        if (newState.seasonalResult) return newState;
         let hasChests = false;
         newState.players.forEach(p => {
             p.hand.forEach(c => {
@@ -70,7 +74,19 @@ const applyGameEndLogic = (newState) => {
         const human = newState.players.find(player => player.id === 'human-1');
         const roundScores = human ? calculateFinalScores(newState) : [];
 
-        if (human && canAwardWeeklyChallenge({
+        const challenge = getGameChallenge(newState);
+        if (human && challenge && !newState.seasonalResult) {
+            const success = hasChallengeObjective({ challenge, hand: human.hand, columnsCleared: human.columnsCleared }) && hasBestRoundScore(roundScores, human.id);
+            newState.seasonalResult = { success, rewardXP: 0, preview: !!newState.isSeasonalPreview };
+            if (newState.isSeasonalPreview) {
+                newState.seasonalResult.rewardXP = success ? challenge.rewardXP : 0;
+                return newState;
+            }
+        } else if (newState.seasonalResult) return newState;
+        if (human && challenge && canAwardWeeklyChallenge({
+            challenge,
+            columnsCleared: human.columnsCleared,
+            seasonalChallengeWins: gameStore.seasonalChallengeWins,
             isWeeklyChallenge: newState.isWeeklyChallenge,
             hand: human.hand,
             roundScores,
@@ -79,14 +95,15 @@ const applyGameEndLogic = (newState) => {
             weeklyChallengeId: gameStore.weeklyChallengeId,
         })) {
             const awarded = gameStore.awardWeeklyChallenge(
-                CURRENT_WEEKLY_CHALLENGE.id,
-                CURRENT_WEEKLY_CHALLENGE.rewardXP,
+                challenge.id,
+                challenge.rewardXP,
             );
 
             if (awarded) {
-                console.log(`[CHALLENGE] ${CURRENT_WEEKLY_CHALLENGE.icon} ${CURRENT_WEEKLY_CHALLENGE.shortTitle} réussi ! +${CURRENT_WEEKLY_CHALLENGE.rewardXP} XP`);
-                newState.challengeJustWon = CURRENT_WEEKLY_CHALLENGE.id;
-                useVirtualGameStore.setState({ challengeJustWon: CURRENT_WEEKLY_CHALLENGE.id });
+                console.log(`[CHALLENGE] ${challenge.icon} ${challenge.shortTitle} réussi ! +${challenge.rewardXP} XP`);
+                newState.seasonalResult.rewardXP = challenge.rewardXP;
+                newState.challengeJustWon = challenge.id;
+                useVirtualGameStore.setState({ challengeJustWon: challenge.id });
             }
         }
     }
@@ -177,6 +194,22 @@ export const useVirtualGameStore = create(
             /**
              * Start a new local game (full game with multiple rounds)
              */
+            startSeasonalPreview: () => {
+                if (!useGameStore.getState().isAdminOpen || !useGameStore.getState().adminAuthToken) return false;
+                if (previewSnapshot) return false;
+                previewSnapshot = { ...get(), gameState: get().gameState ? structuredClone(get().gameState) : null };
+                setSeasonalPreview(true);
+                get().startAIGame({ name: useGameStore.getState().userProfile.name || 'Admin', avatarId: useGameStore.getState().userProfile.avatarId }, 1, AI_DIFFICULTY.BONUS, { isBonusMode: true, isWeeklyChallenge: true, isSeasonalPreview: true });
+                return true;
+            },
+            exitSeasonalPreview: () => {
+                if (!previewSnapshot) return;
+                const previous = previewSnapshot;
+                previewSnapshot = null;
+                set(previous);
+                setSeasonalPreview(false);
+                useGameStore.getState().setIsAdminOpen(true);
+            },
             startLocalGame: (players) => {
                 const gameState = initializeGame(players);
                 // Initialize total scores for each player
@@ -205,13 +238,15 @@ export const useVirtualGameStore = create(
              * Start a new AI game (human vs AI players)
              */
             startAIGame: (humanPlayer, aiCount = 1, difficulty = AI_DIFFICULTY.NORMAL, options = {}) => {
+                if (options.isSeasonalPreview && !previewSnapshot) return false;
+                if (options.isWeeklyChallenge && !options.isSeasonalPreview && !isWeeklyChallengeAvailable(useGameStore.getState())) return false;
                 const isBonusMode = options.isBonusMode || false;
                 // Create players array: human first, then AI players
                 const humanName = humanPlayer.name && humanPlayer.name.toLowerCase() !== 'joueur' ? humanPlayer.name.trim() : '';
 
-                if (!humanName && !options.isDailyChallenge) {
+                if (!humanName && !options.isDailyChallenge && !options.isSeasonalPreview) {
                     toast.error("Veuillez définir votre pseudo dans votre profil");
-                    return;
+                    return false;
                 }
 
                 const players = [
@@ -232,6 +267,10 @@ export const useVirtualGameStore = create(
 
                 const gameState = initializeGame(players, { isBonusMode, isHardcoreMode });
                 gameState.isWeeklyChallenge = options.isWeeklyChallenge === true;
+                if (gameState.isWeeklyChallenge) {
+                    gameState.seasonalChallengeId = options.isSeasonalPreview ? HARVEST.id : getActiveWeeklyChallenge().id;
+                    gameState.isSeasonalPreview = options.isSeasonalPreview === true;
+                }
 
                 // Reset AI memory for new game
                 resetOpponentMemory();
@@ -895,6 +934,7 @@ export const useVirtualGameStore = create(
              * Reset game (back to menu)
              */
             resetGame: () => {
+                if (get().gameState?.isSeasonalPreview) { get().exitSeasonalPreview(); return; }
                 set({
                     gameState: null,
                     gameMode: null,
@@ -922,7 +962,8 @@ export const useVirtualGameStore = create(
             endRound: () => {
                 const { gameState, totalScores } = get();
                 // Accept both FINISHED and REVEALING_CHESTS (bonus mode with chests already revealed)
-                if (!gameState || (gameState.phase !== 'FINISHED' && gameState.phase !== 'REVEALING_CHESTS')) return;
+                if (!gameState || gameState.roundCommitted || (gameState.phase !== 'FINISHED' && gameState.phase !== 'REVEALING_CHESTS')) return;
+                const challenge = getGameChallenge(gameState);
 
                 const roundScores = calculateFinalScores(gameState);
                 const newTotalScores = { ...totalScores };
@@ -938,16 +979,16 @@ export const useVirtualGameStore = create(
                 const humanPlayer = gameState.players.find(p => p.id === 'human-1');
 
                 let xpAwardedValue = 0;
-                if (humanPlayer && roundScores.find(s => s.playerId === humanPlayer.id)?.finalScore === winningScore) {
+                if (!gameState.isWeeklyChallenge && humanPlayer && roundScores.find(s => s.playerId === humanPlayer.id)?.finalScore === winningScore) {
                     // Human won or tied for win in this round!
                     try {
                         const isDaily = get().isDailyChallenge;
-                        const weeklyJustWon = gameState.challengeJustWon === CURRENT_WEEKLY_CHALLENGE.id;
+                        const weeklyJustWon = challenge && gameState.challengeJustWon === challenge.id;
                         const isDailyAvailable = useGameStore.getState().lastDailyWinDate !== new Date().toISOString().split('T')[0];
 
                         if (weeklyJustWon) {
                             // The seasonal reward was granted atomically during final scoring.
-                            xpAwardedValue = CURRENT_WEEKLY_CHALLENGE.rewardXP;
+                            xpAwardedValue = challenge.rewardXP;
                         } else if (isDaily && isDailyAvailable) {
                             // XP depends on difficulty for daily challenge
                             const difficulty = get().aiDifficulty;
@@ -970,7 +1011,7 @@ export const useVirtualGameStore = create(
                 // Check if anyone reached 100 points (game over condition)
                 const maxScore = Math.max(...Object.values(newTotalScores));
                 const isDaily = get().isDailyChallenge;
-                const isGameOver = maxScore >= 100 || isDaily || !!gameState.challengeJustWon;
+                const isGameOver = maxScore >= 100 || isDaily || gameState.isWeeklyChallenge;
 
                 let gameWinner = null;
                 if (isGameOver) {
@@ -982,12 +1023,13 @@ export const useVirtualGameStore = create(
                 }
 
                 set({
+                    gameState: { ...gameState, roundCommitted: true },
                     totalScores: newTotalScores,
                     isGameOver,
                     gameWinner,
                 });
 
-                return { isGameOver, newTotalScores, gameWinner, xpAwarded: xpAwardedValue };
+                return { isGameOver, newTotalScores, gameWinner, xpAwarded: gameState.seasonalResult?.rewardXP ?? xpAwardedValue };
             },
 
             /**
@@ -1137,7 +1179,7 @@ export const useVirtualGameStore = create(
              */
             startNextRound: () => {
                 const { gameState, roundNumber, isGameOver } = get();
-                if (!gameState || isGameOver) return;
+                if (!gameState || isGameOver || gameState.isWeeklyChallenge) return;
 
                 const players = gameState.players.map(p => ({
                     id: p.id,
@@ -1150,6 +1192,7 @@ export const useVirtualGameStore = create(
                     isHardcoreMode: get().isHardcoreMode
                 });
                 newGameState.isWeeklyChallenge = get().isWeeklyChallenge;
+                newGameState.seasonalChallengeId = gameState.seasonalChallengeId;
                 set({
                     gameState: newGameState,
                     roundNumber: roundNumber + 1,
@@ -1197,7 +1240,9 @@ export const useVirtualGameStore = create(
         {
             name: 'skyjo-virtual-storage',
             version: 1,
-            partialize: (state) => ({
+            partialize: (current) => {
+                const state = previewSnapshot || current;
+                return ({
                 gameState: state.gameState,
                 gameMode: state.gameMode,
                 totalScores: state.totalScores,
@@ -1211,7 +1256,7 @@ export const useVirtualGameStore = create(
                 isPaused: state.isPaused,
                 isDailyChallenge: state.isDailyChallenge,
                 isWeeklyChallenge: state.isWeeklyChallenge,
-            }),
+            }); },
         }
     )
 );
