@@ -6,6 +6,8 @@ export function AboutSection({ onAdminUnlock, appVersion = 'v2.1.0' }) {
     const [showAdminInput, setShowAdminInput] = useState(false);
     const [showPrivacy, setShowPrivacy] = useState(false);
     const [adminCode, setAdminCode] = useState('');
+    const [adminError, setAdminError] = useState('');
+    const [adminPending, setAdminPending] = useState(false);
     const clickTimeout = useRef(null);
 
     // In production, this should be validated via API call to avoid exposing hash in frontend bundle
@@ -25,10 +27,28 @@ export function AboutSection({ onAdminUnlock, appVersion = 'v2.1.0' }) {
         }
     };
 
-    const handleAdminSubmit = () => {
-        // We pass the code to parent to handle "Unlock" which typically means showing the dashboard
-        // The Dashboard itself will use this code to authenticate API calls
-        onAdminUnlock(adminCode);
+    const handleAdminSubmit = async () => {
+        if (adminPending || !adminCode.trim()) return;
+        setAdminPending(true);
+        setAdminError('');
+        try {
+            const response = await fetch('/api/feedback/admin/verify', {
+                headers: { 'x-admin-auth': adminCode.trim() },
+                cache: 'no-store',
+            });
+            if (!response.ok) {
+                setAdminError(response.status === 401 || response.status === 403
+                    ? 'Mot de passe refusé par le serveur. En production, utilisez le secret configuré sur Railway.'
+                    : 'Vérification indisponible. Réessayez dans un instant.');
+                return;
+            }
+            onAdminUnlock(adminCode.trim());
+            setAdminCode('');
+        } catch {
+            setAdminError('Serveur injoignable. Vérifiez votre connexion.');
+        } finally {
+            setAdminPending(false);
+        }
     };
 
     return (
@@ -180,10 +200,12 @@ export function AboutSection({ onAdminUnlock, appVersion = 'v2.1.0' }) {
 
                     <button
                         onClick={handleAdminSubmit}
+                        disabled={adminPending || !adminCode.trim()}
                         className="w-full mt-4 bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-95"
                     >
-                        Connexion
+                        {adminPending ? 'Vérification…' : 'Connexion'}
                     </button>
+                    {adminError && <p role="alert" className="mt-3 text-sm text-amber-200">{adminError}</p>}
                 </div>
             )}
         </div>

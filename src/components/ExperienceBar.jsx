@@ -5,7 +5,7 @@ import { Zap, Trophy, Lock, Check, X, Crown, Star } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { cn } from '../lib/utils';
 import { getMasterRewardsList, getPrestigeRewardsList, getRewardsList } from '../lib/rewards';
-import { getMasterProgress } from '../lib/masterCareer';
+import { getMasterProgress, getCareerIdentity } from '../lib/masterCareer';
 
 const CAREER_REWARDS = getRewardsList();
 const MASTER_REWARDS = getMasterRewardsList();
@@ -92,7 +92,7 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                     <div className="flex items-center justify-between">
                         <button onClick={() => openCareerPlan(level >= 100 ? 'master' : 'career')} className="text-left">
                             <p className="text-3xl font-black uppercase leading-none tracking-tighter text-white">
-                                {level >= 100 ? 'MAÎTRE' : 'NIVEAU'} <span className="text-4xl text-amber-500">{level}</span>
+                                {getCareerIdentity(level).label}
                             </p>
                         </button>
                         <button onClick={() => openCareerPlan(level >= 100 ? 'master' : 'career')} className="flex items-center gap-2 rounded-2xl border border-white/10 bg-slate-900 px-3 py-2 shadow-xl">

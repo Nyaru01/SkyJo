@@ -24,5 +24,8 @@ test('affiche le niveau global dans le grade Maître', () => {
     assert.equal(getCareerIdentity(100).label, 'Maître 100');
     assert.equal(getCareerIdentity(162).label, 'Maître 162');
     assert.equal(getCareerIdentity(200).label, 'Maître 200');
-    assert.equal(getCareerIdentity(201).label, 'Maître 201');
+    assert.equal(getCareerIdentity(201).label, 'Prestige 1 · 1');
+    assert.equal(getCareerIdentity(300).label, 'Prestige 1 · 100');
+    assert.equal(getCareerIdentity(301).label, 'Prestige 2 · 1');
+    assert.equal(getCareerIdentity(401).label, 'Prestige 3 · 1');
 });

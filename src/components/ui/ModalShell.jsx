@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion as Motion, useReducedMotion } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -27,8 +27,11 @@ export default function ModalShell({
     zIndex = 'z-[9999]',
     className,
     closeOnBackdrop = true,
+    stableBackdrop = false,
 }) {
     const prefersReducedMotion = useReducedMotion();
+    const closeRef = useRef(onClose);
+    closeRef.current = onClose;
 
     useEffect(() => {
         if (!isOpen) return undefined;
@@ -37,7 +40,7 @@ export default function ModalShell({
         document.body.style.overflow = 'hidden';
 
         const handleEscape = (event) => {
-            if (event.key === 'Escape') onClose?.();
+            if (event.key === 'Escape') closeRef.current?.();
         };
 
         document.addEventListener('keydown', handleEscape);
@@ -45,20 +48,23 @@ export default function ModalShell({
             document.body.style.overflow = previousOverflow;
             document.removeEventListener('keydown', handleEscape);
         };
-    }, [isOpen, onClose]);
+    }, [isOpen]);
 
     return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <Motion.div
-                    initial={{ opacity: 0 }}
+                    inherit={false}
+                    initial={{ opacity: stableBackdrop ? 1 : 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: prefersReducedMotion ? 0 : 0.18 }}
                     className={cn('modal-backdrop', zIndex)}
+                    style={stableBackdrop ? { background: '#080f1e', backdropFilter: 'none', WebkitBackdropFilter: 'none' } : undefined}
                     onClick={closeOnBackdrop ? onClose : undefined}
                 >
                     <Motion.div
+                        inherit={false}
                         initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 16 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: 10 }}

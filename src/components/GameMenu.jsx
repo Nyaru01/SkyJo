@@ -208,6 +208,7 @@ export default function GameMenu({
                         playClick();
                         const started = startAIGame({ name: userProfile.name, avatarId: userProfile.avatarId }, 1, AI_DIFFICULTY.BONUS, { isBonusMode: true, isWeeklyChallenge: true });
                         if (started !== false) setScreen('game');
+                        return started;
                     }}
                 />
 

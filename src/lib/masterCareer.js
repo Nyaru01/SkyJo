@@ -32,7 +32,9 @@ export const getCareerIdentity = (globalLevel = 1) => {
     if (!progress.isUnlocked) return { label: `Niveau ${safeLevel}`, ...progress };
 
     return {
-        label: `Maître ${safeLevel}`,
+        label: progress.cycle >= 2
+            ? `Prestige ${progress.cycle - 1} · ${progress.masterLevel}`
+            : `Maître ${safeLevel}`,
         ...progress
     };
 };

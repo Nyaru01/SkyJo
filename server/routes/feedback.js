@@ -6,6 +6,10 @@ import pool from '../db.js';
 
 const router = express.Router();
 
+router.get('/admin/verify', adminAuth, (req, res) => {
+    res.set('Cache-Control', 'no-store').json({ authenticated: true });
+});
+
 // ===== PUBLIC ROUTES =====
 
 // Submit feedback
