@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion as Motion } from 'framer-motion';
-import { Plus, X, User, Sparkles, Gamepad2, RefreshCw, CheckCircle, Edit2, ArrowRight, HelpCircle, Trophy, Target, Play, Settings, Download, Zap } from 'lucide-react';
+import { Plus, X, User, Sparkles, Gamepad2, RefreshCw, CheckCircle, Edit2, ArrowRight, HelpCircle, Play, Settings, Download, Zap } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 // Card imports removed as they are no longer used
@@ -32,27 +32,11 @@ const PLAYER_COLORS = [
     { bg: 'bg-pink-500', text: 'text-pink-700', light: 'bg-pink-100' },
 ];
 
-const useSyncedAnimation = () => {
-    const ref = useRef(null);
-    useEffect(() => {
-        let frameId;
-        const animate = () => {
-            const time = Date.now() / 1000;
-            const angle = (time * 60) % 360; // 60 deg per second
-            if (ref.current) {
-                ref.current.style.setProperty('--rotation', `${angle}deg`);
-            }
-            frameId = requestAnimationFrame(animate);
-        };
-        frameId = requestAnimationFrame(animate);
-        return () => cancelAnimationFrame(frameId);
-    }, []);
-    return ref;
-};
 
 export default function GameSetup({
     onNavigate,
     onOpenTutorial,
+    showGuide = false,
     allowAutoNews = true,
     onWhatsNewVisibilityChange
 }) {
@@ -90,19 +74,6 @@ export default function GameSetup({
     ), [onWhatsNewVisibilityChange]);
 
     // Unified Skyjo Score Container animation refs
-    const scoreContainerRef = useSyncedAnimation();
-
-    const [particleStyles] = useState(() => (
-        [...Array(12)].map((_, i) => ({
-            width: `${Math.random() * 2 + 1}px`,
-            height: `${Math.random() * 2 + 1}px`,
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
-            animationDelay: `${i * -1.2}s`,
-            animationDuration: `${8 + Math.random() * 8}s`
-        }))
-    ));
-
     const addPlayer = () => {
         if (players.length < 8) {
             // Cycle through available avatars
@@ -152,85 +123,13 @@ export default function GameSetup({
         <div className="max-w-md mx-auto p-2 space-y-2 animate-in fade-in zoom-in duration-300 h-[calc(100vh-5rem)] flex flex-col justify-center">
             {/* Header Premium */}
             {/* Unified Skyjo Score Container - Premium Redesign */}
-            <div ref={scoreContainerRef} className="w-full relative group">
-                {/* External Glowing Halo (Aura) - Reduced weight */}
-                <div className="absolute inset-[-2px] z-0 pointer-events-none rounded-[30px] overflow-hidden">
-                    <div
-                        className="absolute inset-[-20%] opacity-80 blur-lg"
-                        style={{
-                            background: `conic-gradient(from var(--rotation), transparent 35%, #0ea5e9 50%, transparent 65%)`,
-                        }}
-                    />
-                </div>
+            <div className="w-full relative group">
+                {/* Main panel shares the virtual mode palette and fine border. */}
+                <div className="relative z-10 w-full overflow-hidden rounded-[24px] border border-cyan-200/15 shadow-[0_12px_32px_-16px_rgba(14,165,233,0.18)] bg-[#080d24] flex flex-col items-stretch">
 
-                {/* Main Glass Container with Clipping */}
-                <div className="relative z-10 w-full overflow-hidden rounded-[24px] border border-white/10 shadow-[0_20px_60px_-15px_rgba(14,165,233,0.3)] bg-[#0c0c1e] backdrop-blur-2xl transition-all hover:shadow-[0_30px_70px_-15px_rgba(14,165,233,0.4)] flex flex-col items-stretch">
-
-                    {/* Header Section (Skyjoreel Design) */}
-                    <div className="relative overflow-hidden border-b border-white/5 bg-[#0c0c1e] z-20 aspect-[21/7] sm:aspect-auto sm:h-40 group/header">
-
-                        {/* FOND VIVANT MULTI-COUCHES (from Skyjoreel) */}
-                        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                            {/* Orbes de plasma en mouvement */}
-                            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[80%] bg-[#1c2739] blur-[80px] rounded-full animate-[pulse_10s_ease-in-out_infinite] opacity-40" />
-                            <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[80%] bg-[#242464] blur-[80px] rounded-full animate-[pulse_8s_ease-in-out_infinite_reverse] opacity-40" />
-
-                            {/* Texture grainée dynamique */}
-                            <div className="absolute inset-0 opacity-[0.15] bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')] mix-blend-overlay" />
-
-                            {/* Particules de lumière (Poussière d'étoiles) */}
-                            {particleStyles.map((style, i) => (
-                                <div
-                                    key={i}
-                                    className="absolute rounded-full bg-blue-200/40 blur-[1px] animate-[float_15s_linear_infinite]"
-                                    style={style}
-                                />
-                            ))}
-                        </div>
-
-                        {/* TITRE CENTRAL */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none z-20 scale-90 sm:scale-100">
-                            <div className="flex flex-col items-center animate-[breath_8s_ease-in-out_infinite]">
-                                <h1 className="relative text-6xl md:text-7xl font-[1000] tracking-tighter leading-tight text-white italic">
-                                    <span className="relative z-10 block drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]">SKYJO</span>
-
-                                    {/* Reflet Shimmer balayant */}
-                                    <span className="absolute inset-0 z-20 bg-gradient-to-r from-transparent via-white/30 to-transparent bg-[length:200%_100%] animate-[shimmer_20s_infinite] bg-clip-text text-transparent italic">
-                                        SKYJO
-                                    </span>
-
-                                    {/* Lueur pulsée en fond */}
-                                    <div className="absolute -inset-4 blur-[40px] bg-blue-600/20 opacity-40 animate-pulse" />
-                                </h1>
-
-                                {/* Sous-titre */}
-                                <div className="relative flex items-center gap-4 -mt-2">
-                                    <div className="h-[1px] w-12 bg-gradient-to-l from-blue-400/40 to-transparent shadow-[0_0_8px_rgba(96,165,250,0.5)]" />
-                                    <h2 className="text-[10px] md:text-sm font-medium text-blue-100/40 uppercase transition-all duration-500 whitespace-nowrap">
-                                        <span className="tracking-[1em] text-white">Edition</span>
-                                        <span className="text-white font-black tracking-[0.5em] drop-shadow-[0_0_10px_rgba(255,255,255,0.3)] -mr-[0.5em]">Réelle</span>
-                                    </h2>
-                                    <div className="h-[1px] w-12 bg-gradient-to-r from-blue-400/40 to-transparent shadow-[0_0_8px_rgba(96,165,250,0.5)]" />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* ACCENTS DÉCORATIFS */}
-                        <div className="absolute top-4 left-4 flex gap-2 opacity-30">
-                            <div className="w-0.5 h-6 bg-gradient-to-b from-blue-400 to-transparent rounded-full animate-pulse" />
-                            <Zap size={10} className="text-blue-400 mt-0.5 animate-bounce" />
-                        </div>
-
-                        <div className="absolute top-4 right-4 flex items-center gap-3 opacity-20 group-hover/header:opacity-60 transition-opacity duration-500">
-                            <Trophy size={14} className="text-white" />
-                            <Target size={14} className="text-white" />
-                        </div>
-
-                        <div className="absolute bottom-4 right-6 flex items-center gap-2 opacity-20">
-                            <Sparkles size={10} className="text-blue-300 animate-[spin_12s_linear_infinite]" />
-                            <span className="text-[6px] font-mono text-white tracking-[0.4em] uppercase">ACTIVE_CORE</span>
-                        </div>
-                    </div>
+                    <h1 className="m-0 border-b border-cyan-200/10">
+                        <img src="/skyjo-real-mode-header.svg" alt="Skyjo édition réelle" className="block w-full h-auto" />
+                    </h1>
 
                     {/* Players Section */}
                     <div className="relative p-3 space-y-2 flex-1 bg-gradient-to-b from-slate-900/50 to-transparent">
@@ -342,14 +241,16 @@ export default function GameSetup({
 
             {/* Footer Actions */}
             <div className="grid grid-cols-2 gap-2 mt-auto pt-2">
-                <Button
-                    variant="premium"
-                    onClick={() => onOpenTutorial?.()}
-                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold"
-                >
-                    <HelpCircle className="w-4 h-4" />
-                    GUIDE
-                </Button>
+                {showGuide && (
+                    <Button
+                        variant="premium"
+                        onClick={() => onOpenTutorial?.()}
+                        className="col-span-2 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold"
+                    >
+                        <HelpCircle className="w-4 h-4" />
+                        GUIDE
+                    </Button>
+                )}
 
                 <Button
                     variant="premium"
@@ -366,44 +267,42 @@ export default function GameSetup({
                     NOUVEAUTÉS
                 </Button>
 
-                <div className="col-span-2 flex gap-3">
-                    <Motion.button
-                        onClick={checkForUpdates}
-                        disabled={isChecking}
-                        className={cn(
-                            "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all text-xs font-bold border relative overflow-hidden",
-                            checkResult === 'up-to-date'
-                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                : checkResult === 'update-available'
-                                    ? "bg-amber-500/10 text-amber-400 border-amber-500/30 animate-glow-pulse"
-                                    : "bg-slate-800/40 hover:bg-slate-700/50 text-slate-400 hover:text-white border-white/5 hover:border-white/10"
-                        )}
-                        whileTap={{ scale: 0.95 }}
-                    >
-                        {isChecking ? (
-                            <RefreshCw className="w-4 h-4 animate-spin" />
-                        ) : checkResult === 'up-to-date' ? (
-                            <>
-                                <CheckCircle className="w-4 h-4" />
-                                v{__APP_VERSION__} ✓
-                            </>
-                        ) : checkResult === 'update-available' ? (
-                            <>
-                                <Zap className="w-4 h-4 animate-pulse" />
-                                NOUVELLE VERSION !
-                            </>
-                        ) : (
-                            <>
-                                <RefreshCw className="w-4 h-4" />
-                                MISE À JOUR
-                            </>
-                        )}
-                    </Motion.button>
+                <Motion.button
+                    onClick={checkForUpdates}
+                    disabled={isChecking}
+                    className={cn(
+                        "flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all text-xs font-bold border relative overflow-hidden",
+                        checkResult === 'up-to-date'
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                            : checkResult === 'update-available'
+                                ? "bg-amber-500/10 text-amber-400 border-amber-500/30 animate-glow-pulse"
+                                : "bg-slate-800/40 hover:bg-slate-700/50 text-slate-400 hover:text-white border-white/5 hover:border-white/10"
+                    )}
+                    whileTap={{ scale: 0.95 }}
+                >
+                    {isChecking ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : checkResult === 'up-to-date' ? (
+                        <>
+                            <CheckCircle className="w-4 h-4" />
+                            v{__APP_VERSION__} ✓
+                        </>
+                    ) : checkResult === 'update-available' ? (
+                        <>
+                            <Zap className="w-4 h-4 animate-pulse" />
+                            NOUVELLE VERSION !
+                        </>
+                    ) : (
+                        <>
+                            <RefreshCw className="w-4 h-4" />
+                            MISE À JOUR
+                        </>
+                    )}
+                </Motion.button>
 
-                    <InstallPWA
-                        className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-[#9850E1]/10 hover:bg-[#9850E1]/20 border border-[#9850E1]/30 hover:border-[#9850E1]/50 rounded-xl text-[#9850E1] hover:text-[#d09dfc] transition-all text-xs font-bold uppercase tracking-wider"
-                    />
-                </div>
+                <InstallPWA
+                    className="col-span-2 flex items-center justify-center gap-2 py-3 px-4 bg-[#9850E1]/10 hover:bg-[#9850E1]/20 border border-[#9850E1]/30 hover:border-[#9850E1]/50 rounded-xl text-[#9850E1] hover:text-[#d09dfc] transition-all text-xs font-bold uppercase tracking-wider"
+                />
             </div>
 
             {/* Modals */}

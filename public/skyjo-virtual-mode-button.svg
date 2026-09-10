@@ -1,0 +1,736 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="960" height="540" viewBox="0 0 960 540"
+     preserveAspectRatio="xMidYMid meet"
+     role="button" tabindex="0"
+     aria-labelledby="title desc"
+     data-action="launch-mode"
+     style="cursor:pointer;touch-action:manipulation;user-select:none">
+  <title id="title">Skyjo Virtuel — bouton de lancement animé</title>
+  <desc id="desc">Bouton sombre premium avec mini-cartes Skyjo animées de -2 à 12 et flèche de lancement.</desc>
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#060918"/>
+      <stop offset=".45" stop-color="#0A1030"/>
+      <stop offset="1" stop-color="#080B22"/>
+    </linearGradient>
+
+    <radialGradient id="glowCyan" cx="72%" cy="46%" r="48%">
+      <stop offset="0" stop-color="#20DDF7" stop-opacity=".18"/>
+      <stop offset=".55" stop-color="#1597FF" stop-opacity=".06"/>
+      <stop offset="1" stop-color="#1597FF" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="glowPurple" cx="28%" cy="15%" r="55%">
+      <stop offset="0" stop-color="#6D66FF" stop-opacity=".15"/>
+      <stop offset="1" stop-color="#6D66FF" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="titleAura" cx="50%" cy="50%" r="55%">
+      <stop offset="0" stop-color="#58E9FF" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#58E9FF" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="ringGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#51EEFF"/>
+      <stop offset=".45" stop-color="#2977FF"/>
+      <stop offset="1" stop-color="#715CFF"/>
+    </linearGradient>
+
+    <linearGradient id="skyjoGradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset=".28" stop-color="#DFFAFF"/>
+      <stop offset=".50" stop-color="#7BEAFF"/>
+      <stop offset=".72" stop-color="#D9F7FF"/>
+      <stop offset="1" stop-color="#FFFFFF"/>
+      <animate attributeName="x1" values="-1;1" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="0;2" dur="4s" repeatCount="indefinite"/>
+    </linearGradient>
+
+    <linearGradient id="virtuelGradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4FE4F8"/>
+      <stop offset=".50" stop-color="#B8FAFF"/>
+      <stop offset="1" stop-color="#6D8BFF"/>
+      <animate attributeName="x1" values="0;1;0" dur="5s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="1;2;1" dur="5s" repeatCount="indefinite"/>
+    </linearGradient>
+
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".20"/>
+      <stop offset=".30" stop-color="#FFFFFF" stop-opacity=".05"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+
+    <filter id="titleGlow" x="-30%" y="-70%" width="160%" height="240%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="
+        0.35 0 0 0 0.10
+        0 0.85 0 0 0.70
+        0 0 1 0 1
+        0 0 0 .75 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="cardGlow" x="-70%" y="-70%" width="240%" height="240%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="arrowGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="9" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+
+    <!-- Mini-card visual language reproduced from SkyjoCard.jsx -->
+    <pattern id="mosaicCyan" patternUnits="userSpaceOnUse" width="40" height="40">
+      <rect width="40" height="40" fill="#06b6d4"/>
+      <polygon points="0,0 20,5 15,15 0,12" fill="#0891b2" stroke="#fff" stroke-opacity=".3" stroke-width=".5"/>
+      <polygon points="20,5 40,0 40,15 25,20 15,15" fill="#22d3ee" stroke="#fff" stroke-opacity=".3" stroke-width=".5"/>
+      <polygon points="0,12 15,15 8,40 0,40" fill="#22d3ee" stroke="#fff" stroke-opacity=".3" stroke-width=".5"/>
+      <polygon points="15,15 25,20 20,40 8,40" fill="#67e8f9" stroke="#fff" stroke-opacity=".3" stroke-width=".5"/>
+      <polygon points="25,20 40,15 40,35 32,40 20,40" fill="#06b6d4" stroke="#fff" stroke-opacity=".3" stroke-width=".5"/>
+      <polygon points="40,35 40,40 32,40" fill="#0891b2" stroke="#fff" stroke-opacity=".3" stroke-width=".5"/>
+      <circle cx="10" cy="8" r="1.5" fill="#67e8f9" opacity=".3"/><circle cx="30" cy="25" r="2" fill="#0891b2" opacity=".2"/>
+    </pattern>
+    <pattern id="mosaicBlue" patternUnits="userSpaceOnUse" width="40" height="40">
+      <rect width="40" height="40" fill="#3b82f6"/>
+      <polygon points="0,0 20,5 15,15 0,12" fill="#2563eb" stroke="#fff" stroke-opacity=".3" stroke-width=".5"/>
+      <polygon points="20,5 40,0 40,15 25,20 15,15" fill="#60a5fa" stroke="#fff" stroke-opacity=".3" stroke-width=".5"/>
+      <polygon points="0,12 15,15 8,40 0,40" fill="#60a5fa" stroke="#fff" stroke-opacity=".3" stroke-width=".5"/>
+      <polygon points="15,15 25,20 20,40 8,40" fill="#93c5fd" stroke="#fff" stroke-opacity=".3" stroke-width=".5"/>
+      <polygon points="25,20 40,15 40,35 32,40 20,40" fill="#3b82f6" stroke="#fff" stroke-opacity=".3" stroke-width=".5"/>
+      <polygon points="40,35 40,40 32,40" fill="#2563eb" stroke="#fff" stroke-opacity=".3" stroke-width=".5"/>
+      <circle cx="10" cy="8" r="1.5" fill="#93c5fd" opacity=".3"/><circle cx="30" cy="25" r="2" fill="#2563eb" opacity=".2"/>
+    </pattern>
+    <pattern id="mosaicGreen" patternUnits="userSpaceOnUse" width="40" height="40">
+      <rect width="40" height="40" fill="#10b981"/>
+      <polygon points="0,0 20,5 15,15 0,12" fill="#059669" stroke="#fff" stroke-opacity=".25" stroke-width=".5"/>
+      <polygon points="20,5 40,0 40,15 25,20 15,15" fill="#34d399" stroke="#fff" stroke-opacity=".25" stroke-width=".5"/>
+      <polygon points="0,12 15,15 8,40 0,40" fill="#34d399" stroke="#fff" stroke-opacity=".25" stroke-width=".5"/>
+      <polygon points="15,15 25,20 20,40 8,40" fill="#6ee7b7" stroke="#fff" stroke-opacity=".25" stroke-width=".5"/>
+      <polygon points="25,20 40,15 40,35 32,40 20,40" fill="#10b981" stroke="#fff" stroke-opacity=".25" stroke-width=".5"/>
+      <polygon points="40,35 40,40 32,40" fill="#059669" stroke="#fff" stroke-opacity=".25" stroke-width=".5"/>
+      <circle cx="10" cy="8" r="1.5" fill="#6ee7b7" opacity=".3"/><circle cx="30" cy="25" r="2" fill="#059669" opacity=".2"/>
+    </pattern>
+    <pattern id="mosaicYellow" patternUnits="userSpaceOnUse" width="40" height="40">
+      <rect width="40" height="40" fill="#eab308"/>
+      <polygon points="0,0 20,5 15,15 0,12" fill="#ca8a04" stroke="#fff" stroke-opacity=".2" stroke-width=".5"/>
+      <polygon points="20,5 40,0 40,15 25,20 15,15" fill="#facc15" stroke="#fff" stroke-opacity=".2" stroke-width=".5"/>
+      <polygon points="0,12 15,15 8,40 0,40" fill="#facc15" stroke="#fff" stroke-opacity=".2" stroke-width=".5"/>
+      <polygon points="15,15 25,20 20,40 8,40" fill="#fde047" stroke="#fff" stroke-opacity=".2" stroke-width=".5"/>
+      <polygon points="25,20 40,15 40,35 32,40 20,40" fill="#eab308" stroke="#fff" stroke-opacity=".2" stroke-width=".5"/>
+      <polygon points="40,35 40,40 32,40" fill="#ca8a04" stroke="#fff" stroke-opacity=".2" stroke-width=".5"/>
+      <circle cx="10" cy="8" r="1.5" fill="#fde047" opacity=".3"/><circle cx="30" cy="25" r="2" fill="#ca8a04" opacity=".2"/>
+    </pattern>
+    <pattern id="mosaicRed" patternUnits="userSpaceOnUse" width="40" height="40">
+      <rect width="40" height="40" fill="#ef4444"/>
+      <polygon points="0,0 20,5 15,15 0,12" fill="#dc2626" stroke="#fff" stroke-opacity=".25" stroke-width=".5"/>
+      <polygon points="20,5 40,0 40,15 25,20 15,15" fill="#f87171" stroke="#fff" stroke-opacity=".25" stroke-width=".5"/>
+      <polygon points="0,12 15,15 8,40 0,40" fill="#f87171" stroke="#fff" stroke-opacity=".25" stroke-width=".5"/>
+      <polygon points="15,15 25,20 20,40 8,40" fill="#fca5a5" stroke="#fff" stroke-opacity=".25" stroke-width=".5"/>
+      <polygon points="25,20 40,15 40,35 32,40 20,40" fill="#ef4444" stroke="#fff" stroke-opacity=".25" stroke-width=".5"/>
+      <polygon points="40,35 40,40 32,40" fill="#dc2626" stroke="#fff" stroke-opacity=".25" stroke-width=".5"/>
+      <circle cx="10" cy="8" r="1.5" fill="#fca5a5" opacity=".3"/><circle cx="30" cy="25" r="2" fill="#dc2626" opacity=".2"/>
+    </pattern>
+
+    <linearGradient id="cardDepth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".25"/>
+      <stop offset=".45" stop-color="#fff" stop-opacity=".05"/>
+      <stop offset=".55" stop-color="#000" stop-opacity=".05"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".20"/>
+    </linearGradient>
+    <linearGradient id="cardGlossSkyjo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".30"/>
+      <stop offset=".30" stop-color="#fff" stop-opacity=".05"/>
+      <stop offset=".50" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="paperGrain" patternUnits="userSpaceOnUse" width="9" height="9">
+      <circle cx="1.5" cy="2" r=".55" fill="#fff" opacity=".16"/>
+      <circle cx="6.5" cy="3.5" r=".45" fill="#000" opacity=".10"/>
+      <circle cx="4" cy="7.2" r=".5" fill="#fff" opacity=".10"/>
+      <circle cx="8" cy="8" r=".35" fill="#000" opacity=".08"/>
+    </pattern>
+    <filter id="numberShadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity=".52"/>
+    </filter>
+
+
+    <linearGradient id="edgeLight" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".95"/>
+      <stop offset=".18" stop-color="#fff" stop-opacity=".28"/>
+      <stop offset=".55" stop-color="#fff" stop-opacity=".05"/>
+      <stop offset="1" stop-color="#fff" stop-opacity=".46"/>
+    </linearGradient>
+    <linearGradient id="cardSheen" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".44" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".50" stop-color="#fff" stop-opacity=".46"/>
+      <stop offset=".56" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="softCardShadow" x="-70%" y="-60%" width="240%" height="240%">
+      <feDropShadow dx="0" dy="7" stdDeviation="6" flood-color="#000" flood-opacity=".46"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#77e7ff" flood-opacity=".10"/>
+    </filter>
+    <filter id="microGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="2.8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <clipPath id="cardClip">
+      <rect x="12" y="12" width="936" height="516" rx="34"/>
+    </clipPath>
+  </defs>
+
+  <style>
+    :root {
+      --blue:#55CFFF;
+      --green:#44D98A;
+      --yellow:#FFD84A;
+      --red:#FF5B63;
+    }
+
+    #frame { transition: stroke-opacity .22s ease, filter .22s ease; }
+    #content {
+      transform-origin: 480px 270px;
+      transition: transform .22s cubic-bezier(.2,.8,.2,1);
+    }
+    svg:hover #content { transform: translateY(-3px); }
+    svg:hover #frame {
+      stroke-opacity:.68;
+      filter:drop-shadow(0 0 15px rgba(76,183,255,.25));
+    }
+    svg:active #content { transform:scale(.992); }
+
+    #brand {
+      transform-box:fill-box;
+      transform-origin:center;
+      animation:brandFloat 4.4s ease-in-out infinite;
+    }
+    #brandAura { animation:auraBreath 3.6s ease-in-out infinite; }
+    #skyjoGlow { animation:skyjoBreath 3.2s ease-in-out infinite; }
+    #skyjoOutline { animation:skyjoOutline 4.8s ease-in-out infinite; }
+    #brandSpark { animation:brandSpark 5.4s ease-in-out infinite; }
+    #virtuelText {
+      transform-box:fill-box;
+      transform-origin:center;
+      animation:virtuelLife 3.8s ease-in-out infinite;
+    }
+    #titleLine { animation:titleLine 3s ease-in-out infinite; }
+    #liveDot { animation:liveDot 1.7s ease-in-out infinite; }
+
+    .miniCard {
+      transform-box:fill-box;
+      transform-origin:center;
+      animation:cardDrift 4.8s ease-in-out infinite;
+      transition:filter .2s ease;
+    }
+    .miniCard.is-changing { animation:cardFlip .34s cubic-bezier(.2,.8,.2,1); }
+    .miniCard:hover { filter:url(#cardGlow); }
+
+    .cardBody {
+      stroke:#fff;
+      stroke-width:2.7;
+      transition:fill .16s ease;
+      filter:url(#softCardShadow);
+    }
+    .cardEdge {
+      fill:none;
+      stroke:url(#edgeLight);
+      stroke-width:1.15;
+      opacity:.72;
+      pointer-events:none;
+    }
+    .cardSheen {
+      fill:url(#cardSheen);
+      opacity:0;
+      pointer-events:none;
+      transform-box:fill-box;
+      transform-origin:center;
+      animation:cardSheenSweep 8.6s ease-in-out infinite;
+    }
+    .cardPip {
+      fill:#fff;
+      opacity:.55;
+      filter:url(#microGlow);
+      animation:pipPulse 3.6s ease-in-out infinite;
+    }
+    .cardHalo {
+      opacity:.24;
+      transition:fill .16s ease, opacity .16s ease;
+      filter:blur(10px);
+    }
+    .cardDepth,.cardGloss,.cardNoise,.cardInner { pointer-events:none; }
+    .cardNoise { opacity:.42; }
+    .cardInner { fill:none;stroke:#fff;stroke-opacity:.28;stroke-width:1; }
+    .num,.numEmboss,.cornerNum {
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      text-anchor:middle;
+      dominant-baseline:middle;
+      pointer-events:none;
+    }
+    .num {
+      font-weight:950;
+      fill:#fff;
+      paint-order:stroke;
+      stroke:#000;stroke-opacity:.12;
+      stroke-width:1px;
+      filter:url(#numberShadow);
+      transition:opacity .10s ease;
+    }
+    .numEmboss {
+      font-weight:950;
+      fill:#fff;fill-opacity:.62;
+      opacity:.48;
+    }
+    .cornerDisc {
+      fill:#fff;fill-opacity:.92;
+      stroke:#fff;stroke-opacity:.30;
+      stroke-width:.8;
+      filter:drop-shadow(0 1px 2px rgba(0,0,0,.32));
+    }
+    .cornerNum {
+      font-weight:900;
+      font-size:9px;
+      transition:fill .12s ease;
+    }
+
+    #arrowCore {
+      transform-box:fill-box;
+      transform-origin:center;
+      animation:arrowFloat 1.8s ease-in-out infinite;
+    }
+    #ring1 {
+      transform-box:fill-box;
+      transform-origin:center;
+      animation:ringPulse 2.2s ease-out infinite;
+    }
+    #ring2 {
+      transform-box:fill-box;
+      transform-origin:center;
+      animation:ringPulse 2.2s .7s ease-out infinite;
+    }
+    #scanArc { transform-origin:816px 271px; animation:scan 4.2s linear infinite; }
+    .gridLine { animation:gridBreath 4s ease-in-out infinite; }
+    .floatCard {
+      animation:floatCard 4.8s ease-in-out infinite;
+      transform-box:fill-box;
+      transform-origin:center;
+    }
+    .floatCard:nth-of-type(2){animation-delay:-1.2s}
+    .floatCard:nth-of-type(3){animation-delay:-2.4s}
+    .floatCard:nth-of-type(4){animation-delay:-3.1s}
+    .spark { animation:twinkle 2.8s ease-in-out infinite; }
+    .spark:nth-child(2n){animation-delay:-.8s}
+    .spark:nth-child(3n){animation-delay:-1.7s}
+
+    .launching #arrowCore { animation:launchArrow .48s cubic-bezier(.18,.82,.32,1); }
+    .launching #ring1,.launching #ring2 { animation:launchRing .55s ease-out; }
+    .launching #content { animation:cardKick .55s ease-out; }
+    .launching #brand { animation:brandLaunch .55s ease-out; }
+
+    @keyframes brandFloat {
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-5px)}
+    }
+    @keyframes auraBreath {
+      0%,100%{opacity:.42;transform:scale(.94)}
+      50%{opacity:.85;transform:scale(1.05)}
+    }
+    @keyframes skyjoBreath {
+      0%,100%{opacity:.82}
+      50%{opacity:1}
+    }
+    @keyframes virtuelLife {
+      0%,100%{transform:translateY(0) scaleX(1);letter-spacing:16px;opacity:.88}
+      50%{transform:translateY(-2px) scaleX(1.025);letter-spacing:19px;opacity:1}
+    }
+    @keyframes titleLine {
+      0%,100%{transform:scaleX(.55);opacity:.35}
+      50%{transform:scaleX(1);opacity:.85}
+    }
+    @keyframes liveDot {
+      0%,100%{opacity:.30;transform:scale(.75)}
+      50%{opacity:1;transform:scale(1.25)}
+    }
+    @keyframes cardDrift {
+      0%,100%{transform:translateY(0) rotate(-1deg)}
+      50%{transform:translateY(-7px) rotate(1deg)}
+    }
+    @keyframes cardFlip {
+      0%{transform:scaleY(1) scaleX(1)}
+      45%{transform:scaleY(.10) scaleX(.94)}
+      100%{transform:scaleY(1) scaleX(1)}
+    }
+    @keyframes skyjoOutline {
+      0%,100%{opacity:.16;transform:translateY(0)}
+      50%{opacity:.46;transform:translateY(-1px)}
+    }
+    @keyframes brandSpark {
+      0%,78%,100%{opacity:0;transform:translateX(-18px) scale(.7)}
+      84%{opacity:.9;transform:translateX(0) scale(1.25)}
+      91%{opacity:0;transform:translateX(22px) scale(.7)}
+    }
+    @keyframes cardSheenSweep {
+      0%,72%,100%{opacity:0;transform:translateX(-55px) skewX(-12deg)}
+      77%{opacity:.05}
+      84%{opacity:.72;transform:translateX(22px) skewX(-12deg)}
+      91%{opacity:0;transform:translateX(62px) skewX(-12deg)}
+    }
+    @keyframes pipPulse {
+      0%,100%{opacity:.25;transform:scale(.78)}
+      50%{opacity:.8;transform:scale(1.25)}
+    }
+    @keyframes arrowFloat {
+      0%,100%{transform:translateX(0)}
+      50%{transform:translateX(7px)}
+    }
+    @keyframes ringPulse {
+      0%{transform:scale(.86);opacity:.62}
+      75%,100%{transform:scale(1.14);opacity:0}
+    }
+    @keyframes scan { to{transform:rotate(360deg)} }
+    @keyframes gridBreath {
+      0%,100%{opacity:.16}
+      50%{opacity:.32}
+    }
+    @keyframes floatCard {
+      0%,100%{transform:translateY(0) rotate(-1deg);opacity:.30}
+      50%{transform:translateY(-10px) rotate(1deg);opacity:.50}
+    }
+    @keyframes twinkle {
+      0%,100%{opacity:.12}
+      50%{opacity:.58}
+    }
+    @keyframes launchArrow {
+      0%{transform:translateX(0) scale(1)}
+      45%{transform:translateX(22px) scale(1.12);opacity:.7}
+      46%{transform:translateX(-12px) scale(.92);opacity:.15}
+      100%{transform:translateX(0) scale(1);opacity:1}
+    }
+    @keyframes launchRing {
+      from{transform:scale(.82);opacity:.85}
+      to{transform:scale(1.35);opacity:0}
+    }
+    @keyframes cardKick {
+      0%{transform:scale(1)}
+      45%{transform:scale(.985)}
+      100%{transform:scale(1)}
+    }
+    @keyframes brandLaunch {
+      0%{transform:scale(1)}
+      45%{transform:scale(1.035)}
+      100%{transform:scale(1)}
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      *{animation-duration:.001ms!important;animation-iteration-count:1!important}
+    }
+  </style>
+
+  <rect x="12" y="12" width="936" height="516" rx="34" fill="url(#bg)"/>
+  <rect x="12" y="12" width="936" height="516" rx="34" fill="url(#glowPurple)"/>
+  <rect x="12" y="12" width="936" height="516" rx="34" fill="url(#glowCyan)"/>
+  <rect id="frame" x="12.8" y="12.8" width="934.4" height="514.4" rx="33.2"
+        fill="none" stroke="url(#ringGradient)" stroke-width="1.6" stroke-opacity=".34"/>
+
+  <g id="content" clip-path="url(#cardClip)">
+    <g fill="none" stroke="#6372E8" stroke-opacity=".17" stroke-width="2">
+      <rect class="floatCard" x="92" y="55" width="94" height="94" rx="5"/>
+      <rect class="floatCard" x="690" y="228" width="70" height="94" rx="5"/>
+      <rect class="floatCard" x="739" y="249" width="72" height="98" rx="5"/>
+      <rect class="floatCard" x="363" y="405" width="92" height="75" rx="5"/>
+    </g>
+
+    <g stroke="#43C9FF" stroke-width="1.5" stroke-opacity=".26">
+      <path d="M118 214h82"/><path d="M680 96h52"/><path d="M53 335h108"/>
+    </g>
+
+    <g fill="none" stroke="#4060CC" stroke-width="1.2" stroke-opacity=".18">
+      <path class="gridLine" d="M111 540 L228 334"/><path class="gridLine" d="M264 540 L326 334"/>
+      <path class="gridLine" d="M415 540 L428 334"/><path class="gridLine" d="M567 540 L530 334"/>
+      <path class="gridLine" d="M720 540 L632 334"/><path class="gridLine" d="M873 540 L734 334"/>
+      <path class="gridLine" d="M30 395 H930"/><path class="gridLine" d="M0 454 H960"/><path class="gridLine" d="M0 508 H960"/>
+    </g>
+
+    <g fill="#73D8FF">
+      <circle class="spark" cx="232" cy="76" r="2.4"/><circle class="spark" cx="632" cy="126" r="1.8"/>
+      <circle class="spark" cx="828" cy="91" r="2.1"/><circle class="spark" cx="566" cy="240" r="1.6"/>
+      <circle class="spark" cx="147" cy="282" r="1.7"/>
+    </g>
+
+    <!-- Marque centrée sur l’axe réel du SVG -->
+    <ellipse id="brandAura" cx="480" cy="214" rx="270" ry="125" fill="url(#titleAura)" opacity=".55"/>
+    <g transform="translate(480 158)">
+      <g id="brand">
+        <text id="skyjoOutline" x="0" y="0" text-anchor="middle"
+              font-family="Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
+              font-size="118" font-weight="950" letter-spacing="-5"
+              fill="none" stroke="#78EDFF" stroke-width="2.2" stroke-opacity=".42">SKYJO</text>
+        <text id="skyjoGlow" x="0" y="0" text-anchor="middle"
+              font-family="Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
+              font-size="118" font-weight="950" letter-spacing="-5"
+              fill="url(#skyjoGradient)" filter="url(#titleGlow)">SKYJO</text>
+        <g id="brandSpark" transform="translate(190 -76)">
+          <path d="M0-10V10M-10 0H10" stroke="#D8FBFF" stroke-width="2" stroke-linecap="round"/>
+          <path d="M-6-6L6 6M6-6L-6 6" stroke="#7BEAFF" stroke-width="1.4" stroke-linecap="round"/>
+        </g>
+
+        <text x="0" y="91" text-anchor="middle"
+              font-family="Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
+              font-size="47" font-weight="900" letter-spacing="16"
+              fill="url(#virtuelGradient)" opacity=".25">VIRTUEL</text>
+        <text id="virtuelText" x="0" y="91" text-anchor="middle"
+              font-family="Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
+              font-size="47" font-weight="900" letter-spacing="16"
+              fill="url(#virtuelGradient)">VIRTUEL</text>
+
+        <g transform="translate(-157.5 117)">
+          <rect id="titleLine" x="0" y="0" width="315" height="2" rx="1" fill="url(#virtuelGradient)" transform-origin="157.5px 1px"/>
+          <circle id="liveDot" cx="174" cy="1" r="4" fill="#63EAFF"/>
+        </g>
+      </g>
+    </g>
+
+    <!-- Mini-cartes : structure visuelle alignée sur SkyjoCard.jsx -->
+    <g id="numbers" transform="translate(0 6)">
+      <g transform="translate(110 366) rotate(-10)">
+        <g id="slot0" class="miniCard">
+          <rect id="num0Halo" class="cardHalo" x="-8" y="-8" width="104" height="132" rx="17" fill="#ef4444"/>
+          <rect id="num0Card" class="cardBody" x="0" y="0" width="88" height="116" rx="10" fill="url(#mosaicRed)"/>
+          <rect class="cardDepth" x="1.5" y="1.5" width="85" height="113" rx="8.5" fill="url(#cardDepth)"/>
+          <rect class="cardNoise" x="2" y="2" width="84" height="112" rx="8" fill="url(#paperGrain)"/>
+          <rect class="cardGloss" x="2" y="2" width="84" height="112" rx="8" fill="url(#cardGlossSkyjo)"/>
+          <rect class="cardSheen" x="4" y="4" width="80" height="108" rx="7"/>
+          <rect class="cardEdge" x="2.8" y="2.8" width="82.4" height="110.4" rx="7.4"/>
+          <circle class="cardPip" cx="73" cy="20" r="1.7"/>
+          <rect class="cardInner" x="3" y="3" width="82" height="110" rx="7" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="1"/>
+          <circle class="cornerDisc" fill="#fff" fill-opacity=".92" stroke="#fff" stroke-opacity=".30" stroke-width=".8" cx="12" cy="12" r="9.5"/><text id="num0TL" class="cornerNum" x="12" y="12" fill="#dc2626">12</text>
+          <g transform="rotate(180 76 104)"><circle class="cornerDisc" fill="#fff" fill-opacity=".92" stroke="#fff" stroke-opacity=".30" stroke-width=".8" cx="76" cy="104" r="9.5"/><text id="num0BR" class="cornerNum" x="76" y="104" fill="#dc2626">12</text></g>
+          <text id="num0Emboss" class="numEmboss" fill="#fff" fill-opacity=".62" opacity=".48" x="43" y="55" font-size="43">12</text>
+          <text id="num0" class="num" fill="#fff" stroke="#000" stroke-opacity=".12" stroke-width="1" x="44" y="56" font-size="43">12</text>
+        </g>
+      </g>
+
+      <g transform="translate(242 391) rotate(6)">
+        <g id="slot1" class="miniCard" style="animation-delay:-.9s">
+          <rect id="num1Halo" class="cardHalo" x="-7" y="-7" width="92" height="117" rx="16" fill="#10b981"/>
+          <rect id="num1Card" class="cardBody" x="0" y="0" width="78" height="103" rx="9" fill="url(#mosaicGreen)"/>
+          <rect class="cardDepth" x="1.5" y="1.5" width="75" height="100" rx="7.5" fill="url(#cardDepth)"/>
+          <rect class="cardNoise" x="2" y="2" width="74" height="99" rx="7" fill="url(#paperGrain)"/>
+          <rect class="cardGloss" x="2" y="2" width="74" height="99" rx="7" fill="url(#cardGlossSkyjo)"/>
+          <rect class="cardSheen" x="4" y="4" width="70" height="95" rx="6"/>
+          <rect class="cardEdge" x="2.8" y="2.8" width="72.4" height="97.4" rx="6.4"/>
+          <circle class="cardPip" cx="64" cy="18" r="1.5"/>
+          <rect class="cardInner" x="3" y="3" width="72" height="97" rx="6" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="1"/>
+          <circle class="cornerDisc" fill="#fff" fill-opacity=".92" stroke="#fff" stroke-opacity=".30" stroke-width=".8" cx="11" cy="11" r="8.5"/><text id="num1TL" class="cornerNum" x="11" y="11" fill="#059669">4</text>
+          <g transform="rotate(180 67 92)"><circle class="cornerDisc" fill="#fff" fill-opacity=".92" stroke="#fff" stroke-opacity=".30" stroke-width=".8" cx="67" cy="92" r="8.5"/><text id="num1BR" class="cornerNum" x="67" y="92" fill="#059669">4</text></g>
+          <text id="num1Emboss" class="numEmboss" fill="#fff" fill-opacity=".62" opacity=".48" x="38" y="49" font-size="38">4</text>
+          <text id="num1" class="num" fill="#fff" stroke="#000" stroke-opacity=".12" stroke-width="1" x="39" y="50" font-size="38">4</text>
+        </g>
+      </g>
+
+      <g transform="translate(375 374) rotate(-1)">
+        <g id="slot2" class="miniCard" style="animation-delay:-1.8s">
+          <rect id="num2Halo" class="cardHalo" x="-8" y="-8" width="104" height="132" rx="17" fill="#06b6d4"/>
+          <rect id="num2Card" class="cardBody" x="0" y="0" width="88" height="116" rx="10" fill="url(#mosaicCyan)"/>
+          <rect class="cardDepth" x="1.5" y="1.5" width="85" height="113" rx="8.5" fill="url(#cardDepth)"/>
+          <rect class="cardNoise" x="2" y="2" width="84" height="112" rx="8" fill="url(#paperGrain)"/>
+          <rect class="cardGloss" x="2" y="2" width="84" height="112" rx="8" fill="url(#cardGlossSkyjo)"/>
+          <rect class="cardSheen" x="4" y="4" width="80" height="108" rx="7"/>
+          <rect class="cardEdge" x="2.8" y="2.8" width="82.4" height="110.4" rx="7.4"/>
+          <circle class="cardPip" cx="73" cy="20" r="1.7"/>
+          <rect class="cardInner" x="3" y="3" width="82" height="110" rx="7" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="1"/>
+          <circle class="cornerDisc" fill="#fff" fill-opacity=".92" stroke="#fff" stroke-opacity=".30" stroke-width=".8" cx="12" cy="12" r="9.5"/><text id="num2TL" class="cornerNum" x="12" y="12" fill="#0891b2">-1</text>
+          <g transform="rotate(180 76 104)"><circle class="cornerDisc" fill="#fff" fill-opacity=".92" stroke="#fff" stroke-opacity=".30" stroke-width=".8" cx="76" cy="104" r="9.5"/><text id="num2BR" class="cornerNum" x="76" y="104" fill="#0891b2">-1</text></g>
+          <text id="num2Emboss" class="numEmboss" fill="#fff" fill-opacity=".62" opacity=".48" x="43" y="55" font-size="43">-1</text>
+          <text id="num2" class="num" fill="#fff" stroke="#000" stroke-opacity=".12" stroke-width="1" x="44" y="56" font-size="43">-1</text>
+        </g>
+      </g>
+
+      <g transform="translate(514 391) rotate(8)">
+        <g id="slot3" class="miniCard" style="animation-delay:-2.7s">
+          <rect id="num3Halo" class="cardHalo" x="-7" y="-7" width="92" height="117" rx="16" fill="#eab308"/>
+          <rect id="num3Card" class="cardBody" x="0" y="0" width="78" height="103" rx="9" fill="url(#mosaicYellow)"/>
+          <rect class="cardDepth" x="1.5" y="1.5" width="75" height="100" rx="7.5" fill="url(#cardDepth)"/>
+          <rect class="cardNoise" x="2" y="2" width="74" height="99" rx="7" fill="url(#paperGrain)"/>
+          <rect class="cardGloss" x="2" y="2" width="74" height="99" rx="7" fill="url(#cardGlossSkyjo)"/>
+          <rect class="cardSheen" x="4" y="4" width="70" height="95" rx="6"/>
+          <rect class="cardEdge" x="2.8" y="2.8" width="72.4" height="97.4" rx="6.4"/>
+          <circle class="cardPip" cx="64" cy="18" r="1.5"/>
+          <rect class="cardInner" x="3" y="3" width="72" height="97" rx="6" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="1"/>
+          <circle class="cornerDisc" fill="#fff" fill-opacity=".92" stroke="#fff" stroke-opacity=".30" stroke-width=".8" cx="11" cy="11" r="8.5"/><text id="num3TL" class="cornerNum" x="11" y="11" fill="#ca8a04">8</text>
+          <g transform="rotate(180 67 92)"><circle class="cornerDisc" fill="#fff" fill-opacity=".92" stroke="#fff" stroke-opacity=".30" stroke-width=".8" cx="67" cy="92" r="8.5"/><text id="num3BR" class="cornerNum" x="67" y="92" fill="#ca8a04">8</text></g>
+          <text id="num3Emboss" class="numEmboss" fill="#fff" fill-opacity=".62" opacity=".48" x="38" y="49" font-size="38">8</text>
+          <text id="num3" class="num" fill="#fff" stroke="#000" stroke-opacity=".12" stroke-width="1" x="39" y="50" font-size="38">8</text>
+        </g>
+      </g>
+
+      <g transform="translate(638 366) rotate(-7)">
+        <g id="slot4" class="miniCard" style="animation-delay:-3.6s">
+          <rect id="num4Halo" class="cardHalo" x="-8" y="-8" width="104" height="132" rx="17" fill="#ef4444"/>
+          <rect id="num4Card" class="cardBody" x="0" y="0" width="88" height="116" rx="10" fill="url(#mosaicRed)"/>
+          <rect class="cardDepth" x="1.5" y="1.5" width="85" height="113" rx="8.5" fill="url(#cardDepth)"/>
+          <rect class="cardNoise" x="2" y="2" width="84" height="112" rx="8" fill="url(#paperGrain)"/>
+          <rect class="cardGloss" x="2" y="2" width="84" height="112" rx="8" fill="url(#cardGlossSkyjo)"/>
+          <rect class="cardSheen" x="4" y="4" width="80" height="108" rx="7"/>
+          <rect class="cardEdge" x="2.8" y="2.8" width="82.4" height="110.4" rx="7.4"/>
+          <circle class="cardPip" cx="73" cy="20" r="1.7"/>
+          <rect class="cardInner" x="3" y="3" width="82" height="110" rx="7" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="1"/>
+          <circle class="cornerDisc" fill="#fff" fill-opacity=".92" stroke="#fff" stroke-opacity=".30" stroke-width=".8" cx="12" cy="12" r="9.5"/><text id="num4TL" class="cornerNum" x="12" y="12" fill="#dc2626">10</text>
+          <g transform="rotate(180 76 104)"><circle class="cornerDisc" fill="#fff" fill-opacity=".92" stroke="#fff" stroke-opacity=".30" stroke-width=".8" cx="76" cy="104" r="9.5"/><text id="num4BR" class="cornerNum" x="76" y="104" fill="#dc2626">10</text></g>
+          <text id="num4Emboss" class="numEmboss" fill="#fff" fill-opacity=".62" opacity=".48" x="43" y="55" font-size="43">10</text>
+          <text id="num4" class="num" fill="#fff" stroke="#000" stroke-opacity=".12" stroke-width="1" x="44" y="56" font-size="43">10</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- CTA -->
+    <g id="cta">
+      <circle cx="816" cy="271" r="88" fill="#0A1033" fill-opacity=".74" stroke="#264980" stroke-width="2"/>
+      <circle id="ring1" cx="816" cy="271" r="92" fill="none" stroke="#41DAFF" stroke-width="2.2" opacity=".7"/>
+      <circle id="ring2" cx="816" cy="271" r="78" fill="none" stroke="#6B68FF" stroke-width="1.8" opacity=".55"/>
+      <circle cx="816" cy="271" r="67" fill="#101743" stroke="url(#ringGradient)" stroke-width="2.5"/>
+      <circle cx="816" cy="271" r="56" fill="none" stroke="#8EECFF" stroke-opacity=".10" stroke-width="1"/>
+      <path id="scanArc" d="M816 186 A85 85 0 0 1 896 243" fill="none" stroke="#55E7FF" stroke-width="4.2"
+            stroke-linecap="round" filter="url(#arrowGlow)" opacity=".82"/>
+      <g id="arrowCore" filter="url(#arrowGlow)">
+        <path d="M786 271h48" fill="none" stroke="#FFFFFF" stroke-width="7.5" stroke-linecap="round"/>
+        <path d="M821 249l22 22-22 22" fill="none" stroke="#FFFFFF" stroke-width="7.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+    </g>
+
+    <circle id="tapHalo" cx="816" cy="271" r="64" fill="none" stroke="#6EEAFF" stroke-width="5" opacity="0"/>
+  </g>
+
+  <script><![CDATA[
+    (() => {
+      const svg = document.documentElement;
+      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const themeFor = (value) => {
+        // -2/-1 use the turquoise family present in SkyjoCard.jsx; 0 stays blue.
+        if (value <= -1) return { pattern:'mosaicCyan', primary:'#0891b2', secondary:'#06b6d4' };
+        if (value === 0) return { pattern:'mosaicBlue', primary:'#2563eb', secondary:'#3b82f6' };
+        if (value <= 4) return { pattern:'mosaicGreen', primary:'#059669', secondary:'#10b981' };
+        if (value <= 8) return { pattern:'mosaicYellow', primary:'#ca8a04', secondary:'#eab308' };
+        return { pattern:'mosaicRed', primary:'#dc2626', secondary:'#ef4444' };
+      };
+
+      const slots = [0,1,2,3,4].map(i => ({
+        group: document.getElementById('slot' + i),
+        text: document.getElementById('num' + i),
+        emboss: document.getElementById('num' + i + 'Emboss'),
+        cornerTL: document.getElementById('num' + i + 'TL'),
+        cornerBR: document.getElementById('num' + i + 'BR'),
+        card: document.getElementById('num' + i + 'Card'),
+        halo: document.getElementById('num' + i + 'Halo')
+      }));
+
+      let last = [12,4,-1,8,10];
+
+      function randomValue() {
+        // Tirage uniforme parmi les 15 valeurs : -2, -1, 0 ... 12.
+        return Math.floor(Math.random() * 15) - 2;
+      }
+
+      function applyValue(slot, value) {
+        const theme = themeFor(value);
+        const label = String(value);
+        slot.text.textContent = label;
+        slot.emboss.textContent = label;
+        slot.cornerTL.textContent = label;
+        slot.cornerBR.textContent = label;
+        slot.card.setAttribute('fill', `url(#${theme.pattern})`);
+        slot.halo.setAttribute('fill', theme.secondary);
+        slot.cornerTL.setAttribute('fill', theme.primary);
+        slot.cornerBR.setAttribute('fill', theme.primary);
+      }
+
+      function rerollSlot(slot, index) {
+        let value;
+        let guard = 0;
+        do {
+          value = randomValue();
+          guard++;
+        } while ((value === last[index] || last.some((v,j) => j !== index && v === value)) && guard < 30);
+        last[index] = value;
+
+        if (reduceMotion) {
+          applyValue(slot, value);
+          return;
+        }
+
+        slot.group.classList.remove('is-changing');
+        void slot.group.getBoundingClientRect();
+        slot.group.classList.add('is-changing');
+        slot.text.style.opacity = '.08';
+        slot.emboss.style.opacity = '.08';
+
+        setTimeout(() => {
+          applyValue(slot, value);
+          slot.text.style.opacity = '1';
+          slot.emboss.style.opacity = '.48';
+        }, 155);
+
+        setTimeout(() => slot.group.classList.remove('is-changing'), 310);
+      }
+
+      if (!reduceMotion) {
+        const intervals = [1750, 2130, 1910, 2290, 2020];
+        slots.forEach((slot, i) => {
+          setTimeout(() => {
+            rerollSlot(slot, i);
+            setInterval(() => rerollSlot(slot, i), intervals[i]);
+          }, 350 + i * 160);
+        });
+      }
+
+      function launch() {
+        svg.classList.remove('launching');
+        void svg.getBoundingClientRect();
+        svg.classList.add('launching');
+
+        const halo = document.getElementById('tapHalo');
+        if (!reduceMotion && halo.animate) {
+          halo.animate(
+            [
+              { r:62, opacity:.78, strokeWidth:5 },
+              { r:108, opacity:0, strokeWidth:1 }
+            ],
+            { duration:560, easing:'cubic-bezier(.15,.75,.25,1)' }
+          );
+        }
+
+        slots.forEach((slot, i) => rerollSlot(slot, i));
+
+        svg.dispatchEvent(new CustomEvent('skyjo-launch', {
+          bubbles:true,
+          detail:{ source:'animated-svg-button' }
+        }));
+
+        setTimeout(() => svg.classList.remove('launching'), 650);
+      }
+
+      svg.addEventListener('click', launch);
+      svg.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          launch();
+        }
+      });
+    })();
+  ]]></script>
+</svg>
