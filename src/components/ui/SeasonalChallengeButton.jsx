@@ -31,7 +31,7 @@ export default function SeasonalChallengeButton({ onClick, rewardState = {}, pre
                 {countdown && <p className="text-[10px] text-indigo-100 mt-1">{countdown === 'Dernier jour' ? countdown : countdown?.split(' · ')[0] + ' · Fin le 23 septembre'}</p>}
                 {!available && <p className="text-[10px] text-slate-300 mt-1">Récompense disponible dans {getWeeklyChallengeRemainingDays(rewardState, now, challenge)} jours</p>}
             </div>
-            {harvest ? <Leaf className="seasonal-emblem w-12 h-12 shrink-0 text-amber-300" aria-hidden="true" /> : <img src="/skyjo-planet-moon.svg" alt="" className="w-16 h-16 shrink-0" />}
+            {harvest ? <Leaf className="seasonal-emblem w-12 h-12 shrink-0 text-amber-300" aria-hidden="true" /> : <span className="game-mode-icon relative shrink-0"><img src="/skyjo-planet-moon.svg" alt="" className="absolute left-1/2 top-1/2 w-16 h-16 max-w-none -translate-x-1/2 -translate-y-1/2" /></span>}
         </div>
     </PremiumTiltButton>
         <ModalShell isOpen={showConditions} onClose={() => setShowConditions(false)} labelledBy={titleId} zIndex="z-[10050]" className="seasonal-rules">
