@@ -66,7 +66,7 @@ export default function ImagePreloader({ children }) {
         let loadedCount = 0;
         const total = CRITICAL_IMAGES.length + CRITICAL_AUDIO.length;
         const startTime = Date.now();
-        const minLoadingTime = 3500; // 3.5s Loading Screen
+        const minLoadingTime = 1500; // Keep a short transition while assets finish loading
 
         // Simulation timer for visual progress (0 -> 100 over minLoadingTime)
         const progressInterval = setInterval(() => {
