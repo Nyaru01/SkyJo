@@ -7,7 +7,7 @@ import { cn } from '../lib/utils';
 import { PremiumTiltButton } from './ui/PremiumTiltButton';
 import Confetti from 'react-confetti';
 import useWindowSize from '../hooks/useWindowSize';
-import { LEVEL_REWARDS, MASTER_REWARDS } from '../lib/rewards';
+import { getPrestigeRewardForLevel, LEVEL_REWARDS, MASTER_REWARDS } from '../lib/rewards';
 import { getMasterProgress } from '../lib/masterCareer';
 
 /**
@@ -41,6 +41,17 @@ const LevelUpCelebration = () => {
         if (!celebratedLevel) return null;
         if (celebratedLevel > 100) {
             const progress = getMasterProgress(celebratedLevel);
+            if (progress.cycle === 2) {
+                const prestigeReward = getPrestigeRewardForLevel(celebratedLevel, progress.cycle);
+                if (prestigeReward) return prestigeReward;
+                return {
+                    type: 'generic',
+                    content: '✦',
+                    name: `Prestige I · Maître ${progress.masterLevel}`,
+                    description: 'Progression vers le prochain jalon du Prestige I.',
+                    rarity: 'prestige'
+                };
+            }
             if (progress.masterLevel === 100) {
                 const finalReward = MASTER_REWARDS[100];
                 return {
@@ -89,6 +100,7 @@ const LevelUpCelebration = () => {
         legendary: 'text-amber-400',
         mythic: 'text-rose-400',
         divine: 'text-fuchsia-400 drop-shadow-[0_0_10px_rgba(232,121,249,0.8)]',
+        prestige: 'text-cyan-300 drop-shadow-[0_0_16px_rgba(34,211,238,0.9)]',
         éternel: 'text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]',
         transcendant: 'text-fuchsia-300 drop-shadow-[0_0_18px_rgba(232,121,249,0.9)]',
     };

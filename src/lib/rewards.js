@@ -1,4 +1,6 @@
 
+import { MASTER_LEVELS_PER_CYCLE, MASTER_UNLOCK_LEVEL } from './masterCareer.js';
+
 export const CAREER_REWARDS = {
     2: {
         type: 'emoji',
@@ -208,6 +210,28 @@ export const MASTER_REWARDS = Object.fromEntries(
             }];
         })
     )
+);
+
+// Prestige I begins immediately after the first 100 Master levels (global 201).
+// These are UI rewards, not inventory rows, so existing player profiles remain compatible.
+export const PRESTIGE_I_REWARDS = Object.freeze([
+    { masterLevel: 1, content: '✦', name: 'Éveil du Prestige I', description: 'Votre première étoile ouvre le cycle Prestige I.', rarity: 'prestige' },
+    { masterLevel: 10, content: '✧', name: 'Insigne Aurore', description: 'Un emblème astral apparaît dans votre carrière.', rarity: 'prestige' },
+    { masterLevel: 25, content: '☄️', name: 'Titre Comète', description: 'Le titre Comète marque vos victoires de prestige.', rarity: 'prestige' },
+    { masterLevel: 50, content: '🌌', name: 'Halo Nébuleuse', description: 'Votre progression affiche désormais le halo Nébuleuse.', rarity: 'prestige' },
+    { masterLevel: 75, content: '🜲', name: 'Écusson Horizon', description: 'Un écusson rare consacre votre avancée dans le cycle.', rarity: 'prestige' },
+    { masterLevel: 100, content: '👑', name: 'Couronne Prestige I', description: 'Cycle Prestige I terminé : la prochaine étoile est en vue.', rarity: 'prestige' },
+]);
+
+export const getPrestigeRewardsList = (cycle = 2) => PRESTIGE_I_REWARDS.map(reward => ({
+    ...reward,
+    cycle,
+    level: reward.masterLevel,
+    globalLevel: MASTER_UNLOCK_LEVEL + ((cycle - 1) * MASTER_LEVELS_PER_CYCLE) + reward.masterLevel,
+}));
+
+export const getPrestigeRewardForLevel = (globalLevel, cycle = 2) => (
+    getPrestigeRewardsList(cycle).find(reward => reward.globalLevel === globalLevel) || null
 );
 
 /**
