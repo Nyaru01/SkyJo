@@ -28,6 +28,7 @@ export default function ModalShell({
     className,
     closeOnBackdrop = true,
     stableBackdrop = false,
+    fullScreen = false,
 }) {
     const prefersReducedMotion = useReducedMotion();
     const closeRef = useRef(onClose);
@@ -49,6 +50,17 @@ export default function ModalShell({
             document.removeEventListener('keydown', handleEscape);
         };
     }, [isOpen]);
+
+    // A full-page rules screen must not inherit the menu's enter/exit animations.
+    if (fullScreen) return isOpen ? createPortal(
+        <div className={cn('fixed inset-0 overflow-y-auto bg-[#0d1729]', zIndex)}>
+            <div role="dialog" aria-modal="true" aria-labelledby={labelledBy}
+                aria-describedby={describedBy}
+                className={cn('relative mx-auto w-full max-w-lg', className, 'seasonal-rules-fullscreen')}>
+                {children}
+            </div>
+        </div>, document.body
+    ) : null;
 
     return createPortal(
         <AnimatePresence>

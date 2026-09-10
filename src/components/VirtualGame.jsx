@@ -33,7 +33,7 @@ import { useFeedback } from '../hooks/useFeedback';
 import { useNotifications } from '../hooks/useNotifications';
 import { cn } from '../lib/utils';
 import { getCardSkinRequiredLevel } from '../lib/skinUtils';
-import { getGameChallenge, getWeeklyChallengeById, hasChallengeObjective, hasBestRoundScore } from '../lib/weeklyChallenge';
+import { getActiveWeeklyChallenge, getGameChallenge, getWeeklyChallengeById, hasChallengeObjective, hasBestRoundScore } from '../lib/weeklyChallenge';
 import { SeasonalProgress } from './ui/SeasonalChallengeButton';
 import { getTourmentPerformance } from '../lib/tourmentPerformance';
 
@@ -1227,6 +1227,26 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             rewardXP: activeGameState.challengeJustWon ? challenge.rewardXP : 0,
         };
         const totals = Object.fromEntries(scores.map(s => [s.playerId, s.finalScore]));
+        const canRetry = !result.success && (activeGameState.isSeasonalPreview || challenge?.id === getActiveWeeklyChallenge().id);
+        const retryChallenge = () => {
+            if (!activeGameState.isSeasonalPreview && challenge?.id !== getActiveWeeklyChallenge().id) {
+                toast.error('Cette saison est terminée. Retrouvez le nouveau défi dans le menu.');
+                return;
+            }
+            const started = startAIGame(
+                { name: human?.name, avatarId: human?.avatarId }, 1, AI_DIFFICULTY.BONUS,
+                { isBonusMode: true, isWeeklyChallenge: true, isSeasonalPreview: !!activeGameState.isSeasonalPreview }
+            );
+            if (started === false) {
+                toast.error('Ce défi n’est plus disponible pour le moment.');
+                return;
+            }
+            setInitialReveals({});
+            setChestsRevealed(false);
+            setShowDrawDiscardPopup(false);
+            setScreen('game');
+            playStartGame();
+        };
         return createPortal(<div className="round-results-viewport">
             <Card className="round-results-shell overflow-hidden flex flex-col">
                 <CardHeader className="round-results-heading text-center">
@@ -1235,7 +1255,10 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                 </CardHeader>
                 <CardContent className="round-results-content">
                     <div className="round-results-scroll"><SeasonalProgress gameState={activeGameState} /><RoundResultsPlayers scores={scores} gameState={activeGameState} totals={totals} /></div>
-                    <div className="round-actions flex"><Button className="w-full" onClick={confirmExit}>{activeGameState.isSeasonalPreview ? 'Retour au panneau admin' : 'Terminer le défi'}</Button></div>
+                    <div className="round-actions flex flex-col gap-2">
+                        {canRetry && <Button className="w-full" onClick={retryChallenge}><RotateCcw className="mr-2 h-4 w-4" />Réessayer le défi</Button>}
+                        <Button variant={canRetry ? 'ghost' : 'primary'} className="w-full" onClick={confirmExit}>{activeGameState.isSeasonalPreview ? 'Retour au panneau admin' : 'Terminer le défi'}</Button>
+                    </div>
                 </CardContent>
             </Card>
         </div>, document.body);

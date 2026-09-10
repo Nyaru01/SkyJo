@@ -34,7 +34,7 @@ export default function SeasonalChallengeButton({ onClick, rewardState = {}, pre
             {harvest ? <Leaf className="seasonal-emblem w-12 h-12 shrink-0 text-amber-300" aria-hidden="true" /> : <span className="game-mode-icon relative shrink-0"><img src="/skyjo-planet-moon.svg" alt="" className="absolute left-1/2 top-1/2 w-16 h-16 max-w-none -translate-x-1/2 -translate-y-1/2" /></span>}
         </div>
     </PremiumTiltButton>
-        <ModalShell stableBackdrop isOpen={showConditions} onClose={() => setShowConditions(false)} labelledBy={titleId} zIndex="z-[10050]" className="seasonal-rules">
+        <ModalShell fullScreen stableBackdrop isOpen={showConditions} onClose={() => setShowConditions(false)} labelledBy={titleId} zIndex="z-[10050]" className="seasonal-rules">
             <ModalCloseButton onClick={() => setShowConditions(false)} />
             <div className="seasonal-rules-icon">{harvest ? <Leaf size={44} className="text-amber-300" /> : <img src="/skyjo-planet-moon.svg" alt="" width="96" height="96" />}</div>
             <p className="seasonal-rules-eyebrow">{preview ? 'APERÇU ADMIN' : 'DÉFI SAISONNIER'}</p>
