@@ -1,7 +1,6 @@
-import { memo, useEffect, useMemo, useRef } from 'react';
+import { memo, useLayoutEffect, useMemo, useRef, useId } from 'react';
 import { createPortal } from 'react-dom';
-import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { Zap, Trophy, Lock, Check, X, Crown, Star } from 'lucide-react';
+import { Zap, Trophy, Lock, Check, X, Crown, Star, ChevronRight } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import { cn } from '../lib/utils';
 import { getMasterRewardsList, getPrestigeRewardsList, getRewardsList } from '../lib/rewards';
@@ -68,6 +67,8 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
     const closeCareerPlan = useGameStore(state => state.closeCareerPlan);
     const progressPercent = Math.min(100, Math.max(0, currentXP * 10));
     const listRef = useRef(null);
+    const closeRef = useRef(null);
+    const titleId = useId();
     const masterProgress = useMemo(() => getMasterProgress(level), [level]);
     const isMasterTab = selectedTab === 'master';
     const isPrestigeI = isMasterTab && masterProgress.cycle === 2;
@@ -75,10 +76,30 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
         ? 100
         : Math.max(0, (masterProgress.masterLevel ? masterProgress.masterLevel - 1 : 0) + (currentXP / 10));
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (!showRewards) return;
-        requestAnimationFrame(() => listRef.current?.querySelector('[data-current="true"]')?.scrollIntoView({ block: 'center' }));
+        const list = listRef.current;
+        const current = list?.querySelector('[data-current="true"]');
+        if (current) {
+            // Position only this list before paint; never scroll the menu behind the dialog.
+            list.scrollTop += current.getBoundingClientRect().top - list.getBoundingClientRect().top - (list.clientHeight - current.clientHeight) / 2;
+        } else if (list) list.scrollTop = 0;
     }, [showRewards, selectedTab]);
+
+    useLayoutEffect(() => {
+        if (!showRewards) return;
+        const previousFocus = document.activeElement;
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        closeRef.current?.focus({ preventScroll: true });
+        const onKeyDown = event => { if (event.key === 'Escape') closeCareerPlan(); };
+        document.addEventListener('keydown', onKeyDown);
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            document.removeEventListener('keydown', onKeyDown);
+            if (previousFocus?.isConnected) previousFocus.focus?.({ preventScroll: true });
+        };
+    }, [showRewards, closeCareerPlan]);
 
     const rewards = isMasterTab ? (isPrestigeI ? PRESTIGE_I_REWARDS : MASTER_REWARDS) : CAREER_REWARDS;
 
@@ -101,24 +122,29 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">/ 10 XP</span>
                         </button>
                     </div>
-                    <button onClick={() => openCareerPlan(level >= 100 ? 'master' : 'career')} className="mt-1 h-5 w-full overflow-hidden rounded-full border border-white/10 bg-slate-900 p-[3px]">
+                    <button aria-label="Ouvrir le plan de carrière" onClick={() => openCareerPlan(level >= 100 ? 'master' : 'career')} className="mt-1 h-5 w-full overflow-hidden rounded-full border border-white/10 bg-slate-900 p-[3px]">
                         <div className="h-full rounded-full bg-gradient-to-r from-amber-600 via-orange-500 to-yellow-400" style={{ width: `${progressPercent}%` }} />
                     </button>
-                    <p className="mt-2 text-center text-xs font-medium text-slate-500">{10 - currentXP} victoire{10 - currentXP > 1 ? 's' : ''} avant le prochain niveau</p>
+                    <button type="button" aria-haspopup="dialog" aria-expanded={showRewards}
+                        onClick={() => openCareerPlan(level >= 100 ? 'master' : 'career')}
+                        className="mt-2 flex w-full items-center justify-between gap-3 rounded-xl border border-amber-300/20 bg-amber-300/5 px-3 py-2.5 text-left transition-colors hover:bg-amber-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300">
+                        <span><span className="block text-xs font-bold text-amber-100">Voir le plan de carrière</span><span className="mt-0.5 block text-[10px] text-slate-400">Récompenses et grades · {10 - currentXP} XP avant le prochain niveau</span></span>
+                        <ChevronRight size={18} className="shrink-0 text-amber-300" aria-hidden="true" />
+                    </button>
                 </div>
             </div>
 
             {createPortal(
-                <AnimatePresence>
+                <>
                     {showRewards && (
-                        <div className="fixed inset-0 z-[1000] flex items-center justify-center px-4 font-sans">
-                            <Motion.button aria-label="Fermer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/85" onClick={closeCareerPlan} />
-                            <Motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} className="relative flex h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-slate-700 bg-[#0f172a] shadow-2xl">
+                        <div className="fixed inset-0 z-[10050] flex items-center justify-center bg-slate-950 px-4 font-sans">
+                            <button aria-label="Fermer le plan de carrière" tabIndex={-1} className="absolute inset-0" onClick={closeCareerPlan} />
+                            <div role="dialog" aria-modal="true" aria-labelledby={titleId} className="relative flex h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-slate-700 bg-[#0f172a] shadow-2xl">
                                 <div className={cn('relative shrink-0 border-b border-slate-800 px-6 pb-4 pt-5', isMasterTab ? 'bg-gradient-to-br from-fuchsia-950 to-slate-950' : 'bg-slate-900')}>
-                                    <button onClick={closeCareerPlan} className="absolute right-4 top-4 rounded-full border border-slate-700 bg-slate-800 p-2 text-slate-300"><X size={20} /></button>
+                                    <button ref={closeRef} aria-label="Fermer le plan de carrière" onClick={closeCareerPlan} className="absolute right-4 top-4 rounded-full border border-slate-700 bg-slate-800 p-2 text-slate-300"><X size={20} /></button>
                                     <div className="flex items-center gap-3">
                                         <div className="rounded-2xl border border-white/10 bg-white/5 p-3">{isMasterTab ? <Crown className="h-8 w-8 text-fuchsia-300" /> : <Trophy className="h-8 w-8 text-amber-400" />}</div>
-                                        <div><h2 className="text-xl font-black uppercase text-white">{isPrestigeI ? 'Prestige I' : isMasterTab ? 'Carrière Maître' : 'Plan de Carrière'}</h2><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{isPrestigeI ? 'Récompenses cosmiques 201–300' : isMasterTab ? 'La maîtrise au-delà des limites' : "L'élite du Skyjo"}</p></div>
+                                        <div><h2 id={titleId} className="text-xl font-black uppercase text-white">{isPrestigeI ? 'Prestige I' : isMasterTab ? 'Carrière Maître' : 'Plan de Carrière'}</h2><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{isPrestigeI ? 'Récompenses cosmiques 201–300' : isMasterTab ? 'La maîtrise au-delà des limites' : "L'élite du Skyjo"}</p></div>
                                     </div>
                                     <div className="mt-4 grid grid-cols-2 rounded-xl bg-slate-950/70 p-1">
                                         <button onClick={() => openCareerPlan('career')} className={cn('rounded-lg py-2 text-xs font-black uppercase', !isMasterTab ? 'bg-amber-500 text-slate-950' : 'text-slate-400')}>Carrière</button>
@@ -147,10 +173,10 @@ const ExperienceBar = memo(function ExperienceBar({ className }) {
                                         return <RewardRow key={reward.level} reward={reward} unlocked={unlocked} next={next} progressPercent={progressPercent} master={isMasterTab} prestige={isPrestigeI} />;
                                     })}
                                 </div>
-                            </Motion.div>
+                            </div>
                         </div>
                     )}
-                </AnimatePresence>,
+                </>,
                 document.body
             )}
         </>
