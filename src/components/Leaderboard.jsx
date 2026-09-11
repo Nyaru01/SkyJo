@@ -144,7 +144,7 @@ export default function Leaderboard({ data, currentUserId }) {
 
             {/* List */}
             <div className="career-legend" aria-label="Grades de carrière">
-                <span className="career-player"><i />Joueur · 1–99</span>
+                <span className="career-player"><i />Challenger · 1–99</span>
                 <span className="career-master"><i />Maître · 100–200</span>
                 <span className="career-prestige"><i />Prestige · 201+</span>
             </div>

@@ -6,7 +6,7 @@ export default function CareerBadge({ level = 1 }) {
     const tier = getCareerTier(level);
     const identity = getCareerIdentity(level);
     const Icon = tier === 'prestige' ? Sparkles : tier === 'master' ? Crown : Shield;
-    const label = tier === 'prestige' ? `Prestige ${identity.cycle - 1}` : tier === 'master' ? 'Maître' : 'Joueur';
+    const label = tier === 'prestige' ? `Prestige ${identity.cycle - 1}` : tier === 'master' ? 'Maître' : 'Challenger';
     return <span className={`career-identity career-${tier}`}>
         <span className="career-badge"><Icon size={12} aria-hidden="true" />{label}</span>
         <span className="career-level">{tier === 'prestige' ? `Palier ${identity.masterLevel} · Niv. ${level}` : `Niveau ${level}`}</span>
