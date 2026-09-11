@@ -1,4 +1,5 @@
 import SeasonalChallengeButton from './ui/SeasonalChallengeButton';
+import LevelUpCelebration from './LevelUpCelebration';
 import { HARVEST } from '../lib/weeklyChallenge';
 import { useOnlineGameStore } from '../store/onlineGameStore';
 import React, { useState, useEffect } from 'react';
@@ -13,6 +14,8 @@ import ChestRevelationOverlay from './virtual/ChestRevelationOverlay';
 
 export function AdminDashboard({ adminPassword, onClose }) {
     const [activeTab, setActiveTab] = useState('feedbacks');
+    const [levelPreview, setLevelPreview] = useState(null);
+    const [previewLevelInput, setPreviewLevelInput] = useState(201);
     const [feedbacks, setFeedbacks] = useState([]);
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
@@ -215,6 +218,18 @@ export function AdminDashboard({ adminPassword, onClose }) {
 
         return (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <section className="mb-6 rounded-2xl border border-cyan-300/20 bg-slate-900 p-5">
+                    <h3 className="font-bold text-white">Aperçu de montée de niveau</h3>
+                    <p className="mt-1 text-sm text-slate-400">La véritable animation, sans changer les XP, le niveau ou les récompenses du compte.</p>
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                        <label htmlFor="preview-level" className="text-sm text-slate-300">Niveau global</label>
+                        <input id="preview-level" type="number" min="2" max="10000" value={previewLevelInput}
+                            onChange={event => setPreviewLevelInput(Math.min(10000, Math.max(2, Number(event.target.value) || 2)))}
+                            className="w-24 rounded-xl border border-white/15 bg-slate-950 px-3 py-2 text-white" />
+                        <button onClick={() => setLevelPreview(previewLevelInput)} className="rounded-xl bg-cyan-300 px-4 py-2 font-bold text-slate-950">Voir l’animation</button>
+                        {[10, 100, 201, 301].map(level => <button key={level} onClick={() => { setPreviewLevelInput(level); setLevelPreview(level); }} className="rounded-xl border border-white/15 px-3 py-2 text-sm text-slate-200">{level === 201 ? 'Prestige 1' : level === 301 ? 'Prestige 2' : `Niveau ${level}`}</button>)}
+                    </div>
+                </section>
                 {/* Stats Row */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                     <StatCard
@@ -281,8 +296,7 @@ export function AdminDashboard({ adminPassword, onClose }) {
                             <div className="w-px h-8 bg-white/10 mx-1 self-center" />
                             <button
                                 onClick={() => {
-                                    useGameStore.getState().debugLevelUp();
-                                    toast.success('Level Up déclenché !');
+                                    setLevelPreview(previewLevelInput);
                                 }}
                                 title="Tester Niveau Supérieur"
                                 className="flex items-center gap-2 px-4 py-2.5 hover:bg-white/10 text-white/50 hover:text-emerald-400 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider"
@@ -374,6 +388,7 @@ export function AdminDashboard({ adminPassword, onClose }) {
 
     return (
         <div className="fixed inset-0 bg-slate-950 z-[99999] overflow-y-auto font-sans selection:bg-indigo-500/30">
+            {levelPreview !== null && <LevelUpCelebration key={levelPreview} previewLevel={levelPreview} onPreviewClose={() => setLevelPreview(null)} />}
             {/* Background Decor */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/5 blur-[120px] rounded-full" />
