@@ -15,12 +15,13 @@ import ConfirmModal from './ui/ConfirmModal';
 import { auth, googleProvider } from '../lib/firebase';
 import { signInWithPopup } from 'firebase/auth';
 import { toast } from 'react-hot-toast';
-import { getCareerIdentity } from '../lib/masterCareer';
+import { getCareerTier } from '../lib/masterCareer';
+import CareerBadge from './ui/CareerBadge';
 
 export default function SocialDashboard(props) {
     const { userProfile, updateUserProfile, generateSkyId } = useGameStore();
     const playerLevel = useGameStore(state => state.level);
-    const careerIdentity = getCareerIdentity(playerLevel);
+    const careerTier = getCareerTier(playerLevel);
     const {
         friends, fetchFriends, searchResults, isSearching,
         searchUsers, sendFriendRequest, acceptFriendRequest,
@@ -190,12 +191,12 @@ export default function SocialDashboard(props) {
     return (
         <div className="space-y-6">
             {/* Profil Card */}
-            <Card className="glass-premium border-white/20 overflow-hidden rounded-[24px]">
+            <Card className={`career-profile career-row career-${careerTier} glass-premium border-white/20 overflow-hidden rounded-[24px]`}>
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="relative cursor-pointer group" onClick={() => setIsAvatarSelectorOpen(true)}>
-                                <div className="w-16 h-16 rounded-full border-2 border-skyjo-blue/50 overflow-hidden bg-slate-800 shadow-xl shadow-skyjo-blue/20 group-hover:border-skyjo-blue transition-colors">
+                                <div className="career-frame w-16 h-16 rounded-full border-2 border-skyjo-blue/50 overflow-hidden bg-slate-800 shadow-xl shadow-skyjo-blue/20 group-hover:border-skyjo-blue transition-colors">
                                     <img src={getAvatarPath(userProfile.avatarId)} alt="Avatar" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                                 </div>
                                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-slate-800 rounded-full border border-skyjo-blue/30 flex items-center justify-center shadow-lg group-hover:bg-skyjo-blue transition-colors">
@@ -239,7 +240,7 @@ export default function SocialDashboard(props) {
                             </div>
                         </div>
                         <div className="text-right">
-                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{careerIdentity.label}</p>
+                            <CareerBadge level={playerLevel} />
                             <div className="w-20 h-1.5 bg-slate-700 rounded-full mt-1 overflow-hidden">
                                 <div
                                     className="h-full bg-gradient-to-r from-skyjo-blue to-emerald-400"

@@ -4,13 +4,14 @@ import { motion as Motion } from 'framer-motion';
 import { Card, CardContent } from './ui/Card';
 import { AVATARS } from '../lib/avatars';
 import { cn } from '../lib/utils'; // Assuming cn utility is available here
-import { getCareerIdentity } from '../lib/masterCareer';
+import { getCareerTier } from '../lib/masterCareer';
+import CareerBadge from './ui/CareerBadge';
 
 const PodiumStep = ({ user, rank, delay }) => {
     const isFirst = rank === 1;
     const isSecond = rank === 2;
     const avatar = AVATARS.find(a => a.id === user?.avatar_id)?.path || '/avatars/cat.png';
-    const identity = getCareerIdentity(user?.level || 1);
+    const tier = getCareerTier(user?.level || 1);
 
     // Color Theme Mapping
     const theme = isFirst ? {
@@ -45,6 +46,7 @@ const PodiumStep = ({ user, rank, delay }) => {
             }}
             className={cn(
                 "flex flex-col items-center relative cursor-pointer group transform-gpu",
+                `career-${tier}`,
                 isFirst ? 'z-10 -mt-20' : 'mt-8'
             )}
         >
@@ -68,7 +70,7 @@ const PodiumStep = ({ user, rank, delay }) => {
                 </div>
                 
                 <div className={cn(
-                    "relative rounded-full border-4 overflow-hidden bg-slate-900 transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(56,189,248,0.4)]",
+                    "career-frame relative rounded-full border-4 overflow-hidden bg-slate-900 transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(56,189,248,0.4)]",
                     theme.border,
                     theme.glow,
                     isFirst ? 'w-32 h-32' : 'w-20 h-20'
@@ -106,13 +108,7 @@ const PodiumStep = ({ user, rank, delay }) => {
                     {user?.name || '---'}
                 </p>
                 <div className="flex flex-col items-center gap-1">
-                    <span className={cn(
-                        "text-[10px] font-bold uppercase tracking-wider transition-colors",
-                        isFirst ? 'text-amber-300' : 'text-slate-500',
-                        "group-hover:text-amber-400"
-                    )}>
-                        {identity.label}
-                    </span>
+                    <CareerBadge level={user?.level || 1} />
                     <div className="flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md transition-all group-hover:bg-skyjo-blue/20 group-hover:border-skyjo-blue/40">
                         <span className="text-[10px] font-black text-white tracking-tighter mr-0.5 opacity-80">XP</span>
                         <span className={isFirst ? 'text-sm text-white' : 'text-[11px] text-slate-200'}>
@@ -138,7 +134,7 @@ export default function Leaderboard({ data, currentUserId }) {
         <div className="space-y-6 pb-6">
             {/* Podium - Reduced padding-top to move it up as requested */}
             {data.length > 0 && (
-                <div className="flex items-end justify-center gap-4 pt-12 pb-10 px-2 bg-gradient-to-b from-skyjo-blue/10 to-transparent rounded-3xl border border-white/5 relative overflow-visible shadow-2xl">
+                <div className="career-podium flex items-end justify-center gap-4 pt-12 pb-10 px-2 bg-gradient-to-b from-skyjo-blue/10 to-transparent rounded-3xl border border-white/5 relative overflow-visible shadow-2xl">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.1),transparent)] pointer-events-none" />
                     {top3Arr[0] && <PodiumStep user={top3Arr[0]} rank={2} delay={0.2} />}
                     <PodiumStep user={top3Arr[1]} rank={1} delay={0.1} />
@@ -147,10 +143,15 @@ export default function Leaderboard({ data, currentUserId }) {
             )}
 
             {/* List */}
+            <div className="career-legend" aria-label="Grades de carrière">
+                <span className="career-player"><i />Joueur · 1–99</span>
+                <span className="career-master"><i />Maître · 100–200</span>
+                <span className="career-prestige"><i />Prestige · 201+</span>
+            </div>
             <div className="space-y-3">
                 <div className="flex items-center justify-between px-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">
                     <span>Rang & Joueur</span>
-                    <span>Niveau & XP</span>
+                    <span>Grade & XP</span>
                 </div>
 
                 <div className="space-y-2">
@@ -158,7 +159,7 @@ export default function Leaderboard({ data, currentUserId }) {
                         const rank = index + 4;
                         const isMe = user.id === currentUserId;
                         const avatar = AVATARS.find(a => a.id === user.avatar_id)?.path || '/avatars/cat.png';
-                        const identity = getCareerIdentity(user.level);
+                        const tier = getCareerTier(user.level);
 
                         return (
                             <Motion.div
@@ -167,13 +168,13 @@ export default function Leaderboard({ data, currentUserId }) {
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.4 + index * 0.05 }}
                             >
-                                <Card className={`glass-premium border-white/5 overflow-hidden transition-all duration-300 ${isMe ? 'bg-skyjo-blue/10 border-skyjo-blue/30 scale-[1.02] shadow-lg shadow-skyjo-blue/10' : 'hover:bg-white/5'}`}>
-                                    <CardContent className="p-3 flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
+                                <Card className={`career-row career-${tier} glass-premium border-white/5 overflow-hidden transition-all duration-300 ${isMe ? 'bg-skyjo-blue/10 border-skyjo-blue/30 scale-[1.02] shadow-lg shadow-skyjo-blue/10' : 'hover:bg-white/5'}`}>
+                                    <CardContent className="career-row-content p-3 flex items-center justify-between">
+                                        <div className="career-row-person flex items-center gap-4">
                                             <div className="w-6 text-center font-black text-slate-500 text-xs">
                                                 {rank}
                                             </div>
-                                            <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-slate-800">
+                                            <div className="career-frame w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-slate-800">
                                                 <img src={avatar} alt={user.name} className="w-full h-full object-cover" />
                                             </div>
                                             <div>
@@ -183,8 +184,8 @@ export default function Leaderboard({ data, currentUserId }) {
                                                 <p className="text-[10px] text-slate-500 font-medium">@{user.vibe_id.replace('#', '')}</p>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-xs font-black text-white uppercase tracking-tighter">{identity.label}</p>
+                                        <div className="career-row-stats">
+                                            <CareerBadge level={user.level} />
                                             <div className="flex items-center justify-end gap-1 px-2 py-0.5 rounded-lg bg-white/5 border border-white/5">
                                                 <span className="text-[9px] font-black text-white/60 mr-0.5">XP</span>
                                                 <span className="text-[11px] font-bold text-slate-300">{user.xp}</span>

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getCareerIdentity, getMasterProgress } from './masterCareer.js';
+import { getCareerIdentity, getMasterProgress, getCareerTier } from './masterCareer.js';
 
 const cases = [
     [99, false, 0, 0, 0],
@@ -12,6 +12,12 @@ const cases = [
     [299, true, 99, 2, 1],
     [300, true, 100, 2, 2]
 ];
+
+test('les grades distinguent les joueurs, maîtres et tous les cycles prestige', () => {
+    for (const level of [1, 60, 99]) assert.equal(getCareerTier(level), 'player');
+    for (const level of [100, 198, 200]) assert.equal(getCareerTier(level), 'master');
+    for (const level of [201, 300, 301, 401]) assert.equal(getCareerTier(level), 'prestige');
+});
 
 for (const [level, isUnlocked, masterLevel, cycle, completedPrestiges] of cases) {
     test(`calcule correctement le niveau global ${level}`, () => {

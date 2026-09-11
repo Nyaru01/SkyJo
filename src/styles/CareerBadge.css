@@ -1,0 +1,18 @@
+.career-player{--career-ink:#abc0d4;--career-rgb:130,161,189}
+.career-master{--career-ink:#f4d38b;--career-rgb:230,177,73}
+.career-prestige{--career-ink:#b9eafa;--career-rgb:146,151,245}
+.career-identity{display:inline-flex;flex-direction:column;align-items:center;gap:4px;max-width:100%;vertical-align:middle}
+.career-badge{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:4px 8px;border-radius:7px;border:1px solid rgba(var(--career-rgb),.3);background:rgba(var(--career-rgb),.09);color:var(--career-ink);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.045em;white-space:nowrap;line-height:1.3}
+.career-master .career-badge{background:linear-gradient(120deg,#c5942829,#e8b94d0c);box-shadow:inset 0 1px 0 #ffe9b512}
+.career-prestige .career-badge{background:linear-gradient(110deg,#5962aa44,#258b9f33);border-color:#b4b1fb66;box-shadow:inset 0 1px 0 #e5e5ff22}
+.career-level{font-size:9px;font-weight:600;color:#aab9cb;line-height:1.4;white-space:nowrap}
+.career-frame{border-color:var(--career-ink)!important;box-shadow:0 0 0 3px rgba(var(--career-rgb),.13)!important;flex-shrink:0}
+.career-master .career-frame{box-shadow:0 0 0 3px #0e1826,0 0 0 4px #d3a14477,0 0 18px #c79b4322!important}
+.career-prestige .career-frame{box-shadow:0 0 0 3px #0e1826,0 0 0 4px #a3a2f599,0 0 0 7px #8cd9f018,0 0 22px #827cdb33!important}
+.career-row{border-left:3px solid rgba(var(--career-rgb),.6)!important}
+.career-row.career-master{background:linear-gradient(110deg,#4a382633,#192536 70%)!important;border-color:#c09c4933!important}
+.career-row.career-prestige{background:linear-gradient(110deg,#40356155,#15314655 75%)!important;border-color:#a3a1ed55!important}
+.career-row-content{gap:10px}.career-row-person{min-width:0;flex:1;gap:10px!important}.career-row-person>div:last-child{min-width:0}.career-row-person p{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.career-row-stats{flex-shrink:0;text-align:right}.career-row-stats .career-identity{align-items:flex-end}
+.career-legend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;padding:10px 8px;color:#9cacc0;font-size:9px}.career-legend span{display:flex;gap:5px;align-items:center}.career-legend i{width:6px;height:6px;border-radius:50%;background:var(--career-ink)}
+.career-profile .career-identity{align-items:flex-end}
+@media(max-width:390px){.career-row-person{gap:7px!important}.career-badge{padding:4px 6px;font-size:8px}.career-level{font-size:8px}.career-podium{gap:12px!important}.career-podium .career-identity{max-width:100px}}

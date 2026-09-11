@@ -2,6 +2,8 @@ export const MASTER_UNLOCK_LEVEL = 100;
 export const MASTER_LEVELS_PER_CYCLE = 100;
 export const XP_PER_LEVEL = 10;
 
+export const getCareerTier = (level = 1) => Number(level) >= 201 ? 'prestige' : Number(level) >= 100 ? 'master' : 'player';
+
 export const getMasterProgress = (globalLevel = 1) => {
     const safeLevel = Math.max(1, Number(globalLevel) || 1);
 
