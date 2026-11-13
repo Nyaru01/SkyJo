@@ -1,0 +1,60 @@
+/* Mobile chrome and stable dialogs. Card geometry and animation layers stay untouched. */
+.mobile-navigation { position: fixed; inset: auto 0 0; z-index: 80; display: flex; justify-content: center; padding: 10px 12px max(12px, env(safe-area-inset-bottom)); pointer-events: none; }
+.mobile-navigation nav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; width: 100%; max-width: 512px; padding: 6px; background: #101c2bf5; border: 1px solid #b8c6d940; border-radius: 24px; box-shadow: 0 8px 28px #0006; pointer-events: auto; }
+.mobile-nav-item { min-height: 56px; min-width: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 5px; padding: 6px 0; color: #b8c6d9; font-size: 12px; font-weight: 600; line-height: 1.2; border-radius: 17px; transition: background-color 150ms ease, color 150ms ease; }
+.mobile-nav-item--active { background: #7ee7cc18; color: #9cefd9; box-shadow: inset 0 0 0 1px #7ee7cc35; }
+.mobile-nav-item:active { background: #b8c6d924; }
+.mobile-nav-icon { position: relative; }
+.mobile-nav-notification { position: absolute; top: -2px; right: -4px; width: 8px; height: 8px; background: #fda4af; border: 2px solid #101c2b; border-radius: 50%; }
+.mobile-page-content { padding-bottom: calc(108px + env(safe-area-inset-bottom)); }
+.mobile-back-link { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 8px 14px; margin-bottom: 16px; border: 1px solid #b8c6d940; border-radius: 14px; color: #e2edf6; background: #152330; font-size: 15px; font-weight: 600; }
+.profile-hub { display: grid; gap: 24px; max-width: 448px; margin: 0 auto; padding: 24px 4px; }
+.profile-hub-heading { display: flex; align-items: center; gap: 16px; }
+.profile-hub-heading img { flex-shrink: 0; width: 64px; height: 64px; border: 1px solid #b8c6d940; border-radius: 22px; background: #152330; }
+.profile-hub-heading > div { min-width: 0; overflow-wrap: anywhere; }
+.profile-hub-heading h1 { font-size: 26px; line-height: 1.2; font-weight: 800; letter-spacing: -.03em; margin: 4px 0; color: #f4f8ff; }
+.profile-hub-heading p:last-child { font-size: 14px; color: #b8c6d9; }
+.mobile-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .12em; color: #7ee7cc; }
+.mobile-panel, .career-summary { border: 1px solid #b8c6d92e; border-radius: 20px; background: #152330; padding: 16px; }
+.mobile-panel .career-summary { padding: 0; border: 0; background: transparent; }
+.profile-hub-links { display: grid; gap: 12px; }
+.profile-hub-links button { display: flex; align-items: center; gap: 14px; text-align: left; min-height: 88px; padding: 18px; border: 1px solid #b8c6d92e; border-radius: 20px; color: #dce8f4; background: #152330; transition: background-color 150ms ease; }
+.profile-hub-links button:hover { background: #203444; }
+.profile-hub-links button > svg { width: 22px; height: 22px; color: #7ee7cc; flex-shrink: 0; }
+.profile-hub-links button > svg:last-child { margin-left: auto; width: 18px; color: #b8c6d9; }
+.profile-hub-links strong { display: block; font-size: 17px; }
+.profile-hub-links small { display: block; font-size: 14px; color: #b8c6d9; margin-top: 4px; }
+.career-summary > div { margin-bottom: 0; }
+.career-summary p { color: #b8c6d9; }
+.career-summary button { min-height: 48px; }
+.career-summary button > p { font-size: clamp(20px, 6vw, 28px); }
+.career-summary button > span:last-child { color: #b8c6d9; }
+.career-summary button[aria-haspopup] > span > span:first-child { font-size: 14px; }
+.career-summary button[aria-haspopup] > span > span:last-child { font-size: 12px; color: #b8c6d9; }
+.career-summary .career-progress-button { padding: 19px 0; background: transparent; border-color: transparent; }
+.career-progress-track { height: 8px; border-radius: 999px; background: #2b4052; overflow: hidden; }
+.career-dialog { max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); outline: none; }
+.career-dialog h2 { padding-right: 44px; font-size: 19px; line-height: 1.25; }
+.career-dialog .career-close { min-width: 48px; min-height: 48px; display: grid; place-items: center; right: 12px; top: 12px; }
+.career-dialog button:not([tabindex="-1"]) { min-height: 48px; }
+.career-dialog p { color: #b8c6d9; font-size: 12px; }
+.career-reward p { font-size: 13px; line-height: 1.5; }
+.career-reward h3 { font-size: 16px; }
+.modal-backdrop.modal-backdrop--stable { background: #080f1e; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.modal-surface { background: #152330; }
+.modal-close-button { min-width: 48px; min-height: 48px; color: #cbd9e8; }
+.seasonal-guide-header .modal-close-button { min-width: 48px; min-height: 48px; }
+.menu-dialog-shell { overflow-y: auto; background: #152330; }
+.menu-dialog-shell > div { max-width: none; border: 0; border-radius: 0; box-shadow: none; }
+.menu-dialog-shell button { min-height: 48px; }
+.menu-dialog-shell button[aria-label^="Fermer"] { min-width: 48px; }
+.mobile-nav-item:focus-visible, .mobile-back-link:focus-visible, .profile-hub button:focus-visible, .career-summary button:focus-visible, .career-dialog button:focus-visible { outline: 3px solid #9cefd9; outline-offset: 3px; }
+@media (max-width: 359px) {
+    .mobile-navigation { padding-left: 6px; padding-right: 6px; }
+    .mobile-nav-item { font-size: 11px; }
+    .career-summary { padding: 12px; }
+    .career-dialog > div { padding-left: 14px; padding-right: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .mobile-nav-item, .profile-hub-links button { transition: none; }
+}

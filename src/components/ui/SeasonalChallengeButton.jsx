@@ -5,8 +5,9 @@ import { Leaf } from 'lucide-react';
 import { PremiumTiltButton } from './PremiumTiltButton';
 import { getActiveWeeklyChallenge, getEquinoxCountdown, getWeeklyChallengeRemainingDays, isWeeklyChallengeAvailable, HARVEST } from '../../lib/weeklyChallenge';
 import '../../styles/SeasonalChallenge.css';
+import HarvestChallengeGuide from './HarvestChallengeGuide';
 
-export default function SeasonalChallengeButton({ onClick, rewardState = {}, preview = false, challenge: forcedChallenge }) {
+export default function SeasonalChallengeButton({ onClick, rewardState = {}, preview = false, challenge: forcedChallenge, calm = false }) {
     const [showConditions, setShowConditions] = useState(false);
     const titleId = useId();
     const now = useSeasonalClock();
@@ -15,6 +16,7 @@ export default function SeasonalChallengeButton({ onClick, rewardState = {}, pre
     const available = preview || isWeeklyChallengeAvailable(rewardState, now, challenge);
     const countdown = harvest ? null : getEquinoxCountdown(now);
     return <><PremiumTiltButton
+        calm={calm}
         onClick={() => setShowConditions(true)} disabled={!available}
         gradientFrom={harvest ? 'from-slate-950' : 'from-indigo-700'}
         gradientTo={harvest ? 'to-amber-950' : 'to-amber-500'}
@@ -34,7 +36,13 @@ export default function SeasonalChallengeButton({ onClick, rewardState = {}, pre
             {harvest ? <Leaf className="seasonal-emblem w-12 h-12 shrink-0 text-amber-300" aria-hidden="true" /> : <span className="game-mode-icon relative shrink-0"><img src="/skyjo-planet-moon.svg" alt="" className="absolute left-1/2 top-1/2 w-16 h-16 max-w-none -translate-x-1/2 -translate-y-1/2" /></span>}
         </div>
     </PremiumTiltButton>
-        <ModalShell fullScreen stableBackdrop isOpen={showConditions} onClose={() => setShowConditions(false)} labelledBy={titleId} zIndex={preview ? 'z-[100050]' : 'z-[10050]'} className={`seasonal-rules seasonal-guide ${harvest ? 'seasonal-guide-harvest' : ''}`}>
+        <ModalShell fullScreen stableBackdrop isOpen={showConditions} onClose={() => setShowConditions(false)} labelledBy={titleId} zIndex={preview ? 'z-[100050]' : 'z-[10050]'} className={harvest ? 'harvest-guide' : 'seasonal-rules seasonal-guide'}>
+            {harvest ? <HarvestChallengeGuide
+                titleId={titleId} preview={preview} rewardXP={challenge.rewardXP}
+                available={available} remainingDays={getWeeklyChallengeRemainingDays(rewardState, now, challenge)}
+                onClose={() => setShowConditions(false)}
+                onLaunch={() => { const result = onClick?.(); if (preview || result === false) setShowConditions(false); }}
+            /> : <>
             <header className="seasonal-guide-header">
                 <span>{preview ? 'APERÇU ADMIN' : 'LES RENDEZ-VOUS SKYJO'}</span>
                 <ModalCloseButton onClick={() => setShowConditions(false)} />
@@ -61,17 +69,15 @@ export default function SeasonalChallengeButton({ onClick, rewardState = {}, pre
                 {!available && <p>Récompense disponible dans {getWeeklyChallengeRemainingDays(rewardState, now, challenge)} jours.</p>}
                 <button type="button" disabled={!available} className="seasonal-launch" onClick={() => { const result = onClick?.(); if (preview || result === false) setShowConditions(false); }}>{preview ? 'Lancer l’aperçu' : 'Relever le défi'}<span aria-hidden="true"> →</span></button>
             </footer>
+            </>}
         </ModalShell>
     </>;
 }
 
-export function SeasonalProgress({ gameState }) {
-    if (!gameState?.isWeeklyChallenge || gameState.seasonalChallengeId !== HARVEST.id) return null;
-    const cleared = gameState.players.find(p => p.id === 'human-1')?.columnsCleared || 0;
+export function SeasonalResult({ gameState }) {
+    if (!gameState?.isWeeklyChallenge || gameState.seasonalChallengeId !== HARVEST.id || !gameState.seasonalResult) return null;
     const result = gameState.seasonalResult;
     return <div className="seasonal-progress" role="status">
-        <span>{gameState.isSeasonalPreview ? 'Aperçu admin · ' : ''}Récolte d’automne</span>
-        <span className="flex items-center gap-1" aria-label={`${Math.min(cleared, 2)} colonnes sur 2`}>{[1, 2].map(n => <Leaf key={n} size={18} className={cleared >= n ? 'text-amber-300 fill-amber-400/30' : 'text-slate-600'} />)} {Math.min(cleared, 2)}/2</span>
-        {result && <span>{result.success ? `Défi réussi · +${result.rewardXP} XP${result.preview ? ' simulés' : ''}` : 'Défi non réussi · 0 XP'}</span>}
+        {result.success ? `Défi réussi · +${result.rewardXP} XP${result.preview ? ' simulés' : ''}` : 'Défi non réussi · 0 XP'}
     </div>;
 }

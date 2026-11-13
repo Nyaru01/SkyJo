@@ -31,7 +31,8 @@ import { AdminDashboard } from './AdminDashboard';
 import ChatPopup from './ChatPopup';
 import NewOnlineModePopup from './NewOnlineModePopup';
 import MasterCareerPopup from './MasterCareerPopup';
-import ExperienceBar from './ExperienceBar';
+import { CareerPlan } from './ExperienceBar';
+import ProfileHub from './ProfileHub';
 import { CURRENT_NEWS_VERSION } from './WhatsNewModal';
 
 // Stable page states: avoid full-page opacity/transform transitions around
@@ -162,7 +163,7 @@ export default function Dashboard() {
     // const isManualGameActive = gameStatus === 'PLAYING' && (effectiveTab === 'game' || effectiveTab === 'home');
     // const isVirtualGameActive = effectiveTab === 'virtual' && (!!virtualGameState || onlineGameStarted);
     const isSeasonalPreview = useVirtualGameStore(state => !!state.gameState?.isSeasonalPreview);
-    const isVirtualGameActive = isSeasonalPreview || effectiveTab === 'virtual' && (!!virtualGameState || onlineGameStarted);
+    const isVirtualGameActive = isSeasonalPreview || effectiveTab === 'virtual' && virtualScreen === 'game' && (!!virtualGameState || onlineGameStarted);
 
     // useBackgroundMusic(isManualGameActive);
 
@@ -512,10 +513,14 @@ export default function Dashboard() {
                         )}
                         <VirtualGame
                             initialScreen={virtualScreen}
+                            onScreenChange={setVirtualScreen}
                             onBackToMenu={handleBackToMenu}
                         />
                     </Motion.div>
                 );
+
+            case 'profile':
+                return <ProfileHub onNavigate={setActiveTab} />;
 
             case 'pastGames':
                 return (
@@ -527,6 +532,7 @@ export default function Dashboard() {
                         exit="exit"
                         transition={pageTransition}
                     >
+                        <button type="button" className="mobile-back-link" onClick={() => setActiveTab('profile')}><ArrowLeft size={18} aria-hidden="true" />Profil</button>
                         <GameHistory />
                     </Motion.div>
                 );
@@ -572,6 +578,7 @@ export default function Dashboard() {
                         exit="exit"
                         transition={pageTransition}
                     >
+                        <button type="button" className="mobile-back-link" onClick={() => setActiveTab('profile')}><ArrowLeft size={18} aria-hidden="true" />Profil</button>
                         <SettingsPage onViewChangelog={() => setActiveTab('changelog')} />
                     </Motion.div>
                 );
@@ -720,7 +727,7 @@ export default function Dashboard() {
             `}} />
             {/* Bouton Quitter Spécifique au jeu en ligne (Fix Plan) */}
 
-            <div className={`max-w-3xl mx-auto p-3 ${isVirtualGameActive ? 'pb-2' : 'pb-24'}`}>
+            <div className={`max-w-3xl mx-auto p-3 ${isVirtualGameActive ? 'pb-2' : 'mobile-page-content'}`}>
                 <AnimatePresence initial={false}>
                     {renderContent()}
                 </AnimatePresence>
@@ -894,7 +901,7 @@ export default function Dashboard() {
                     openCareerPlan('master');
                 }}
             />
-            {effectiveTab === 'home' && <ExperienceBar className="hidden" />}
+            <CareerPlan />
             {/* Wallpaper Selection Modal - Accessible depuis partout */}
             <AnimatePresence>
                 {isWallpaperModalOpen && (

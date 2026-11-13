@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useState, useCallback, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Users, ArrowLeft, RotateCcw, RefreshCw, Trophy, Info, HelpCircle, Sparkles, CheckCircle, BookOpen, X, Bot, Lock, Image as ImageIcon, Palette, Copy, Share2, Wifi, Globe, Plus, ChevronRight, WifiOff, Music, Music2, Leaf, Swords, Skull, Gem, SkipForward, Pause, PlayCircle, Star, Zap, Award, QrCode, Flame } from 'lucide-react';
 import { Button } from './ui/Button';
@@ -18,7 +18,7 @@ import SkyjoCard from './virtual/SkyjoCard';
 import HostLeftOverlay from './virtual/HostLeftOverlay';
 import ChestRevelationOverlay from './virtual/ChestRevelationOverlay';
 import RoundResultsPlayers from './virtual/RoundResultsPlayers';
-import RobotAvatar from './virtual/RobotAvatar';
+import AISetupScreen from './virtual/AISetupScreen';
 import GameMessageBanner from './virtual/GameMessageBanner';
 import ExperienceBar from './ExperienceBar';
 import SkinCarousel from './SkinCarousel';
@@ -34,7 +34,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import { cn } from '../lib/utils';
 import { getCardSkinRequiredLevel } from '../lib/skinUtils';
 import { getActiveWeeklyChallenge, getGameChallenge, getWeeklyChallengeById, hasChallengeObjective, hasBestRoundScore } from '../lib/weeklyChallenge';
-import { SeasonalProgress } from './ui/SeasonalChallengeButton';
+import { SeasonalResult } from './ui/SeasonalChallengeButton';
 import { getTourmentPerformance } from '../lib/tourmentPerformance';
 
 import { AVATARS, getAvatarPath } from '../lib/avatars';
@@ -57,7 +57,7 @@ const PLAYER_COLORS = ['🐱', '🐶', '🦊', '🐻', '🐼', '🦁', '🐸', '
  * Virtual Skyjo Game Component
  * Main component for playing virtual Skyjo locally
  */
-export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
+export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onScreenChange }) {
     // 1. Data Stores
     const userProfile = useGameStore(state => state.userProfile);
     const updateUserProfile = useGameStore(state => state.updateUserProfile);
@@ -75,6 +75,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
 
     // 2. Local State
     const [screen, setScreen] = useState(initialScreen); // menu, setup, game, scores
+    useLayoutEffect(() => { onScreenChange?.(screen); }, [screen, onScreenChange]);
     const [chestsRevealed, setChestsRevealed] = useState(false);
     const [showExitConfirm, setShowExitConfirm] = useState(false);
     const [players, setPlayers] = useState([
@@ -1254,7 +1255,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                     <p className="text-amber-200 text-sm">{activeGameState.isSeasonalPreview ? 'Aperçu admin · ' : ''}{result.success ? 'Défi réussi' : 'Défi non réussi'} · +{result.rewardXP} XP{activeGameState.isSeasonalPreview ? ' simulés' : ''}</p>
                 </CardHeader>
                 <CardContent className="round-results-content">
-                    <div className="round-results-scroll"><SeasonalProgress gameState={activeGameState} /><RoundResultsPlayers scores={scores} gameState={activeGameState} totals={totals} /></div>
+                    <div className="round-results-scroll"><SeasonalResult gameState={activeGameState} /><RoundResultsPlayers scores={scores} gameState={activeGameState} totals={totals} /></div>
                     <div className="round-actions flex flex-col gap-2">
                         {canRetry && <Button className="w-full" onClick={retryChallenge}><RotateCcw className="mr-2 h-4 w-4" />Réessayer le défi</Button>}
                         <Button variant={canRetry ? 'ghost' : 'primary'} className="w-full" onClick={confirmExit}>{activeGameState.isSeasonalPreview ? 'Retour au panneau admin' : 'Terminer le défi'}</Button>
@@ -1297,168 +1298,14 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
         };
 
         return (
-            <div className="max-w-md mx-auto p-4 animate-in fade-in min-h-[calc(100dvh-2rem)] flex flex-col">
-                <div className="relative flex items-center justify-center py-2 mb-2">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleBackToMenu}
-                        className="absolute left-0 w-10 h-10 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 hover:scale-110 active:scale-95 transition-all"
-                    >
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
-
-                    <div className="text-center space-y-0.5 relative">
-                        <h2 className="text-xl font-black text-white tracking-tighter flex items-center justify-center gap-2">
-                            CONTRE L'IA
-                        </h2>
-                        <div className="h-1 w-10 bg-purple-500 mx-auto rounded-full" />
-                    </div>
-                </div>
-
-                <Card className="glass-premium dark:glass-dark shadow-xl border-t border-white/10 mb-4 overflow-hidden relative">
-                    <CardContent className="flex flex-col gap-4 pt-6 p-4">
-                        {/* Difficulty */}
-                        <div className="flex flex-col pt-2">
-
-                            <label className="text-xs font-bold uppercase tracking-wider text-purple-200 ml-1 mb-3 block">Niveau de difficulté</label>
-                            <div className="grid grid-cols-2 gap-4">
-                                {[
-                                    { level: AI_DIFFICULTY.NORMAL, label: 'Normal', color: 'from-emerald-500 to-teal-500', shadow: 'shadow-emerald-500/50', icon: Leaf, desc: 'Idéal pour débuter', activeClass: "border-emerald-500 ring-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.4)]" },
-                                    { level: AI_DIFFICULTY.HARD, label: 'Difficile', color: 'from-amber-500 to-orange-500', shadow: 'shadow-amber-500/50', icon: Swords, desc: 'Défi stratégique', activeClass: "border-amber-500 ring-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.4)]" },
-                                    { level: AI_DIFFICULTY.HARDCORE, label: 'Hardcore', color: 'from-purple-600 to-indigo-600', shadow: 'shadow-purple-600/50', icon: Skull, desc: 'IA impitoyable', activeClass: "border-purple-500 ring-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.4)]" },
-                                    { level: AI_DIFFICULTY.BONUS, label: 'Tourment', color: 'from-red-600 to-rose-600', shadow: 'shadow-red-600/50', icon: Flame, desc: 'Stratégie & Bonus', activeClass: "border-red-600 ring-red-600/50 shadow-[0_0_20px_rgba(220,38,38,0.4)]" }
-                                ].map((mode) => (
-                                    <div key={mode.level} className="relative group h-full">
-                                        <motion.div
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                            className="h-full rounded-xl"
-                                        >
-                                            <button
-                                                onClick={() => setAIConfig({ ...aiConfig, difficulty: mode.level })}
-                                                className={cn(
-                                                    "relative w-full p-3 rounded-xl border-2 transition-all duration-300 flex flex-col items-center overflow-hidden h-full",
-                                                    aiConfig.difficulty === mode.level
-                                                        ? `bg-slate-800/90 ring-2 ${mode.activeClass}`
-                                                        : "border-white/10 bg-slate-900/40 hover:bg-slate-800/60 hover:border-white/20"
-                                                )}
-                                            >
-                                                {/* Main Content Area - Centered for alignment */}
-                                                <div className="flex-1 flex flex-col items-center justify-center w-full gap-3 py-1">
-                                                    {/* Icon Container with Glass/Glow Effect */}
-                                                    <div className={cn(
-                                                        "w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 overflow-hidden border border-white/20 shrink-0 relative",
-                                                        aiConfig.difficulty === mode.level
-                                                            ? "bg-slate-800"
-                                                            : "bg-slate-800/50 grayscale-[0.5] opacity-80"
-                                                    )}>
-                                                        {/* Glowing Gradient Background */}
-                                                        <div className={cn(
-                                                            "absolute inset-0 opacity-20 bg-gradient-to-br",
-                                                            mode.color
-                                                        )} />
-
-                                                        {/* Central Icon */}
-                                                        <mode.icon
-                                                            className={cn(
-                                                                "w-8 h-8 relative z-10 drop-shadow-md",
-                                                                aiConfig.difficulty === mode.level
-                                                                    ? "text-white"
-                                                                    : "text-slate-300"
-                                                            )}
-                                                            strokeWidth={1.5}
-                                                        />
-
-                                                        {/* Glow reflection */}
-                                                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none" />
-                                                    </div>
-
-                                                    <div className="flex flex-col justify-center w-full text-center">
-                                                        <div className={cn(
-                                                            "font-black text-sm uppercase tracking-tight transition-colors",
-                                                            aiConfig.difficulty === mode.level ? "text-white" : "text-slate-300"
-                                                        )}>
-                                                            {mode.label}
-                                                        </div>
-                                                        <div className="text-[10px] text-slate-500 font-bold leading-tight mt-1">{mode.desc}</div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Footer Area for Rules Button - Only if needed */}
-                                                {(mode.level === AI_DIFFICULTY.BONUS || mode.level === AI_DIFFICULTY.HARDCORE) && (
-                                                    <div className="w-full pt-2 border-t border-white/5 mt-auto">
-                                                        <div
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setRulesMode(mode.level === AI_DIFFICULTY.HARDCORE ? 'hardcore' : 'tourment');
-                                                                setShowBonusTutorial(true);
-                                                            }}
-                                                            className="w-full py-1.5 px-3 rounded-lg bg-slate-800/50 border border-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 hover:bg-slate-700 hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
-                                                        >
-                                                            <div className="w-3 h-3 flex items-center justify-center bg-purple-500/20 rounded-full">
-                                                                <Info className="w-2.5 h-2.5" />
-                                                            </div>
-                                                            Règles
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                {aiConfig.difficulty === mode.level && (
-                                                    <div className={cn(
-                                                        "absolute top-2 right-2 w-2 h-2 rounded-full shadow-[0_0_8px]",
-                                                        mode.shadow,
-                                                        "bg-white"
-                                                    )} />
-                                                )}
-                                            </button>
-                                        </motion.div>
-
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                    </CardContent>
-                </Card>
-
-                <PremiumTiltButton
-                    onClick={handleStartAIGame}
-                    gradientFrom={
-                        aiConfig.difficulty === AI_DIFFICULTY.NORMAL ? "from-emerald-500" :
-                            aiConfig.difficulty === AI_DIFFICULTY.HARD ? "from-amber-500" :
-                                aiConfig.difficulty === AI_DIFFICULTY.HARDCORE ? "from-purple-600" :
-                                    "from-red-600"
-                    }
-                    gradientTo={
-                        aiConfig.difficulty === AI_DIFFICULTY.NORMAL ? "to-teal-500" :
-                            aiConfig.difficulty === AI_DIFFICULTY.HARD ? "to-orange-500" :
-                                aiConfig.difficulty === AI_DIFFICULTY.HARDCORE ? "to-indigo-600" :
-                                    "to-rose-600"
-                    }
-                    shadowColor={
-                        aiConfig.difficulty === AI_DIFFICULTY.NORMAL ? "shadow-emerald-500/25" :
-                            aiConfig.difficulty === AI_DIFFICULTY.HARD ? "shadow-amber-500/25" :
-                                aiConfig.difficulty === AI_DIFFICULTY.HARDCORE ? "shadow-purple-500/25" :
-                                    "shadow-red-500/25"
-                    }
-                >
-                    <span className="flex items-center justify-center gap-2">
-                        <Play className="h-5 w-5 fill-current" />
-                        AFFRONTER L'IA
-                    </span>
-                </PremiumTiltButton>
-
-                {/* Robot Avatar - Precision Placement (Red Box Area) */}
-                <div className="flex-1 flex items-end justify-end p-1 pr-1 pb-16 pointer-events-none">
-                    <div className="w-32 h-32 shrink-0 relative pointer-events-auto">
-                        <RobotAvatar
-                            size="lg"
-                            className="w-full h-full"
-                            difficulty={aiConfig.difficulty}
-                        />
-                    </div>
-                </div>
-
+            <>
+                <AISetupScreen
+                    difficulty={aiConfig.difficulty}
+                    onDifficultyChange={difficulty => setAIConfig(prev => ({ ...prev, difficulty }))}
+                    onStart={handleStartAIGame}
+                    onBack={handleBackToMenu}
+                    onRules={mode => { setRulesMode(mode); setShowBonusTutorial(true); }}
+                />
                 {avatarSelectorComponent}
                 <BonusTutorial
                     isOpen={showBonusTutorial}
@@ -1505,7 +1352,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                         }
                     }}
                 />
-            </div >
+            </>
         );
     }
 
@@ -2680,7 +2527,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
             )}
         >
 
-            <SeasonalProgress gameState={activeGameState} />
             {activeGameState?.isSeasonalPreview && <button className="text-xs text-amber-200 underline py-1" onClick={() => useVirtualGameStore.getState().exitSeasonalPreview()}>Quitter l’aperçu · Retour admin</button>}
             <AnimatePresence>
                 {showTourmentPerformanceGoal && (
@@ -2955,7 +2801,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu }) {
                                             // Only show action instructions when it's the human player's turn (virtual mode only)
                                             activeGameState.currentPlayerIndex !== myPlayerIndex && !isOnlineMode
                                                 ? (isAIThinking ? `IA réfléchit...` : `Tour de l'IA`)
-                                                : (activeGameState.turnPhase === 'DRAW' ? 'Piocher ou défausser' :
+                                                : (activeGameState.turnPhase === 'DRAW' ? 'Piochez ou prenez la défausse' :
                                                     activeGameState.turnPhase === 'REPLACE_OR_DISCARD' ?
                                                         ((activeGameState.drawnCard?.specialType === 'C' || (Number(activeGameState.drawnCard?.value) === 0 && activeGameState.drawnCard?.color === 'special')) ? 'Complétez une colonne (Joker)' : 'Jouez dans votre grille ou défaussez') :
                                                         activeGameState.turnPhase === 'MUST_REPLACE' ?

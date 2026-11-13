@@ -1,0 +1,39 @@
+.modal-surface.daily-challenge-dialog { --daily-accent: #f4cd85; --daily-rgb: 244,205,133; background: #101e2d; border: 1px solid #b8c6d940; border-radius: 26px; overflow-y: auto; }
+.modal-surface.daily-challenge-dialog--tourment { --daily-accent: #ffac9b; --daily-rgb: 255,172,155; }
+.daily-challenge-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 22px 20px 8px; }
+.daily-challenge-header p { font-size: 10px; font-weight: 800; letter-spacing: .12em; color: var(--daily-accent); }
+.daily-challenge-header h2 { color: #f4f8ff; font-size: 27px; line-height: 1.15; font-weight: 800; letter-spacing: -.035em; margin-top: 6px; }
+.daily-challenge-scene { position: relative; isolation: isolate; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 176px; padding: 0 20px; overflow: hidden; }
+.daily-challenge-light { position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 50%, rgba(var(--daily-rgb),.13), transparent 65%); pointer-events: none; }
+.daily-challenge-scene .daily-challenge-robot { width: 176px; height: 176px; flex-shrink: 0; filter: drop-shadow(0 8px 14px #0005); }
+.daily-challenge-reward { position: relative; min-width: 0; flex: 1; color: var(--daily-accent); }
+.daily-challenge-reward > span { display: block; margin-top: 10px; font-size: 9px; font-weight: 800; letter-spacing: .08em; }
+.daily-challenge-reward > strong { display: block; margin-top: 4px; font-size: 36px; font-weight: 800; line-height: 1.1; letter-spacing: -.05em; white-space: nowrap; }
+.daily-challenge-reward strong small { font-size: 14px; letter-spacing: 0; }
+.daily-challenge-reward p { font-size: 11px; color: #b8c6d9; margin-top: 6px; }
+.daily-challenge-content { padding: 0 20px; }
+.daily-challenge-intro { margin: 0 0 20px; color: #b8c6d9; font-size: 16px; line-height: 1.4; }
+.daily-challenge-intro strong { color: #f4f8ff; font-weight: 650; }
+.daily-challenge-choices { min-width: 0; }
+.daily-challenge-choices legend { margin-bottom: 12px; color: #e1ebf6; font-size: 13px; font-weight: 600; }
+.daily-challenge-choices > div { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.daily-challenge-choices label { position: relative; cursor: pointer; min-width: 0; }
+.daily-challenge-choices input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.daily-challenge-choice { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; height: 100%; min-height: 150px; padding: 14px; border-radius: 18px; border: 1px solid #b8c6d933; background: #162636; transition: border-color 150ms ease, background-color 150ms ease; color: #f4f8ff; }
+.daily-challenge-choice-top { display: flex; align-items: center; justify-content: space-between; width: 100%; color: var(--daily-accent); }
+.daily-challenge-check { display: grid; place-items: center; width: 16px; height: 16px; border: 1px solid #b8c6d966; border-radius: 50%; }
+.daily-challenge-choice > strong { font-size: 17px; font-weight: 750; line-height: 1.25; letter-spacing: -.02em; }
+.daily-challenge-xp { font-size: 12px; font-weight: 750; color: var(--daily-accent); background: rgba(var(--daily-rgb),.09); border: 1px solid rgba(var(--daily-rgb),.2); border-radius: 7px; padding: 3px 7px; }
+.daily-challenge-choice > small { font-size: 12px; line-height: 1.4; color: #b8c6d9; }
+.daily-challenge-choices input:checked + .daily-challenge-choice { border-color: var(--daily-accent); background: linear-gradient(130deg,rgba(var(--daily-rgb),.1),transparent),#182c3b; box-shadow: inset 0 0 0 1px rgba(var(--daily-rgb),.25); }
+.daily-challenge-choices input:checked + .daily-challenge-choice .daily-challenge-check { background: var(--daily-accent); border-color: var(--daily-accent); color: #142331; }
+.daily-challenge-choices input:focus-visible + .daily-challenge-choice { outline: 3px solid #e9f5ff; outline-offset: 3px; }
+.daily-challenge-condition { display: flex; align-items: flex-start; gap: 8px; margin: 16px 0 0; font-size: 12px; line-height: 1.5; color: #b8c6d9; }
+.daily-challenge-condition svg { flex-shrink: 0; margin-top: 1px; color: var(--daily-accent); }
+.daily-challenge-footer { padding: 20px; }
+.daily-challenge-footer > button { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 64px; padding: 12px 16px; border-radius: 17px; color: #152735; background: var(--daily-accent); text-align: left; font-size: 17px; font-weight: 800; line-height: 1.25; }
+.daily-challenge-footer small { display: block; margin-top: 4px; font-size: 11px; font-weight: 500; }
+.daily-challenge-footer > button:disabled { background: #213446; color: #b8c6d9; font-size: 14px; cursor: not-allowed; justify-content: center; text-align: center; }
+.daily-challenge-footer > button:focus-visible { outline: 3px solid #f4f8ff; outline-offset: 3px; }
+@media (max-width: 359px) { .daily-challenge-header { padding: 18px 16px 8px; } .daily-challenge-header h2 { font-size: 24px; } .daily-challenge-header p { font-size: 9px; } .daily-challenge-scene { padding: 0 12px; gap: 2px; min-height: 152px; } .daily-challenge-scene .daily-challenge-robot { width: 148px; height: 148px; } .daily-challenge-reward > strong { font-size: 30px; } .daily-challenge-reward > span { font-size: 8px; } .daily-challenge-content { padding: 0 16px; } .daily-challenge-choice { padding: 12px; } .daily-challenge-footer { padding: 18px 16px; } }
+@media (prefers-reduced-motion: reduce) { .daily-challenge-choice { transition: none; } }

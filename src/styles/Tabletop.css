@@ -53,7 +53,7 @@
 .skyjo-pile-group--discard { --pile-accent: #e4c68e; }
 .skyjo-pile-label {
     position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
-    color: var(--pile-accent); font: 700 8px/1 system-ui; letter-spacing: .1em;
+    color: var(--pile-accent); font: 700 10px/1 system-ui; letter-spacing: .06em;
     white-space: nowrap; text-shadow: 0 2px 5px #000; pointer-events: none;
 }
 .skyjo-pile-count {
@@ -64,7 +64,7 @@
     box-shadow: inset 0 1px 0 #ffffff0a, 0 3px 8px #0003 !important;
 }
 @media (max-width: 360px) {
-    .skyjo-pile-label { font-size: 7px; letter-spacing: .04em; }
+    .skyjo-pile-label { font-size: 10px; letter-spacing: .02em; }
 }
 .skyjo-empty-pile {
     background: #08111b55;
@@ -99,3 +99,16 @@
 .skyjo-clear-flash { position: absolute; inset: 0 12%; border-radius: 12px; background: linear-gradient(0deg, transparent, #fff0b677, transparent); }
 .skyjo-clear-spark { position: absolute; top: 50%; left: 50%; width: 3px; height: 3px; border-radius: 50%; background: #ffe9a1; box-shadow: 0 0 5px #ffce70; }
 .skyjo-clear-result { position: absolute; top: calc(50% - 14px); left: 0; right: 0; text-align: center; color: #fff0b8; font: 900 24px/28px system-ui; text-shadow: 0 2px 6px #000, 0 0 12px #ffce7080; }
+
+/* Score/tour: no change to grid dimensions, card anchors or animation timings. */
+.skyjo-hand { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+.skyjo-player-badge { gap: 8px !important; padding-left: 12px !important; padding-right: 12px !important; max-width: calc(100vw - 32px) !important; }
+.skyjo-player-badge .truncate { max-width: 80px; }
+.skyjo-player-badge .tracking-widest { letter-spacing: .03em; }
+.skyjo-score-unit { font-size: 10px; font-weight: 600; letter-spacing: 0; color: #cbd9e8; }
+.skyjo-turn-label { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; letter-spacing: 0; text-transform: none; color: var(--turn-accent); }
+.skyjo-card-source { white-space: normal; max-width: calc(100vw - 32px); text-align: center; }
+.skyjo-pile-group--draw .skyjo-pile-label { left: 0; transform: none; }
+.skyjo-pile-group--discard .skyjo-pile-label { left: auto; right: 0; transform: none; }
+.skyjo-pile-zone--choosing .skyjo-pile-group--draw .skyjo-pile-label { left: 24px; }
+.skyjo-pile-zone--choosing .skyjo-pile-group--discard .skyjo-pile-label { right: 24px; }

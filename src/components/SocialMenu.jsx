@@ -15,13 +15,11 @@ import ConfirmModal from './ui/ConfirmModal';
 import { auth, googleProvider } from '../lib/firebase';
 import { signInWithPopup } from 'firebase/auth';
 import { toast } from 'react-hot-toast';
-import { getCareerTier } from '../lib/masterCareer';
-import CareerBadge from './ui/CareerBadge';
+import SocialProfileCard from './SocialProfileCard';
+import '../styles/SocialPanel.css';
 
 export default function SocialDashboard(props) {
     const { userProfile, updateUserProfile, generateSkyId } = useGameStore();
-    const playerLevel = useGameStore(state => state.level);
-    const careerTier = getCareerTier(playerLevel);
     const {
         friends, fetchFriends, searchResults, isSearching,
         searchUsers, sendFriendRequest, acceptFriendRequest,
@@ -189,115 +187,15 @@ export default function SocialDashboard(props) {
     };
 
     return (
-        <div className="space-y-6">
-            {/* Profil Card */}
-            <Card className={`career-profile career-row career-${careerTier} glass-premium border-white/20 overflow-hidden rounded-[24px]`}>
-                <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="relative cursor-pointer group" onClick={() => setIsAvatarSelectorOpen(true)}>
-                                <div className="career-frame w-16 h-16 rounded-full border-2 border-skyjo-blue/50 overflow-hidden bg-slate-800 shadow-xl shadow-skyjo-blue/20 group-hover:border-skyjo-blue transition-colors">
-                                    <img src={getAvatarPath(userProfile.avatarId)} alt="Avatar" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                                </div>
-                                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-slate-800 rounded-full border border-skyjo-blue/30 flex items-center justify-center shadow-lg group-hover:bg-skyjo-blue transition-colors">
-                                    <Edit2 className="w-3 h-3 text-skyjo-blue group-hover:text-white" />
-                                </div>
-                            </div>
-                            <div>
-                                {isEditingName ? (
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            autoFocus
-                                            type="text"
-                                            className="bg-white/10 border-none outline-none rounded-lg px-3 py-1 text-sm w-32 text-white focus:ring-1 focus:ring-skyjo-blue"
-                                            value={newName}
-                                            onChange={(e) => setNewName(e.target.value)}
-                                            onBlur={handleUpdateName}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleUpdateName()}
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-2 group cursor-pointer" onClick={() => setIsEditingName(true)}>
-                                        <h3 className="font-black text-xl text-white">{userProfile.name}</h3>
-                                        <Edit2 className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
-                                    </div>
-                                )}
-                                <div className="flex items-center gap-2 mt-1.5">
-                                    <div className="flex items-center bg-slate-900/80 border-2 border-skyjo-blue rounded-xl px-3 py-1.5 shadow-[0_0_15px_rgba(56,189,248,0.2)] group/id relative overflow-hidden">
-                                        <div className="absolute inset-0 bg-skyjo-blue/5 group-hover/id:bg-skyjo-blue/10 transition-colors" />
-                                        <span className="relative text-[12px] font-black text-white font-mono tracking-wider">
-                                            {userProfile.vibeId}
-                                        </span>
-                                    </div>
-                                    <button
-                                        onClick={handleCopyId}
-                                        className="p-2 rounded-xl bg-skyjo-blue/10 border border-skyjo-blue/20 text-skyjo-blue hover:bg-skyjo-blue hover:text-white transition-all active:scale-95 shadow-lg"
-                                        title="Copier mon SkyID"
-                                    >
-                                        {copySuccess ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="text-right">
-                            <CareerBadge level={playerLevel} />
-                            <div className="w-20 h-1.5 bg-slate-700 rounded-full mt-1 overflow-hidden">
-                                <div
-                                    className="h-full bg-gradient-to-r from-skyjo-blue to-emerald-400"
-                                    style={{ width: `${(useGameStore.getState().currentXP || 0) * 10}%` }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Cloud Backup V3 - Native Integration */}
-                    <div className="mt-8 pt-6 border-t border-white/5">
-                        <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${userProfile?.isLinked
-                                    ? 'bg-emerald-500/20 text-emerald-400'
-                                    : 'bg-slate-700/50 text-slate-400'
-                                    }`}>
-                                    <Cloud className="w-4 h-4" />
-                                </div>
-                                <div>
-                                    <p className="text-[11px] font-bold text-slate-200 uppercase tracking-wider">
-                                        Cloud Save
-                                    </p>
-                                    <p className="text-[10px] text-slate-500 font-medium">
-                                        {userProfile?.isLinked ? 'Synchronisé' : 'Non connecté'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {userProfile?.isLinked ? (
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">OK</span>
-                                </div>
-                            ) : (
-                                <button
-                                    onClick={handleGoogleLink}
-                                    className="flex items-center gap-2 bg-slate-100 hover:bg-white text-slate-900 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all shadow-lg shadow-white/5 active:scale-95"
-                                >
-                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-3.5 h-3.5" alt="Google" />
-                                    <span>Lier</span>
-                                </button>
-                            )}
-                        </div>
-                        {!userProfile?.isLinked && (
-                            <div className="text-center mt-3">
-                                <button
-                                    onClick={handleGoogleLink}
-                                    className="text-[9px] font-bold text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-widest"
-                                >
-                                    Restaurer un compte
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
+        <div className="social-panel space-y-6">
+            <SocialProfileCard
+                profile={userProfile}
+                isEditing={isEditingName} name={newName} onNameChange={setNewName}
+                onEdit={() => { setNewName(userProfile.name); setIsEditingName(true); }}
+                onSave={handleUpdateName} onCancel={() => { setNewName(userProfile.name); setIsEditingName(false); }}
+                onAvatar={() => setIsAvatarSelectorOpen(true)} onCopy={handleCopyId}
+                copied={copySuccess} onGoogleLink={handleGoogleLink}
+            />
 
             {/* Notification Onboarding Banner - Only show if check is finished and disabled */}
             {!isCheckingNotifications && !hasNotificationsEnabled && (
@@ -326,7 +224,7 @@ export default function SocialDashboard(props) {
                             </p>
                         </div>
                         <div className="flex flex-col items-end gap-1 px-2">
-                            <span className="text-[9px] font-black text-amber-500 uppercase tracking-[0.2em]">Go_Settings</span>
+                            <span className="text-[9px] font-black text-amber-500 uppercase tracking-[0.2em]">Réglages</span>
                             <div className="h-1 w-8 bg-amber-500/30 rounded-full overflow-hidden">
                                 <motion.div
                                     animate={{ x: [-32, 32] }}
@@ -340,17 +238,17 @@ export default function SocialDashboard(props) {
             )}
 
             {/* Tabs Navigation */}
-            <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/5">
-                <button
+            <div className="social-switcher" aria-label="Contenu social">
+                <button type="button"
                     onClick={() => { setActiveTab('leaderboard'); playClick(); }}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${activeTab === 'leaderboard' ? 'bg-skyjo-blue text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                    aria-pressed={activeTab === 'leaderboard'}
                 >
                     <Trophy className="w-4 h-4" />
                     Classement
                 </button>
-                <button
+                <button type="button"
                     onClick={() => { setActiveTab('friends'); playClick(); }}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${activeTab === 'friends' ? 'bg-skyjo-blue text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                    aria-pressed={activeTab === 'friends'}
                 >
                     <Users className="w-4 h-4" />
                     Amis

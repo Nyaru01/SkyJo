@@ -194,7 +194,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
     return (
         <>
             <div className="flex flex-col items-center gap-1 w-full">
-                <div className="skyjo-pile-zone relative flex items-center justify-center gap-3 w-full">
+                <div className={cn('skyjo-pile-zone relative flex items-center justify-center gap-3 w-full', !hasDrawnCard && 'skyjo-pile-zone--choosing')}>
                     {/* Draw pile section */}
                     <div className="skyjo-pile-group skyjo-pile-group--draw relative flex flex-col items-center gap-1.5 shrink-0">
                         <span className="skyjo-pile-label">PIOCHE</span>

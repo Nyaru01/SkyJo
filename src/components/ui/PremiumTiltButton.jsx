@@ -11,7 +11,8 @@ export const PremiumTiltButton = ({
     gradientFrom = "from-sky-600",
     gradientTo = "to-blue-600",
     shadowColor = "shadow-sky-500/20",
-    disabled = false
+    disabled = false,
+    calm = false
 }) => {
     const prefersReducedMotion = useReducedMotion();
     // "Modern Kinetic" style:
@@ -21,6 +22,7 @@ export const PremiumTiltButton = ({
 
     return (
         <Motion.button
+            disabled={disabled}
             className={cn(
                 "premium-focus-ring relative group isolate w-full touch-manipulation outline-none select-none rounded-[1.625rem]",
                 disabled ? "cursor-not-allowed opacity-50 grayscale" : "cursor-pointer",
@@ -30,8 +32,8 @@ export const PremiumTiltButton = ({
                 if (navigator.vibrate) navigator.vibrate(20);
                 onClick?.(e);
             }}
-            whileHover={disabled || prefersReducedMotion ? {} : { scale: 1.012 }}
-            whileTap={disabled || prefersReducedMotion ? {} : { scale: 0.985 }}
+            whileHover={disabled || prefersReducedMotion || calm ? {} : { scale: 1.012 }}
+            whileTap={disabled || prefersReducedMotion || calm ? {} : { scale: 0.985 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
             {/* Outer Glow / Shadow */}
@@ -54,7 +56,7 @@ export const PremiumTiltButton = ({
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent opacity-40 pointer-events-none" />
 
                 {/* Shimmer Effect */}
-                {!disabled && !prefersReducedMotion && (
+                {!disabled && !prefersReducedMotion && !calm && (
                     <Motion.div
                         className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent w-[200%] -translate-x-full skew-x-[-25deg]"
                         animate={{

@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import normalSheet from '../../assets/sprites/ai-robot-normal.png';
 import hardSheet from '../../assets/sprites/ai-robot-hard.png';
 import hardcoreSheet from '../../assets/sprites/ai-robot-hardcore.png';
 import bonusSheet from '../../assets/sprites/ai-robot-bonus.png';
 
 const SHEETS = { normal: normalSheet, hard: hardSheet, hardcore: hardcoreSheet, bonus: bonusSheet };
-const SIZES = { sm: 'w-12 h-12', md: 'w-20 h-20', lg: 'w-32 h-32' };
+const SIZES = { sm: 'w-12 h-12', md: 'w-20 h-20', lg: 'w-32 h-32', hero: 'w-44 h-44' };
 const FPS = 8;
 const FRAME_COUNT = 16;
 const position = frame => `${(frame % 4) * 100 / 3}% ${Math.floor(frame / 4) * 100 / 3}%`;
@@ -20,7 +21,9 @@ export default function RobotAvatar({ className = '', difficulty = 'normal', siz
     const spriteRef = useRef(null);
     const animationRef = useRef(null);
     const requestRef = useRef(0);
+    const reducedMotion = useReducedMotion();
     const sheet = SHEETS[difficulty.toLowerCase()] || normalSheet;
+    const [initialSheet] = useState(sheet);
 
     const play = useCallback(async () => {
         const request = ++requestRef.current;
@@ -29,12 +32,15 @@ export default function RobotAvatar({ className = '', difficulty = 'normal', siz
         image.src = sheet;
         try { await image.decode(); } catch { return; }
         if (request !== requestRef.current || !spriteRef.current) return;
+        // Keep the previous character visible until the selected sheet is decoded.
+        spriteRef.current.style.backgroundImage = `url(${sheet})`;
+        if (reducedMotion) return;
         animationRef.current = spriteRef.current.animate(frames, {
             duration: FRAME_COUNT / FPS * 1000,
             iterations: 1,
         });
         // No fill: finishing restores the underlying idle frame (frame zero).
-    }, [sheet]);
+    }, [sheet, reducedMotion]);
 
     useEffect(() => {
         play();
@@ -48,8 +54,7 @@ export default function RobotAvatar({ className = '', difficulty = 'normal', siz
         <button
             type="button"
             onClick={play}
-            aria-label="Relancer l’animation du robot IA"
-            title="Toucher pour animer le robot"
+            aria-label={reducedMotion ? 'Mascotte de l’IA' : 'Animer la mascotte de l’IA'}
             className={`block shrink-0 rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 ${SIZES[size] || SIZES.md} ${className}`}
         >
             <span
@@ -57,11 +62,11 @@ export default function RobotAvatar({ className = '', difficulty = 'normal', siz
                 aria-hidden="true"
                 className="block w-full h-full"
                 style={{
-                    backgroundImage: `url(${sheet})`,
+                    backgroundImage: `url(${initialSheet})`,
                     backgroundSize: '400% 400%',
                     backgroundPosition: position(0),
                     backgroundRepeat: 'no-repeat',
-                    imageRendering: 'pixelated',
+                    imageRendering: 'auto',
                 }}
             />
         </button>

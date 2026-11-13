@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion as Motion, useReducedMotion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 export function ModalCloseButton({ onClick, className, label = 'Fermer' }) {
     return (
@@ -27,38 +28,29 @@ export default function ModalShell({
     zIndex = 'z-[9999]',
     className,
     closeOnBackdrop = true,
-    stableBackdrop = false,
+    stableBackdrop = true,
     fullScreen = false,
 }) {
     const prefersReducedMotion = useReducedMotion();
-    const closeRef = useRef(onClose);
-    closeRef.current = onClose;
-
-    useEffect(() => {
-        if (!isOpen) return undefined;
-
-        const previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-
-        const handleEscape = (event) => {
-            if (event.key === 'Escape') closeRef.current?.();
-        };
-
-        document.addEventListener('keydown', handleEscape);
-        return () => {
-            document.body.style.overflow = previousOverflow;
-            document.removeEventListener('keydown', handleEscape);
-        };
-    }, [isOpen]);
+    const dialogRef = useRef(null);
+    useDialogFocus(isOpen, dialogRef, onClose);
 
     // A full-page rules screen must not inherit the menu's enter/exit animations.
     if (fullScreen) return isOpen ? createPortal(
         <div className={cn('fixed inset-0 overflow-y-auto bg-[#0d1729]', zIndex)}>
-            <div role="dialog" aria-modal="true" aria-labelledby={labelledBy}
+            <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={labelledBy}
                 aria-describedby={describedBy}
                 className={cn('relative mx-auto w-full max-w-lg', className, 'seasonal-rules-fullscreen')}>
                 {children}
             </div>
+        </div>, document.body
+    ) : null;
+
+    if (stableBackdrop) return isOpen ? createPortal(
+        <div className={cn('modal-backdrop modal-backdrop--stable', zIndex)} onClick={closeOnBackdrop ? onClose : undefined}>
+            <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={labelledBy}
+                aria-describedby={describedBy} onClick={event => event.stopPropagation()}
+                className={cn('modal-surface', maxWidth, className)}>{children}</div>
         </div>, document.body
     ) : null;
 
@@ -81,6 +73,8 @@ export default function ModalShell({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: 10 }}
                         transition={{ duration: prefersReducedMotion ? 0 : 0.22, ease: 'easeOut' }}
+                        ref={dialogRef}
+                        tabIndex={-1}
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby={labelledBy}

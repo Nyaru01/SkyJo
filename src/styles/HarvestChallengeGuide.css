@@ -1,0 +1,46 @@
+.harvest-guide { display: flex; flex-direction: column; height: 100dvh; min-height: 0; background: #101c29; color: #eff5fc; outline: none; }
+.harvest-header { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; padding: calc(12px + env(safe-area-inset-top)) 24px 4px; }
+.harvest-header > span { color: #d4b890; font-size: 10px; font-weight: 750; letter-spacing: .14em; }
+.harvest-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 0 24px 20px; }
+.harvest-heading { padding: 8px 0 22px; }
+.harvest-heading > p { font-size: 9px; font-weight: 700; letter-spacing: .13em; color: #acbbca; }
+.harvest-heading h2 { font-size: clamp(38px, 11vw, 50px); font-weight: 800; line-height: .99; letter-spacing: -.045em; margin: 12px 0 16px; }
+.harvest-heading h2 > span { display: block; color: #edc28d; }
+.harvest-heading > div { display: flex; align-items: center; gap: 10px; color: #c1cfdd; font-size: 12px; }
+.harvest-heading i { width: 3px; height: 3px; background: #b68d61; border-radius: 50%; }
+.harvest-tableau { position: relative; display: flex; align-items: center; gap: 20px; min-height: 192px; border-radius: 22px; border: 1px solid #e3bb8133; padding: 18px 20px 32px; background: radial-gradient(ellipse at 85% 40%,#d9a36015,transparent 65%),#162431; overflow: hidden; }
+.harvest-example { display: flex; gap: 10px; align-items: center; justify-content: center; width: 45%; flex-shrink: 0; }
+.harvest-column { display: grid; gap: 4px; width: 38px; transform: rotate(-7deg); }
+.harvest-column--1 { transform: rotate(7deg) translateY(10px); }
+.harvest-column-number { font-size: 9px; font-weight: 700; color: #d6b386; text-align: center; letter-spacing: .1em; }
+.harvest-card { position: relative; display: grid; place-items: center; width: 38px; height: 44px; background: linear-gradient(135deg,#8c6337,#523e2d); border: 1px solid #efce9f80; border-radius: 6px; box-shadow: inset 0 1px 0 #ffffff30,0 3px 6px #0003; color: #fff2d9; }
+.harvest-column--1 .harvest-card { background: linear-gradient(135deg,#4c7569,#294a43); border-color: #b1d6bc80; color: #edfff3; }
+.harvest-card b { font-size: 20px; font-weight: 800; line-height: 1; }
+.harvest-card small { position: absolute; font-size: 6px; line-height: 1; font-weight: 700; top: 3px; left: 4px; }
+.harvest-card small:last-child { top: auto; left: auto; right: 4px; bottom: 3px; transform: rotate(180deg); }
+.harvest-prize { flex: 1; min-width: 0; color: #edc28d; }
+.harvest-prize > span { display: block; font-size: 9px; font-weight: 700; letter-spacing: .11em; margin: 10px 0 6px; }
+.harvest-prize > strong { display: block; font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: -.045em; white-space: nowrap; }
+.harvest-prize strong small { font-size: 14px; letter-spacing: 0; }
+.harvest-prize p { font-size: 11px; margin-top: 8px; color: #bac9d8; }
+.harvest-example-caption { position: absolute; bottom: 9px; left: 0; right: 0; text-align: center; font-size: 9px; color: #acbbca; }
+.harvest-mission-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 10px; margin: 24px 0 16px; }
+.harvest-mission-heading h3 { font-size: 17px; font-weight: 700; letter-spacing: -.015em; }
+.harvest-mission-heading > span { font-size: 10px; color: #acbbca; }
+.harvest-missions { list-style: none; margin: 0; padding: 0; }
+.harvest-missions li { display: flex; align-items: flex-start; gap: 14px; padding: 0 0 18px; }
+.harvest-missions li + li { border-top: 1px solid #b8c6d91c; padding: 18px 0 0; }
+.harvest-missions li > span { display: grid; place-items: center; width: 28px; height: 28px; flex-shrink: 0; border: 1px solid #d6b38633; border-radius: 9px; font-size: 10px; font-weight: 700; color: #edc28d; background: #d6b38608; }
+.harvest-missions h4 { font-size: 16px; line-height: 1.3; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+.harvest-missions p { font-size: 13px; line-height: 1.55; color: #b8c8d9; }
+.harvest-missions strong { font-weight: 600; color: #e2edf7; }
+.harvest-footnotes { display: grid; gap: 8px; margin-top: 22px; }
+.harvest-footnotes p { display: flex; gap: 8px; align-items: flex-start; font-size: 11px; line-height: 1.4; color: #acbbca; }
+.harvest-footnotes svg { flex-shrink: 0; color: #cfab7e; }
+.harvest-footer { flex-shrink: 0; padding: 14px 24px calc(18px + env(safe-area-inset-bottom)); background: #101c29; border-top: 1px solid #b8c6d91c; }
+.harvest-footer > p { color: #c1cfdd; font-size: 12px; margin-bottom: 10px; }
+.harvest-footer button { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 56px; padding: 14px 18px; border-radius: 17px; background: #edc28d; color: #33281d; font-size: 17px; font-weight: 800; }
+.harvest-footer button:disabled { background: #253546; color: #b8c6d9; cursor: not-allowed; }
+.harvest-footer button:focus-visible { outline: 3px solid #fff1d9; outline-offset: 3px; }
+@media (max-width: 359px) { .harvest-header { padding-left: 18px; padding-right: 18px; } .harvest-scroll { padding-left: 18px; padding-right: 18px; } .harvest-tableau { gap: 12px; padding-left: 12px; padding-right: 12px; } .harvest-prize > strong { font-size: 34px; } .harvest-footer { padding-left: 18px; padding-right: 18px; } }
+@media (max-height: 740px) { .harvest-heading { padding-bottom: 16px; } .harvest-heading h2 { font-size: 38px; margin-top: 8px; margin-bottom: 12px; } .harvest-tableau { min-height: 176px; } .harvest-mission-heading { margin-top: 18px; margin-bottom: 12px; } }

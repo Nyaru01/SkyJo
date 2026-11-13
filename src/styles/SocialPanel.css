@@ -1,0 +1,82 @@
+.social-panel { max-width: 480px; margin: 0 auto; }
+.social-profile-panel { padding: 20px; background: #142231f5; border: 1px solid #b8c6d93d; border-radius: 24px; box-shadow: 0 12px 32px #0003; color: #f0f6fd; }
+.social-profile-identity { display: flex; align-items: center; gap: 16px; }
+.social-profile-avatar { position: relative; flex-shrink: 0; width: 72px; height: 72px; border-radius: 24px; border: 1px solid #b8c6d94d; background: #223648; }
+.social-profile-avatar > img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+.social-profile-avatar > span { position: absolute; bottom: -4px; right: -4px; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 9px; border: 2px solid #142231; background: #254452; color: #adeddc; }
+.social-profile-name { flex: 1; min-width: 0; }
+.social-profile-name > p { font-size: 10px; font-weight: 750; letter-spacing: .12em; color: #9ce4d2; margin-bottom: 4px; }
+.social-profile-name h2 button { display: flex; align-items: center; gap: 10px; min-height: 44px; width: 100%; text-align: left; }
+.social-profile-name h2 { font-size: 26px; font-weight: 800; letter-spacing: -.035em; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.social-profile-name h2 button svg { color: #b8c6d9; flex-shrink: 0; }
+.social-profile-name form { display: flex; gap: 6px; align-items: center; }
+.social-profile-name input { width: 100%; min-width: 0; height: 48px; background: #0d1b29; border: 1px solid #83dfc3; border-radius: 12px; padding: 8px; font-size: 16px; color: #f4f8ff; }
+.social-profile-name form button { display: grid; place-items: center; width: 44px; min-height: 48px; flex-shrink: 0; color: #9ce4d2; }
+.social-profile-id { margin-top: 20px; display: flex; align-items: center; gap: 8px; padding-left: 12px; background: #0d1b29; border: 1px solid #b8c6d921; border-radius: 13px; }
+.social-profile-id > span:first-child { flex: 1; font-size: 12px; color: #b8c6d9; }
+.social-profile-id code { font-size: 13px; font-weight: 700; color: #e5effa; }
+.social-profile-id button { display: grid; place-items: center; width: 48px; min-height: 48px; color: #a7e7d6; border-left: 1px solid #b8c6d921; }
+.social-profile-id button:disabled { color: #8c9fb4; cursor: not-allowed; }
+.social-account { border-top: 1px solid #b8c6d921; padding-top: 18px; margin-top: 18px; }
+.social-account-heading { display: flex; gap: 10px; align-items: flex-start; }
+.social-account-heading > svg { margin-top: 2px; color: #a6bdcf; flex-shrink: 0; }
+.social-account h3 { font-size: 14px; font-weight: 700; }
+.social-account p { color: #b8c6d9; font-size: 12px; line-height: 1.5; margin-top: 4px; }
+.social-google-link { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 8px 12px; flex-shrink: 0; background: #203746; border: 1px solid #8cc9b645; color: #e4f7f0; border-radius: 13px; font-size: 12px; font-weight: 650; }
+.social-google-link:hover { background: #294553; }
+.social-google-link:active { background: #315461; }
+.social-account-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.social-account-heading > div { min-width: 0; }
+.social-profile-name h2 button > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.social-account-restore { min-height: 44px; width: 100%; color: #bdcddd; text-align: center; font-size: 12px; margin-top: 4px; }
+.social-account-linked { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #97e4cb; }
+.social-switcher { display: grid; grid-template-columns: 1fr 1fr; padding: 5px; gap: 6px; border: 1px solid #b8c6d92e; border-radius: 18px; background: #111f2eee; }
+.social-switcher button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; font-size: 14px; font-weight: 700; color: #b8c6d9; border-radius: 13px; }
+.social-switcher button[aria-pressed="true"] { color: #a8eddb; background: #83dfc317; box-shadow: inset 0 0 0 1px #83dfc32e; }
+.social-profile-panel button:focus-visible, .social-switcher button:focus-visible { outline: 3px solid #a8eddb; outline-offset: 3px; }
+.social-podium-panel { border: 1px solid #b8c6d92e; border-radius: 24px; padding: 20px 12px 18px; background: radial-gradient(ellipse at 50% 30%,#e5c27e10,transparent 65%),#111f2ef5; }
+.social-podium-panel > header { display: flex; align-items: center; justify-content: space-between; padding: 0 6px; margin-bottom: 22px; }
+.social-podium-panel header p { color: #b9c9d9; font-size: 9px; letter-spacing: .12em; font-weight: 750; }
+.social-podium-panel h2 { font-size: 22px; font-weight: 800; letter-spacing: -.03em; margin-top: 4px; }
+.social-podium-panel > header > svg { color: #e8c68a; }
+.social-podium { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; align-items: end; }
+.social-podium-player { min-width: 0; text-align: center; display: flex; flex-direction: column; align-items: center; padding: 0 0 12px; }
+.social-podium-player--1 { padding: 0 0 18px; background: linear-gradient(0deg,#e8c68a0c,transparent 80%); border-radius: 18px; }
+.social-podium-portrait { position: relative; margin: 0 0 20px; }
+.social-podium-portrait .career-frame { width: 62px; height: 62px; border: 2px solid #bacada; border-radius: 50%; overflow: hidden; background: #233344; }
+.social-podium-player--1 .career-frame { width: 88px; height: 88px; border-color: #e8c68a; }
+.social-podium-portrait img { width: 100%; height: 100%; object-fit: cover; }
+.social-podium-rank { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); min-width: 28px; height: 26px; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0 7px; border: 2px solid #111f2e; border-radius: 9px; background: #cbd7e2; color: #182635; font-size: 12px; font-weight: 800; }
+.social-podium-player--1 .social-podium-rank { background: #e8c68a; }
+.social-podium-player--3 .social-podium-rank { background: #d4a481; }
+.social-podium-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 750; margin-bottom: 8px; }
+.social-podium-player--1 .social-podium-name { color: #ffe4b7; }
+.social-podium .career-identity { width: 100%; }
+.social-podium .career-badge { max-width: 100%; font-size: 9px; padding: 4px 5px; letter-spacing: 0; }
+.social-podium .career-level { color: #b8c6d9; font-size: 10px; white-space: normal; min-height: 28px; }
+.social-podium-xp { margin-top: 8px; color: #b8c6d9; font-size: 11px; }
+.social-podium-xp b { color: #eff6ff; font-size: 14px; font-weight: 750; }
+.social-career-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 12px; margin: 14px 0 22px; font-size: 10px; color: #b8c6d9; }
+.social-career-legend b { font-weight: 500; color: #91a6bb; margin-left: 3px; }
+.social-ranking-list { border: 1px solid #b8c6d92e; border-radius: 20px; background: #111f2ef5; overflow: hidden; }
+.social-ranking-list > header { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; justify-content: space-between; padding: 16px; border-bottom: 1px solid #b8c6d921; }
+.social-ranking-list h3 { font-size: 14px; font-weight: 700; }
+.social-ranking-list header span { font-size: 11px; color: #b8c6d9; }
+.social-ranking-row { display: flex; align-items: center; gap: 10px; padding: 14px 12px; }
+.social-ranking-row + .social-ranking-row { border-top: 1px solid #b8c6d915; }
+.social-ranking-row--me { background: #83dfc30b; }
+.social-ranking-position { min-width: 18px; color: #b8c6d9; font-size: 12px; font-variant-numeric: tabular-nums; }
+.social-ranking-row > img { width: 36px; height: 36px; object-fit: cover; border-radius: 12px; flex-shrink: 0; }
+.social-ranking-person { flex: 1; min-width: 0; }
+.social-ranking-person p { color: #ecf4fc; font-size: 14px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.social-ranking-person > span { display: block; font-size: 10px; color: #b8c6d9; margin-top: 3px; }
+.social-ranking-career { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; gap: 6px; }
+.social-ranking-career .career-identity { align-items: flex-end; }
+.social-ranking-career > span { color: #b8c6d9; font-size: 11px; }
+.social-leaderboard-me { font-size: 9px; color: #a8eddb; margin-left: 4px; font-weight: 650; }
+.social-leaderboard-empty { padding: 36px 24px; text-align: center; border: 1px dashed #b8c6d94d; border-radius: 22px; background: #111f2ef5; }
+.social-leaderboard-empty svg { margin: 0 auto 14px; color: #99ccbF; }
+.social-leaderboard-empty h2 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+.social-leaderboard-empty p { font-size: 13px; line-height: 1.5; color: #b8c6d9; }
+@media (max-width: 359px) { .social-profile-panel { padding: 16px; } .social-profile-avatar { width: 60px; height: 60px; border-radius: 20px; } .social-profile-name h2 { font-size: 23px; } .social-podium-panel { padding-left: 8px; padding-right: 8px; } .social-podium { gap: 6px; } .social-podium-player--1 .career-frame { width: 76px; height: 76px; } .social-podium-portrait .career-frame { max-width: 76px; } .social-podium .career-badge { font-size: 8px; } .social-podium-name { font-size: 13px; } .social-ranking-row { gap: 7px; padding-left: 10px; padding-right: 10px; } }
+@media (prefers-reduced-motion: reduce) { .social-leaderboard .career-frame img, .social-leaderboard .career-frame::before, .social-leaderboard .career-frame::after { animation: none; } }

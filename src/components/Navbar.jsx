@@ -1,92 +1,36 @@
-import { Home, Archive, BarChart3, Dices, Settings, Users } from 'lucide-react';
-import { motion as Motion } from 'framer-motion';
+import { Home, BarChart3, Dices, UserRound, Users } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { useGameStore } from '../store/gameStore';
 import { useSocialStore } from '../store/socialStore';
 
+const TABS = [
+    { id: 'home', label: 'Accueil', icon: Home },
+    { id: 'social', label: 'Social', icon: Users },
+    { id: 'virtual', label: 'Jouer', icon: Dices },
+    { id: 'stats', label: 'Stats', icon: BarChart3 },
+    { id: 'profile', label: 'Profil', icon: UserRound },
+];
+const PROFILE_SCREENS = ['profile', 'pastGames', 'settings', 'changelog'];
+
 export default function BottomNav({ activeTab, onTabChange }) {
-    const gameStatus = useGameStore(state => state.gameStatus);
     const socialNotification = useSocialStore(state => state.socialNotification);
     const setSocialNotification = useSocialStore(state => state.setSocialNotification);
-
-    const tabs = [
-        { id: 'home', label: 'Accueil', icon: Home, alwaysEnabled: true },
-        { id: 'social', label: 'Social', icon: Users, alwaysEnabled: true },
-        { id: 'virtual', label: 'Jouer', icon: Dices, alwaysEnabled: true },
-        { id: 'stats', label: 'Stats', icon: BarChart3, alwaysEnabled: true },
-        { id: 'pastGames', label: 'Parties', icon: Archive, alwaysEnabled: true },
-        { id: 'settings', label: 'Réglages', icon: Settings, alwaysEnabled: true },
-    ];
-
+    const selected = PROFILE_SCREENS.includes(activeTab) ? 'profile' : activeTab === 'game' ? 'home' : activeTab;
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-[80] pointer-events-none px-3 pt-3 pb-5 sm:px-4 sm:pb-7 flex justify-center safe-area-bottom">
-            <nav
-                className="w-full max-w-lg glass-v3 rounded-[2rem] p-1 pointer-events-auto relative overflow-hidden"
-                role="tablist"
-                aria-label="Navigation principale"
-            >
-                <div className="grid grid-cols-6 items-center relative">
-                    {tabs.map((tab) => {
-                        const Icon = tab.icon;
-                        const isActive = activeTab === tab.id;
-                        const isDisabled = !tab.alwaysEnabled && gameStatus === 'SETUP';
-
-                        return (
-                            <button
-                                key={tab.id}
-                                role="tab"
-                                aria-selected={isActive}
-                                aria-label={tab.label}
-                                disabled={isDisabled}
-                                onClick={() => {
-                                    if (!isDisabled) {
-                                        onTabChange(tab.id);
-                                        if (tab.id === 'social') setSocialNotification(false);
-                                    }
-                                }}
-                                className={cn(
-                                    "premium-focus-ring relative min-h-12 min-w-0 rounded-[1.25rem] flex flex-col items-center justify-center py-1.5 transition-all duration-300",
-                                    isDisabled && "opacity-20 cursor-not-allowed grayscale"
-                                )}
-                            >
-                                {/* Active Glass Glow Indicator */}
-                                {isActive && (
-                                    <Motion.div
-                                        layoutId="navbar-indicator-glow"
-                                        className="glass-glow-indicator"
-                                        initial={false}
-                                        transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
-                                    />
-                                )}
-
-                                <div className={cn(
-                                    "relative z-10 flex flex-col items-center justify-center transition-all duration-300",
-                                    isActive ? "scale-[1.04] -translate-y-px" : "scale-100 opacity-70"
-                                )}>
-                                    <Icon
-                                        className={cn(
-                                            "h-5 w-5 transition-all duration-300",
-                                            isActive ? "text-blue-400" : "text-slate-400"
-                                        )}
-                                        strokeWidth={isActive ? 2.5 : 2}
-                                    />
-
-                                    {/* Notification Dot */}
-                                    {tab.id === 'social' && socialNotification && !isActive && (
-                                        <span className="absolute top-0 -right-1 w-2 h-2 bg-red-500 rounded-full border border-slate-900 animate-bounce shadow-sm" />
-                                    )}
-
-                                    <span className={cn(
-                                        "max-w-full truncate px-0.5 text-[9px] sm:text-[10px] leading-none font-extrabold tracking-[-0.02em] transition-all duration-300 uppercase mt-1.5",
-                                        isActive ? "text-blue-400 nav-label-active" : "text-slate-500"
-                                    )}>
-                                        {tab.label}
-                                    </span>
-                                </div>
-                            </button>
-                        );
-                    })}
-                </div>
+        <div className="mobile-navigation">
+            <nav aria-label="Navigation principale">
+                {TABS.map(({ id, label, icon: Icon }) => (
+                    <button type="button" key={id} aria-label={label} aria-current={selected === id ? 'page' : undefined}
+                        className={cn('mobile-nav-item', selected === id && 'mobile-nav-item--active')}
+                        onClick={() => {
+                            onTabChange(id);
+                            if (id === 'social') setSocialNotification(false);
+                        }}>
+                        <span className="mobile-nav-icon"><Icon size={22} aria-hidden="true" />
+                            {id === 'social' && socialNotification && <span className="mobile-nav-notification" role="img" aria-label="Nouveautés sociales" />}
+                        </span>
+                        <span>{label}</span>
+                    </button>
+                ))}
             </nav>
         </div>
     );
