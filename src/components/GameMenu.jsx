@@ -19,6 +19,8 @@ import '../styles/GameMenu.css';
 
 
 export default function GameMenu({
+    initialFocus,
+    onInitialFocusHandled,
     setScreen,
     playerCardSkin,
     playerLevel,
@@ -27,6 +29,14 @@ export default function GameMenu({
     const [showRulesModal, setShowRulesModal] = React.useState(false);
     const [showDailyChallengeModal, setShowDailyChallengeModal] = React.useState(false);
     const [selectedDifficulty, setSelectedDifficulty] = React.useState(null);
+    const challengeSectionRef = React.useRef(null);
+
+    React.useEffect(() => {
+        if (initialFocus !== 'challenges') return;
+        challengeSectionRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' });
+        challengeSectionRef.current?.focus({ preventScroll: true });
+        onInitialFocusHandled?.();
+    }, [initialFocus, onInitialFocusHandled]);
 
     const virtualGameState = useVirtualGameStore(state => state.gameState);
     const startAIGame = useVirtualGameStore(state => state.startAIGame);
@@ -122,7 +132,7 @@ export default function GameMenu({
                 </button>
             </section>
 
-            <section className="play-menu-challenges" aria-labelledby="play-menu-challenges-title">
+            <section ref={challengeSectionRef} tabIndex={-1} className="play-menu-challenges" aria-labelledby="play-menu-challenges-title">
                 <div className="play-menu-section-heading">
                     <h3 id="play-menu-challenges-title">Les rendez-vous</h3>
                     <span>Défis & bonus XP</span>

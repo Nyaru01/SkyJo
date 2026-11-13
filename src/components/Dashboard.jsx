@@ -34,6 +34,7 @@ import MasterCareerPopup from './MasterCareerPopup';
 import { CareerPlan } from './ExperienceBar';
 import ProfileHub from './ProfileHub';
 import { CURRENT_NEWS_VERSION } from './WhatsNewModal';
+import { AI_DIFFICULTY } from '../lib/skyjoAI';
 
 // Stable page states: avoid full-page opacity/transform transitions around
 // glass surfaces, which can flash on mobile compositors.
@@ -128,6 +129,7 @@ export default function Dashboard() {
     const activeTab = useGameStore(state => state.activeTab);
 
     const [virtualScreen, setVirtualScreen] = useState('menu');
+    const [homeVirtualEntry, setHomeVirtualEntry] = useState(null);
     const [isTutorialManuallyOpen, setIsTutorialManuallyOpen] = useState(false);
     const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
     const previousGameStatusRef = useRef(gameStatus);
@@ -359,6 +361,21 @@ export default function Dashboard() {
                         >
                             <GameSetup
                                 onNavigate={setActiveTab}
+                                onVirtualAction={action => {
+                                    let screen = 'menu';
+                                    if (action === 'quick') {
+                                        const virtual = useVirtualGameStore.getState();
+                                        if (!virtual.gameState) {
+                                            const profile = useGameStore.getState().userProfile;
+                                            const started = virtual.startAIGame({ name: profile.name, avatarId: profile.avatarId }, 1, AI_DIFFICULTY.NORMAL);
+                                            if (started === false) return;
+                                        }
+                                        screen = 'game';
+                                    } else if (action === 'ai') screen = 'ai-setup';
+                                    setHomeVirtualEntry(action === 'challenges' ? 'challenges' : null);
+                                    setVirtualScreen(screen);
+                                    setActiveTab('virtual');
+                                }}
                                 onOpenTutorial={() => setIsTutorialManuallyOpen(true)}
                                 showGuide={!hasSeenTutorial}
                                 allowAutoNews={hasSeenTutorial}
@@ -475,6 +492,8 @@ export default function Dashboard() {
                             transition={pageTransition}
                         >
                             <GameMenu
+                                initialFocus={homeVirtualEntry}
+                                onInitialFocusHandled={() => setHomeVirtualEntry(null)}
                                 setScreen={(screen) => {
                                     setVirtualScreen(screen);
                                     setActiveTab('virtual');

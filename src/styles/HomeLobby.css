@@ -1,0 +1,95 @@
+/* Sculptural home: warm stone, muted ink, open space and one illustrated world. */
+.home-lobby {
+    --lobby-text: #38364e;
+    --lobby-muted: #676177;
+    --lobby-line: #77718b38;
+    --lobby-paper: #fff7eb8c;
+    --lobby-accent: #685b80;
+    position: relative; isolation: isolate; color-scheme: light;
+    width: 100%; max-width: 440px; margin: 0 auto;
+    padding: max(0px, env(safe-area-inset-top)) 3px 10px;
+    display: flex; flex-direction: column; gap: 12px; color: var(--lobby-text);
+}
+.home-lobby::before {
+    content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(ellipse at 0 40%, #f7e2ce66, transparent 60%), linear-gradient(180deg, #f5d7c7 0%, #e9cfd1 34%, #d5cce0 68%, #c6cce2 100%);
+}
+.lobby-header { min-height: 49px; display: flex; align-items: center; justify-content: space-between; padding: 1px 5px 4px 10px; }
+.lobby-brand { position: relative; margin: 0; font-size: 23px; font-weight: 500; line-height: 1; letter-spacing: .21em; color: #46415a; }
+.lobby-brand span { position: absolute; left: 1px; bottom: -10px; width: 22px; height: 1px; background: #9d847f; }
+.lobby-header-actions { display: flex; gap: 2px; }
+.lobby-header-actions button { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: #696075; }
+.lobby-header-actions button:hover { background: #fff5e840; color: #38364e; }
+.lobby-header-actions i { position: absolute; top: 10px; right: 10px; width: 6px; height: 6px; border-radius: 50%; background: #b76e70; border: 1px solid #f4d5c8; }
+.lobby-mode-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 6px; }
+.lobby-mode-switch button { position: relative; display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 44px; padding: 9px 10px; border-radius: 12px; font-size: 13px; color: #6f6476; border: 1px solid transparent; transition: background-color 180ms, color 180ms; }
+.lobby-mode-switch button svg { width: 18px; stroke-width: 1.5; }
+.lobby-mode-switch button[aria-pressed=true] { color: #443b58; background: #fff4e778; border-color: #fff6eacc; box-shadow: 0 4px 9px -7px #78627699, inset 0 1px 0 #fff6ec; }
+.lobby-mode-switch button[aria-pressed=true]::after { content: ''; position: absolute; bottom: 4px; width: 14px; height: 2px; background: #a27d86; border-radius: 2px; }
+.lobby-hero { position: relative; min-height: 310px; margin: 0 -8px; overflow: hidden; }
+.lobby-hero-copy { position: relative; z-index: 2; padding: 8px 10px 0; text-align: center; pointer-events: none; }
+.lobby-hero h2 { margin: 0 0 7px; font-size: 25px; font-weight: 500; line-height: 1.2; letter-spacing: -.7px; color: #4d405c; }
+.lobby-hero-copy>p { margin: 0; font-size: 12px; line-height: 1.5; color: #776278; }
+.lobby-world { position: absolute; inset: 65px -28px 0; pointer-events: none; }
+.lobby-world img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 52%; user-select: none; mask-image: linear-gradient(180deg, transparent, #000 13%, #000 74%, transparent), linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent); mask-composite: intersect; animation: lobby-world-breathe 10s ease-in-out infinite; }
+.home-lobby--real .lobby-hero { min-height: 220px; }
+.home-lobby--real .lobby-world { inset: 63px -6px 0; }
+.home-lobby--real .lobby-world img { object-fit: contain; object-position: 50% 54%; }
+.lobby-mode-content { display: flex; flex-direction: column; }
+.lobby-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 0 2px; }
+.lobby-actions button { display: flex; flex-direction: column; align-items: center; min-width: 0; gap: 8px; padding: 4px 1px 8px; border-radius: 15px; transition: background-color 160ms, transform 160ms; }
+.lobby-actions button:hover { background: #fff4ef38; }
+.lobby-actions button:active { transform: translateY(2px); }
+.lobby-action-icon { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 15px; background: linear-gradient(145deg, #f9eee6d9, #dcd3dfd9); color: #766383; border: 1px solid #fff5e2a1; box-shadow: 2px 4px 0 #9b8ba52b, 0 8px 12px -7px #75678377, inset 0 1px 0 #fff9ec; }
+.lobby-actions button:nth-child(2) .lobby-action-icon { background: linear-gradient(145deg, #f9e7cc, #e2cbc9); color: #93705a; }
+.lobby-actions button:nth-child(3) .lobby-action-icon { background: linear-gradient(145deg, #e6e7f1, #c9c7e0); color: #716c91; }
+.lobby-action-copy { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.lobby-action-copy strong { font-size: 13px; line-height: 1.3; font-weight: 500; color: #4c435e; }
+.lobby-action-copy>span { color: #6f627e; font-size: 10px; line-height: 1.3; }
+.lobby-launch { position: relative; display: flex; align-items: center; justify-content: center; gap: 11px; width: 100%; min-height: 51px; margin-top: 20px; padding: 13px 18px; border: 1px solid #8c7d9d; border-radius: 15px; background: linear-gradient(125deg, #81708f, #655a7d); color: #fff7ef; box-shadow: 0 6px 0 #6a5c7a29, 0 13px 19px -13px #58466399, inset 0 1px 0 #fff7ed44; font-size: 15px; font-weight: 500; letter-spacing: .02em; }
+.lobby-launch svg { width: 17px; height: 17px; }
+.lobby-launch:hover { background: linear-gradient(125deg, #8c799a, #716188); }
+.lobby-launch:active { box-shadow: 0 2px 0 #6a5c7a29, inset 0 1px 2px #4e3c6855; }
+.lobby-launch-hint { margin: 13px 5px 0; text-align: center; color: #6a607a; font-size: 11px; line-height: 1.5; }
+.lobby-footer { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 5px; }
+.lobby-footer>button { display: flex; align-items: center; gap: 6px; min-height: 40px; padding: 6px 9px; border-radius: 10px; font-size: 11px; color: #6a617a; }
+.lobby-footer>button:hover { background: #fffaed33; color: #42354f; }
+.lobby-footer>button:disabled { opacity: .65; }
+.lobby-unread { width: 4px; height: 4px; border-radius: 50%; background: #9b6d82; }
+.lobby-footer .lobby-install span { font-size: 11px; color: #6a617a; text-transform: none; font-weight: 400; }
+.lobby-players { padding: 14px; background: #f7eee680; border: 1px solid #fff6e9a6; border-radius: 17px; box-shadow: 0 9px 17px -13px #82708655, inset 0 1px 0 #fff8ed88; }
+.lobby-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 2px 11px; }
+.lobby-section-heading h3 { font-size: 14px; font-weight: 500; margin: 0; color: #51455f; }
+.lobby-section-heading>span { font-size: 11px; color: #756580; }
+.lobby-player-list { display: flex; flex-direction: column; gap: 8px; max-height: min(30dvh, 245px); overflow-y: auto; overscroll-behavior: contain; padding: 2px; }
+.lobby-player { min-height: 55px; display: flex; align-items: center; gap: 8px; padding: 5px; border: 1px solid #c9bac750; border-radius: 11px; background: #fff8ef61; }
+.lobby-avatar { position: relative; width: 44px; height: 44px; flex-shrink: 0; padding: 3px; background: #ded7d8; border: 1px solid #fff3d9a6; border-radius: 9px; box-shadow: 0 3px 4px -3px #796c85; }
+.lobby-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+.lobby-avatar svg { position: absolute; right: 0; bottom: 0; padding: 1px; border-radius: 3px; background: #e7dfdf; color: #534c65; }
+.lobby-player-name { flex: 1; min-width: 0; }
+.lobby-player-name input { width: 100%; min-height: 44px; font-size: 16px; color: #494057; background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 6px 7px; outline: none; }
+.lobby-player-name input::placeholder { color: #807488; }
+.lobby-player-name input:focus { border-color: #a087ab; background: #fff7ec6b; }
+.lobby-remove { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 8px; color: #8c788e; }
+.lobby-remove:hover { background: #c888881a; color: #9f5667; }
+.lobby-add { width: 100%; min-height: 44px; margin-top: 9px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 1px dashed #a58fa65e; border-radius: 10px; font-size: 12px; color: #77617e; }
+.lobby-add:hover { background: #fff8ee4d; border-color: #a58fa6; }
+.home-lobby button { touch-action: manipulation; }
+.home-lobby button:focus-visible { outline: 2px solid #715d88; outline-offset: 3px; }
+body:has(.home-lobby) .mobile-navigation nav { max-width: 464px; background: linear-gradient(125deg, #f7eee8f7, #e4e2edf7); border: 1px solid #fff6e8b3; border-radius: 20px; box-shadow: 0 8px 22px #72647a29, inset 0 1px 0 #fff9f0; }
+body:has(.home-lobby) .mobile-nav-item { color: #7d728a; font-size: 11px; font-weight: 400; min-height: 52px; border-radius: 13px; }
+body:has(.home-lobby) .mobile-nav-item svg { stroke-width: 1.5; }
+body:has(.home-lobby) .mobile-nav-item--active { background: #cfc6dd70; color: #574267; box-shadow: inset 0 0 0 1px #b9a5c449; }
+body:has(.home-lobby) .mobile-nav-item:focus-visible { outline-color: #715d88; }
+@keyframes lobby-world-breathe { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@media(max-height:760px) { .home-lobby { gap: 9px; } .lobby-header { min-height: 43px; } .lobby-hero { min-height: 260px; } .lobby-hero h2 { font-size: 23px; } .lobby-world { inset: 61px -16px 0; } .home-lobby--real .lobby-hero { min-height: 195px; } .home-lobby--real .lobby-world { inset: 61px 0 0; } .lobby-launch { margin-top: 15px; } }
+@media(max-width:359px) { .lobby-brand { font-size: 21px; } .lobby-header { padding-left: 7px; } .lobby-mode-switch { gap: 3px; padding: 0; } .lobby-mode-switch button { font-size: 12px; gap: 7px; } .lobby-hero h2 { font-size: 21px; } .lobby-hero-copy>p { font-size: 11px; } .lobby-actions { gap: 1px; } .lobby-action-copy strong { font-size: 12px; } .lobby-action-copy>span { display: none; } .lobby-launch-hint { font-size: 10px; } }
+@media(prefers-reduced-motion:reduce) { .lobby-world img { animation: none; } .home-lobby *, body:has(.home-lobby) .mobile-nav-item { transition: none; } }
+
+@media(max-height:760px){.lobby-world img{object-fit:contain}.home-lobby--real .lobby-world img{object-fit:contain}}
+
+
+
+
+.home-lobby--real .lobby-world { display: flex; justify-content: center; }
+.home-lobby--real .lobby-world img { width: auto; max-width: 100%; height: 100%; }
