@@ -1,4 +1,4 @@
-.ai-setup { --rival-accent: #83ebcf; --rival-rgb: 131,235,207; max-width: 448px; margin: 0 auto; padding: 16px 4px 12px; color: #f4f8ff; }
+.ai-setup { --rival-accent: #83ebcf; --rival-rgb: 131,235,207; max-width: 448px; margin: 0 auto; padding: 16px 4px 100px; color: #f4f8ff; }
 .ai-setup--amber { --rival-accent: #f4cd85; --rival-rgb: 244,205,133; }
 .ai-setup--violet { --rival-accent: #cbb2ff; --rival-rgb: 203,178,255; }
 .ai-setup--coral { --rival-accent: #ffac9b; --rival-rgb: 255,172,155; }
@@ -41,6 +41,7 @@
 .ai-mode-detail { margin: 12px 0 18px; min-height: 48px; }
 .ai-mode-detail p { color: #b8c6d9; font-size: 13px; line-height: 1.5; }
 .ai-mode-detail button { display: inline-flex; align-items: center; gap: 7px; min-height: 48px; color: var(--rival-accent); font-size: 13px; font-weight: 700; }
+.ai-setup-dock { position: fixed; bottom: var(--ai-nav-offset, 92px); left: 50%; transform: translateX(-50%); z-index: 81; width: 100%; max-width: 480px; padding: 12px 16px 8px; background: linear-gradient(180deg, #0d172900, #0d1729 25%); }
 .ai-setup-launch { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 68px; padding: 12px 18px; border-radius: 20px; background: var(--rival-accent); color: #10262a; box-shadow: inset 0 1px 0 #ffffff66, 0 8px 24px #0003; text-align: left; transition: filter 140ms ease; }
 .ai-setup-launch-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: #10262a0e; }
 .ai-setup-launch > span:nth-child(2) { flex: 1; }
@@ -50,4 +51,17 @@
 .ai-setup-launch:active { filter: brightness(.93); }
 .ai-setup button:focus-visible, .ai-difficulty input:focus-visible + .ai-difficulty-body { outline: 3px solid #eef8ff; outline-offset: 4px; }
 @media (max-width: 359px) { .ai-difficulty-body { padding: 12px 10px; gap: 6px; } .ai-difficulty strong { font-size: 15px; } }
+@media (max-height: 850px) {
+    .ai-setup { padding-top: 10px; }
+    .ai-setup-header { margin-bottom: 12px; }
+    .ai-rival-stage { height: 148px; }
+    .ai-rival-stage .ai-rival-avatar { width: 164px; height: 164px; }
+    .ai-rival-orbit { width: 150px; height: 150px; }
+    .ai-rival-dialogue { min-height: 54px; padding-top: 6px; padding-bottom: 10px; }
+    .ai-difficulties { margin-top: 16px; }
+    .ai-difficulty-body { min-height: 80px; padding-top: 12px; padding-bottom: 12px; }
+    .ai-mode-detail { margin: 10px 0 0; min-height: 0; display: flex; align-items: center; gap: 12px; }
+    .ai-mode-detail p { flex: 1; font-size: 12px; }
+    .ai-mode-detail button { flex-shrink: 0; font-size: 12px; gap: 5px; }
+}
 @media (prefers-reduced-motion: reduce) { .ai-difficulty-body, .ai-setup-launch { transition: none; } }

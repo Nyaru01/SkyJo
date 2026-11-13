@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useLayoutEffect, useRef } from 'react';
 import { ArrowLeft, ArrowUpRight, Check, Flame, Leaf, Play, Skull, Swords, BookOpen } from 'lucide-react';
 import { AI_DIFFICULTY } from '../../lib/skyjoAI';
 import RobotAvatar from './RobotAvatar';
@@ -14,6 +14,17 @@ const MODES = [
 export default function AISetupScreen({ difficulty, onDifficultyChange, onStart, onBack, onRules }) {
     const mode = MODES.find(item => item.id === difficulty) || MODES[0];
     const radioName = useId();
+    const dockRef = useRef(null);
+    useLayoutEffect(() => {
+        const navigation = document.querySelector('.mobile-navigation');
+        const positionDock = () => {
+            dockRef.current?.style.setProperty('--ai-nav-offset', `${Math.ceil(navigation?.getBoundingClientRect().height || 0)}px`);
+        };
+        positionDock();
+        const observer = new ResizeObserver(positionDock);
+        if (navigation) observer.observe(navigation);
+        return () => observer.disconnect();
+    }, []);
     return <main className={`ai-setup ai-setup--${mode.theme}`}>
         <header className="ai-setup-header">
             <button type="button" onClick={onBack} className="ai-setup-back" aria-label="Retour au menu Jouer"><ArrowLeft size={20} aria-hidden="true" /></button>
@@ -52,10 +63,10 @@ export default function AISetupScreen({ difficulty, onDifficultyChange, onStart,
             <p>{mode.detail}</p>
             {mode.rules && <button type="button" onClick={() => onRules(mode.rules)}><BookOpen size={16} aria-hidden="true" />Règles {mode.title}<ArrowUpRight size={15} aria-hidden="true" /></button>}
         </div>
-        <button type="button" onClick={onStart} className="ai-setup-launch">
+        <div ref={dockRef} className="ai-setup-dock"><button type="button" onClick={onStart} className="ai-setup-launch">
             <span className="ai-setup-launch-icon"><Play size={21} fill="currentColor" aria-hidden="true" /></span>
             <span><strong>Affronter l’IA</strong><small>Mode {mode.title}</small></span>
             <ArrowUpRight size={23} aria-hidden="true" />
-        </button>
+        </button></div>
     </main>;
 }
