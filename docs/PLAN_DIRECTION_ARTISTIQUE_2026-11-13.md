@@ -100,3 +100,11 @@ Référence donnée par l'utilisateur : la DA de Monument Valley. Scène origina
 ### Plateaux teintés
 - Les plateaux de jeu ne sont plus blancs : sauge-menthe pour vous, rose-corail pour l'adversaire, rebord translucide, tranche dans la même famille de couleur.
 - Fonds débloqués sombres (ex. Cyber City) : libellés Pioche / Défausse en clair avec ombre.
+
+### Maturité (retour « trop enfantin »)
+- Diagnostic : pastels bonbon saturés, arrondis très marqués, bordures épaisses, doubles tranches colorées, halos et robot rondouillard donnaient un aspect jouet. Monument Valley doit sa tenue à sa retenue.
+- Palette poudrée et désaturée partout : ciel ivoire → gris lilas → ardoise, pierre mate, sauge grisée (vous), terre cuite douce (adversaire), une seule couleur d'action indigo ardoise #3d4466.
+- Formes nettes : arrondis 10-14 px, filets fins, une seule tranche fine, plus de halo sur le tour actif (anneau 1,5 px).
+- Dos « Classique » : indigo profond à filets ivoire. Île, cartes du parvis, emblèmes et mascotte repassés dans les mêmes tons.
+- Correctif : libellés Pioche / Défausse centrés au-dessus de leur pile (ils étaient décalés de 24 px en phase de choix) ; dalle centrale symétrique.
+- Bouton « Affronter l'IA » dans la couleur d'action.

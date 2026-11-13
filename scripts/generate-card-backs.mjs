@@ -74,15 +74,16 @@ const backs = {
     // Le dos par défaut : lilas profond, losange crème et or.
     // Le dos par défaut, style « belvédère » : dégradé corail → lavande, géométrie au trait blanc.
     classic: () => card({
-        metalStops: ['#fffaf2', '#f6e7d7'],
+        // Indigo profond, géométrie au filet ivoire : sobre et lisible sur les plateaux clairs.
+        metalStops: ['#f3eee7', '#ddd3c7'],
         bg: 'url(#cl)',
-        extraDefs: grad('cl', '#ee9f93', '#9d88d2', 'x1="0" y1="0" x2="0" y2="1"'),
-        pattern: `<g fill="none" stroke="#fffaf2" stroke-opacity=".35" stroke-width="2">
+        extraDefs: grad('cl', '#3f4770', '#2b3150', 'x1="0" y1="0" x2="0" y2="1"'),
+        pattern: `<g fill="none" stroke="#efe8dc" stroke-opacity=".28" stroke-width="1.6">
             <path d="M250 60 L440 350 L250 640 L60 350 Z"/>
             <path d="M250 60 L250 640 M60 350 L440 350"/>
         </g>`,
-        frame: '#fffaf2',
-        emblemOpts: { stroke: '#fffaf2', fill: '#ffffff26', dot: '#fffaf2' },
+        frame: '#efe8dc',
+        emblemOpts: { stroke: '#efe8dc', fill: '#ffffff12', dot: '#e3cfa8' },
     }),
     // Parchemin crème, fibres et encre sépia.
     papyrus: () => {

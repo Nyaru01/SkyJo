@@ -27,10 +27,10 @@ const setPointer = on => { document.body.style.cursor = on ? 'pointer' : ''; };
 
 // Palette : pierre crème, corail, rose, lavande, menthe d'eau.
 const C = {
-    stone: '#f6e7d7', stoneEdge: '#efd8c4',
-    coral1: '#eeb1a2', coral2: '#e49b98', coral3: '#d48ea3', coral4: '#bf8fb3',
-    lilac: '#d2b8e4', lilacDark: '#b89dd2', dome: '#f4c3b6',
-    water: '#a9e0d6', leaf: '#a6d6bd', trunk: '#c79c8a',
+    stone: '#ece5db', stoneEdge: '#dcd2c6',
+    coral1: '#cdb7aa', coral2: '#bca398', coral3: '#a9938d', coral4: '#98868a',
+    lilac: '#adb3c6', lilacDark: '#9299b0', dome: '#c9b2a5',
+    water: '#aec5c4', leaf: '#a8b9a6', trunk: '#a48c7c',
 };
 
 // Grille du parvis : null = carte face cachée.
@@ -204,7 +204,7 @@ function Water({ still }) {
     useFrame(state => {
         if (!mat.current || still) return;
         const k = (Math.sin(state.clock.elapsedTime * 1.4) + 1) / 2;
-        mat.current.color.setRGB(0.6 + k * 0.08, 0.86 + k * 0.05, 0.82 + k * 0.06);
+        mat.current.color.setRGB(0.64 + k * 0.05, 0.75 + k * 0.04, 0.75 + k * 0.04);
     });
     return <mesh rotation-x={-Math.PI / 2} position={[1.75, 0.006, 1.05]}>
         <planeGeometry args={[1.05, 1.5]} />

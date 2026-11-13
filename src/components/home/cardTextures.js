@@ -207,11 +207,11 @@ export function heroTexture() {
 // Direction « belvédère » (aplats pastel, géométrie pure)
 // ---------------------------------------------------------------------
 const PASTEL = {
-    indigo: ['#a9a6e8', '#4b4597'],
-    sky: ['#a6d8ec', '#2f6f8f'],
-    mint: ['#a8dcc1', '#2f7a5a'],
-    sun: ['#f6d79a', '#8f6420'],
-    rose: ['#f2a9a2', '#8f3a3f'],
+    indigo: ['#bdbcd8', '#3d4170'],
+    sky: ['#b8cdd8', '#2f5468'],
+    mint: ['#bccfc1', '#3f5e4a'],
+    sun: ['#e4d3b0', '#6e5527'],
+    rose: ['#ddb6ae', '#6e3a3a'],
 };
 
 export function pastelFaceTexture(value) {

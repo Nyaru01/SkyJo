@@ -11,10 +11,10 @@ import { CanvasTexture, MathUtils, SRGBColorSpace } from 'three';
 // =====================================================================
 
 const MOODS = {
-    normal: { accent: '#7fd3b2', eye: '#b4f3dc', brow: 0, eyeH: 1, mouth: 'smile' },
-    hard: { accent: '#f2ab72', eye: '#ffd8a6', brow: 0, eyeH: 0.55, mouth: 'flat' },
-    hardcore: { accent: '#a98ee0', eye: '#ddd0ff', brow: 0.42, eyeH: 0.62, mouth: 'smirk' },
-    bonus: { accent: '#ec7f8c', eye: '#ffc0c7', brow: 0.3, eyeH: 0.8, mouth: 'grin' },
+    normal: { accent: '#8fae9f', eye: '#cfe4d8', brow: 0, eyeH: 1, mouth: 'smile' },
+    hard: { accent: '#c4a07a', eye: '#ecdcc2', brow: 0, eyeH: 0.55, mouth: 'flat' },
+    hardcore: { accent: '#959bc0', eye: '#dcdff0', brow: 0.42, eyeH: 0.62, mouth: 'smirk' },
+    bonus: { accent: '#b97f78', eye: '#ecd2cd', brow: 0.3, eyeH: 0.8, mouth: 'grin' },
 };
 
 const BODY = new RoundedBoxGeometry(1.6, 1.36, 1.3, 5, 0.42);
@@ -97,7 +97,7 @@ function Bot({ difficulty, poke, still, pointer }) {
     return <group>
         <group ref={root}>
             <group ref={head}>
-                <mesh geometry={BODY}><meshLambertMaterial color="#fff5ec" /></mesh>
+                <mesh geometry={BODY}><meshLambertMaterial color="#efe9e1" /></mesh>
                 <mesh geometry={BAND} position-y={-0.5}><meshLambertMaterial color={accent} /></mesh>
                 {/* Oreilles-disques */}
                 {[-1, 1].map(s => <mesh key={s} position={[s * 0.83, 0.05, 0]} rotation-z={Math.PI / 2}>
@@ -106,7 +106,7 @@ function Bot({ difficulty, poke, still, pointer }) {
                 </mesh>)}
                 {/* Visage-écran */}
                 <group position={[0, 0.06, 0.62]}>
-                    <mesh geometry={FACE}><meshLambertMaterial color="#3f3456" /></mesh>
+                    <mesh geometry={FACE}><meshLambertMaterial color="#2f3348" /></mesh>
                     <group ref={eyes} position={[0, 0.07, 0.06]}>
                         {[-0.24, 0.24].map(x => <mesh key={x} geometry={EYE} position-x={x}><meshBasicMaterial color={eyeColor} /></mesh>)}
                     </group>
@@ -126,7 +126,7 @@ function Bot({ difficulty, poke, still, pointer }) {
             {/* Petites mains flottantes */}
             {[-1, 1].map((s, i) => <mesh key={s} ref={el => { hands.current[i] = el; }} position={[s * 1.02, -0.42, 0.25]}>
                 <sphereGeometry args={[0.17, 16, 12]} />
-                <meshLambertMaterial color="#fff5ec" />
+                <meshLambertMaterial color="#efe9e1" />
             </mesh>)}
         </group>
         <sprite position={[0, -1.18, 0]} scale={[2.2, 0.55, 1]}><spriteMaterial map={shadow} transparent depthWrite={false} /></sprite>

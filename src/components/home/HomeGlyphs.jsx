@@ -11,17 +11,17 @@ function Prism({ x, y, w, h, top, left, right }) {
     </g>;
 }
 
-const STONE = { top: '#fff6ec', left: '#f2d9c6', right: '#e6c3b0' };
-const CORAL = { top: '#f8c7bb', left: '#ec9f97', right: '#d98a92' };
-const LILAC = { top: '#e6d6f2', left: '#c9b2e2', right: '#ac94d0' };
-const MINT = { top: '#d3efe2', left: '#a9dcc6', right: '#86c4ab' };
+const STONE = { top: '#f3eee7', left: '#ddd3c7', right: '#cbbfb2' };
+const CORAL = { top: '#e3cbc2', left: '#c9a79c', right: '#b38f86' };
+const LILAC = { top: '#d5d8e3', left: '#adb3c6', right: '#9299b0' };
+const MINT = { top: '#d3ddd4', left: '#b0c2b3', right: '#95aa99' };
 
 // Contre l'IA : deux cartes dressées face à face, en duel.
 function Duel() {
     return <svg viewBox="0 0 40 40" aria-hidden="true">
         <Prism x={20} y={30} w={13} h={3} {...STONE} />
-        <path d="M9 13 L17 9 L17 25 L9 29 Z" fill="#f2b3a8" stroke="#fffaf3" strokeWidth="1.4" strokeLinejoin="round" />
-        <path d="M23 9 L31 13 L31 29 L23 25 Z" fill="#b9a6e0" stroke="#fffaf3" strokeWidth="1.4" strokeLinejoin="round" />
+        <path d="M9 13 L17 9 L17 25 L9 29 Z" fill="#c9a196" stroke="#fffaf3" strokeWidth="1.4" strokeLinejoin="round" />
+        <path d="M23 9 L31 13 L31 29 L23 25 Z" fill="#8f97b4" stroke="#fffaf3" strokeWidth="1.4" strokeLinejoin="round" />
         <path d="M13 17 l1.6 -0.8 v3.2 l-1.6 0.8 Z" fill="#fffaf3" />
         <path d="M27 17 l-1.6 -0.8 v3.2 l1.6 0.8 Z" fill="#fffaf3" />
     </svg>;
@@ -33,7 +33,7 @@ function Bridge() {
         <Prism x={11} y={12} w={5} h={16} {...LILAC} />
         <Prism x={29} y={16} w={5} h={12} {...CORAL} />
         <path d="M14 17 Q20 11 26 19" fill="none" stroke="#fffaf3" strokeWidth="3" strokeLinecap="round" />
-        <path d="M14 17 Q20 11 26 19" fill="none" stroke="#c9a4b8" strokeWidth="1.2" strokeLinecap="round" />
+        <path d="M14 17 Q20 11 26 19" fill="none" stroke="#a99aa6" strokeWidth="1.2" strokeLinecap="round" />
     </svg>;
 }
 
@@ -43,8 +43,8 @@ function Summit() {
         <Prism x={20} y={20} w={13} h={4} {...STONE} />
         <Prism x={20} y={15} w={8} h={4} {...MINT} />
         <Prism x={20} y={11} w={4} h={3} {...CORAL} />
-        <path d="M20 12 V3" stroke="#8d7aa8" strokeWidth="1.3" strokeLinecap="round" />
-        <path d="M20 3 L26 5 L20 7.4 Z" fill="#e9a99b" />
+        <path d="M20 12 V3" stroke="#6c6f86" strokeWidth="1.3" strokeLinecap="round" />
+        <path d="M20 3 L26 5 L20 7.4 Z" fill="#b9826f" />
     </svg>;
 }
 
@@ -52,8 +52,8 @@ function Summit() {
 function Hourglass() {
     return <svg viewBox="0 0 40 40" aria-hidden="true">
         <Prism x={20} y={4} w={8} h={2} {...LILAC} />
-        <path d="M14 10 L26 10 L21.5 20 L26 30 L14 30 L18.5 20 Z" fill="#fff3ea" stroke="#d9b9c6" strokeWidth="1.2" strokeLinejoin="round" />
-        <path d="M16.5 27 L23.5 27 L20 22 Z" fill="#f2b3a8" />
+        <path d="M14 10 L26 10 L21.5 20 L26 30 L14 30 L18.5 20 Z" fill="#fff3ea" stroke="#b8acb4" strokeWidth="1.2" strokeLinejoin="round" />
+        <path d="M16.5 27 L23.5 27 L20 22 Z" fill="#c9a196" />
         <Prism x={20} y={28} w={8} h={2} {...LILAC} />
     </svg>;
 }

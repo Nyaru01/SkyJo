@@ -1106,3 +1106,94 @@ html body.lobby-theme .game-lobby .skyjo-hand .skyjo-player-badge.skyjo-player-b
 html body.lobby-theme .game-lobby .skyjo-hand--opponent .skyjo-player-badge.skyjo-player-badge:not(.skyjo-player-badge--active) {
     background: linear-gradient(180deg, #fdf0ec, #f6dcd4) !important; color: #5a3438 !important;
 }
+
+/* Zone centrale : libellés centrés au-dessus de leur pile, dalle symétrique */
+html body .game-lobby .skyjo-pile-zone { padding-inline: 14px; }
+html body .game-lobby .skyjo-pile-zone .skyjo-pile-group .skyjo-pile-label,
+html body .game-lobby .skyjo-pile-zone--choosing .skyjo-pile-group .skyjo-pile-label {
+    left: 50% !important; right: auto !important; transform: translateX(-50%) !important; white-space: nowrap;
+}
+html body.lobby-theme .game-lobby .skyjo-pile-zone::before { inset: -36px 0 -12px !important; }
+
+/* =====================================================================
+   MATURITÉ — couleurs poudrées et désaturées, formes nettes, filets fins,
+   plus de halos ni de doubles tranches colorées (retour « trop enfantin »).
+   ===================================================================== */
+html body .game-lobby--sky::before,
+html body .menu-lobby::before {
+    background: linear-gradient(180deg, #ece6df 0%, #e3dee0 38%, #d6d7de 72%, #c9cdd7 100%) !important;
+}
+html body .game-lobby--sky::after, html body .menu-lobby::after { opacity: .3 !important; }
+
+/* Plateaux : surfaces mates, filet clair, une seule tranche fine */
+html body.lobby-theme .game-lobby .skyjo-hand.skyjo-hand.skyjo-hand {
+    --turn-accent: #5f8272;
+    border-radius: 14px !important;
+    background: linear-gradient(180deg, #e6ebe5, #d8dfd7) !important;
+    border: 1px solid #ffffff99 !important;
+    box-shadow: inset 0 0 0 1px #ffffff40, 0 2px 0 #bfc8bd, 0 18px 30px -18px #2b2a3366 !important;
+}
+html body.lobby-theme .game-lobby .skyjo-hand.skyjo-hand.skyjo-hand.skyjo-hand--opponent {
+    --turn-accent: #a8695a;
+    background: linear-gradient(180deg, #eee4df, #e3d5ce) !important;
+    box-shadow: inset 0 0 0 1px #ffffff40, 0 2px 0 #d3bdb3, 0 18px 30px -18px #2b2a3366 !important;
+}
+html body.lobby-theme .game-lobby .skyjo-hand.skyjo-hand.skyjo-hand.skyjo-hand--active {
+    border-color: var(--turn-accent) !important;
+    box-shadow: inset 0 0 0 1px #ffffff40, 0 0 0 1.5px var(--turn-accent), 0 18px 30px -18px #2b2a3366 !important;
+}
+html body.lobby-theme .game-lobby .skyjo-hand.skyjo-hand--active::after { display: none !important; }
+html body.lobby-theme .game-lobby .skyjo-hand .skyjo-card-slot { background: #ffffff2e; border-color: #ffffff59; border-radius: 8px; }
+
+/* Pastilles de score : nettes, petites, à la couleur du joueur seulement quand c'est son tour */
+html body.lobby-theme .game-lobby .skyjo-hand .skyjo-player-badge.skyjo-player-badge {
+    border-radius: 10px !important; height: 26px !important;
+    background: #f6f3ef !important; border: 1px solid #ffffff !important; color: #2b2a33 !important;
+    box-shadow: 0 6px 14px -10px #2b2a3366 !important;
+}
+html body.lobby-theme .game-lobby .skyjo-hand .skyjo-player-badge.skyjo-player-badge--active {
+    background: var(--turn-accent) !important; border-color: var(--turn-accent) !important; color: #fbf8f4 !important;
+    box-shadow: 0 6px 14px -10px #2b2a3399 !important;
+}
+html body.lobby-theme .game-lobby .skyjo-hand .skyjo-player-badge--active .skyjo-turn-label { background: #ffffff26; border-radius: 6px; }
+
+/* Barre, pastilles, bandeau : ivoire mat */
+html body.lobby-theme .game-lobby .glass-premium:not(.fixed *):not(.skyjo-hand),
+html body.lobby-theme .game-lobby .skyjo-game-header.skyjo-game-header {
+    background: #f6f3eff2 !important; border-color: #ffffff !important; box-shadow: 0 8px 18px -14px #2b2a3366 !important;
+}
+html body.lobby-theme .game-lobby .skyjo-draw-button:not(.skyjo-draw-button--waiting):not(:disabled) {
+    background: #fbf9f6 !important; border-color: #3d446640 !important; border-radius: 12px !important;
+}
+html body.lobby-theme .game-lobby .skyjo-draw-button.skyjo-draw-button--waiting {
+    background: #fbf9f6 !important; border-color: #a8695a99 !important; border-radius: 12px !important; box-shadow: none !important;
+}
+html body.lobby-theme :is(.menu-lobby, .game-lobby) .skyjo-draw-button.skyjo-draw-button--waiting span[class][class] { color: #8a4f42 !important; }
+.skyjo-thinking-dots i { background: #a8695a; }
+
+/* Dalle centrale : pierre mate, filet et tranche fins */
+html body.lobby-theme .game-lobby .skyjo-pile-zone::before {
+    border-radius: 14px !important;
+    background: linear-gradient(180deg, #f3efe9, #e8e2da) !important;
+    box-shadow: inset 0 0 0 1px #ffffff80, 0 2px 0 #d5cbbf, 0 18px 30px -18px #2b2a3355 !important;
+    opacity: 1 !important;
+}
+html body.lobby-theme .game-lobby .skyjo-pile-label { color: #55546a !important; }
+
+/* Dos de carte : liseré ivoire fin, ombre courte */
+html body .game-lobby .skyjo-card-back:not([style*="52, 211, 153"]) {
+    border-color: #f3eee7 !important; box-shadow: 0 4px 8px -4px #2b2a3399 !important;
+}
+html body.lobby-theme .game-lobby .skyjo-draw-pile:not([style*="34d399"]) {
+    box-shadow: 2px 2px 0 -1px #c9c6d2, 2px 2px 0 0 #f3eee7, 4px 4px 0 -1px #b9b6c6, 4px 4px 0 0 #f3eee7, 0 8px 12px -8px #2b2a3399 !important;
+}
+
+/* Duel IA : bouton de lancement dans la couleur d'action unique (indigo ardoise) */
+html body.lobby-theme .menu-lobby .ai-setup-launch.ai-setup-launch {
+    background: #3d4466 !important; color: #f7f4f0 !important; border-radius: 14px !important;
+    box-shadow: 0 1px 0 #262b45, 0 12px 22px -14px #3d4466aa !important; border: none !important;
+}
+html body.lobby-theme .menu-lobby .ai-setup-launch.ai-setup-launch :is(strong, small, span, svg) { color: #f7f4f0 !important; }
+html body.lobby-theme .menu-lobby .ai-setup-launch.ai-setup-launch small { opacity: .75; }
+html body.lobby-theme .menu-lobby .ai-setup-launch .ai-setup-launch-icon { background: #ffffff1f !important; }
+html body .menu-lobby .ai-setup-launch::after { display: none !important; }

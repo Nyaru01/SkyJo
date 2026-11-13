@@ -309,3 +309,42 @@ body:has(.home-lobby) .mobile-nav-item--active { background: #5e4b7c; color: #ff
 .lobby-menu-btn-icon { background: #f7ece9; }
 .lobby-menu-btn-icon svg { width: 34px; height: 34px; display: block; }
 .lobby-menu-btn--primary .lobby-menu-btn-icon { background: #fff8f2; }
+
+/* =====================================================================
+   MATURITÉ — accueil en tons poudrés, formes nettes, une seule couleur d'action
+   ===================================================================== */
+.home-lobby {
+    --lobby-ink: #2b2a33;
+    --lobby-ink-2: #43424f;
+    --lobby-muted: #77768a;
+    --lobby-plum: #3d4466;
+}
+.home-lobby::before { background: linear-gradient(180deg, #ece6df 0%, #e3dee0 38%, #d6d7de 72%, #c9cdd7 100%) !important; }
+.lobby-hero h2 { font-weight: 500; color: var(--lobby-ink); }
+.lobby-brand > span:last-child { font-weight: 500; color: var(--lobby-ink); }
+.lobby-mode-switch button[aria-pressed=true]::after { background: #a8695a; }
+
+/* Boutons : rectangles adoucis, filet, ombre courte */
+.lobby-menu-btn {
+    border-radius: 14px; min-height: 58px;
+    background: #f7f4f0eb; border: 1px solid #ffffffcc;
+    box-shadow: 0 1px 0 #d9d1c8, 0 10px 20px -16px #2b2a3366;
+}
+.lobby-menu-btn:active { box-shadow: 0 0 0 #d9d1c8, 0 6px 12px -10px #2b2a3366; }
+.lobby-menu-btn-icon { border-radius: 10px; background: #ece7e1; }
+.lobby-menu-btn-title { font-weight: 500; }
+.lobby-menu-btn--primary { background: var(--lobby-plum); border-color: var(--lobby-plum); box-shadow: 0 1px 0 #262b45, 0 12px 22px -14px #3d4466aa; }
+.lobby-menu-btn--primary:active { box-shadow: 0 0 0 #262b45, 0 6px 12px -10px #3d4466aa; }
+.lobby-menu-btn--primary .lobby-menu-btn-icon { background: #f7f4f0; }
+
+.lobby-footer > button { background: #f7f4f099; border-color: #ffffffb3; }
+.lobby-players { border-radius: 14px; background: #f7f4f0e6; }
+.lobby-launch { border-radius: 14px; background: var(--lobby-plum); box-shadow: 0 1px 0 #262b45, 0 12px 22px -14px #3d4466aa; }
+
+body:has(.home-lobby) .mobile-navigation nav { background: #f7f4f0e6; border-radius: 16px; box-shadow: 0 10px 22px -16px #2b2a3388; }
+body:has(.home-lobby) .mobile-nav-item { color: #77768a; }
+body:has(.home-lobby) .mobile-nav-item--active { background: #3d4466; color: #f7f4f0; border-radius: 12px; }
+
+.lobby-brand-mark i:nth-child(1) { background: linear-gradient(150deg, #b9c7bd, #8fa496); }
+.lobby-brand-mark i:nth-child(2) { background: linear-gradient(150deg, #e3d3b6, #c9b08a); }
+.lobby-brand-mark i:nth-child(3) { background: linear-gradient(150deg, #d7b4aa, #b98a7e); }
