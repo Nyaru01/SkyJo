@@ -132,6 +132,13 @@ export default function Dashboard() {
     const [homeVirtualEntry, setHomeVirtualEntry] = useState(null);
     const [isTutorialManuallyOpen, setIsTutorialManuallyOpen] = useState(false);
     const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
+    // Au plus une annonce (Nouveautés, Carrière Maître, Mode Tourment) par session,
+    // pour ne pas enchaîner les fenêtres à l'ouverture de l'app.
+    const [announcementShown, setAnnouncementShown] = useState(false);
+    const handleWhatsNewVisibility = useCallback(open => {
+        setIsWhatsNewOpen(open);
+        if (open) setAnnouncementShown(true);
+    }, []);
     const previousGameStatusRef = useRef(gameStatus);
     const isTutorialOpen = isTutorialManuallyOpen || (isRehydrated && !hasSeenTutorial);
     const hasUnreadNews = Number.parseInt(
@@ -166,6 +173,18 @@ export default function Dashboard() {
     // const isVirtualGameActive = effectiveTab === 'virtual' && (!!virtualGameState || onlineGameStarted);
     const isSeasonalPreview = useVirtualGameStore(state => !!state.gameState?.isSeasonalPreview);
     const isVirtualGameActive = isSeasonalPreview || effectiveTab === 'virtual' && virtualScreen === 'game' && (!!virtualGameState || onlineGameStarted);
+    // Menus habillés avec le thème pastel de l'accueil (purement visuel, cf. styles/MenuLobby.css)
+    // Tous les écrans hors table et hors accueil (déjà stylé par HomeLobby.css)
+    const isMenuLobby = !isVirtualGameActive && !(effectiveTab === 'home' && gameStatus === 'SETUP');
+    // Table de jeu : habillage ciblé (cartes intactes) ; ciel pastel si le fond « Original » est choisi
+    const themeClass = isVirtualGameActive
+        ? ` game-lobby${background === '/Wallpapers/bg-skyjo.png' ? ' game-lobby--sky' : ''}`
+        : isMenuLobby ? ' menu-lobby' : '';
+    // Les fenêtres (portails) prennent aussi le thème pastel dans toute l'application
+    useEffect(() => {
+        document.body.classList.add('lobby-theme');
+        return () => document.body.classList.remove('lobby-theme');
+    }, []);
 
     // useBackgroundMusic(isManualGameActive);
 
@@ -372,6 +391,13 @@ export default function Dashboard() {
                                         }
                                         screen = 'game';
                                     } else if (action === 'ai') screen = 'ai-setup';
+                                    else if (action === 'online') {
+                                        const profile = useGameStore.getState().userProfile;
+                                        const online = useOnlineGameStore.getState();
+                                        online.setPlayerInfo(profile.name, profile.emoji || 'cat');
+                                        online.connect();
+                                        screen = 'lobby';
+                                    }
                                     setHomeVirtualEntry(action === 'challenges' ? 'challenges' : null);
                                     setVirtualScreen(screen);
                                     setActiveTab('virtual');
@@ -379,7 +405,7 @@ export default function Dashboard() {
                                 onOpenTutorial={() => setIsTutorialManuallyOpen(true)}
                                 showGuide={!hasSeenTutorial}
                                 allowAutoNews={hasSeenTutorial}
-                                onWhatsNewVisibilityChange={setIsWhatsNewOpen}
+                                onWhatsNewVisibilityChange={handleWhatsNewVisibility}
                             />
                         </Motion.div>
                     );
@@ -746,7 +772,7 @@ export default function Dashboard() {
             `}} />
             {/* Bouton Quitter Spécifique au jeu en ligne (Fix Plan) */}
 
-            <div className={`max-w-3xl mx-auto p-3 ${isVirtualGameActive ? 'pb-2' : 'mobile-page-content'}`}>
+            <div className={`max-w-3xl mx-auto p-3 ${isVirtualGameActive ? 'pb-2' : 'mobile-page-content'}${themeClass}`}>
                 <AnimatePresence initial={false}>
                     {renderContent()}
                 </AnimatePresence>
@@ -772,6 +798,13 @@ export default function Dashboard() {
             <Tutorial
                 isOpen={isTutorialOpen}
                 onClose={() => {
+                    if (!hasSeenTutorial) {
+                        // Nouveau joueur : tout est nouveau pour lui, on ne lui annonce rien.
+                        window.localStorage.setItem('skyjo_news_version', CURRENT_NEWS_VERSION.toString());
+                        setHasSeenMasterCareerAnnouncement(true);
+                        setHasSeenNewOnlineModeAnnouncement(true);
+                        setAnnouncementShown(true);
+                    }
                     setIsTutorialManuallyOpen(false);
                     setHasSeenTutorial(true);
                 }}
@@ -897,11 +930,12 @@ export default function Dashboard() {
                     && !hasUnreadNews
                     && !hasSeenNewOnlineModeAnnouncement
                     && hasSeenMasterCareerAnnouncement
+                    && !announcementShown
                     && effectiveTab === 'home'
                     && !isTutorialOpen
                     && !isWhatsNewOpen
                 }
-                onClose={() => setHasSeenNewOnlineModeAnnouncement(true)}
+                onClose={() => { setHasSeenNewOnlineModeAnnouncement(true); setAnnouncementShown(true); }}
             />
             <MasterCareerPopup
                 isOpen={
@@ -909,14 +943,16 @@ export default function Dashboard() {
                     && hasSeenTutorial
                     && !hasUnreadNews
                     && !hasSeenMasterCareerAnnouncement
+                    && !announcementShown
                     && effectiveTab === 'home'
                     && !isTutorialOpen
                     && !isWhatsNewOpen
                 }
                 playerLevel={playerLevel}
-                onClose={() => setHasSeenMasterCareerAnnouncement(true)}
+                onClose={() => { setHasSeenMasterCareerAnnouncement(true); setAnnouncementShown(true); }}
                 onDiscover={() => {
                     setHasSeenMasterCareerAnnouncement(true);
+                    setAnnouncementShown(true);
                     openCareerPlan('master');
                 }}
             />

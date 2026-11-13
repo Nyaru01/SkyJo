@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import './index.css';
 import './styles/MobilePolish.css';
+import './styles/MenuLobby.css';
 
 // @ts-ignore - Defined by Vite during build
 /* global __APP_VERSION__ */

@@ -7,7 +7,7 @@ export default function MasterCareerPopup({ isOpen, onClose, onDiscover, playerL
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+                <div className="lobby-dialog fixed inset-0 z-[300] flex items-center justify-center p-4">
                     <Motion.button aria-label="Fermer l’annonce" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-950/90" onClick={onClose} />
                     <Motion.div initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} className="relative w-full max-w-lg overflow-hidden rounded-[2.5rem] border border-fuchsia-400/30 bg-slate-950 p-8 text-center shadow-[0_0_80px_rgba(217,70,239,0.25)] md:p-11">
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-fuchsia-950/70 via-transparent to-cyan-950/50" />

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 700" width="500" height="700">
+<defs>
+<linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1c9"/><stop offset="0.3333333333333333" stop-color="#f0cf86"/><stop offset="0.6666666666666666" stop-color="#fbe4ab"/><stop offset="1" stop-color="#d9aa55"/></linearGradient>
+<clipPath id="inner"><rect x="14" y="14" width="472" height="672" rx="30"/></clipPath>
+<filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<radialGradient id="sheen" cx=".3" cy=".18" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="500" height="700" rx="42" fill="url(#metal)"/>
+<g clip-path="url(#inner)">
+<rect x="14" y="14" width="472" height="672" fill="#665496"/>
+<polygon points="122.1,128.3 205.9,153.5 155.6,212.2" fill="#7a64a8" fill-opacity=".85"/><polygon points="222.6,265.9 321.5,295.6 262.1,364.8" fill="#5f4c8c" fill-opacity=".85"/><polygon points="197.8,615.5 280.6,640.3 230.9,698.4" fill="#8c76b8" fill-opacity=".85"/><polygon points="394.1,227.5 468.3,249.7 423.8,301.7" fill="#54447d" fill-opacity=".85"/><polygon points="64,611.3 220.2,658.2 126.4,767.5" fill="#7a64a8" fill-opacity=".85"/><polygon points="151.4,646.8 287.1,687.5 205.7,782.5" fill="#5f4c8c" fill-opacity=".85"/><polygon points="327.1,187 391.7,206.3 353,251.5" fill="#8c76b8" fill-opacity=".85"/><polygon points="180.6,332.6 330.9,377.7 240.7,483" fill="#54447d" fill-opacity=".85"/><polygon points="238.9,380.4 367.2,418.9 290.2,508.8" fill="#7a64a8" fill-opacity=".85"/><polygon points="360.4,322 432.1,343.5 389.1,393.7" fill="#5f4c8c" fill-opacity=".85"/><polygon points="341.4,195.8 473.4,235.4 394.2,327.9" fill="#8c76b8" fill-opacity=".85"/><polygon points="55.5,235.2 115.9,253.4 79.7,295.6" fill="#54447d" fill-opacity=".85"/><polygon points="298.8,304.1 460.1,352.4 363.3,465.3" fill="#7a64a8" fill-opacity=".85"/><polygon points="320.9,425.4 473,471.1 381.7,577.5" fill="#5f4c8c" fill-opacity=".85"/><polygon points="173.3,352.6 325.1,398.1 234,504.3" fill="#8c76b8" fill-opacity=".85"/><polygon points="72.9,302.4 134.4,320.9 97.5,363.9" fill="#54447d" fill-opacity=".85"/><polygon points="274.7,667.5 356,691.9 307.2,748.7" fill="#7a64a8" fill-opacity=".85"/><polygon points="107.9,671.9 271.5,721 173.3,835.5" fill="#5f4c8c" fill-opacity=".85"/><polygon points="343.2,174.2 485.7,216.9 400.2,316.6" fill="#8c76b8" fill-opacity=".85"/><polygon points="168.7,319 232.8,338.2 194.4,383.1" fill="#54447d" fill-opacity=".85"/><polygon points="374.8,407.2 451.5,430.2 405.5,483.9" fill="#7a64a8" fill-opacity=".85"/><polygon points="358.9,200.4 430.7,222 387.6,272.2" fill="#5f4c8c" fill-opacity=".85"/><polygon points="272.5,432 388.6,466.8 319,548.1" fill="#8c76b8" fill-opacity=".85"/><polygon points="109.9,664.7 253.1,707.7 167.2,807.9" fill="#54447d" fill-opacity=".85"/><polygon points="359.2,190.2 423.5,209.5 384.9,254.6" fill="#7a64a8" fill-opacity=".85"/><polygon points="405,504.4 495,531.4 441,594.4" fill="#5f4c8c" fill-opacity=".85"/><path d="M60 -10 L520 420" stroke="#ffffff" stroke-opacity=".18" stroke-width="22"/>
+<rect x="14" y="14" width="472" height="672" fill="url(#sheen)"/>
+</g>
+<rect x="36" y="36" width="428" height="628" rx="22" fill="none" stroke="url(#metal)" stroke-width="3.5"/>
+<rect x="48" y="48" width="404" height="604" rx="16" fill="none" stroke="url(#metal)" stroke-opacity=".45" stroke-width="1.5"/>
+<path d="M64 53 L75 64 L64 75 L53 64 Z" fill="url(#metal)"/><path d="M436 53 L447 64 L436 75 L425 64 Z" fill="url(#metal)"/><path d="M64 625 L75 636 L64 647 L53 636 Z" fill="url(#metal)"/><path d="M436 625 L447 636 L436 647 L425 636 Z" fill="url(#metal)"/>
+<g>
+<path d="M250 258 L342 350 L250 442 L158 350 Z" fill="none" stroke="url(#metal)" stroke-width="7" stroke-linejoin="round"/>
+<path d="M250 226 L374 350 L250 474 L126 350 Z" fill="none" stroke="url(#metal)" stroke-opacity=".55" stroke-width="2.5"/>
+<path d="M250 314 L286 350 L250 386 L214 350 Z" fill="#fbe4ab"/>
+<circle cx="250" cy="190" r="7" fill="#fbe4ab"/>
+<circle cx="250" cy="510" r="7" fill="#fbe4ab"/>
+<circle cx="90" cy="350" r="5" fill="#fbe4ab" fill-opacity=".7"/>
+<circle cx="410" cy="350" r="5" fill="#fbe4ab" fill-opacity=".7"/>
+</g>
+</svg>

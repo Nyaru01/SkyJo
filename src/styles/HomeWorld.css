@@ -1,0 +1,174 @@
+/* =====================================================================
+   Scène d'accueil 3D (CSS pur) : table SKYJO flottante
+   ===================================================================== */
+.s3 {
+    --cw: clamp(32px, 9.6vw, 40px);
+    overflow: visible;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 88%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 88%, transparent 100%);
+}
+.home-lobby--real .s3 { --cw: clamp(24px, 7vw, 30px); }
+
+.s3-glow {
+    position: absolute; left: 50%; top: 52%; width: 300px; height: 240px; translate: -50% -50%;
+    border-radius: 50%; background: radial-gradient(circle, #fff7ea 0%, #ffd2b977 40%, transparent 70%);
+    animation: s3-glow 7s ease-in-out infinite;
+}
+
+/* Brume atmosphérique (remplace les nuages dessinés) */
+.s3-haze { position: absolute; border-radius: 50%; filter: blur(18px); pointer-events: none; }
+.s3-haze--1 { left: -6%; top: 46%; width: 56%; height: 34%; background: #fffaf3d9; animation: s3-haze 16s ease-in-out infinite alternate; }
+.s3-haze--2 { right: -8%; top: 24%; width: 46%; height: 26%; background: #fff3eecc; animation: s3-haze 20s ease-in-out -7s infinite alternate-reverse; }
+
+/* Cartes lointaines qui dérivent : profondeur de champ */
+.s3-drifter {
+    position: absolute; z-index: 0; --cw: clamp(22px, 6.4vw, 28px);
+    opacity: calc(var(--d) + .2); filter: blur(calc((1 - var(--d)) * 2.4px)) saturate(.85);
+    rotate: var(--r); scale: var(--d);
+    animation: s3-drift 11s ease-in-out infinite;
+}
+
+/* Scène en perspective */
+.s3-stage { position: absolute; inset: 0; perspective: 820px; perspective-origin: 50% 20%; z-index: 1; }
+.s3-island {
+    position: absolute; left: 50%; top: 62%; width: calc(var(--cw) * 7.6); height: calc(var(--cw) * 6);
+    transform-style: preserve-3d;
+    transform: translate(-50%, -50%) rotateX(58deg) rotateZ(-14deg);
+    animation: s3-sway 9s ease-in-out infinite;
+}
+/* Ombre portée diffuse sous la table */
+.s3-island::before {
+    content: ''; position: absolute; inset: 6% -2% -10% 4%; border-radius: 30px;
+    background: #5b3f8c; opacity: .28; filter: blur(22px);
+    transform: translateZ(-40px);
+}
+/* Plateau : surface feutrée, liseré intérieur et tranche visible */
+.s3-island::after {
+    content: ''; position: absolute; inset: 0; border-radius: 20px;
+    background:
+        radial-gradient(ellipse at 28% 18%, #ffffff, transparent 55%),
+        repeating-linear-gradient(45deg, #5b3f8c06 0 2px, transparent 2px 6px),
+        linear-gradient(140deg, #fff6ee, #ead9ee);
+    box-shadow:
+        inset 0 0 0 5px #fffdfa, inset 0 0 0 6px #c9a96655,
+        0 2px 0 #eadbe9, 0 4px 0 #dccae0, 0 6px 0 #cdb7d3, 0 8px 0 #bea5c6;
+    transform: translateZ(-1px);
+}
+.s3-board {
+    position: absolute; left: 7%; top: 9%; z-index: 1;
+    display: grid; grid-template-columns: repeat(4, var(--cw)); gap: calc(var(--cw) * .18);
+    transform-style: preserve-3d;
+}
+.s3-pile { position: absolute; right: 5%; top: 30%; width: var(--cw); height: calc(var(--cw) * 1.4); transform-style: preserve-3d; }
+.s3-pile .s3-card { position: absolute; inset: 0; transform: translateZ(calc(var(--z) * 3px)) rotateZ(calc(var(--z) * 2deg - 4deg)); }
+
+/* Cartes : bord blanc, tranche colorée, reflet doux */
+.s3-card {
+    --edge: #2a214055;
+    position: relative; width: var(--cw); aspect-ratio: 5 / 7; display: grid; place-items: center;
+    border-radius: calc(var(--cw) * .14); border: 2px solid #fffaf3; color: #fff;
+    box-shadow: 0 1.5px 0 var(--edge), 0 4px 6px -1px #2a214050;
+    transform: translateZ(1px);
+}
+.s3-card b { font-size: calc(var(--cw) * .48); font-weight: 800; line-height: 1; letter-spacing: -.04em; text-shadow: 0 1px 0 #0000002e; }
+.s3-card small { position: absolute; font-size: calc(var(--cw) * .17); font-weight: 800; line-height: 1; }
+.s3-card small:first-child { top: 3px; left: 4px; }
+.s3-card small:last-child { right: 4px; bottom: 3px; rotate: 180deg; }
+.s3-card::before {
+    content: ''; position: absolute; inset: 2px; border-radius: calc(var(--cw) * .1); pointer-events: none;
+    background: linear-gradient(160deg, #ffffff59, transparent 42%);
+}
+/* Couleurs franches, alignées sur les cartes du plateau */
+.s3-card--indigo { background: linear-gradient(150deg, #7a77f5, #4338ca); --edge: #2e2590; }
+.s3-card--sky { background: linear-gradient(150deg, #62cdf4, #1e8fd0); --edge: #14699c; }
+.s3-card--mint { background: linear-gradient(150deg, #52da9a, #13a066); --edge: #0c7348; }
+.s3-card--sun { background: linear-gradient(150deg, #ffd655, #f0a000); --edge: #b57800; }
+.s3-card--rose { background: linear-gradient(150deg, #ff8174, #e0344a); --edge: #a21f33; }
+/* Dos noir et or, avec emblème losange */
+.s3-card--back { background: radial-gradient(ellipse at 30% 15%, #3d3554, #17131f 72%); border-color: #f2d48a; --edge: #0d0a12; }
+.s3-card--back::before { inset: 3px; border: 1px solid #f2d48a4d; background: radial-gradient(circle at 50% 50%, #f2d48a1f, transparent 60%); }
+.s3-card--back i {
+    width: 40%; aspect-ratio: 1; rotate: 45deg; border-radius: 2px;
+    border: 1.5px solid #f2d48a; background: radial-gradient(circle, #f2d48a 0 22%, transparent 24%);
+    box-shadow: 0 0 6px #f2d48a55;
+}
+
+/* Carte qui vole et se retourne au-dessus de la table */
+.s3-flyer {
+    position: absolute; left: 62%; top: 9%; width: calc(var(--cw) * 1.5); aspect-ratio: 5 / 7;
+    perspective: 600px; translate: -50% 0; z-index: 3;
+    animation: s3-hover 4.6s ease-in-out infinite;
+}
+.s3-flyer-inner { position: absolute; inset: 0; transform-style: preserve-3d; animation: s3-flip 6.5s cubic-bezier(.6, 0, .3, 1) infinite; }
+.s3-side { position: absolute; inset: 0; width: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 18px 24px -12px #3b2766aa; }
+.s3-side.s3-card { width: 100%; }
+.s3-side--front { transform: rotateY(180deg); border-radius: calc(var(--cw) * .2); }
+.s3-side--front .s3-card { width: 100%; height: 100%; border-width: 3px; }
+.s3-side--front .s3-card b { font-size: calc(var(--cw) * .7); }
+.s3-side--front .s3-card small { font-size: calc(var(--cw) * .24); }
+.s3-shadow {
+    position: absolute; left: 62%; top: 43%; width: calc(var(--cw) * 1.6); height: 10px; translate: -50% 0; z-index: 2;
+    border-radius: 50%; background: radial-gradient(ellipse, #3b276650, transparent 70%);
+    animation: s3-shadow 4.6s ease-in-out infinite;
+}
+
+/* Étincelles */
+.sky-world-spark {
+    position: absolute; z-index: 2; width: 4px; height: 4px; border-radius: 50%;
+    left: calc(10% + var(--s) * 16%); top: 22%;
+    background: #fff; box-shadow: 0 0 8px #ffe6c4, 0 0 2px #fff;
+    animation: sky-twinkle 3.2s ease-in-out infinite; animation-delay: calc(var(--s) * -.55s);
+}
+.sky-world-spark:nth-of-type(2n) { top: 36%; } .sky-world-spark:nth-of-type(3n) { top: 12%; } .sky-world-spark:nth-of-type(5) { top: 64%; }
+
+@keyframes s3-sway { 0%, 100% { transform: translate(-50%, -50%) rotateX(58deg) rotateZ(-14deg); } 50% { transform: translate(-50%, calc(-50% - 5px)) rotateX(56deg) rotateZ(-8deg); } }
+@keyframes s3-hover { 0%, 100% { translate: -50% 0; } 50% { translate: -50% -8px; } }
+@keyframes s3-flip { 0%, 30% { transform: rotateY(0deg) rotateZ(-6deg); } 50%, 80% { transform: rotateY(180deg) rotateZ(6deg); } 100% { transform: rotateY(360deg) rotateZ(-6deg); } }
+@keyframes s3-shadow { 0%, 100% { scale: 1; opacity: .8; } 50% { scale: .82; opacity: .55; } }
+@keyframes s3-glow { 0%, 100% { opacity: .85; scale: 1; } 50% { opacity: 1; scale: 1.06; } }
+@keyframes s3-haze { from { translate: -8px 0; } to { translate: 12px -4px; } }
+@keyframes s3-drift { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+@keyframes sky-twinkle { 0%, 100% { opacity: 0; scale: .4; } 50% { opacity: .95; scale: 1; } }
+
+@media (prefers-reduced-motion: reduce) { .s3 *, .s3 { animation: none !important; } }
+
+/* Scène 3D (WebGL) : même cadre que la scène CSS, fondu en haut et en bas */
+.lobby-world.s3d { pointer-events: auto; inset: 0 -16px -6px; }
+.home-lobby--real .lobby-world.s3d { inset: 30px -16px -4px; }
+.s3d canvas { display: block; touch-action: pan-y; }
+.s3d {
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 90%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 90%, transparent 100%);
+    animation: s3d-in 700ms ease-out both;
+}
+@keyframes s3d-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .s3d { animation: none; } }
+/* La scène 3D passe derrière le titre : elle occupe toute la zone héroïque */
+.home-lobby--virtual .lobby-hero:has(.s3d) { min-height: 340px; }
+.lobby-hero:has(.s3d) .lobby-hero-copy { text-shadow: 0 1px 12px #f8dccf, 0 0 2px #f8dccf; }
+.s3d { -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 4%, #000 90%, transparent 100%); mask-image: linear-gradient(180deg, transparent 0, #000 4%, #000 90%, transparent 100%); }
+.s3d-hint {
+    position: absolute; left: 50%; bottom: 12px; translate: -50% 6px; margin: 0; padding: 6px 12px; border-radius: 999px;
+    background: #2a2140d9; color: #fff; font-size: 12px; font-weight: 600; letter-spacing: .01em; white-space: nowrap;
+    box-shadow: 0 8px 18px -10px #2a2140; opacity: 0; pointer-events: none; transition: opacity 400ms, translate 400ms;
+}
+.s3d-hint.is-visible { opacity: 1; translate: -50% 0; animation: s3d-hint-pulse 2.2s ease-in-out 400ms infinite; }
+@keyframes s3d-hint-pulse { 0%, 100% { scale: 1; } 50% { scale: 1.04; } }
+@media (prefers-reduced-motion: reduce) { .s3d-hint, .s3d-hint.is-visible { animation: none; transition: none; } }
+
+/* =====================================================================
+   Monde 3D plein écran : la scène est le fond de l'accueil, l'interface flotte dessus
+   ===================================================================== */
+.home-lobby .lobby-world.s3d {
+    position: fixed; inset: 0; z-index: 0;
+    -webkit-mask-image: none; mask-image: none;
+    pointer-events: auto;
+}
+/* L'interface passe au-dessus du monde ; la zone héros laisse passer les taps vers les cartes */
+.home-lobby > :not(.lobby-hero) { position: relative; z-index: 1; }
+.home-lobby .lobby-hero { overflow: visible; pointer-events: none; }
+.home-lobby .lobby-hero .lobby-hero-copy { z-index: 2; }
+.home-lobby--virtual .lobby-hero:has(.s3d) { min-height: 330px; }
+.home-lobby--real .lobby-hero:has(.s3d) { min-height: 210px; }
+.lobby-hero:has(.s3d) .lobby-hero-copy { text-shadow: 0 2px 18px #fbe3d6, 0 0 3px #fbe3d6; }
+.home-lobby .s3d-hint { position: fixed; bottom: auto; top: 52%; }

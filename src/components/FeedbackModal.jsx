@@ -79,7 +79,7 @@ export function FeedbackModal({ isOpen, onClose, username }) {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-slate-950/60 flex items-center justify-center z-[9999] p-4 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="lobby-dialog fixed inset-0 bg-slate-950/60 flex items-center justify-center z-[9999] p-4 backdrop-blur-md animate-in fade-in duration-300">
             <div className="glass-premium rounded-[2.5rem] shadow-2xl max-w-xl w-full border border-white/20 overflow-hidden animate-in zoom-in-95 duration-500">
                 {/* Header with Decorative Blob */}
                 <div className="relative p-8 pb-4">

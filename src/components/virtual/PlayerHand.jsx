@@ -245,7 +245,7 @@ const PlayerHand = memo(function PlayerHand({
                             aria-label={`Score visible : ${currentScore} points`}
                             style={{
                                 fontSize: '16px',
-                                fontFamily: "'Outfit', system-ui, sans-serif",
+                                fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
                             }}
                         >
                             {currentScore}<span className="skyjo-score-unit" aria-hidden="true"> pts</span>
@@ -260,7 +260,7 @@ const PlayerHand = memo(function PlayerHand({
                                     </div>
                                 )}
                                 {isCurrentPlayer && (
-                                    <span className="skyjo-turn-label"><span className="skyjo-turn-indicator" aria-hidden="true" />{!isOpponent ? "À vous" : "En jeu"}</span>
+                                    <span className="skyjo-turn-label"><span className="skyjo-turn-indicator" aria-hidden="true" />{!isOpponent ? "À vous de jouer" : "Son tour"}</span>
                                 )}
                             </div>
                         )}

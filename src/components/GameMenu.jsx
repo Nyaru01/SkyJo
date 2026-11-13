@@ -191,19 +191,19 @@ export default function GameMenu({
                 <CardContent className="pt-2 pb-6 px-1">
                     <SkinCarousel
                         skins={[
-                            { id: 'classic', name: 'Classique', img: '/card-back.png', level: 1 },
-                            { id: 'papyrus', name: 'Papyrus', img: '/card-back-papyrus.jpg', level: 3 },
-                            { id: 'neon', name: 'Neon', img: '/card-back-neon.png', level: 5 },
-                            { id: 'cyberpunk', name: 'Cyberpunk', img: '/card-back-cyberpunk.png', level: 6 },
-                            { id: 'carbon', name: 'Carbon', img: '/card-back-carbon.png', level: 8 },
-                            { id: 'obsidian', name: 'Obsidian', img: '/card-back-obsidian.png', level: 12 },
-                            { id: 'gold', name: 'Gold', img: '/card-back-gold.png', level: 13 },
-                            { id: 'galaxy', name: 'Galaxy', img: '/card-back-galaxy.png', level: 18 },
-                            { id: 'astral-sigil', name: 'Sceau Astral', img: '/master/card-back-astral-sigil.webp', level: 110 },
-                            { id: 'nebula-core', name: 'Cœur de Nébuleuse', img: '/master/card-back-nebula-core.webp', level: 130 },
-                            { id: 'cosmic-dragon', name: 'Dragon Cosmique', img: '/master/card-back-cosmic-dragon.webp', level: 150 },
-                            { id: 'eternal-prism', name: 'Prisme Éternel', img: '/master/card-back-eternal-prism.webp', level: 170 },
-                            { id: 'transcendent-void', name: 'Vide Transcendant', img: '/master/card-back-transcendent-void.webp', level: 190 }
+                            { id: 'classic', name: 'Classique', img: '/card-backs/classic.svg', level: 1 },
+                            { id: 'papyrus', name: 'Papyrus', img: '/card-backs/papyrus.svg', level: 3 },
+                            { id: 'neon', name: 'Neon', img: '/card-backs/neon.svg', level: 5 },
+                            { id: 'cyberpunk', name: 'Cyberpunk', img: '/card-backs/cyberpunk.svg', level: 6 },
+                            { id: 'carbon', name: 'Carbon', img: '/card-backs/carbon.svg', level: 8 },
+                            { id: 'obsidian', name: 'Obsidian', img: '/card-backs/obsidian.svg', level: 12 },
+                            { id: 'gold', name: 'Gold', img: '/card-backs/gold.svg', level: 13 },
+                            { id: 'galaxy', name: 'Galaxy', img: '/card-backs/galaxy.svg', level: 18 },
+                            { id: 'astral-sigil', name: 'Sceau Astral', img: '/card-backs/astral-sigil.svg', level: 110 },
+                            { id: 'nebula-core', name: 'Cœur de Nébuleuse', img: '/card-backs/nebula-core.svg', level: 130 },
+                            { id: 'cosmic-dragon', name: 'Dragon Cosmique', img: '/card-backs/cosmic-dragon.svg', level: 150 },
+                            { id: 'eternal-prism', name: 'Prisme Éternel', img: '/card-backs/eternal-prism.svg', level: 170 },
+                            { id: 'transcendent-void', name: 'Vide Transcendant', img: '/card-backs/transcendent-void.svg', level: 190 }
                         ]}
                         selectedSkinId={playerCardSkin}
                         onSelect={setCardSkin}

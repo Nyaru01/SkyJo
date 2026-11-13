@@ -139,7 +139,7 @@ export function CareerPlan() {
             {createPortal(
                 <>
                     {showRewards && (
-                        <div className="fixed inset-0 z-[10050] flex items-center justify-center bg-slate-950 px-4 font-sans">
+                        <div className="career-dialog-backdrop fixed inset-0 z-[10050] flex items-center justify-center bg-slate-950 px-4 font-sans">
                             <button aria-label="Fermer le plan de carrière" tabIndex={-1} className="absolute inset-0" onClick={closeCareerPlan} />
                             <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} className="career-dialog relative flex h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-slate-700 bg-[#0f172a] shadow-2xl">
                                 <div className={cn('relative shrink-0 border-b border-slate-800 px-6 pb-4 pt-5', isMasterTab ? 'bg-gradient-to-br from-fuchsia-950 to-slate-950' : 'bg-slate-900')}>

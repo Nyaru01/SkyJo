@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SkyJo — trois directions premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;700;800&family=Playfair+Display:wght@600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root { --page: #e9e6e1; --ink: #1d1b22; }
+* { box-sizing: border-box; margin: 0; }
+body { background: var(--page); color: var(--ink); font: 15px/1.5 Manrope, system-ui, sans-serif; padding: 28px 16px 60px; }
+h1 { font: 700 26px/1.2 Manrope, sans-serif; letter-spacing: -.02em; text-align: center; }
+.lead { text-align: center; color: #55515c; margin: 6px auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 34px; }
+.dir { width: 300px; }
+.dir h2 { font: 800 18px/1.2 Manrope, sans-serif; margin-bottom: 4px; }
+.dir p { color: #55515c; font-size: 13.5px; margin-bottom: 14px; min-height: 60px; }
+.phones { display: flex; gap: 10px; }
+.phone { width: 145px; height: 300px; border-radius: 22px; padding: 4px; background: #111; box-shadow: 0 20px 40px -18px #0008; }
+.screen { width: 100%; height: 100%; border-radius: 18px; overflow: hidden; position: relative; }
+.cap { font-size: 11.5px; color: #6b6772; text-align: center; margin-top: 6px; }
+
+/* Cartes génériques */
+.c { position: absolute; width: 30px; height: 42px; border-radius: 5px; display: grid; place-items: center; font-weight: 800; font-size: 14px; color: #fff; }
+.v-2 { background: linear-gradient(150deg,#6f6cf0,#3b33b8); } .v0 { background: linear-gradient(150deg,#5cc8f2,#1e7fc0); }
+.v3 { background: linear-gradient(150deg,#4fd897,#118a58); } .v7 { background: linear-gradient(150deg,#ffd34e,#e09400); }
+.v11 { background: linear-gradient(150deg,#ff7a6e,#c92a42); }
+.mini { position: static; width: 22px; height: 31px; font-size: 10px; border-radius: 4px; }
+.row { display: grid; grid-template-columns: repeat(4, 22px); gap: 5px; justify-content: center; }
+.board { padding: 8px 6px; border-radius: 12px; display: grid; gap: 5px; }
+
+/* ===== A — Minuit & champagne ===== */
+.a { background: radial-gradient(ellipse 120% 60% at 50% 0%, #2a3352 0%, #121828 55%, #0b0f1a 100%); color: #efe6d2; font-family: Manrope; }
+.a .brand { position: absolute; top: 14px; left: 12px; font: 600 12px Fraunces, serif; letter-spacing: .18em; color: #d8b878; }
+.a .title { position: absolute; top: 40px; left: 12px; right: 12px; font: 600 19px/1.1 Fraunces, serif; color: #f4ecdc; }
+.a .glow { position: absolute; left: 50%; top: 150px; width: 160px; height: 90px; translate: -50% 0; background: radial-gradient(ellipse, #d8b87855, transparent 70%); }
+.a .back { background: linear-gradient(150deg,#1b2440,#0e1424); border: 1.5px solid #d8b878; box-shadow: 0 8px 14px -6px #000c; }
+.a .back::after { content:''; width: 10px; height: 10px; border: 1.5px solid #d8b878; rotate: 45deg; }
+.a .cta { position: absolute; left: 12px; right: 12px; bottom: 56px; height: 34px; border-radius: 10px; background: linear-gradient(180deg,#e7cd96,#c9a560); color: #1a1408; font-weight: 800; font-size: 12px; display: grid; place-items: center; box-shadow: 0 8px 18px -8px #d8b878aa; }
+.a .links { position: absolute; left: 12px; right: 12px; bottom: 26px; display: flex; justify-content: space-between; font-size: 10px; color: #b8ad96; }
+.a.game { background: radial-gradient(ellipse at 50% 40%, #1d2640, #0b0f1a 80%); }
+.a .board { background: #ffffff0a; border: 1px solid #d8b87840; }
+.a .board.on { border-color: #d8b878; box-shadow: 0 0 0 1px #d8b878, 0 0 18px #d8b87855; }
+.a .tag { font-size: 9px; color: #d8b878; text-align: center; margin: 4px 0; }
+
+/* ===== B — Salon émeraude ===== */
+.b { background: radial-gradient(ellipse 110% 70% at 50% 35%, #1d5a49 0%, #0f3a30 55%, #082721 100%); color: #f3ead6; }
+.b::before { content:''; position:absolute; inset:0; background: repeating-linear-gradient(45deg,#ffffff05 0 2px,transparent 2px 5px); }
+.b .brand { position: absolute; top: 14px; left: 12px; font: 700 13px 'Playfair Display', serif; color: #e2c27a; letter-spacing: .06em; }
+.b .title { position: absolute; top: 40px; left: 12px; right: 12px; font: 700 18px/1.12 'Playfair Display', serif; }
+.b .back { background: #f6efe0; border: 1.5px solid #fffaf0; box-shadow: 0 6px 10px -4px #0009; }
+.b .back::after { content:''; width: 18px; height: 30px; border: 1px solid #b8893a; border-radius: 3px; background: repeating-linear-gradient(45deg,#b8893a33 0 2px,transparent 2px 4px); }
+.b .cta { position: absolute; left: 12px; right: 12px; bottom: 56px; height: 34px; border-radius: 17px; background: #f3ead6; color: #0f3a30; font-weight: 800; font-size: 12px; display: grid; place-items: center; box-shadow: 0 0 0 2px #e2c27a, 0 10px 18px -8px #000a; }
+.b .links { position: absolute; left: 12px; right: 12px; bottom: 26px; display: flex; justify-content: space-between; font-size: 10px; color: #cfc3a4; }
+.b .board { background: #00000026; border: 1px solid #e2c27a55; }
+.b .board.on { border-color: #e2c27a; box-shadow: inset 0 0 0 1px #e2c27a, 0 0 16px #e2c27a44; }
+.b .tag { font-size: 9px; color: #e2c27a; text-align: center; margin: 4px 0; }
+
+/* ===== C — Saphir & nacre ===== */
+.cc { background: linear-gradient(170deg, #3a2f8f 0%, #23246b 45%, #101a3d 100%); color: #eef0ff; font-family: Sora, sans-serif; }
+.cc::before { content:''; position:absolute; inset:-20%; background: radial-gradient(circle at 75% 15%, #ff9ad455, transparent 35%), radial-gradient(circle at 20% 60%, #6fd8ff40, transparent 40%); filter: blur(6px); }
+.cc .brand { position: absolute; top: 14px; left: 12px; font: 700 12px Sora; letter-spacing: .12em; }
+.cc .title { position: absolute; top: 40px; left: 12px; right: 12px; font: 700 18px/1.12 Sora; letter-spacing: -.02em; }
+.cc .back { background: linear-gradient(135deg,#ffffff38,#ffffff10); border: 1px solid #ffffff70; backdrop-filter: blur(6px); box-shadow: 0 8px 16px -8px #0009, inset 0 1px 0 #fff8; }
+.cc .back::after { content:''; width: 12px; height: 12px; border-radius: 50%; background: conic-gradient(#ff9ad4,#9fe8ff,#c9b6ff,#ff9ad4); }
+.cc .cta { position: absolute; left: 12px; right: 12px; bottom: 56px; height: 34px; border-radius: 12px; background: #fff; color: #23246b; font-weight: 700; font-size: 12px; display: grid; place-items: center; box-shadow: 0 10px 22px -8px #9fe8ff99; }
+.cc .links { position: absolute; left: 12px; right: 12px; bottom: 26px; display: flex; justify-content: space-between; font-size: 10px; color: #c6c8ee; }
+.cc .board { background: #ffffff12; border: 1px solid #ffffff30; backdrop-filter: blur(6px); }
+.cc .board.on { border-color: #9fe8ff; box-shadow: 0 0 0 1px #9fe8ff, 0 0 18px #9fe8ff55; }
+.cc .tag { font-size: 9px; color: #9fe8ff; text-align: center; margin: 4px 0; }
+
+.b, .cc, .a { position: relative; }
+.b::before, .cc::before { z-index: 0; pointer-events: none; }
+.b > *, .cc > * { z-index: 1; }
+.pile { display:flex; justify-content: space-between; align-items:center; padding: 6px 10px; font-size: 9px; }
+</style>
+</head>
+<body>
+<h1>Trois directions premium pour SkyJo</h1>
+<p class="lead">Chaque direction montre l'accueil et la table de jeu. Dis-moi laquelle te parle (ou ce que tu prendrais dans chacune), et je l'applique à toute l'app.</p>
+
+<div class="grid">
+
+  <section class="dir">
+    <h2>A — Minuit & champagne</h2>
+    <p>Bleu nuit profond, or champagne, typo à empattements Fraunces. Feutré, haut de gamme, nocturne. Dos de carte nuit à liseré doré.</p>
+    <div class="phones">
+      <div><div class="phone"><div class="screen a">
+        <div class="brand">SKYJO</div>
+        <div class="title">Le plus petit score gagne.</div>
+        <div class="glow"></div>
+        <div class="c back" style="left:22px;top:150px;rotate:-14deg"></div>
+        <div class="c v-2" style="left:48px;top:140px;rotate:-6deg">−2</div>
+        <div class="c back" style="left:74px;top:136px"></div>
+        <div class="c v7" style="left:100px;top:142px;rotate:8deg">7</div>
+        <div class="cta">Partie rapide</div>
+        <div class="links"><span>Défis</span><span>Contre l'IA</span><span>En ligne</span></div>
+      </div></div><div class="cap">Accueil</div></div>
+      <div><div class="phone"><div class="screen a game">
+        <div style="padding:14px 8px 0">
+          <div class="board"><div class="row"><i class="c mini back"></i><i class="c mini v7">7</i><i class="c mini back"></i><i class="c mini back"></i></div><div class="row"><i class="c mini back"></i><i class="c mini back"></i><i class="c mini v0">0</i><i class="c mini back"></i></div><div class="row"><i class="c mini v11">11</i><i class="c mini back"></i><i class="c mini back"></i><i class="c mini back"></i></div></div>
+          <div class="pile"><i class="c mini back"></i><span>Piochez ou prenez la défausse</span><i class="c mini v3">3</i></div>
+          <div class="tag">À vous de jouer</div>
+          <div class="board on"><div class="row"><i class="c mini v-2">−2</i><i class="c mini back"></i><i class="c mini back"></i><i class="c mini v3">3</i></div><div class="row"><i class="c mini back"></i><i class="c mini back"></i><i class="c mini back"></i><i class="c mini back"></i></div><div class="row"><i class="c mini back"></i><i class="c mini v0">0</i><i class="c mini back"></i><i class="c mini back"></i></div></div>
+        </div>
+      </div></div><div class="cap">Table</div></div>
+    </div>
+  </section>
+
+  <section class="dir">
+    <h2>B — Salon émeraude</h2>
+    <p>Feutre vert profond de salon de jeu privé, laiton, cartes ivoire, typo Playfair. L'élégance classique du jeu de cartes.</p>
+    <div class="phones">
+      <div><div class="phone"><div class="screen b">
+        <div class="brand">SkyJo</div>
+        <div class="title">Le plus petit score gagne.</div>
+        <div class="c back" style="left:22px;top:150px;rotate:-14deg"></div>
+        <div class="c v-2" style="left:48px;top:140px;rotate:-6deg">−2</div>
+        <div class="c back" style="left:74px;top:136px"></div>
+        <div class="c v7" style="left:100px;top:142px;rotate:8deg">7</div>
+        <div class="cta">Partie rapide</div>
+        <div class="links"><span>Défis</span><span>Contre l'IA</span><span>En ligne</span></div>
+      </div></div><div class="cap">Accueil</div></div>
+      <div><div class="phone"><div class="screen b">
+        <div style="padding:14px 8px 0;position:relative">
+          <div class="board"><div class="row"><i class="c mini back"></i><i class="c mini v7">7</i><i class="c mini back"></i><i class="c mini back"></i></div><div class="row"><i class="c mini back"></i><i class="c mini back"></i><i class="c mini v0">0</i><i class="c mini back"></i></div><div class="row"><i class="c mini v11">11</i><i class="c mini back"></i><i class="c mini back"></i><i class="c mini back"></i></div></div>
+          <div class="pile"><i class="c mini back"></i><span>Piochez ou prenez la défausse</span><i class="c mini v3">3</i></div>
+          <div class="tag">À vous de jouer</div>
+          <div class="board on"><div class="row"><i class="c mini v-2">−2</i><i class="c mini back"></i><i class="c mini back"></i><i class="c mini v3">3</i></div><div class="row"><i class="c mini back"></i><i class="c mini back"></i><i class="c mini back"></i><i class="c mini back"></i></div><div class="row"><i class="c mini back"></i><i class="c mini v0">0</i><i class="c mini back"></i><i class="c mini back"></i></div></div>
+        </div>
+      </div></div><div class="cap">Table</div></div>
+    </div>
+  </section>
+
+  <section class="dir">
+    <h2>C — Saphir & nacre</h2>
+    <p>Dégradé saphir-violet, verre dépoli, reflets nacrés irisés, typo géométrique Sora. Premium moderne, façon jeu mobile haut de gamme.</p>
+    <div class="phones">
+      <div><div class="phone"><div class="screen cc">
+        <div class="brand">SKYJO</div>
+        <div class="title">Le plus petit score gagne.</div>
+        <div class="c back" style="left:22px;top:150px;rotate:-14deg"></div>
+        <div class="c v-2" style="left:48px;top:140px;rotate:-6deg">−2</div>
+        <div class="c back" style="left:74px;top:136px"></div>
+        <div class="c v7" style="left:100px;top:142px;rotate:8deg">7</div>
+        <div class="cta">Partie rapide</div>
+        <div class="links"><span>Défis</span><span>Contre l'IA</span><span>En ligne</span></div>
+      </div></div><div class="cap">Accueil</div></div>
+      <div><div class="phone"><div class="screen cc">
+        <div style="padding:14px 8px 0;position:relative">
+          <div class="board"><div class="row"><i class="c mini back"></i><i class="c mini v7">7</i><i class="c mini back"></i><i class="c mini back"></i></div><div class="row"><i class="c mini back"></i><i class="c mini back"></i><i class="c mini v0">0</i><i class="c mini back"></i></div><div class="row"><i class="c mini v11">11</i><i class="c mini back"></i><i class="c mini back"></i><i class="c mini back"></i></div></div>
+          <div class="pile"><i class="c mini back"></i><span>Piochez ou prenez la défausse</span><i class="c mini v3">3</i></div>
+          <div class="tag">À vous de jouer</div>
+          <div class="board on"><div class="row"><i class="c mini v-2">−2</i><i class="c mini back"></i><i class="c mini back"></i><i class="c mini v3">3</i></div><div class="row"><i class="c mini back"></i><i class="c mini back"></i><i class="c mini back"></i><i class="c mini back"></i></div><div class="row"><i class="c mini back"></i><i class="c mini v0">0</i><i class="c mini back"></i><i class="c mini back"></i></div></div>
+        </div>
+      </div></div><div class="cap">Table</div></div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

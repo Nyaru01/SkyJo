@@ -197,10 +197,10 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                 <div className={cn('skyjo-pile-zone relative flex items-center justify-center gap-3 w-full', !hasDrawnCard && 'skyjo-pile-zone--choosing')}>
                     {/* Draw pile section */}
                     <div className="skyjo-pile-group skyjo-pile-group--draw relative flex flex-col items-center gap-1.5 shrink-0">
-                        <span className="skyjo-pile-label">PIOCHE</span>
+                        <span className="skyjo-pile-label">Pioche</span>
                         <motion.div
                             className={cn(
-                                "w-10 h-14 rounded-lg flex items-center justify-center relative",
+                                "skyjo-draw-pile w-10 h-14 rounded-lg flex items-center justify-center relative",
                                 canInteract ? "cursor-pointer" : "cursor-not-allowed opacity-80"
                             )}
                             style={{
@@ -269,7 +269,8 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                     "skyjo-draw-button flex items-center justify-center gap-3 w-full h-14 px-2 py-1.5 rounded-xl transition-all relative z-10 overflow-hidden",
                                     canInteract
                                         ? (instructionText && turnPhase === 'MUST_REVEAL' ? "cursor-default bg-indigo-600/80 backdrop-blur-md border border-indigo-400/50" : "cursor-pointer bg-slate-800/80 backdrop-blur-md hover:bg-slate-700/80 border border-emerald-500/50")
-                                        : "cursor-not-allowed bg-slate-800/40 backdrop-blur-sm opacity-60 border border-slate-700/30"
+                                        : "cursor-not-allowed bg-slate-800/40 backdrop-blur-sm opacity-60 border border-slate-700/30",
+                                    !canInteract && !instructionText?.includes('DERNIER TOUR') && 'skyjo-draw-button--waiting'
                                 )}
                                 style={{
                                     boxShadow: canInteract
@@ -318,8 +319,11 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                     )}>
                                         {instructionText?.includes('DERNIER TOUR')
                                             ? instructionText
-                                            : (isDrawPhase && canInteract ? 'CHOISIR UNE CARTE' : (instructionText || 'PIOCHER'))}
+                                            : (isDrawPhase && canInteract ? 'Piochez ou prenez la défausse' : (isAIThinking ? 'L’IA réfléchit' : (instructionText || 'Piocher')))}
                                     </span>
+                                    {!canInteract && isAIThinking && (
+                                        <span className="skyjo-thinking-dots" aria-hidden="true"><i /><i /><i /></span>
+                                    )}
                                 </div>
 
                                 {/* Right Arrow - pointing to discard pile */}
@@ -344,7 +348,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
 
                     {/* Discard pile section */}
                     <div className="skyjo-pile-group skyjo-pile-group--discard relative flex flex-col items-center gap-1.5 shrink-0">
-                        <span className="skyjo-pile-label">DÉFAUSSE</span>
+                        <span className="skyjo-pile-label">Défausse</span>
                         <div className="w-10 h-14 flex items-center justify-center relative">
                             {showDiscardPreview ? (
                                 <motion.div

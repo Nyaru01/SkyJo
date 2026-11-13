@@ -11,7 +11,7 @@ export const CAREER_REWARDS = {
     },
     3: {
         type: 'skin',
-        image: '/card-back-papyrus.jpg',
+        image: '/card-backs/papyrus.svg',
         name: 'Skin Papyrus',
         description: 'Pour jouer comme en 1999 av. J-C. Attention, fragile.',
         rarity: 'uncommon'
@@ -19,14 +19,14 @@ export const CAREER_REWARDS = {
     4: { type: 'emoji', content: '🎓', name: 'Savant Fou', description: 'E=mc² ? Non, Skyjo = -2. C\'est ça la vraie science.', rarity: 'common' },
     5: {
         type: 'skin',
-        image: '/card-back-neon.png',
+        image: '/card-backs/neon.svg',
         name: 'Skin Neon',
         description: 'Tellement brillant que vous aurez besoin de lunettes de soleil.',
         rarity: 'rare'
     },
     6: {
         type: 'skin',
-        image: '/card-back-cyberpunk.png',
+        image: '/card-backs/cyberpunk.svg',
         name: 'Skin Cyberpunk',
         description: 'Venu du futur pour optimiser vos scores. Haute technologie.',
         rarity: 'rare'
@@ -34,7 +34,7 @@ export const CAREER_REWARDS = {
     7: { type: 'emoji', content: '🎭', name: 'Double Jeu', description: 'Idéal pour bluffer... même contre une IA.', rarity: 'common' },
     8: {
         type: 'skin',
-        image: '/card-back-carbon.png',
+        image: '/card-backs/carbon.svg',
         name: 'Skin Carbon',
         description: 'Tactique, robuste et léger. Conçu pour la compétition pure.',
         rarity: 'epic'
@@ -44,14 +44,14 @@ export const CAREER_REWARDS = {
     11: { type: 'generic', content: '🦈', name: 'Card Shark', description: 'Vous ne jouez plus, vous chassez. *Musique des Dents de la Mer*', rarity: 'rare' },
     12: {
         type: 'skin',
-        image: '/card-back-obsidian.png',
+        image: '/card-backs/obsidian.svg',
         name: 'Skin Obsidian',
         description: 'Sorti tout droit du volcan. Brûlant de puissance.',
         rarity: 'epic'
     },
     13: {
         type: 'skin',
-        image: '/card-back-gold.png',
+        image: '/card-backs/gold.svg',
         name: 'Skin Gold',
         description: 'Si brillant que vos adversaires seront éblouis (littéralement).',
         rarity: 'epic'
@@ -62,7 +62,7 @@ export const CAREER_REWARDS = {
     17: { type: 'generic', content: '🏆', name: 'Légende', description: 'On racontera vos exploits aux générations futures.', rarity: 'legendary' },
     18: {
         type: 'skin',
-        image: '/card-back-galaxy.png',
+        image: '/card-backs/galaxy.svg',
         name: 'Skin Galaxy',
         description: 'L\'univers entier dans votre main. Ne le faites pas tomber.',
         rarity: 'legendary'
@@ -180,15 +180,15 @@ const MASTER_CHAPTERS = [
 ];
 
 const MASTER_MILESTONES = {
-    10: { type: 'skin', skinId: 'astral-sigil', image: '/master/card-back-astral-sigil.webp', name: 'Dos Sceau Astral', content: '🎨' },
+    10: { type: 'skin', skinId: 'astral-sigil', image: '/card-backs/astral-sigil.svg', name: 'Dos Sceau Astral', content: '🎨' },
     20: { type: 'background', backgroundId: 'celestial-gate', image: '/master/wallpaper-celestial-gate.webp', name: 'Fond Porte Céleste', content: '🖼️' },
-    30: { type: 'skin', skinId: 'nebula-core', image: '/master/card-back-nebula-core.webp', name: 'Dos Cœur de Nébuleuse', content: '🎨' },
+    30: { type: 'skin', skinId: 'nebula-core', image: '/card-backs/nebula-core.svg', name: 'Dos Cœur de Nébuleuse', content: '🎨' },
     40: { type: 'background', backgroundId: 'star-temple', image: '/master/wallpaper-star-temple.webp', name: 'Fond Temple des Étoiles', content: '🖼️' },
-    50: { type: 'skin', skinId: 'cosmic-dragon', image: '/master/card-back-cosmic-dragon.webp', name: 'Dos Dragon Cosmique', content: '🎨' },
+    50: { type: 'skin', skinId: 'cosmic-dragon', image: '/card-backs/cosmic-dragon.svg', name: 'Dos Dragon Cosmique', content: '🎨' },
     60: { type: 'background', backgroundId: 'infinite-constellation', image: '/master/wallpaper-infinite-constellation.webp', name: 'Fond Constellation Infinie', content: '🖼️' },
-    70: { type: 'skin', skinId: 'eternal-prism', image: '/master/card-back-eternal-prism.webp', name: 'Dos Prisme Éternel', content: '🎨' },
+    70: { type: 'skin', skinId: 'eternal-prism', image: '/card-backs/eternal-prism.svg', name: 'Dos Prisme Éternel', content: '🎨' },
     80: { type: 'background', backgroundId: 'event-horizon', image: '/master/wallpaper-event-horizon.webp', name: 'Fond Horizon des Événements', content: '🖼️' },
-    90: { type: 'skin', skinId: 'transcendent-void', image: '/master/card-back-transcendent-void.webp', name: 'Dos Vide Transcendant', content: '🎨' },
+    90: { type: 'skin', skinId: 'transcendent-void', image: '/card-backs/transcendent-void.svg', name: 'Dos Vide Transcendant', content: '🎨' },
     100: { type: 'background', backgroundId: 'skyjo-ascension', image: '/master/wallpaper-skyjo-ascension.webp', name: 'Fond Ascension Skyjo', content: '🖼️' }
 };
 

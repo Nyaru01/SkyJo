@@ -2558,19 +2558,19 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                             <div className="my-6 grid grid-cols-2 gap-2 text-left">
                                 <div className="rounded-xl border border-amber-300/15 bg-amber-500/10 p-3">
                                     <div className="text-sm font-black text-amber-200">Score positif</div>
-                                    <div className="text-[9px] text-slate-400">Victoire de justesse</div>
+                                    <div className="text-[11px] font-medium text-slate-400">Victoire de justesse</div>
                                 </div>
                                 <div className="rounded-xl border border-sky-300/15 bg-sky-500/10 p-3">
                                     <div className="text-sm font-black text-sky-200">0 à −49</div>
-                                    <div className="text-[9px] text-slate-400">Bon début</div>
+                                    <div className="text-[11px] font-medium text-slate-400">Bon début</div>
                                 </div>
                                 <div className="rounded-xl border border-emerald-300/15 bg-emerald-500/10 p-3">
                                     <div className="text-sm font-black text-emerald-200">−50 à −99</div>
-                                    <div className="text-[9px] text-slate-400">Maîtrise du Tourment</div>
+                                    <div className="text-[11px] font-medium text-slate-400">Maîtrise du Tourment</div>
                                 </div>
                                 <div className="rounded-xl border border-violet-300/20 bg-violet-500/15 p-3">
                                     <div className="text-sm font-black text-violet-200">−100 ou moins</div>
-                                    <div className="text-[9px] text-slate-400">Domination absolue</div>
+                                    <div className="text-[11px] font-medium text-slate-400">Domination absolue</div>
                                 </div>
                             </div>
                             <Button
@@ -2588,7 +2588,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
             {/* Header - Unified Pill Container */}
             <div className="flex items-center justify-center px-2 sm:px-4 py-1 shrink-0 z-50">
                 {/* Visual Container for all controls - Robust Centered Pill */}
-                <div className="flex items-center justify-center gap-3 sm:gap-8 bg-slate-900/80 border border-white/10 backdrop-blur-3xl rounded-[2.5rem] p-2 sm:p-2.5 shadow-2xl relative px-4 sm:px-8">
+                <div className="skyjo-game-header flex items-center justify-center gap-3 sm:gap-8 bg-slate-900/80 border border-white/10 backdrop-blur-3xl rounded-[2.5rem] p-2 sm:p-2.5 shadow-2xl relative px-4 sm:px-8">
 
                     {/* Quit Button */}
                     <Button

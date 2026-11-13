@@ -8,7 +8,7 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Outfit', 'system-ui', 'sans-serif'],
+                sans: ['Bricolage Grotesque', 'system-ui', 'sans-serif'],
             },
             colors: {
                 'skyjo-blue': '#1A4869',

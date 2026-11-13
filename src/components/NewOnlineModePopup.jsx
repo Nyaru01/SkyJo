@@ -7,7 +7,7 @@ export default function NewOnlineModePopup({ isOpen, onClose }) {
 
     return (
         <AnimatePresence>
-            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <div className="lobby-dialog fixed inset-0 z-[200] flex items-center justify-center p-4">
                 {/* Backdrop with intense blur */}
                 <motion.div
                     initial={{ opacity: 0 }}

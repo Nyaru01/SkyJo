@@ -6,32 +6,32 @@
 export const getCardSkinPath = (skinId) => {
     switch (skinId) {
         case 'papyrus':
-            return '/card-back-papyrus.jpg';
+            return '/card-backs/papyrus.svg';
         case 'neon':
-            return '/card-back-neon.png';
+            return '/card-backs/neon.svg';
         case 'cyberpunk':
-            return '/card-back-cyberpunk.png';
+            return '/card-backs/cyberpunk.svg';
         case 'carbon':
-            return '/card-back-carbon.png';
+            return '/card-backs/carbon.svg';
         case 'obsidian':
-            return '/card-back-obsidian.png';
+            return '/card-backs/obsidian.svg';
         case 'gold':
-            return '/card-back-gold.png';
+            return '/card-backs/gold.svg';
         case 'galaxy':
-            return '/card-back-galaxy.png';
+            return '/card-backs/galaxy.svg';
         case 'astral-sigil':
-            return '/master/card-back-astral-sigil.webp';
+            return '/card-backs/astral-sigil.svg';
         case 'nebula-core':
-            return '/master/card-back-nebula-core.webp';
+            return '/card-backs/nebula-core.svg';
         case 'cosmic-dragon':
-            return '/master/card-back-cosmic-dragon.webp';
+            return '/card-backs/cosmic-dragon.svg';
         case 'eternal-prism':
-            return '/master/card-back-eternal-prism.webp';
+            return '/card-backs/eternal-prism.svg';
         case 'transcendent-void':
-            return '/master/card-back-transcendent-void.webp';
+            return '/card-backs/transcendent-void.svg';
         case 'classic':
         default:
-            return '/card-back.png?v=2';
+            return '/card-backs/classic.svg';
     }
 };
 

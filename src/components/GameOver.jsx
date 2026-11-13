@@ -99,7 +99,7 @@ export default function GameOver() {
     const breakers = totals.filter(p => p.score >= threshold);
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-hidden">
+        <div className="lobby-dialog fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-hidden">
             <Card className="w-full max-w-lg max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-2rem)] border-none shadow-2xl bg-white dark:bg-slate-800 animate-scale-in flex flex-col overflow-hidden">
                 {/* Header Victoire Premium */}
                 <div className="shrink-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 p-5 sm:p-8 text-center text-white rounded-t-2xl relative overflow-hidden">

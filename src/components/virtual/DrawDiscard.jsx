@@ -138,7 +138,7 @@ const DrawDiscard = memo(function DrawDiscard({
                     </div>
                 </motion.button>
 
-                <span className="text-xs font-bold text-slate-300" style={{ fontFamily: "'Outfit', system-ui, sans-serif" }}>
+                <span className="text-xs font-bold text-slate-300" style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
                     Pioche <span className="text-emerald-400">({drawPileCount})</span>
                 </span>
             </div>
@@ -261,7 +261,7 @@ const DrawDiscard = memo(function DrawDiscard({
                     )}
                 </motion.button>
 
-                <span className="text-xs font-bold text-slate-300" style={{ fontFamily: "'Outfit', system-ui, sans-serif" }}>
+                <span className="text-xs font-bold text-slate-300" style={{ fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
                     Défausse
                 </span>
             </div>

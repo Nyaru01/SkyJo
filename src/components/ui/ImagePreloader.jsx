@@ -3,14 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SkyjoLoader from '../SkyjoLoader';
 
 const CRITICAL_IMAGES = [
-    '/card-back.png?v=2',
-    '/card-back-papyrus.jpg',
-    '/card-back-neon.png',
-    '/card-back-cyberpunk.png',
-    '/card-back-carbon.png',
-    '/card-back-obsidian.png',
-    '/card-back-gold.png',
-    '/card-back-galaxy.png',
+    '/card-backs/classic.svg',
+    '/card-backs/papyrus.svg',
+    '/card-backs/neon.svg',
+    '/card-backs/cyberpunk.svg',
+    '/card-backs/carbon.svg',
+    '/card-backs/obsidian.svg',
+    '/card-backs/gold.svg',
+    '/card-backs/galaxy.svg',
     '/card-snow.png',
     '/Wallpapers/bg-skyjo.png',
     '/Wallpapers/Eau.png',

@@ -25,6 +25,7 @@ export default defineConfig({
         '*.png', // Logos and card backs in root/public
         '*.jpg',
         '*.svg',
+        'card-backs/*.svg', // Dos de cartes (famille SVG)
         'avatars/*.png', // Avatars
         'Sounds/*.mp3',  // Game sounds
         'Music/*.mp3',   // Background music
@@ -35,7 +36,7 @@ export default defineConfig({
         short_name: 'SkyjoScore',
         description: 'Calculateur de score & Hub Social pour Skyjo',
         version,
-        theme_color: '#6366f1',
+        theme_color: '#fbe2cf',
         background_color: '#0f172a',
         display: 'standalone',
         orientation: 'portrait',
