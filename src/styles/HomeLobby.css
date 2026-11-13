@@ -348,3 +348,65 @@ body:has(.home-lobby) .mobile-nav-item--active { background: #3d4466; color: #f7
 .lobby-brand-mark i:nth-child(1) { background: linear-gradient(150deg, #b9c7bd, #8fa496); }
 .lobby-brand-mark i:nth-child(2) { background: linear-gradient(150deg, #e3d3b6, #c9b08a); }
 .lobby-brand-mark i:nth-child(3) { background: linear-gradient(150deg, #d7b4aa, #b98a7e); }
+
+/* =====================================================================
+   CRÉPUSCULE — accueil plus sombre et plus mature
+   Ciel ardoise → mauve éteint, texte ivoire, verre fumé ; l'action principale est la seule touche claire.
+   ===================================================================== */
+.home-lobby {
+    --lobby-ink: #f1ebe2;
+    --lobby-ink-2: #ddd6cc;
+    --lobby-muted: #aaa3b4;
+    --lobby-plum: #ece4d6;
+}
+.home-lobby::before {
+    background:
+        radial-gradient(ellipse 90% 40% at 30% 72%, #c08d7a40, transparent 70%),
+        linear-gradient(180deg, #1f2233 0%, #2c2f45 34%, #4a4560 66%, #6e5f6e 88%, #7d6a6e 100%) !important;
+}
+.lobby-brand > span:last-child, .lobby-hero h2 { color: #f4eee5; }
+.lobby-header-actions button { color: #ddd6cc; }
+.lobby-header-actions button:hover { background: #ffffff14; color: #fff; }
+.lobby-player-chip-ring { background: conic-gradient(#d9b88a 0 var(--xp, 0%), #ffffff2e var(--xp, 0%) 100%); }
+.lobby-player-chip-ring img { border-color: #24273a; }
+.lobby-player-chip-level { background: #ece4d6; color: #24273a; border-color: #24273a; }
+.lobby-mode-switch button { color: #a49eb0; }
+.lobby-mode-switch button[aria-pressed=true] { color: #f4eee5; }
+.lobby-mode-switch button + button::before { background: #ffffff2e; }
+.lobby-mode-switch button[aria-pressed=true]::after { background: #d9a888; }
+
+/* Boutons : verre fumé à filet clair ; le principal en ivoire, texte encre */
+.lobby-menu-btn {
+    color: #f1ebe2; background: #1e2133b3; border: 1px solid #ffffff1f;
+    box-shadow: 0 10px 22px -16px #000a; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.lobby-menu-btn:active { background: #2a2e45cc; box-shadow: 0 4px 10px -8px #000a; }
+.lobby-menu-btn-icon { background: #ffffff12; box-shadow: inset 0 0 0 1px #ffffff1a; }
+.lobby-menu-btn-caption { color: #aaa3b4; }
+.lobby-menu-btn-chevron { color: #ffffff59; }
+.lobby-menu-btn--primary { color: #24273a; background: #ece4d6; border-color: #ece4d6; box-shadow: 0 12px 24px -14px #000c; }
+.lobby-menu-btn--primary:active { background: #e2d8c7; }
+.lobby-menu-btn--primary .lobby-menu-btn-icon { background: #24273a14; box-shadow: none; }
+.lobby-menu-btn--primary .lobby-menu-btn-caption { color: #24273ab3; }
+.lobby-menu-btn--primary .lobby-menu-btn-chevron { color: #24273a80; }
+
+.lobby-footer > button { background: #ffffff10; border-color: #ffffff1f; color: #ddd6cc; }
+.lobby-footer > button.lobby-version { color: #a49eb0; }
+
+/* Mode réel */
+.lobby-players { background: #1e2133cc; border-color: #ffffff1f; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.lobby-section-heading h3 { color: #f1ebe2; }
+.lobby-section-heading > span { color: #d9b88a; background: #d9b88a1f; }
+.lobby-player { background: #ffffff0d; border-color: #ffffff1a; }
+.lobby-player-name input { color: #f1ebe2; }
+.lobby-player-name input::placeholder { color: #8f8a9c; }
+.lobby-add { color: #ddd6cc; border-color: #ffffff33; }
+.lobby-launch { color: #24273a; background: #ece4d6; box-shadow: 0 12px 24px -14px #000c; }
+.lobby-launch svg { color: #24273a; }
+.lobby-hero-copy > p { color: #aaa3b4; }
+
+/* Navigation : verre nuit, onglet actif ivoire */
+body:has(.home-lobby) .mobile-navigation nav { background: #1b1e2ee6; border-color: #ffffff1a; box-shadow: 0 10px 24px -14px #000c; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+body:has(.home-lobby) .mobile-nav-item { color: #9f99ab; }
+body:has(.home-lobby) .mobile-nav-item--active { background: #ece4d6; color: #24273a; }
+.home-lobby button:focus-visible { outline-color: #ece4d6; }

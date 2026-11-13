@@ -1197,3 +1197,15 @@ html body.lobby-theme .menu-lobby .ai-setup-launch.ai-setup-launch :is(strong, s
 html body.lobby-theme .menu-lobby .ai-setup-launch.ai-setup-launch small { opacity: .75; }
 html body.lobby-theme .menu-lobby .ai-setup-launch .ai-setup-launch-icon { background: #ffffff1f !important; }
 html body .menu-lobby .ai-setup-launch::after { display: none !important; }
+
+/* Table de jeu au crépuscule (fond « Original ») : même ciel que l'accueil */
+html body .game-lobby--sky::before {
+    background:
+        radial-gradient(ellipse 90% 40% at 30% 75%, #c08d7a33, transparent 70%),
+        linear-gradient(180deg, #1f2233 0%, #2c2f45 34%, #4a4560 66%, #6e5f6e 88%, #7d6a6e 100%) !important;
+}
+html body .game-lobby--sky::after { opacity: .1 !important; }
+/* Sur fond sombre, les plateaux gardent une ombre plus franche */
+html body.lobby-theme .game-lobby--sky .skyjo-hand.skyjo-hand.skyjo-hand { box-shadow: inset 0 0 0 1px #ffffff40, 0 2px 0 #bfc8bd, 0 22px 36px -16px #000000aa !important; }
+html body.lobby-theme .game-lobby--sky .skyjo-hand.skyjo-hand.skyjo-hand.skyjo-hand--opponent { box-shadow: inset 0 0 0 1px #ffffff40, 0 2px 0 #d3bdb3, 0 22px 36px -16px #000000aa !important; }
+html body.lobby-theme .game-lobby--sky .skyjo-hand.skyjo-hand.skyjo-hand.skyjo-hand--active { box-shadow: inset 0 0 0 1px #ffffff40, 0 0 0 1.5px var(--turn-accent), 0 22px 36px -16px #000000aa !important; }

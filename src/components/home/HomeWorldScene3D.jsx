@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { BoxGeometry, CanvasTexture, MathUtils, PlaneGeometry, SRGBColorSpace } from 'three';
+import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, CatmullRomCurve3, MathUtils, PlaneGeometry, SRGBColorSpace, Vector3 } from 'three';
 import { backTexture, pastelFaceTexture } from './cardTextures';
 import { useGameStore } from '../../store/gameStore';
 import { getCardSkinPath } from '../../lib/skinUtils';
@@ -158,7 +158,7 @@ function Mist({ still }) {
         c.width = c.height = 256;
         const ctx = c.getContext('2d');
         const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
-        g.addColorStop(0, 'rgba(255,248,242,0.95)'); g.addColorStop(0.5, 'rgba(255,240,236,0.55)'); g.addColorStop(1, 'rgba(255,240,236,0)');
+        g.addColorStop(0, 'rgba(206,188,204,0.8)'); g.addColorStop(0.5, 'rgba(176,160,184,0.42)'); g.addColorStop(1, 'rgba(176,160,184,0)');
         ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 256);
         const t = new CanvasTexture(c);
         t.colorSpace = SRGBColorSpace;
@@ -189,7 +189,8 @@ function TowerTop({ still }) {
         <Block size={[1.1, 0.8, 1.1]} position={[0, 2.55, 0]} color={C.lilac} />
         {/* Balcon et porte : rendent la rotation visible */}
         <Block size={[0.56, 0.14, 0.34]} position={[0, 2.25, 0.72]} color={C.lilacDark} />
-        <Block size={[0.26, 0.4, 0.04]} position={[0, 2.55, 0.57]} color={C.coral3} />
+        {/* Fenêtre éclairée : la seule source chaude de la tour au crépuscule */}
+        <mesh position={[0, 2.55, 0.57]}><boxGeometry args={[0.26, 0.4, 0.04]} /><meshBasicMaterial color="#ffd9a0" /></mesh>
         <mesh position={[0, 2.95, 0]}>
             <sphereGeometry args={[0.46, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
             <meshLambertMaterial color={C.dome} />
@@ -283,30 +284,132 @@ function useTilt() {
     return tilt;
 }
 
+// Entrée cinéma : l'île arrive en pivotant puis se pose ; ensuite, légère oscillation et inclinaison.
 function Turntable({ still, children }) {
     const ref = useRef();
     const tilt = useTilt();
     useFrame((state, delta) => {
         if (!ref.current || still) return;
-        const idle = Math.sin(state.clock.elapsedTime * 0.25) * 0.05;
-        ref.current.rotation.y = MathUtils.damp(ref.current.rotation.y, tilt.current.x * 0.14 + idle, 2, delta);
+        const t = state.clock.elapsedTime;
+        const intro = (1 - easeOut(clamp01(t / 2.6))) * -0.75;
+        const idle = Math.sin(t * 0.22) * 0.06;
+        ref.current.rotation.y = MathUtils.damp(ref.current.rotation.y, intro + tilt.current.x * 0.14 + idle, 3, delta);
     });
     return <group ref={ref}>{children}</group>;
 }
 
-// Caméra orthographique isométrique ; l'île occupe la largeur et se place sous le titre.
+// Petite texture de halo réutilisée (étoiles, lucioles, lueur).
+function glowTexture(inner, outer) {
+    const c = document.createElement('canvas');
+    c.width = c.height = 64;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, inner); g.addColorStop(0.35, outer); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64);
+    const t = new CanvasTexture(c);
+    t.colorSpace = SRGBColorSpace;
+    return t;
+}
+
+// Étoiles qui scintillent dans le ciel de crépuscule.
+function createStars() {
+    let s = 11;
+    const rand = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+    const positions = new Float32Array(90 * 3);
+    for (let i = 0; i < 90; i++) {
+        positions[i * 3] = (rand() - 0.5) * 34;
+        positions[i * 3 + 1] = 3 + rand() * 12;
+        positions[i * 3 + 2] = -14 - rand() * 6;
+    }
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position', new BufferAttribute(positions, 3));
+    return { geometry, texture: glowTexture('rgba(255,248,236,1)', 'rgba(255,240,220,0.35)') };
+}
+function Stars({ still }) {
+    const [stars] = useState(createStars);
+    const mat = useRef();
+    useFrame(state => { if (mat.current && !still) mat.current.opacity = 0.65 + Math.sin(state.clock.elapsedTime * 1.3) * 0.25; });
+    return <points geometry={stars.geometry}>
+        <pointsMaterial ref={mat} map={stars.texture} size={6} sizeAttenuation={false} transparent depthWrite={false} blending={AdditiveBlending} opacity={0.8} />
+    </points>;
+}
+
+// Lucioles : des points chauds qui montent lentement autour de l'île.
+const FIREFLIES = 26;
+function createFireflies() {
+    const positions = new Float32Array(FIREFLIES * 3);
+    const seeds = new Float32Array(FIREFLIES);
+    for (let i = 0; i < FIREFLIES; i++) {
+        const a = Math.random() * Math.PI * 2, r = 2.4 + Math.random() * 2.2;
+        positions[i * 3] = Math.cos(a) * r;
+        positions[i * 3 + 1] = -3 + Math.random() * 6;
+        positions[i * 3 + 2] = Math.sin(a) * r;
+        seeds[i] = Math.random() * 10;
+    }
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position', new BufferAttribute(positions, 3));
+    return { geometry, seeds, texture: glowTexture('rgba(255,226,170,1)', 'rgba(255,200,140,0.45)') };
+}
+function stepFireflies({ geometry, seeds }, delta, t) {
+    const p = geometry.attributes.position.array;
+    for (let i = 0; i < FIREFLIES; i++) {
+        p[i * 3 + 1] += delta * (0.18 + (seeds[i] % 1) * 0.2);
+        p[i * 3] += Math.sin(t * 0.8 + seeds[i]) * delta * 0.12;
+        if (p[i * 3 + 1] > 3.5) p[i * 3 + 1] = -3.2;
+    }
+    geometry.attributes.position.needsUpdate = true;
+}
+function Fireflies({ still }) {
+    const [flies] = useState(createFireflies);
+    useFrame((state, delta) => { if (!still) stepFireflies(flies, delta, state.clock.elapsedTime); });
+    return <points geometry={flies.geometry}>
+        <pointsMaterial map={flies.texture} size={14} sizeAttenuation={false} transparent depthWrite={false} blending={AdditiveBlending} opacity={0.9} />
+    </points>;
+}
+
+// Une petite lueur qui voyage : elle gravit l'escalier, traverse le parvis jusqu'à la tour, puis redescend.
+const WANDER_PATH = new CatmullRomCurve3([
+    new Vector3(1.75, -0.95, 3.75), new Vector3(1.75, -0.45, 2.95), new Vector3(1.75, 0.2, 2.15),
+    new Vector3(1.1, 0.22, 1.1), new Vector3(0.95, 0.22, -0.2), new Vector3(1.75, 0.45, -0.55),
+]);
+function Wanderer({ still }) {
+    const ref = useRef();
+    const glow = useMemo(() => glowTexture('rgba(255,236,200,1)', 'rgba(255,205,150,0.5)'), []);
+    useFrame(state => {
+        if (!ref.current) return;
+        const cycle = still ? 0.5 : (state.clock.elapsedTime * 0.06) % 2;
+        const u = cycle < 1 ? cycle : 2 - cycle; // aller-retour
+        const p = WANDER_PATH.getPointAt(easeInOut(u));
+        ref.current.position.set(p.x, p.y + 0.12 + Math.sin(state.clock.elapsedTime * 3) * 0.03, p.z);
+    });
+    return <group ref={ref}>
+        <mesh><sphereGeometry args={[0.07, 12, 8]} /><meshBasicMaterial color="#fff1d6" /></mesh>
+        <sprite scale={[0.9, 0.9, 1]}><spriteMaterial map={glow} transparent depthWrite={false} blending={AdditiveBlending} /></sprite>
+    </group>;
+}
+
+// Caméra orthographique isométrique ; entrée en léger zoom avant.
 function frameCamera(camera, size, compact) {
     const span = compact ? 12.5 : 9.6;
-    camera.zoom = size.width / span;
+    camera.userData.baseZoom = size.width / span;
+    camera.zoom = camera.userData.baseZoom;
     camera.position.set(10, 8.2, 10);
     camera.lookAt(0, 0.2, 0);
     const target = compact ? 0.355 : 0.39;
     camera.setViewOffset(size.width, size.height, 0, (0.5 - target) * size.height, size.width, size.height);
     camera.updateProjectionMatrix();
 }
-function CameraRig({ compact }) {
+function applyIntroZoom(camera, t) {
+    const base = camera.userData.baseZoom;
+    if (!base) return;
+    const k = easeOut(clamp01(t / 2.6));
+    const zoom = base * (0.82 + 0.18 * k);
+    if (Math.abs(camera.zoom - zoom) > 0.01) { camera.zoom = zoom; camera.updateProjectionMatrix(); }
+}
+function CameraRig({ compact, still }) {
     const { camera, size } = useThree();
     useEffect(() => frameCamera(camera, size, compact), [camera, size, compact]);
+    useFrame(state => { if (!still) applyIntroZoom(state.camera, state.clock.elapsedTime); });
     return null;
 }
 
@@ -330,13 +433,17 @@ export default function HomeWorldScene3D({ compact = false }) {
             gl={{ antialias: true, alpha: true }}
             camera={{ position: [10, 8.2, 10], zoom: 45, near: -50, far: 100 }}
         >
-            <CameraRig compact={compact} />
-            {/* Aplats : dessus très clair, face gauche moyenne, face droite plus soutenue */}
-            <ambientLight intensity={1.35} />
-            <directionalLight position={[2, 10, 5]} intensity={1.25} color="#fff7ee" />
+            <CameraRig compact={compact} still={still} />
+            {/* Crépuscule : soleil couchant chaud à gauche, lumière froide du ciel à droite */}
+            <ambientLight intensity={1.05} color="#ddd6e8" />
+            <directionalLight position={[-3, 9, 6]} intensity={1.35} color="#ffd8b4" />
+            <directionalLight position={[6, 4, -2]} intensity={0.4} color="#8fa2d4" />
+            <Stars still={still} />
             <Turntable still={still}>
                 <Island still={still} onTouch={onTouch} />
                 <Floaters still={still} />
+                <Wanderer still={still} />
+                {!still && <Fireflies still={still} />}
             </Turntable>
             <Mist still={still} />
         </Canvas>

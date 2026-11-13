@@ -108,3 +108,8 @@ Référence donnée par l'utilisateur : la DA de Monument Valley. Scène origina
 - Dos « Classique » : indigo profond à filets ivoire. Île, cartes du parvis, emblèmes et mascotte repassés dans les mêmes tons.
 - Correctif : libellés Pioche / Défausse centrés au-dessus de leur pile (ils étaient décalés de 24 px en phase de choix) ; dalle centrale symétrique.
 - Bouton « Affronter l'IA » dans la couleur d'action.
+
+### Crépuscule et animation de l'accueil
+- Accueil et table (fond Original) au crépuscule : ciel ardoise → mauve éteint, texte ivoire, boutons en verre fumé, action principale ivoire, navigation nuit, barre d'état #1f2233. Les menus intermédiaires restent clairs (textes posés sur le fond).
+- Île éclairée en soleil couchant (lumière chaude à gauche, froide à droite), fenêtre de la tour allumée, brume mauve.
+- Animations : entrée cinéma (zoom avant + l'île pivote puis se pose), étoiles qui scintillent, lucioles qui montent, petite lueur qui gravit l'escalier et va jusqu'à la tour puis redescend ; en plus des cartes qui se retournent et de la tour qui pivote.
