@@ -3078,72 +3078,28 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[500] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-6"
+                        className="skyjo-pause"
                     >
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            initial={{ scale: 0.96, opacity: 0, y: 14 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className="w-full max-w-sm glass-premium p-8 py-10 rounded-[3rem] border-white/20 shadow-2xl text-center space-y-8 relative overflow-hidden"
+                            exit={{ scale: 0.96, opacity: 0, y: 14 }}
+                            className="skyjo-pause-panel"
+                            role="dialog" aria-modal="true" aria-labelledby="skyjo-pause-title"
                         >
-                            {/* Ambient Glow */}
-                            <div className="absolute inset-0 bg-indigo-500/5 pointer-events-none" />
-
-                            <div className="relative">
-                                <div className="w-16 h-16 bg-indigo-500/10 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20">
-                                    <Pause className="h-8 w-8 text-indigo-400" />
-                                </div>
-                                <h2 className="text-3xl font-black text-white tracking-tight">PAUSE</h2>
-                                <p className="text-slate-400 text-sm font-medium mt-2">La partie est en attente</p>
+                            <span className="skyjo-pause-emblem" aria-hidden="true"><Pause size={24} strokeWidth={1.8} /></span>
+                            <h2 id="skyjo-pause-title">Pause</h2>
+                            <p className="skyjo-pause-text">La partie vous attend.</p>
+                            <button type="button" onClick={handleTogglePause} className="skyjo-pause-resume">
+                                <Play size={18} fill="currentColor" aria-hidden="true" />Reprendre
+                            </button>
+                            <p className="skyjo-pause-label">Règles</p>
+                            <div className="skyjo-pause-rules">
+                                <button type="button" onClick={() => setShowRulesModal(true)}><BookOpen size={16} aria-hidden="true" />Classique</button>
+                                <button type="button" onClick={() => setShowBonusRules(true)}><Swords size={16} aria-hidden="true" />Tourment</button>
                             </div>
-
-                            <div className="grid grid-cols-1 gap-3">
-                                <PremiumTiltButton
-                                    onClick={handleTogglePause}
-                                    gradientFrom="from-emerald-500"
-                                    gradientTo="to-teal-500"
-                                    shadowColor="shadow-emerald-500/20"
-                                    className="h-14"
-                                >
-                                    <Play className="h-5 w-5 fill-current" />
-                                    REPRENDRE
-                                </PremiumTiltButton>
-
-                                {/* Rules Buttons */}
-                                <div className="grid grid-cols-2 gap-3">
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setShowRulesModal(true)}
-                                        className="h-12 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-blue-400 font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all"
-                                    >
-                                        <BookOpen className="h-4 w-4" />
-                                        Classique
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setShowBonusRules(true)}
-                                        className="h-12 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-rose-400 font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all"
-                                    >
-                                        <Swords className="h-4 w-4" />
-                                        Tourment
-                                    </Button>
-                                </div>
-
-                                <Button
-                                    variant="outline"
-                                    onClick={() => confirmExit()}
-                                    className="h-12 rounded-2xl border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-400 font-bold uppercase tracking-widest text-[10px] transition-all"
-                                >
-                                    QUITTER LA PARTIE
-                                </Button>
-                            </div>
-
-                            <div className="flex items-center justify-center gap-2 pt-2 opacity-50">
-                                <Bot className="w-3 h-3 text-indigo-400" />
-                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                                    Votre progression est sauvegardée
-                                </span >
-                            </div >
+                            <button type="button" onClick={() => confirmExit()} className="skyjo-pause-quit">Quitter la partie</button>
+                            <p className="skyjo-pause-note"><Bot size={13} aria-hidden="true" />Votre progression est sauvegardée</p>
                         </motion.div >
                     </motion.div >
                 )}

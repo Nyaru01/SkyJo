@@ -200,8 +200,9 @@ const SkyjoCard = memo(function SkyjoCard({
             cornerFont: '0.38rem',
         },
         sm: {
-            width: 'clamp(2.5rem, 7vw, 3.5rem)',
-            height: 'clamp(3.2rem, 9vh, 4.2rem)',
+            // En partie, la table fixe --skyjo-card-h / -w pour que tout tienne sans défilement.
+            width: 'var(--skyjo-card-w, clamp(2.5rem, 7vw, 3.5rem))',
+            height: 'var(--skyjo-card-h, clamp(3.2rem, 9vh, 4.2rem))',
             fontSize: 'clamp(1.25rem, 3.4vw, 1.7rem)',
             cornerSize: '0.65rem',
             cornerFont: '0.5rem',

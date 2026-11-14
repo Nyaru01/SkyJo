@@ -134,3 +134,11 @@ Référence donnée par l'utilisateur : la DA de Monument Valley. Scène origina
 - Saisons (src/lib/season.js) : automne jusqu'au 20 décembre, **neige à partir du lundi 21 décembre 2026**, printemps le 20 mars, été le 21 juin. Test forcé : `?saison=hiver|automne|printemps|ete`.
 - Automne : feuilles rousses qui tombent, arbres roux. Printemps : pétales. Hiver : neige, place enneigée, bassin gelé, dômes blanchis.
 - Toute l'année : étoiles filantes dans le ciel (three.js, traînée additive).
+
+## 14/11 — Plus de blanc, nouvelle tour, vraies feuilles
+
+- Duel IA : carte du rival et mode choisi en verre nuit, accents doux, bouton « Affronter l'IA » ivoire.
+- Fenêtre du pseudo redessinée (style du guide, « Comment vous appeler ? »).
+- Table de jeu : plateaux en pierre sombre teintée (mousse pour vous, brique pour l'adversaire), barre du haut, pastilles de score, consignes et dalle centrale en verre nuit.
+- Tour : socle à deux gradins, arche avec lanterne suspendue qui se balance, salle haute à fenêtres en plein cintre éclairées et pilastres d'angle, corniche, tambour octogonal, coupole, épi doré, anneau doré qui tourne sous la carte (s'emballe quand on touche la tour).
+- Feuilles : silhouettes d'érable et de feuille ovale dessinées avec nervures, pli central, chute en balancier ; certaines se posent sur le parvis puis s'effacent. Pétales au printemps.

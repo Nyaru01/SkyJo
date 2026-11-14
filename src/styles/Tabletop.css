@@ -112,3 +112,40 @@
 .skyjo-pile-group--discard .skyjo-pile-label { left: auto; right: 0; transform: none; }
 .skyjo-pile-zone--choosing .skyjo-pile-group--draw .skyjo-pile-label { left: 24px; }
 .skyjo-pile-zone--choosing .skyjo-pile-group--discard .skyjo-pile-label { right: 24px; }
+
+/* =====================================================================
+   PARTIE SANS DÉFILEMENT — la table occupe exactement l'écran.
+   La hauteur des cartes se déduit de la place restante : 7 hauteurs de carte
+   (2 plateaux de 3 rangées + la pioche) et environ 390 px de barre, marges et bandeaux.
+   ===================================================================== */
+.skyjo-game-container {
+    --skyjo-card-h: clamp(2.6rem, calc((100dvh - 390px) / 7), 4.2rem);
+    --skyjo-card-w: min(clamp(2.5rem, 7vw, 3.5rem), calc(var(--skyjo-card-h) * 0.7));
+    min-height: 0 !important;
+    height: calc(100dvh - 20px);
+    max-height: calc(100dvh - 20px);
+    overflow: hidden;
+}
+.skyjo-game-container .skyjo-action-area { min-height: 0; }
+
+/* Fenêtre de pause : crépuscule, comme le guide */
+.skyjo-pause { position: fixed; inset: 0; z-index: 500; display: grid; place-items: center; padding: 16px; background: #0f111bcc; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.skyjo-pause-panel {
+    width: 100%; max-width: 340px; display: flex; flex-direction: column; align-items: center; text-align: center;
+    padding: 28px 22px 18px; border-radius: 26px; color: #f1ebe2;
+    background: radial-gradient(ellipse 80% 50% at 50% 0%, #d9a88824, transparent 70%), linear-gradient(170deg, #272a40, #1c1f30);
+    border: 1px solid #ffffff1f; box-shadow: 0 30px 60px -24px #000000e6, inset 0 1px 0 #ffffff14;
+}
+.skyjo-pause-emblem { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: #ffffff10; color: #e3cfa8; box-shadow: inset 0 0 0 1px #ffffff1a; margin-bottom: 12px; }
+html body .skyjo-pause .skyjo-pause-panel h2 { color: #fbf6ee !important; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500; line-height: 1.1; }
+.skyjo-pause-text { font-size: 13px; color: #b3acbd; margin: 4px 0 20px; }
+.skyjo-pause-resume { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 52px; border-radius: 14px; background: #ece4d6; color: #24273a; font-size: 16px; font-weight: 700; box-shadow: 0 12px 22px -14px #000000cc; }
+.skyjo-pause-rules { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
+.skyjo-pause-rules button { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 46px; padding: 0 8px; border-radius: 12px; background: #ffffff0d; border: 1px solid #ffffff1f; color: #e9e2d6; font-size: 12.5px; font-weight: 600; }
+.skyjo-pause-rules svg { color: #e3cfa8; flex-shrink: 0; }
+.skyjo-pause-quit { width: 100%; min-height: 46px; margin-top: 10px; border-radius: 12px; border: 1px solid #eba59440; color: #eba594; font-size: 13px; font-weight: 600; }
+.skyjo-pause-note { display: flex; align-items: center; gap: 6px; margin-top: 14px; font-size: 11.5px; color: #9f99ab; }
+.skyjo-pause :is(button):active { transform: scale(.985); }
+.skyjo-pause button:focus-visible { outline: 2px solid #e3cfa8; outline-offset: 3px; }
+.skyjo-pause-label { align-self: flex-start; margin-top: 14px; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; color: #9f99ab; }
+.skyjo-pause-label + .skyjo-pause-rules { margin-top: 6px; }

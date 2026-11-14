@@ -56,7 +56,7 @@ const C = {
     stone: '#ece5db', stoneEdge: '#dcd2c6',
     coral1: '#cdb7aa', coral2: '#bca398', coral3: '#a9938d', coral4: '#98868a',
     lilac: '#adb3c6', lilacDark: '#9299b0', dome: '#c9b2a5',
-    water: '#aec5c4', leaf: '#a8b9a6', trunk: '#a48c7c',
+    water: '#aec5c4', leaf: '#a8b9a6', trunk: '#a48c7c', gold: '#d9b77e',
 };
 
 // Grille du parvis : null = carte face cachée.
@@ -137,9 +137,9 @@ function PivotCard({ still, onTouch, mechanism }) {
         if (!still) s.target += delta * 0.35;
         s.angle = MathUtils.damp(s.angle, s.target, 4, delta);
         ref.current.rotation.y = s.angle;
-        ref.current.position.y = 3.75 + (still ? 0 : Math.sin(state.clock.elapsedTime * 1.2) * 0.04);
+        ref.current.position.y = 4.12 + (still ? 0 : Math.sin(state.clock.elapsedTime * 1.2) * 0.04);
     });
-    return <group ref={ref} position={[1.75, 3.75, -1.2]}
+    return <group ref={ref} position={[1.75, 4.12, -1.2]} scale={0.8}
         onClick={e => { e.stopPropagation(); spin.current.target += Math.PI * 2; onTouch(); }}
         onPointerOver={() => setPointer(true)} onPointerOut={() => setPointer(false)}>
         <mesh><boxGeometry args={[0.78, 1.08, 0.04]} /><meshLambertMaterial color="#fffaf3" /></mesh>
@@ -162,11 +162,73 @@ function TowerTop({ still, mechanism, onTrigger, season = 'autumn' }) {
     return <group ref={ref} position={[1.75, 0, -1.2]}
         onClick={e => { e.stopPropagation(); onTrigger(); }}
         onPointerOver={() => setPointer(true)} onPointerOut={() => setPointer(false)}>
-        <Block size={[1.1, 0.8, 1.1]} position={[0, 2.55, 0]} color={C.lilac} />
-        <Block size={[0.56, 0.14, 0.34]} position={[0, 2.25, 0.72]} color={C.lilacDark} />
-        <mesh position={[0, 2.55, 0.57]}><boxGeometry args={[0.26, 0.4, 0.04]} /><meshBasicMaterial color="#ffd9a0" /></mesh>
-        <mesh position={[0, 2.95, 0]}><sphereGeometry args={[0.46, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshLambertMaterial color={SEASON_TINT[season].dome} /></mesh>
-        <Block size={[0.05, 0.45, 0.05]} position={[0, 3.4, 0]} color={C.stoneEdge} />
+        {/* Salle haute : murs, pilastres d'angle et une fenêtre en arc éclairée sur chaque face */}
+        <Block size={[0.92, 0.62, 0.92]} position={[0, 2.56, 0]} color={C.lilac} />
+        {[[-1, -1], [-1, 1], [1, -1], [1, 1]].map(([sx, sz]) => <Block key={`p${sx}${sz}`} size={[0.13, 0.7, 0.13]} position={[sx * 0.46, 2.56, sz * 0.46]} color={C.lilacDark} />)}
+        {[0, 1, 2, 3].map(i => <group key={`w${i}`} rotation-y={i * Math.PI / 2}><ArchWindow z={0.463} y={2.5} /></group>)}
+        {/* Corniche, balcon et tambour octogonal */}
+        <Block size={[1.14, 0.08, 1.14]} position={[0, 2.92, 0]} color={C.stone} />
+        <Block size={[1.02, 0.05, 1.02]} position={[0, 2.99, 0]} color={C.stoneEdge} />
+        <mesh position={[0, 3.1, 0]} castShadow><cylinderGeometry args={[0.36, 0.38, 0.18, 8]} /><meshLambertMaterial color={C.lilac} flatShading /></mesh>
+        <mesh position={[0, 3.19, 0]} castShadow><sphereGeometry args={[0.36, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshLambertMaterial color={SEASON_TINT[season].dome} /></mesh>
+        {/* Épi de faîtage doré */}
+        <mesh position={[0, 3.58, 0]}><cylinderGeometry args={[0.016, 0.028, 0.06, 8]} /><meshLambertMaterial color={C.gold} /></mesh>
+        <mesh position={[0, 3.63, 0]}><sphereGeometry args={[0.035, 16, 10]} /><meshLambertMaterial color={C.gold} emissive={C.gold} emissiveIntensity={0.25} /></mesh>
+    </group>;
+}
+// Fenêtre en plein cintre : rectangle et demi-disque lumineux, appui en pierre.
+function ArchWindow({ z, y }) {
+    return <group position={[0, y, z]}>
+        <mesh position-y={-0.04}><planeGeometry args={[0.2, 0.24]} /><meshBasicMaterial color="#ffd9a0" /></mesh>
+        <mesh position-y={0.08}><circleGeometry args={[0.1, 16, 0, Math.PI]} /><meshBasicMaterial color="#ffe6bd" /></mesh>
+        <mesh position={[0, -0.18, 0.02]}><boxGeometry args={[0.28, 0.035, 0.06]} /><meshLambertMaterial color={C.stone} /></mesh>
+    </group>;
+}
+// Anneau doré qui tourne sous la carte du sommet, comme un engrenage du mécanisme.
+function HaloRing({ still, mechanism }) {
+    const ref = useRef();
+    const spin = useRef({ speed: 0.4, seen: 0 });
+    useFrame((state, delta) => {
+        if (!ref.current) return;
+        const s = spin.current;
+        if (mechanism.current.count !== s.seen) { s.seen = mechanism.current.count; s.speed = 6; }
+        s.speed = MathUtils.damp(s.speed, 0.4, 1.5, delta);
+        if (!still) ref.current.rotation.z += delta * s.speed;
+        ref.current.position.y = 3.72 + (still ? 0 : Math.sin(state.clock.elapsedTime * 1.2) * 0.04);
+    });
+    return <group ref={ref} position={[1.75, 3.72, -1.2]} rotation-x={-Math.PI / 2}>
+        <mesh><torusGeometry args={[0.34, 0.016, 8, 48]} /><meshLambertMaterial color={C.gold} emissive={C.gold} emissiveIntensity={0.3} /></mesh>
+        {[0, 1, 2, 3, 4, 5].map(i => <mesh key={i} position={[Math.cos(i * Math.PI / 3) * 0.34, Math.sin(i * Math.PI / 3) * 0.34, 0]}>
+            <sphereGeometry args={[0.03, 10, 8]} /><meshLambertMaterial color={C.gold} emissive={C.gold} emissiveIntensity={0.3} />
+        </mesh>)}
+    </group>;
+}
+// Arche du rez-de-chaussée, avec une lanterne suspendue qui se balance.
+function TowerArch({ still, mechanism, clock }) {
+    const lamp = useRef();
+    const halo = useRef();
+    const glow = useMemo(() => glowTexture('rgba(255,226,170,0.75)', 'rgba(255,190,110,0.12)'), []);
+    useEffect(() => () => glow.dispose(), [glow]);
+    useFrame(state => {
+        const t = state.clock.elapsedTime;
+        const since = clock.current - mechanism.current.at;
+        const burst = since >= 0 && since < 1.6 ? Math.sin((since / 1.6) * Math.PI) : 0;
+        if (lamp.current) lamp.current.rotation.z = still ? 0 : Math.sin(t * 1.3) * 0.08 + burst * Math.sin(t * 9) * 0.12;
+        if (halo.current) halo.current.material.opacity = 0.75 + (still ? 0 : Math.sin(t * 6) * 0.05) + burst * 0.35;
+    });
+    return <group position={[1.75, 0, -1.2]}>
+        <mesh position-y={1.75} scale-z={1.25} castShadow><torusGeometry args={[0.35, 0.13, 8, 24, Math.PI]} /><meshLambertMaterial color={C.lilac} /></mesh>
+        <Block size={[1.0, 0.12, 1.0]} position={[0, 0.31, 0]} color={C.stoneEdge} />
+        <Block size={[0.4, 0.1, 0.4]} position={[-0.35, 0.42, 0]} color={C.lilacDark} />
+        <Block size={[0.4, 0.1, 0.4]} position={[0.35, 0.42, 0]} color={C.lilacDark} />
+        <Block size={[0.38, 0.08, 0.38]} position={[-0.35, 1.72, 0]} color={C.lilacDark} />
+        <Block size={[0.38, 0.08, 0.38]} position={[0.35, 1.72, 0]} color={C.lilacDark} />
+        <group ref={lamp} position-y={2.0}>
+            <mesh position-y={-0.15}><cylinderGeometry args={[0.006, 0.006, 0.3, 4]} /><meshBasicMaterial color="#6f6878" /></mesh>
+            <mesh position-y={-0.36}><boxGeometry args={[0.1, 0.14, 0.1]} /><meshBasicMaterial color="#ffe3ac" /></mesh>
+            <mesh position-y={-0.28}><coneGeometry args={[0.09, 0.06, 4]} /><meshLambertMaterial color={C.gold} /></mesh>
+            <sprite ref={halo} position-y={-0.36} scale={[0.75, 0.75, 1]}><spriteMaterial map={glow} transparent depthWrite={false} blending={AdditiveBlending} /></sprite>
+        </group>
     </group>;
 }
 function Water({ still, season = 'autumn' }) {
@@ -311,8 +373,10 @@ function Island({ still, onTouch, season = 'autumn' }) {
         <Block size={[1.2, 0.25, 1.2]} position={[1.75, 0.125, -1.2]} color={C.stone} />
         <Block size={[0.3, 1.5, 0.3]} position={[1.4, 1.0, -1.2]} color={C.lilac} />
         <Block size={[0.3, 1.5, 0.3]} position={[2.1, 1.0, -1.2]} color={C.lilac} />
-        <Block size={[1.1, 0.4, 0.42]} position={[1.75, 1.95, -1.2]} color={C.lilacDark} />
+        <Block size={[1.2, 0.14, 0.62]} position={[1.75, 2.18, -1.2]} color={C.stone} />
+        <TowerArch still={still} mechanism={mechanism} clock={clock} />
         <TowerTop still={still} season={season} mechanism={mechanism} onTrigger={() => { trigger(); onTouch(); }} />
+        <HaloRing still={still} mechanism={mechanism} />
         <PivotCard still={still} onTouch={onTouch} mechanism={mechanism} />
         {[0, 1, 2, 3, 4].map(i => <Block key={i} size={[0.8, 0.2, 0.34]} position={[1.75, -0.1 - i * 0.2, 2.27 + i * 0.34]} color={C.stone} />)}
         {[[-2.35, -1.75], [0.85, -1.75]].map(([x, z], i) => <group key={i} position={[x, 0, z]}>
@@ -489,7 +553,7 @@ function frameCamera(camera, size, compact) {
     camera.userData.baseZoom = size.width / span;
     camera.zoom = camera.userData.baseZoom;
     camera.position.set(10, 8.2, 10);
-    camera.lookAt(0, 0.2, 0);
+    camera.lookAt(0, 0.6, 0);
     const target = compact ? 0.355 : 0.39;
     camera.setViewOffset(size.width, size.height, 0, (0.5 - target) * size.height, size.width, size.height);
     camera.updateProjectionMatrix();

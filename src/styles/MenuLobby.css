@@ -1320,3 +1320,139 @@ html body .menu-lobby .ai-setup-dock { background: linear-gradient(180deg, #4a45
 body:has(.menu-lobby) .mobile-navigation nav { background: #1b1e2ee6 !important; border-color: #ffffff1a !important; box-shadow: 0 10px 24px -14px #000c !important; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 body:has(.menu-lobby) .mobile-nav-item { color: #9f99ab !important; }
 body:has(.menu-lobby) .mobile-nav-item--active { background: #ece4d6 !important; color: #24273a !important; box-shadow: none !important; }
+
+/* =====================================================================
+   DUEL IA AU CRÉPUSCULE — plus de carte blanche : verre nuit, accents doux
+   ===================================================================== */
+html body .menu-lobby .ai-setup { --rival-accent: #9fcab6; --rival-rgb: 159,202,182; }
+html body .menu-lobby .ai-setup--amber { --rival-accent: #e6c391; --rival-rgb: 230,195,145; }
+html body .menu-lobby .ai-setup--violet { --rival-accent: #c6b4e6; --rival-rgb: 198,180,230; }
+html body .menu-lobby .ai-setup--coral { --rival-accent: #eba594; --rival-rgb: 235,165,148; }
+html body .menu-lobby .ai-difficulty { --mode-accent: #9fcab6; --mode-rgb: 159,202,182; }
+html body .menu-lobby .ai-difficulty--amber { --mode-accent: #e6c391; --mode-rgb: 230,195,145; }
+html body .menu-lobby .ai-difficulty--violet { --mode-accent: #c6b4e6; --mode-rgb: 198,180,230; }
+html body .menu-lobby .ai-difficulty--coral { --mode-accent: #eba594; --mode-rgb: 235,165,148; }
+html body .menu-lobby .ai-rival {
+    border-color: #ffffff1f;
+    background:
+        radial-gradient(ellipse 70% 60% at 50% 42%, rgba(var(--rival-rgb), .16), transparent 70%),
+        linear-gradient(170deg, #262a40e6, #1b1e2fe6);
+    box-shadow: 0 20px 36px -20px #000000cc, inset 0 1px 0 #ffffff14;
+}
+html body .menu-lobby .ai-rival-topline { color: var(--ml-muted); }
+html body .menu-lobby .ai-rival-platform { border-color: rgba(var(--rival-rgb), .35); background: radial-gradient(ellipse, rgba(var(--rival-rgb), .22), transparent 65%); }
+html body .menu-lobby .ai-rival-orbit { border-color: rgba(var(--rival-rgb), .18); }
+html body .menu-lobby .ai-rival-stage .ai-rival-avatar { filter: drop-shadow(0 10px 14px #000a); }
+html body .menu-lobby .ai-rival-dialogue p { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 19px; font-weight: 500; font-style: italic; }
+html body .menu-lobby .ai-difficulty-body { background: var(--ml-paper); }
+html body .menu-lobby .ai-difficulty input:checked + .ai-difficulty-body {
+    background: linear-gradient(135deg, rgba(var(--mode-rgb), .2), rgba(var(--mode-rgb), .05) 70%), #23263ae6;
+    border-color: rgba(var(--mode-rgb), .75) !important;
+    box-shadow: inset 0 0 0 1px rgba(var(--mode-rgb), .25), 0 12px 24px -14px rgba(var(--mode-rgb), .5);
+}
+html body .menu-lobby .ai-difficulty input:checked + .ai-difficulty-body small { color: #d8d2df !important; }
+html body .menu-lobby .ai-difficulty input:checked + .ai-difficulty-body .ai-difficulty-check { color: #1e2133; }
+html body .menu-lobby .ai-mode-detail button { color: var(--rival-accent); }
+/* Le bouton prend la couleur du robot choisi (vert, ambre, violet, corail) */
+html body.lobby-theme .menu-lobby .ai-setup-launch.ai-setup-launch {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--rival-accent) 88%, #fff), var(--rival-accent)) !important;
+    box-shadow: 0 14px 28px -14px rgba(var(--rival-rgb), .55), 0 2px 0 color-mix(in srgb, var(--rival-accent) 60%, #000) !important;
+    transition: background 240ms ease, box-shadow 240ms ease;
+}
+html body.lobby-theme .menu-lobby .ai-setup-launch.ai-setup-launch :is(strong, small, span, svg) { color: #24273a !important; }
+html body.lobby-theme .menu-lobby .ai-setup-launch .ai-setup-launch-icon { background: #24273a14 !important; }
+html body .menu-lobby .ai-setup-dock { background: linear-gradient(180deg, #3b3a5200, #34344ae6 35%); }
+
+/* =====================================================================
+   TABLE DE JEU AU CRÉPUSCULE — plus de blanc : pierre sombre teintée, verre nuit
+   Les cartes restent intactes ; seuls les supports passent dans l'ombre.
+   ===================================================================== */
+html body .game-lobby {
+    --ml-ink: #f1ebe2; --ml-ink-strong: #fbf6ee; --ml-muted: #b3acbd; --ml-soft: #9f99ab;
+    --ml-line: #ffffff1f; --ml-line-strong: #ffffff33;
+    --ml-paper: #1e2133b3; --ml-paper-strong: #23263ad9; --ml-paper-hover: #2a2e45d9;
+    --ml-accent: #ece4d6; --ml-accent-2: #d9a888;
+    --ml-shadow: 0 12px 24px -16px #000000aa, inset 0 1px 0 #ffffff12;
+    --ml-shadow-hover: 0 16px 28px -16px #000000cc, inset 0 1px 0 #ffffff1a;
+}
+/* Plateaux : votre bac en pierre de mousse, celui de l'adversaire en pierre de brique */
+html body.lobby-theme .game-lobby .skyjo-hand.skyjo-hand.skyjo-hand {
+    --turn-accent: #8fbba6;
+    background:
+        radial-gradient(ellipse at 24% 0%, #ffffff14, transparent 65%),
+        linear-gradient(150deg, #34453f, #26332f) !important;
+    background-size: auto !important;
+    border: 1px solid #ffffff1c !important;
+    box-shadow: inset 0 1px 0 #ffffff1a, inset 0 -10px 20px -12px #00000066, 0 3px 0 #1b2421, 0 22px 36px -18px #000000b3 !important;
+}
+html body.lobby-theme .game-lobby .skyjo-hand.skyjo-hand.skyjo-hand.skyjo-hand--opponent {
+    --turn-accent: #d99a87;
+    background:
+        radial-gradient(ellipse at 24% 0%, #ffffff12, transparent 65%),
+        linear-gradient(150deg, #47353a, #33272c) !important;
+    background-size: auto !important;
+    box-shadow: inset 0 1px 0 #ffffff1a, inset 0 -10px 20px -12px #00000066, 0 3px 0 #251b1f, 0 22px 36px -18px #000000b3 !important;
+}
+html body.lobby-theme .game-lobby .skyjo-hand.skyjo-hand.skyjo-hand.skyjo-hand--active {
+    border-color: color-mix(in srgb, var(--turn-accent) 70%, transparent) !important;
+    box-shadow: inset 0 1px 0 #ffffff1a, 0 0 0 1.5px color-mix(in srgb, var(--turn-accent) 80%, transparent), 0 0 28px -6px color-mix(in srgb, var(--turn-accent) 45%, transparent), 0 22px 36px -18px #000000b3 !important;
+}
+html body.lobby-theme .game-lobby .skyjo-hand .skyjo-card-slot {
+    background: #00000026; border-color: #ffffff14;
+    box-shadow: inset 0 2px 4px #00000040, 0 1px 0 #ffffff0d;
+}
+html body.lobby-theme .game-lobby:has(.skyjo-hand--active) .skyjo-hand.skyjo-hand:not(.skyjo-hand--active) { filter: brightness(.92); }
+/* Pastilles de score */
+html body.lobby-theme .game-lobby .skyjo-hand .skyjo-player-badge.skyjo-player-badge,
+html body.lobby-theme .game-lobby .skyjo-hand .skyjo-player-badge.skyjo-player-badge:not(.skyjo-player-badge--active),
+html body.lobby-theme .game-lobby .skyjo-hand--opponent .skyjo-player-badge.skyjo-player-badge:not(.skyjo-player-badge--active) {
+    background: #1b1e2ee6 !important; border: 1px solid #ffffff24 !important; color: #f1ebe2 !important;
+    box-shadow: 0 8px 16px -10px #000000cc !important;
+}
+html body.lobby-theme .game-lobby .skyjo-hand .skyjo-player-badge.skyjo-player-badge:not(.skyjo-player-badge--active) :is(span, .skyjo-player-score, .skyjo-score-unit) { color: #f1ebe2 !important; }
+html body.lobby-theme .game-lobby .skyjo-hand .skyjo-player-badge.skyjo-player-badge--active {
+    background: var(--turn-accent) !important; border-color: var(--turn-accent) !important; color: #1b1e2e !important;
+}
+html body.lobby-theme .game-lobby .skyjo-hand .skyjo-player-badge--active :is(.skyjo-player-score, .skyjo-score-unit, .skyjo-turn-label, span) { color: #1b1e2e !important; }
+html body.lobby-theme .game-lobby .skyjo-hand .skyjo-player-badge--active .skyjo-turn-label { background: #1b1e2e1f; }
+html body.lobby-theme .game-lobby .skyjo-hand .skyjo-player-badge--active .skyjo-turn-indicator { background: #1b1e2e; box-shadow: 0 0 0 3px #1b1e2e26; }
+/* Barre du haut, bandeaux et consignes : verre nuit */
+html body.lobby-theme .game-lobby .glass-premium:not(.fixed *):not(.skyjo-hand),
+html body.lobby-theme .game-lobby .skyjo-game-header.skyjo-game-header {
+    background: #1b1e2ee0 !important; border: 1px solid #ffffff1f !important;
+    box-shadow: 0 12px 24px -16px #000000cc, inset 0 1px 0 #ffffff12 !important;
+    -webkit-backdrop-filter: blur(12px) !important; backdrop-filter: blur(12px) !important;
+}
+html body.lobby-theme .game-lobby .glass-premium:not(.fixed *):not(.skyjo-hand) :is(h3, span, p) { color: #f1ebe2 !important; }
+html body.lobby-theme .game-lobby .skyjo-game-header.skyjo-game-header > * { background: #ffffff0d !important; border-color: #ffffff14 !important; box-shadow: none !important; }
+html body.lobby-theme .game-lobby .skyjo-game-header.skyjo-game-header :is(button, svg, span) { color: #e9e2d6; }
+html body.lobby-theme .game-lobby .skyjo-game-header.skyjo-game-header button { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
+html body.lobby-theme .game-lobby .skyjo-game-header.skyjo-game-header button :is(svg, span) { color: #e9e2d6 !important; }
+html body.lobby-theme .game-lobby .skyjo-game-header.skyjo-game-header button:active { background: #ffffff14 !important; }
+/* Dalle centrale */
+html body.lobby-theme .game-lobby .skyjo-pile-zone::before {
+    background: radial-gradient(ellipse at 50% 0%, #ffffff12, transparent 70%), linear-gradient(180deg, #2a2d42, #212436) !important;
+    background-size: auto !important;
+    box-shadow: inset 0 1px 0 #ffffff17, 0 3px 0 #17192699, 0 22px 36px -18px #000000b3 !important;
+}
+html body.lobby-theme .game-lobby .skyjo-pile-zone .skyjo-pile-group .skyjo-pile-label { color: #b3acbd !important; }
+html body.lobby-theme .game-lobby .skyjo-pile-count { background: #ffffff14 !important; color: #f1ebe2 !important; border-color: #ffffff1f !important; box-shadow: none !important; }
+html body.lobby-theme .game-lobby .skyjo-empty-pile { background: #00000026; border-color: #ffffff26 !important; box-shadow: inset 0 2px 6px #00000040; }
+html body.lobby-theme .game-lobby .skyjo-draw-button:not(.skyjo-draw-button--waiting):not(:disabled),
+html body.lobby-theme .game-lobby .skyjo-draw-button.skyjo-draw-button--waiting {
+    background: #ffffff0f !important; border-color: #ffffff26 !important;
+}
+html body.lobby-theme .game-lobby .skyjo-draw-button span[class][class] { color: #f1ebe2 !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby) .skyjo-draw-button.skyjo-draw-button--waiting span[class][class] { color: #eba594 !important; }
+html body.lobby-theme .game-lobby .skyjo-draw-pile:not([style*="34d399"]) {
+    box-shadow: 2px 2px 0 -1px #3b3e55, 2px 2px 0 0 #d8d1c4, 4px 4px 0 -1px #2f3248, 4px 4px 0 0 #c9c2b6, 0 8px 12px -8px #000000cc !important;
+}
+html body .game-lobby .skyjo-card-back:not([style*="52, 211, 153"]) { box-shadow: 0 4px 10px -4px #000000cc !important; }
+
+/* Fenêtres sombres d'origine (carte piochée, etc.) : on les garde dans la nuit au lieu de les éclaircir */
+html body.lobby-theme :is(.menu-lobby, .game-lobby) [style*="background-color: rgba(15, 23, 42"]:not(.skyjo-card, .skyjo-card *):not(.skyjo-hand) {
+    background: radial-gradient(ellipse 80% 50% at 50% 0%, #d9a88820, transparent 70%), linear-gradient(170deg, #272a40f2, #1c1f30f2) !important;
+    border-color: #ffffff1f !important;
+    box-shadow: 0 30px 60px -24px #000000e6, inset 0 1px 0 #ffffff14 !important;
+}
+html body.lobby-theme .game-lobby [style*="background-color: rgba(15, 23, 42"]:not(.skyjo-card, .skyjo-card *):not(.skyjo-hand) h3 { color: #fbf6ee !important; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-weight: 500; }
