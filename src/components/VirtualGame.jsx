@@ -21,6 +21,7 @@ import RoundResultsPlayers from './virtual/RoundResultsPlayers';
 import AISetupScreen from './virtual/AISetupScreen';
 import GameMessageBanner from './virtual/GameMessageBanner';
 import DrawReactionBubble from './virtual/DrawReactionBubble';
+import SwapReveal from './virtual/SwapReveal';
 import ExperienceBar from './ExperienceBar';
 import SkinCarousel from './SkinCarousel';
 import { useVirtualGameStore, selectAIMode, selectAIPlayers, selectIsCurrentPlayerAI, selectIsAIThinking } from '../store/virtualGameStore';
@@ -130,6 +131,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
 
     // Notifications
     const virtualLastNotification = useVirtualGameStore((s) => s.lastNotification);
+    const [swapReveal, setSwapReveal] = useState(null);
     const clearNotification = useVirtualGameStore((s) => s.clearNotification);
     const virtualPendingAnimation = useVirtualGameStore(s => s.pendingAnimation);
     const isDailyChallenge = useVirtualGameStore(s => s.isDailyChallenge);
@@ -532,8 +534,11 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     useEffect(() => {
         if (virtualLastNotification) {
             // Using global toaster
-            const { type, message } = virtualLastNotification;
-            if (type === 'error') toast.error(message);
+            const { type, message, swap } = virtualLastNotification;
+            if (type === 'swap' && swap) {
+                setTimeout(() => setSwapReveal({ ...swap, key: Date.now() }), 0);
+                setTimeout(() => setSwapReveal(null), 2800);
+            } else if (type === 'error') toast.error(message);
             else if (type === 'success') toast.success(message);
             else toast(message);
 
@@ -2701,6 +2706,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
 
             {/* MIDDLE ACTION AREA - Centered between hands */}
             <div className="skyjo-action-area flex-1 flex flex-col justify-center items-center relative z-40 my-2">
+                {/* Échange de l'IA : les deux cartes échangées, au centre */}
+                <SwapReveal swap={swapReveal} />
                 {/* Bulle « Aïe ! » / « Yes ! » quand un +20 ou un −10 sort de la pioche */}
                 {activeGameState.drawnCard && activeDrawnCardSource !== 'discard' && [20, -10].includes(Number(activeGameState.drawnCard.value)) && (
                     <DrawReactionBubble

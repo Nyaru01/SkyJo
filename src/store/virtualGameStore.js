@@ -568,7 +568,8 @@ export const useVirtualGameStore = create(
 
                         set({
                             lastNotification: {
-                                type: 'info',
+                                type: 'swap',
+                                swap: { by: currentPlayer.name, given: myCard ? { ...myCard } : null, taken: theirCard ? { ...theirCard } : null },
                                 message: `🔄 ${currentPlayer.name} a échangé ${myValText} contre ${theirValText} !`,
                                 timestamp: Date.now()
                             }
