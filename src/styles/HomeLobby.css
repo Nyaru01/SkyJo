@@ -438,3 +438,18 @@ body:has(.home-lobby) .mobile-nav-item--active { background: #ece4d6; color: #24
 .lobby-footer > button.lobby-version { font-size: 11.5px; color: #8f899c; }
 .lobby-unread { box-shadow: none; background: #d9a888; }
 @media (prefers-reduced-motion: reduce) { .lobby-menu-btn, .lobby-menu-btn-chevron { transition: none; } }
+
+/* Emblèmes du menu : une niche de verre nuit, un peu plus grande, avec une lueur chaude */
+.lobby-menu-btn-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: radial-gradient(ellipse 80% 60% at 50% 30%, #e3cfa81f, transparent 70%), #ffffff0d;
+    box-shadow: inset 0 0 0 1px #ffffff1a, inset 0 -8px 14px -10px #00000080;
+}
+.lobby-menu-btn-icon svg { width: 40px; height: 40px; filter: drop-shadow(0 3px 4px #00000059); transition: transform 220ms cubic-bezier(.2, .8, .25, 1); }
+.lobby-menu-btn:hover .lobby-menu-btn-icon svg, .lobby-menu-btn:focus-visible .lobby-menu-btn-icon svg { transform: translateY(-2px); }
+.lobby-menu-btn--primary .lobby-menu-btn-icon {
+    background: radial-gradient(ellipse 80% 60% at 50% 30%, #ffffff, transparent 70%), #24273a12;
+    box-shadow: inset 0 0 0 1px #24273a14;
+}
+.lobby-menu-btn--primary .lobby-menu-btn-icon svg { filter: drop-shadow(0 3px 4px #24273a40); }
+@media (prefers-reduced-motion: reduce) { .lobby-menu-btn-icon svg { transition: none; } }
