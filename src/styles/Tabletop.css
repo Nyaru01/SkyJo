@@ -124,7 +124,10 @@
     min-height: 0 !important;
     height: calc(100dvh - 20px);
     max-height: calc(100dvh - 20px);
-    overflow: hidden;
+    /* « clip » plutôt que « hidden » : on peut laisser déborder les ombres des plateaux
+       sans créer de zone de défilement (sinon l'ombre du bas est tranchée net). */
+    overflow: clip !important;
+    overflow-clip-margin: 40px;
 }
 .skyjo-game-container .skyjo-action-area { min-height: 0; }
 

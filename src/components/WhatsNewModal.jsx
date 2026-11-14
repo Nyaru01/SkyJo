@@ -1,118 +1,48 @@
-import React from 'react';
-import { Sparkles, Zap, SunMoon } from 'lucide-react';
-import { Button } from './ui/Button';
-import ModalShell, { ModalCloseButton } from './ui/ModalShell';
+import { useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { motion as Motion, useReducedMotion } from 'framer-motion';
+import { Castle, Leaf, Moon, LayoutGrid, X } from 'lucide-react';
+import { useDialogFocus } from '../hooks/useDialogFocus';
+import { WelcomeIsland } from './Tutorial';
+import '../styles/Guide.css';
 
-export const CURRENT_NEWS_VERSION = 13;
+// Monter ce numéro fait réapparaître la fenêtre une fois chez chaque joueur au lancement suivant.
+export const CURRENT_NEWS_VERSION = 14;
 
-const FEATURES = [
-    {
-        title: "Mode Équinoxe · Équilibre",
-        description: "Entre ombre et lumière : conservez -2, 0, 0 et 2 sur votre grille finale, puis décrochez la victoire en mode Tourment.",
-        icon: SunMoon,
-        color: "text-amber-100",
-        bg: "bg-gradient-to-br from-amber-400/25 to-indigo-500/30",
-        featured: true
-    },
-    {
-        title: "Comportement IA",
-        description: "L'intelligence artificielle a été affinée pour une stratégie plus humaine et des défis plus relevés.",
-        icon: Sparkles,
-        color: "text-indigo-400",
-        bg: "bg-indigo-400/10"
-    },
-    {
-        title: "Bugs Mineurs",
-        description: "Plusieurs correctifs internes ont été appliqués pour garantir une fluidité parfaite sur tous les supports.",
-        icon: Zap,
-        color: "text-slate-400",
-        bg: "bg-slate-400/10"
-    }
+const HIGHLIGHTS = [
+    { icon: Castle, title: 'Une île vivante', text: 'Une tour à mécanisme qui tourne quand on la touche, des oiseaux de papier, des étoiles filantes.' },
+    { icon: Leaf, title: 'Les saisons', text: 'Feuilles d’automne en ce moment, neige à partir du 21 décembre, pétales au printemps.' },
+    { icon: Moon, title: 'Tout au crépuscule', text: 'Menus, table de jeu et fenêtres passent au verre nuit et à l’encre ivoire, plus reposants pour les yeux.' },
+    { icon: LayoutGrid, title: 'Une table qui tient dans l’écran', text: 'Plus de défilement en partie : la taille des cartes s’ajuste à votre téléphone.' },
 ];
 
-const FeatureCard = ({ feature }) => (
-    <div
-        className={feature.featured
-            ? "relative flex items-start gap-3 overflow-hidden rounded-xl border border-amber-300/35 bg-gradient-to-r from-amber-500/15 via-indigo-500/15 to-violet-500/15 p-3 shadow-[0_0_24px_rgba(99,102,241,0.16)] ring-1 ring-inset ring-white/5"
-            : "flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10"
-        }
-    >
-        {feature.featured && (
-            <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-amber-200/90 to-transparent" />
-        )}
-        <div
-            className={`relative shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${feature.bg}`}
-            aria-hidden="true"
-        >
-            <feature.icon className={`w-5 h-5 ${feature.color}`} />
-        </div>
-        <div className="flex-1 min-w-0">
-            <h3 className="flex items-center gap-2 font-bold text-white text-sm mb-0.5">
-                {feature.title}
-                {feature.featured && (
-                    <span className="rounded-full bg-amber-300/15 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-amber-200 ring-1 ring-inset ring-amber-200/20">
-                        Nouveau
-                    </span>
-                )}
-            </h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-                {feature.description}
-            </p>
-        </div>
-    </div>
-);
-
+// Présentation de la nouvelle direction artistique (s'ouvre une seule fois, puis depuis « Nouveautés »).
 export default function WhatsNewModal({ isOpen, onClose }) {
-    return (
-        <ModalShell isOpen={isOpen} onClose={onClose} labelledBy="whats-new-title">
-                        <div className="relative flex max-h-[calc(100dvh-1.5rem)] flex-col overflow-hidden">
-                            {/* Effets de fond */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-slate-900 to-purple-900/40 pointer-events-none" />
-                            <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-purple-500/10 to-transparent pointer-events-none" />
-
-                            {/* Effet de brillance subtil */}
-                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-
-                            {/* Header */}
-                            <div className="relative p-5 pb-3 text-center sm:p-6 sm:pb-3">
-                                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 mb-3 shadow-lg shadow-purple-500/20">
-                                    <Sparkles className="w-6 h-6 text-white" />
-                                </div>
-
-                                <h2
-                                    id="whats-new-title"
-                                    className="text-2xl font-black text-white uppercase tracking-tight mb-1"
-                                >
-                                    Quoi de neuf ?
-                                </h2>
-                                <p className="text-sm text-slate-400 font-medium">
-                                    Découvrez les dernières améliorations
-                                </p>
-
-                                <ModalCloseButton onClick={onClose} className="absolute top-3 right-3" />
-                            </div>
-
-                            {/* Contenu */}
-                            <div className="relative min-h-0 flex-1 p-4 pt-2 sm:p-5 sm:pt-2 space-y-2.5 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-                                {FEATURES.map((feature, idx) => (
-                                    <FeatureCard
-                                        key={`feature-${idx}`}
-                                        feature={feature}
-                                    />
-                                ))}
-                            </div>
-
-                            {/* Footer */}
-                            <div className="relative border-t border-white/10 bg-slate-950/60 p-4 sm:p-5">
-                                <Button
-                                    size="lg"
-                                    onClick={onClose}
-                                    className="premium-focus-ring w-full min-h-12 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-purple-500/20 transition-all duration-200"
-                                >
-                                    C'est parti !
-                                </Button>
-                            </div>
-                        </div>
-        </ModalShell>
+    const ref = useRef(null);
+    const reduce = useReducedMotion();
+    useDialogFocus(isOpen, ref, onClose);
+    if (!isOpen) return null;
+    return createPortal(
+        <div className="da-news" onClick={onClose}>
+            <Motion.div ref={ref} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="da-news-title"
+                className="da-news-panel" onClick={e => e.stopPropagation()}
+                initial={reduce ? false : { opacity: 0, y: 16, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.35, ease: [0.2, 0.8, 0.25, 1] }}>
+                <button type="button" className="da-news-close" onClick={onClose} aria-label="Fermer"><X size={18} aria-hidden="true" /></button>
+                <div className="da-news-visual" aria-hidden="true"><WelcomeIsland /></div>
+                <p className="da-news-kicker">Nouvelle direction artistique · v3.4</p>
+                <h2 id="da-news-title">Skyjo passe au crépuscule</h2>
+                <p className="da-news-lead">Une île suspendue, une lumière de fin de journée, des matières calmes : toute l’application a été redessinée.</p>
+                <ul className="da-news-list">
+                    {HIGHLIGHTS.map(({ icon: Icon, title, text }, i) => <Motion.li key={title}
+                        initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.07, duration: 0.3 }}>
+                        <span className="da-news-icon" aria-hidden="true"><Icon size={18} strokeWidth={1.7} /></span>
+                        <span><strong>{title}</strong><small>{text}</small></span>
+                    </Motion.li>)}
+                </ul>
+                <button type="button" className="da-news-cta" onClick={onClose}>Découvrir</button>
+            </Motion.div>
+        </div>,
+        document.body,
     );
 }

@@ -88,7 +88,7 @@ export default function GameSetup({ onNavigate, onVirtualAction, onOpenTutorial,
             <button type="button" aria-pressed={mode === 'virtual'} onClick={() => { playClick(); setMode('virtual'); }}><Gamepad2 size={22} aria-hidden="true"/><span>Virtuel</span></button>
         </div>
         <section className="lobby-hero" aria-labelledby="lobby-mode-title">
-            <div className="lobby-hero-copy"><h2 id="lobby-mode-title">{mode === 'virtual' ? 'Le plus petit score gagne.' : 'Vos cartes, nos calculs.'}</h2>{mode === 'real' && <p>Jusqu’à 8 joueurs, partie en 100 points.</p>}</div>
+            <div className="lobby-hero-copy"><h2 id="lobby-mode-title" className={mode === 'virtual' ? 'sr-only' : undefined}>{mode === 'virtual' ? 'Skyjo virtuel' : 'Vos cartes, nos calculs.'}</h2>{mode === 'real' && <p>Jusqu’à 8 joueurs, partie en 100 points.</p>}</div>
             <HomeWorldScene compact={mode === 'real'}/>
         </section>
         <AnimatePresence mode="wait" initial={false}><Motion.div key={mode} className="lobby-mode-content" initial={reducedMotion ? false : { opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 0 }} transition={{ duration: reducedMotion ? 0 : .14 }}>

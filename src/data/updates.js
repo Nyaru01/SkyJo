@@ -1,11 +1,28 @@
 export const UPDATES = [
     {
+        id: 21,
+        version: "3.4.0",
+        date: "14 Nov. 2026",
+        title: "Le Crépuscule",
+        description: "Nouvelle direction artistique : une île suspendue dans une lumière de fin de journée, et toute l'application redessinée dans la même ambiance.",
+        isNew: true,
+        type: "major",
+        changes: [
+            { text: "Accueil : île en 3D avec une tour à mécanisme (touchez-la), oiseaux de papier, lanternes et étoiles filantes", type: "feat" },
+            { text: "Saisons : feuilles d'automne, neige à partir du 21 décembre, pétales au printemps", type: "feat" },
+            { text: "Menus, table de jeu, pause et fenêtres au crépuscule : verre nuit et encre ivoire", type: "improve" },
+            { text: "Guide de bienvenue redessiné", type: "improve" },
+            { text: "Duel IA : le bouton prend la couleur du robot choisi", type: "improve" },
+            { text: "Partie sans défilement : le plateau tient entièrement dans l'écran", type: "fix" }
+        ]
+    },
+    {
         id: 20,
         version: "3.1.0",
         date: "16 Fév. 2026",
         title: "Sauvegarde Cloud Native",
         description: "Intégration transparente de la synchronisation Google et sécurité renforcée.",
-        isNew: true,
+        isNew: false,
         type: "major",
         changes: [
             { text: "Cloud Save V3 : Sauvegarde native et discrète directement dans le profil", type: "feat" },
@@ -20,7 +37,7 @@ export const UPDATES = [
         date: "10 Fév. 2026",
         title: "Mode Tourment : Sync & Échanges",
         description: "Correction majeure des actions spéciales en ligne et amélioration du rendu visuel des cartes Bonus.",
-        isNew: true,
+        isNew: false,
         type: "minor",
         changes: [
             { text: "Action Échange (S) : Synchronisation parfaite en multijoueur", type: "feat" },
@@ -52,7 +69,7 @@ export const UPDATES = [
         date: "08 Fév. 2026",
         title: "Le Panthéon & Excellence Visuelle",
         description: "Une refonte complète des statistiques et des effets 3D pour les champions.",
-        isNew: true,
+        isNew: false,
         type: "major",
         changes: [
             { text: "Le Panthéon : Une nouvelle interface de stats épurée et prestigieuse", type: "feat" },
@@ -102,7 +119,7 @@ export const UPDATES = [
         date: "03 Fév. 2026",
         title: "Immersion 3D & Gyroscope",
         description: "Une expérience tactile inédite avec des boutons réactifs et des règles ajustées.",
-        isNew: true,
+        isNew: false,
         type: "major",
         changes: [
             { text: "Boutons Arcade : Un design 'Push' satisfaisant avec effet de profondeur", type: "feat" },

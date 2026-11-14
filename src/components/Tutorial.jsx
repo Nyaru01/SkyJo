@@ -17,7 +17,7 @@ function Prism({ x, y, w, h, top, left, right }) {
         <path d={`M${x} ${y + w} L${x + w} ${y + d} L${x + w} ${y + d + h} L${x} ${y + w + h} Z`} fill={right} />
     </g>;
 }
-function WelcomeIsland() {
+export function WelcomeIsland() {
     return <svg className="guide-island" viewBox="0 0 220 170" aria-hidden="true">
         <defs><radialGradient id="guide-glow" cx=".5" cy=".55" r=".5"><stop offset="0" stopColor="#ffd9a0" stopOpacity=".35" /><stop offset="1" stopColor="#ffd9a0" stopOpacity="0" /></radialGradient></defs>
         <ellipse cx="110" cy="96" rx="104" ry="70" fill="url(#guide-glow)" />

@@ -1424,7 +1424,8 @@ html body.lobby-theme .game-lobby .skyjo-game-header.skyjo-game-header {
     -webkit-backdrop-filter: blur(12px) !important; backdrop-filter: blur(12px) !important;
 }
 html body.lobby-theme .game-lobby .glass-premium:not(.fixed *):not(.skyjo-hand) :is(h3, span, p) { color: #f1ebe2 !important; }
-html body.lobby-theme .game-lobby .skyjo-game-header.skyjo-game-header > * { background: #ffffff0d !important; border-color: #ffffff14 !important; box-shadow: none !important; }
+html body.lobby-theme .game-lobby .skyjo-game-header.skyjo-game-header > * { background: transparent !important; box-shadow: none !important; }
+html body.lobby-theme .game-lobby .skyjo-game-header.skyjo-game-header [class~="rounded-3xl"] { background: #ffffff0d !important; border-color: #ffffff14 !important; box-shadow: none !important; }
 html body.lobby-theme .game-lobby .skyjo-game-header.skyjo-game-header :is(button, svg, span) { color: #e9e2d6; }
 html body.lobby-theme .game-lobby .skyjo-game-header.skyjo-game-header button { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
 html body.lobby-theme .game-lobby .skyjo-game-header.skyjo-game-header button :is(svg, span) { color: #e9e2d6 !important; }
