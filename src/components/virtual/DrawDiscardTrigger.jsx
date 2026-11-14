@@ -261,7 +261,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                             <div className="h-[21px] invisible" aria-hidden="true" />
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center gap-1.5 flex-1 max-w-[240px]">
+                        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0 max-w-[240px]">
                             <motion.button
                                 onClick={onClick}
                                 disabled={!canInteract}

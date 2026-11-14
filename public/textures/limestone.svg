@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
+  <filter id="stone" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency=".16" numOctaves="4" seed="12" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer>
+      <feFuncR type="linear" slope=".45" intercept=".25"/>
+      <feFuncG type="linear" slope=".42" intercept=".23"/>
+      <feFuncB type="linear" slope=".4" intercept=".2"/>
+      <feFuncA type="linear" slope=".28"/>
+    </feComponentTransfer>
+  </filter>
+  <path fill="#c6bcae" filter="url(#stone)" d="M0 0h180v180H0z"/>
+</svg>

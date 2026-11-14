@@ -1023,7 +1023,7 @@ html body.lobby-theme .game-lobby .skyjo-hand.skyjo-hand.skyjo-hand.skyjo-hand--
 html body.lobby-theme .game-lobby .skyjo-hand .skyjo-card-slot { background: #ffffff59; border-color: #ffffffaa; }
 
 /* Typographie : Cormorant pour les noms, scores, piles et consignes */
-html body.lobby-theme .game-lobby :is(.skyjo-player-badge, .skyjo-pile-label, .skyjo-draw-button span[class][class], .glass-premium h3) {
+html body.lobby-theme .game-lobby :is(.skyjo-player-badge, .skyjo-draw-button span[class][class], .glass-premium h3) {
     font-family: 'Cormorant Garamond', Georgia, serif !important;
 }
 html body.lobby-theme .game-lobby .skyjo-player-badge { font-size: 15px !important; font-weight: 600 !important; }
@@ -1108,12 +1108,22 @@ html body.lobby-theme .game-lobby .skyjo-hand--opponent .skyjo-player-badge.skyj
 }
 
 /* Zone centrale : libellés centrés au-dessus de leur pile, dalle symétrique */
-html body .game-lobby .skyjo-pile-zone { padding-inline: 14px; }
+html body .game-lobby .skyjo-action-area { margin-block: 28px; }
+html body .game-lobby .skyjo-pile-zone {
+    display: grid;
+    grid-template-columns: 60px minmax(0, 1fr) 60px;
+    align-items: center;
+    gap: 8px;
+    padding: 30px 12px 12px;
+    isolation: isolate;
+}
+html body .game-lobby .skyjo-pile-zone > :nth-child(2) { min-width: 0; width: 100%; justify-self: center; }
+html body .game-lobby .skyjo-pile-group { width: 60px; }
 html body .game-lobby .skyjo-pile-zone .skyjo-pile-group .skyjo-pile-label,
 html body .game-lobby .skyjo-pile-zone--choosing .skyjo-pile-group .skyjo-pile-label {
     left: 50% !important; right: auto !important; transform: translateX(-50%) !important; white-space: nowrap;
 }
-html body.lobby-theme .game-lobby .skyjo-pile-zone::before { inset: -36px 0 -12px !important; }
+html body.lobby-theme .game-lobby .skyjo-pile-zone::before { inset: 0 !important; z-index: -1; }
 
 /* =====================================================================
    MATURITÉ — couleurs poudrées et désaturées, formes nettes, filets fins,
@@ -1129,13 +1139,21 @@ html body .game-lobby--sky::after, html body .menu-lobby::after { opacity: .3 !i
 html body.lobby-theme .game-lobby .skyjo-hand.skyjo-hand.skyjo-hand {
     --turn-accent: #5f8272;
     border-radius: 14px !important;
-    background: linear-gradient(180deg, #e6ebe5, #d8dfd7) !important;
+    background:
+        url('/textures/limestone.svg') repeat,
+        radial-gradient(ellipse at 24% 0%, #fffdf6b3, transparent 68%),
+        linear-gradient(145deg, #dde8de, #bccfc5) !important;
+    background-size: 180px 180px, auto, auto !important;
     border: 1px solid #ffffff99 !important;
     box-shadow: inset 0 0 0 1px #ffffff40, 0 2px 0 #bfc8bd, 0 18px 30px -18px #2b2a3366 !important;
 }
 html body.lobby-theme .game-lobby .skyjo-hand.skyjo-hand.skyjo-hand.skyjo-hand--opponent {
     --turn-accent: #a8695a;
-    background: linear-gradient(180deg, #eee4df, #e3d5ce) !important;
+    background:
+        url('/textures/limestone.svg') repeat,
+        radial-gradient(ellipse at 24% 0%, #fff8ecb3, transparent 68%),
+        linear-gradient(145deg, #e8dfd5, #ccbbb1) !important;
+    background-size: 180px 180px, auto, auto !important;
     box-shadow: inset 0 0 0 1px #ffffff40, 0 2px 0 #d3bdb3, 0 18px 30px -18px #2b2a3366 !important;
 }
 html body.lobby-theme .game-lobby .skyjo-hand.skyjo-hand.skyjo-hand.skyjo-hand--active {
@@ -1143,7 +1161,12 @@ html body.lobby-theme .game-lobby .skyjo-hand.skyjo-hand.skyjo-hand.skyjo-hand--
     box-shadow: inset 0 0 0 1px #ffffff40, 0 0 0 1.5px var(--turn-accent), 0 18px 30px -18px #2b2a3366 !important;
 }
 html body.lobby-theme .game-lobby .skyjo-hand.skyjo-hand--active::after { display: none !important; }
-html body.lobby-theme .game-lobby .skyjo-hand .skyjo-card-slot { background: #ffffff2e; border-color: #ffffff59; border-radius: 8px; }
+html body.lobby-theme .game-lobby .skyjo-hand .skyjo-card-slot {
+    background: linear-gradient(145deg, #53655d14, #ffffff30);
+    border-color: #ffffff70;
+    border-radius: 8px;
+    box-shadow: inset 0 1px 3px #343d3b24, 0 1px 0 #ffffff70;
+}
 
 /* Pastilles de score : nettes, petites, à la couleur du joueur seulement quand c'est son tour */
 html body.lobby-theme .game-lobby .skyjo-hand .skyjo-player-badge.skyjo-player-badge {
@@ -1174,11 +1197,32 @@ html body.lobby-theme :is(.menu-lobby, .game-lobby) .skyjo-draw-button.skyjo-dra
 /* Dalle centrale : pierre mate, filet et tranche fins */
 html body.lobby-theme .game-lobby .skyjo-pile-zone::before {
     border-radius: 14px !important;
-    background: linear-gradient(180deg, #f3efe9, #e8e2da) !important;
+    background: url('/textures/limestone.svg') repeat, linear-gradient(180deg, #f3efe9, #e8e2da) !important;
+    background-size: 180px 180px, auto !important;
     box-shadow: inset 0 0 0 1px #ffffff80, 0 2px 0 #d5cbbf, 0 18px 30px -18px #2b2a3355 !important;
     opacity: 1 !important;
 }
-html body.lobby-theme .game-lobby .skyjo-pile-label { color: #55546a !important; }
+html body.lobby-theme .game-lobby .skyjo-pile-zone .skyjo-pile-group .skyjo-pile-label {
+    color: #55546a !important;
+    font-family: 'Bricolage Grotesque', system-ui, sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.25;
+    letter-spacing: 0;
+}
+html body.lobby-theme .game-lobby .skyjo-pile-zone .skyjo-draw-button span[class][class] {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.2;
+}
+@media (max-width: 480px) {
+    html body.lobby-theme .game-lobby .skyjo-pile-zone .skyjo-draw-button { gap: 0; }
+    html body.lobby-theme .game-lobby .skyjo-pile-zone .skyjo-draw-button > div:has(> svg) { display: none; }
+    html body.lobby-theme .game-lobby .skyjo-pile-zone .skyjo-draw-button span[class][class] {
+        font-size: 15px !important;
+        letter-spacing: 0 !important;
+    }
+}
 
 /* Dos de carte : liseré ivoire fin, ombre courte */
 html body .game-lobby .skyjo-card-back:not([style*="52, 211, 153"]) {

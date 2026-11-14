@@ -2707,7 +2707,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
             )}
 
             {/* MIDDLE ACTION AREA - Centered between hands */}
-            <div className="flex-1 flex flex-col justify-center items-center relative z-40 my-2">
+            <div className="skyjo-action-area flex-1 flex flex-col justify-center items-center relative z-40 my-2">
                 {/* Instruction Banner - Moved here for precise central placement over piles */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
                     <GameMessageBanner message={instruction} />

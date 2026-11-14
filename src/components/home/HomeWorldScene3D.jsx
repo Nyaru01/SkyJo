@@ -1,9 +1,32 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Canvas, extend, useFrame, useThree } from '@react-three/fiber';
 import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, CatmullRomCurve3, MathUtils, PlaneGeometry, SRGBColorSpace, Vector3 } from 'three';
 import { backTexture, pastelFaceTexture } from './cardTextures';
 import { useGameStore } from '../../store/gameStore';
 import { getCardSkinPath } from '../../lib/skinUtils';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+extend({ RoundedBoxGeometry });
+
+const StoneContext = createContext(null);
+
+// One shared, deterministic mineral grain for the architecture; no image request.
+function makeStoneTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    const pixels = ctx.createImageData(256, 256);
+    let seed = 37;
+    for (let i = 0; i < pixels.data.length; i += 4) {
+        seed = (seed * 16807) % 2147483647;
+        const shade = 224 + Math.floor(seed / 2147483647 * 30);
+        pixels.data.set([shade, shade, shade, 255], i);
+    }
+    ctx.putImageData(pixels, 0, 0);
+    const texture = new CanvasTexture(canvas);
+    texture.colorSpace = SRGBColorSpace;
+    texture.anisotropy = 4;
+    return texture;
+}
 
 // Dos du skin choisi par le joueur (même dos qu'en partie).
 function usePlayerBack() {
@@ -12,20 +35,13 @@ function usePlayerBack() {
     return useMemo(() => backTexture(path), [path]);
 }
 
-// =====================================================================
-// Accueil « belvédère » : un diorama isométrique original qui flotte dans
-// un ciel pastel. Aplats colorés (dessus clair, côtés plus soutenus), formes
-// pures, beaucoup d'air. Le parvis est la grille de 12 cartes ; une grande
-// carte pivote au sommet de la tour comme un mécanisme.
-// =====================================================================
-
+// Accueil belvédère : île, tour et cartes dans le ciel de crépuscule.
 const easeOut = t => 1 - Math.pow(1 - t, 3);
 const easeInOut = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const clamp01 = t => Math.min(1, Math.max(0, t));
 const haptic = () => { try { navigator.vibrate?.(10); } catch { /* indisponible */ } };
 const setPointer = on => { document.body.style.cursor = on ? 'pointer' : ''; };
 
-// Palette : pierre crème, corail, rose, lavande, menthe d'eau.
 const C = {
     stone: '#ece5db', stoneEdge: '#dcd2c6',
     coral1: '#cdb7aa', coral2: '#bca398', coral3: '#a9938d', coral4: '#98868a',
@@ -40,9 +56,10 @@ const CARD_GEO = new BoxGeometry(CARD.w, CARD.t, CARD.h);
 const CARD_FACE = new PlaneGeometry(CARD.w - 0.02, CARD.h - 0.02);
 
 function Block({ size, position, color, rotation }) {
-    return <mesh position={position} rotation={rotation}>
-        <boxGeometry args={size} />
-        <meshLambertMaterial color={color} />
+    const stone = useContext(StoneContext);
+    return <mesh position={position} rotation={rotation} castShadow receiveShadow>
+        <roundedBoxGeometry args={[...size, 2, Math.min(...size, 0.18) * 0.2]} />
+        <meshStandardMaterial color={color} map={stone} roughness={0.92} />
     </mesh>;
 }
 
@@ -51,7 +68,6 @@ function PlazaCard({ value, x, z, order, clock, still, onTouch, index, register 
     const ref = useRef();
     const [shown, setShown] = useState(value);
     const state = useRef({ faceUp: false, angle: Math.PI, introDone: false });
-    // Permet à l'île de retourner cette carte d'elle-même (animation d'ambiance).
     useEffect(() => {
         register(index, () => {
             const s = state.current;
@@ -87,7 +103,7 @@ function PlazaCard({ value, x, z, order, clock, still, onTouch, index, register 
             s.faceUp = !s.faceUp; onTouch();
         }}
         onPointerOver={() => setPointer(true)} onPointerOut={() => setPointer(false)}>
-        <mesh geometry={CARD_GEO}><meshLambertMaterial color="#fffaf3" /></mesh>
+        <mesh geometry={CARD_GEO} castShadow receiveShadow><meshLambertMaterial color="#fffaf3" /></mesh>
         {front && <mesh geometry={CARD_FACE} rotation-x={-Math.PI / 2} position-y={CARD.t / 2 + 0.001}>
             <meshBasicMaterial map={front} transparent alphaTest={0.5} />
         </mesh>}
@@ -97,7 +113,7 @@ function PlazaCard({ value, x, z, order, clock, still, onTouch, index, register 
     </group>;
 }
 
-// La grande carte au sommet : pivote lentement, un tap la fait tourner d'un tour.
+
 function PivotCard({ still, onTouch }) {
     const ref = useRef();
     const spin = useRef({ target: 0, angle: 0 });
@@ -119,62 +135,6 @@ function PivotCard({ still, onTouch }) {
         <mesh position-z={-0.021} rotation-y={Math.PI}><planeGeometry args={[0.76, 1.06]} /><meshBasicMaterial map={back} transparent alphaTest={0.5} /></mesh>
     </group>;
 }
-
-// Petits blocs qui flottent autour de l'île.
-function Floaters({ still }) {
-    const refs = useRef([]);
-    const items = [
-        { p: [-3.4, 0.8, 1.6], s: 0.32, c: C.coral1 },
-        { p: [3.6, -1.4, 2.2], s: 0.26, c: C.lilac },
-        { p: [-2.6, -2.6, -1.8], s: 0.4, c: C.coral2 },
-        { p: [2.9, 2.6, 1.9], s: 0.18, c: C.stone },
-    ];
-    useFrame(state => {
-        if (still) return;
-        const t = state.clock.elapsedTime;
-        items.forEach((it, i) => {
-            const m = refs.current[i];
-            if (!m) return;
-            m.position.y = it.p[1] + Math.sin(t * 0.7 + i * 1.7) * 0.15;
-            m.rotation.y = t * 0.2 + i;
-        });
-    });
-    return items.map((it, i) => <mesh key={i} ref={el => { refs.current[i] = el; }} position={it.p}>
-        <boxGeometry args={[it.s, it.s, it.s]} />
-        <meshLambertMaterial color={it.c} />
-    </mesh>);
-}
-
-// Brume douce sous l'île : l'île naît d'une mer de lumière, qui dérive lentement.
-const MIST = [
-    { p: [0, -3.3, 0.6], s: [12, 5], speed: 0.18, amp: 0.5 },
-    { p: [-2.4, -2.9, 2.4], s: [6, 2.4], speed: 0.27, amp: 0.8 },
-    { p: [2.8, -3.2, -1.6], s: [6, 2.2], speed: 0.22, amp: 0.7 },
-];
-function Mist({ still }) {
-    const refs = useRef([]);
-    const texture = useMemo(() => {
-        const c = document.createElement('canvas');
-        c.width = c.height = 256;
-        const ctx = c.getContext('2d');
-        const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
-        g.addColorStop(0, 'rgba(206,188,204,0.8)'); g.addColorStop(0.5, 'rgba(176,160,184,0.42)'); g.addColorStop(1, 'rgba(176,160,184,0)');
-        ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 256);
-        const t = new CanvasTexture(c);
-        t.colorSpace = SRGBColorSpace;
-        return t;
-    }, []);
-    useFrame(state => {
-        if (still) return;
-        const t = state.clock.elapsedTime;
-        MIST.forEach((m, i) => { const s = refs.current[i]; if (s) s.position.x = m.p[0] + Math.sin(t * m.speed + i * 2) * m.amp; });
-    });
-    return MIST.map((m, i) => <sprite key={i} ref={el => { refs.current[i] = el; }} position={m.p} scale={[m.s[0], m.s[1], 1]}>
-        <spriteMaterial map={texture} transparent depthWrite={false} />
-    </sprite>);
-}
-
-// Haut de la tour : pivote d'un quart de tour à intervalles réguliers, comme un mécanisme.
 function TowerTop({ still }) {
     const ref = useRef();
     const turn = useRef({ target: 0, last: 0 });
@@ -187,32 +147,45 @@ function TowerTop({ still }) {
     });
     return <group ref={ref} position={[1.75, 0, -1.2]}>
         <Block size={[1.1, 0.8, 1.1]} position={[0, 2.55, 0]} color={C.lilac} />
-        {/* Balcon et porte : rendent la rotation visible */}
         <Block size={[0.56, 0.14, 0.34]} position={[0, 2.25, 0.72]} color={C.lilacDark} />
-        {/* Fenêtre éclairée : la seule source chaude de la tour au crépuscule */}
         <mesh position={[0, 2.55, 0.57]}><boxGeometry args={[0.26, 0.4, 0.04]} /><meshBasicMaterial color="#ffd9a0" /></mesh>
-        <mesh position={[0, 2.95, 0]}>
-            <sphereGeometry args={[0.46, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
-            <meshLambertMaterial color={C.dome} />
-        </mesh>
+        <mesh position={[0, 2.95, 0]}><sphereGeometry args={[0.46, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshLambertMaterial color={C.dome} /></mesh>
         <Block size={[0.05, 0.45, 0.05]} position={[0, 3.4, 0]} color={C.stoneEdge} />
     </group>;
 }
-
-// Bassin dont la couleur ondule doucement.
 function Water({ still }) {
     const mat = useRef();
+    const ripples = useRef([]);
     useFrame(state => {
         if (!mat.current || still) return;
         const k = (Math.sin(state.clock.elapsedTime * 1.4) + 1) / 2;
-        mat.current.color.setRGB(0.64 + k * 0.05, 0.75 + k * 0.04, 0.75 + k * 0.04);
+        mat.current.color.setRGB(0.22 + k * 0.03, 0.47 + k * 0.04, 0.48 + k * 0.04);
+        ripples.current.forEach((ring, i) => {
+            if (!ring) return;
+            const phase = (state.clock.elapsedTime * 0.22 + i / 3) % 1;
+            ring.scale.setScalar(0.15 + phase * 0.8);
+            ring.material.opacity = (1 - phase) * 0.35;
+        });
     });
-    return <mesh rotation-x={-Math.PI / 2} position={[1.75, 0.006, 1.05]}>
-        <planeGeometry args={[1.05, 1.5]} />
-        <meshBasicMaterial ref={mat} color={C.water} />
-    </mesh>;
+    return <group position={[1.75, 0.012, 1.05]}>
+        <mesh rotation-x={-Math.PI / 2} receiveShadow><planeGeometry args={[1.05, 1.5]} /><meshStandardMaterial ref={mat} color="#568e91" roughness={0.24} metalness={0.3} /></mesh>
+        {[0, 1, 2].map(i => <mesh key={i} ref={el => { ripples.current[i] = el; }} rotation-x={-Math.PI / 2} position={[0, 0.004 + i * 0.001, 0]} scale={0.3 + i * 0.25}>
+            <ringGeometry args={[0.43, 0.445, 48]} /><meshBasicMaterial color="#d5f4e7" transparent opacity={0.2} depthWrite={false} />
+        </mesh>)}
+        {[-1, 1].map(side => <Block key={'side'+side} size={[0.08, 0.08, 1.65]} position={[side * 0.565, 0.02, 0]} color={C.stoneEdge} />)}
+        {[-1, 1].map(side => <Block key={'end'+side} size={[1.2, 0.08, 0.08]} position={[0, 0.02, side * 0.79]} color={C.stoneEdge} />)}
+    </group>;
 }
-
+function Lanterns() {
+    const glow = useMemo(() => glowTexture('rgba(255,231,183,0.7)', 'rgba(255,194,115,0.12)'), []);
+    useEffect(() => () => glow.dispose(), [glow]);
+    return [[-2.35, 1.8], [2.35, 1.8], [0.85, -0.5]].map(([x, z], i) => <group key={i} position={[x, 0, z]}>
+        <Block size={[0.18, 0.12, 0.18]} position={[0, 0.06, 0]} color={C.lilacDark} />
+        <mesh position-y={0.23}><boxGeometry args={[0.11, 0.22, 0.11]} /><meshBasicMaterial color="#ffe3ac" /></mesh>
+        <Block size={[0.2, 0.05, 0.2]} position={[0, 0.36, 0]} color={C.stone} />
+        <sprite position-y={0.23} scale={[0.85, 0.85, 1]}><spriteMaterial map={glow} transparent depthWrite={false} blending={AdditiveBlending} /></sprite>
+    </group>);
+}
 function Island({ still, onTouch }) {
     const clock = useRef(0);
     const ref = useRef();
@@ -222,45 +195,30 @@ function Island({ still, onTouch }) {
     useFrame((_, delta) => {
         clock.current += Math.min(delta, 0.05);
         const t = clock.current;
-        // Ambiance : une carte se retourne d'elle-même toutes les ~2 s.
         if (!still && t > 3.4 && t - lastFlip.current > 2.1) {
             lastFlip.current = t;
-            const pick = flippers.current[Math.floor(Math.random() * flippers.current.length)];
-            pick?.();
+            flippers.current[Math.floor(Math.random() * flippers.current.length)]?.();
         }
         if (!ref.current) return;
         const rise = still ? 1 : easeOut(clamp01((t - 0.15) / 1.8));
         ref.current.position.y = (rise - 1) * 5;
     });
-    const cards = GRID.map((value, i) => {
-        const col = i % 4, row = Math.floor(i / 4);
-        return { value, x: -2.05 + col * 0.8, z: -0.95 + row * 1.04, order: col + row * 2 };
-    });
     return <group ref={ref}>
-        {/* Parvis et assises de l'île, de plus en plus étroites vers la brume */}
         <Block size={[5.2, 0.5, 4.2]} position={[0, -0.25, 0]} color={C.stone} />
         <Block size={[5.36, 0.14, 4.36]} position={[0, -0.57, 0]} color={C.stoneEdge} />
         <Block size={[4.3, 1.1, 3.4]} position={[0, -1.19, 0]} color={C.coral1} />
         <Block size={[3.2, 1.3, 2.5]} position={[0.1, -2.39, 0.1]} color={C.coral2} />
         <Block size={[2.0, 1.4, 1.5]} position={[0.2, -3.74, 0.2]} color={C.coral3} />
-
-        {/* Grille de cartes */}
-        {cards.map((c, i) => <PlazaCard key={i} {...c} index={i} register={register} clock={clock} still={still} onTouch={onTouch} />)}
-
-        <Water still={still} />
-
-        {/* Tour à arche ; le haut pivote ; carte au sommet */}
+        {GRID.map((value, i) => <PlazaCard key={i} value={value} index={i} register={register}
+            x={-2.05 + (i % 4) * 0.8} z={-0.95 + Math.floor(i / 4) * 1.04}
+            order={i % 4 + Math.floor(i / 4) * 2} clock={clock} still={still} onTouch={onTouch} />)}
+        <Water still={still} /><Lanterns />
         <Block size={[1.2, 0.25, 1.2]} position={[1.75, 0.125, -1.2]} color={C.stone} />
         <Block size={[0.3, 1.5, 0.3]} position={[1.4, 1.0, -1.2]} color={C.lilac} />
         <Block size={[0.3, 1.5, 0.3]} position={[2.1, 1.0, -1.2]} color={C.lilac} />
         <Block size={[1.1, 0.4, 0.42]} position={[1.75, 1.95, -1.2]} color={C.lilacDark} />
-        <TowerTop still={still} />
-        <PivotCard still={still} onTouch={onTouch} />
-
-        {/* Escalier qui descend du parvis vers le vide */}
+        <TowerTop still={still} /><PivotCard still={still} onTouch={onTouch} />
         {[0, 1, 2, 3, 4].map(i => <Block key={i} size={[0.8, 0.2, 0.34]} position={[1.75, -0.1 - i * 0.2, 2.27 + i * 0.34]} color={C.stone} />)}
-
-        {/* Deux petits arbres ronds */}
         {[[-2.35, -1.75], [0.85, -1.75]].map(([x, z], i) => <group key={i} position={[x, 0, z]}>
             <Block size={[0.08, 0.35, 0.08]} position={[0, 0.17, 0]} color={C.trunk} />
             <mesh position={[0, 0.5, 0]}><sphereGeometry args={[0.24, 16, 12]} /><meshLambertMaterial color={C.leaf} /></mesh>
@@ -298,7 +256,6 @@ function Turntable({ still, children }) {
     return <group ref={ref}>{children}</group>;
 }
 
-// Petite texture de halo réutilisée (étoiles, lucioles, lueur).
 function glowTexture(inner, outer) {
     const c = document.createElement('canvas');
     c.width = c.height = 64;
@@ -311,7 +268,53 @@ function glowTexture(inner, outer) {
     return t;
 }
 
-// Étoiles qui scintillent dans le ciel de crépuscule.
+function Floaters({ still }) {
+    const refs = useRef([]);
+    const items = [
+        { p: [-3.4, 0.8, 1.6], s: 0.32, c: C.coral1 },
+        { p: [3.6, -1.4, 2.2], s: 0.26, c: C.lilac },
+        { p: [-2.6, -2.6, -1.8], s: 0.4, c: C.coral2 },
+        { p: [2.9, 2.6, 1.9], s: 0.18, c: C.stone },
+    ];
+    useFrame(state => {
+        if (still) return;
+        const t = state.clock.elapsedTime;
+        items.forEach((it, i) => {
+            const m = refs.current[i];
+            if (!m) return;
+            m.position.y = it.p[1] + Math.sin(t * 0.7 + i * 1.7) * 0.15;
+            m.rotation.y = t * 0.2 + i;
+        });
+    });
+    return items.map((it, i) => <mesh key={i} ref={el => { refs.current[i] = el; }} position={it.p}>
+        <boxGeometry args={[it.s, it.s, it.s]} /><meshLambertMaterial color={it.c} />
+    </mesh>);
+}
+const MIST = [
+    { p: [0, -3.3, 0.6], s: [12, 5], speed: 0.18, amp: 0.5 },
+    { p: [-2.4, -2.9, 2.4], s: [6, 2.4], speed: 0.27, amp: 0.8 },
+    { p: [2.8, -3.2, -1.6], s: [6, 2.2], speed: 0.22, amp: 0.7 },
+];
+function Mist({ still }) {
+    const refs = useRef([]);
+    const texture = useMemo(() => {
+        const c = document.createElement('canvas');
+        c.width = c.height = 256;
+        const ctx = c.getContext('2d');
+        const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+        g.addColorStop(0, 'rgba(206,188,204,0.8)'); g.addColorStop(0.5, 'rgba(176,160,184,0.42)'); g.addColorStop(1, 'rgba(176,160,184,0)');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 256);
+        const t = new CanvasTexture(c); t.colorSpace = SRGBColorSpace; return t;
+    }, []);
+    useFrame(state => {
+        if (still) return;
+        const t = state.clock.elapsedTime;
+        MIST.forEach((m, i) => { const s = refs.current[i]; if (s) s.position.x = m.p[0] + Math.sin(t * m.speed + i * 2) * m.amp; });
+    });
+    return MIST.map((m, i) => <sprite key={i} ref={el => { refs.current[i] = el; }} position={m.p} scale={[m.s[0], m.s[1], 1]}>
+        <spriteMaterial map={texture} transparent depthWrite={false} />
+    </sprite>);
+}
 function createStars() {
     let s = 11;
     const rand = () => ((s = (s * 16807) % 2147483647) / 2147483647);
@@ -333,8 +336,6 @@ function Stars({ still }) {
         <pointsMaterial ref={mat} map={stars.texture} size={6} sizeAttenuation={false} transparent depthWrite={false} blending={AdditiveBlending} opacity={0.8} />
     </points>;
 }
-
-// Lucioles : des points chauds qui montent lentement autour de l'île.
 const FIREFLIES = 26;
 function createFireflies() {
     const positions = new Float32Array(FIREFLIES * 3);
@@ -366,8 +367,6 @@ function Fireflies({ still }) {
         <pointsMaterial map={flies.texture} size={14} sizeAttenuation={false} transparent depthWrite={false} blending={AdditiveBlending} opacity={0.9} />
     </points>;
 }
-
-// Une petite lueur qui voyage : elle gravit l'escalier, traverse le parvis jusqu'à la tour, puis redescend.
 const WANDER_PATH = new CatmullRomCurve3([
     new Vector3(1.75, -0.95, 3.75), new Vector3(1.75, -0.45, 2.95), new Vector3(1.75, 0.2, 2.15),
     new Vector3(1.1, 0.22, 1.1), new Vector3(0.95, 0.22, -0.2), new Vector3(1.75, 0.45, -0.55),
@@ -378,7 +377,7 @@ function Wanderer({ still }) {
     useFrame(state => {
         if (!ref.current) return;
         const cycle = still ? 0.5 : (state.clock.elapsedTime * 0.06) % 2;
-        const u = cycle < 1 ? cycle : 2 - cycle; // aller-retour
+        const u = cycle < 1 ? cycle : 2 - cycle;
         const p = WANDER_PATH.getPointAt(easeInOut(u));
         ref.current.position.set(p.x, p.y + 0.12 + Math.sin(state.clock.elapsedTime * 3) * 0.03, p.z);
     });
@@ -414,6 +413,8 @@ function CameraRig({ compact, still }) {
 }
 
 export default function HomeWorldScene3D({ compact = false }) {
+    const stone = useMemo(() => makeStoneTexture(), []);
+    useEffect(() => () => stone.dispose(), [stone]);
     const [still] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
     const wrapper = useRef(null);
     const [onScreen, setOnScreen] = useState(true);
@@ -427,7 +428,7 @@ export default function HomeWorldScene3D({ compact = false }) {
     const onTouch = haptic;
     return <div className="lobby-world s3d s3d--belvedere" ref={wrapper}>
         <Canvas
-            orthographic flat
+            orthographic shadows
             frameloop={onScreen ? 'always' : 'never'}
             dpr={[1, 2]}
             gl={{ antialias: true, alpha: true }}
@@ -435,16 +436,20 @@ export default function HomeWorldScene3D({ compact = false }) {
         >
             <CameraRig compact={compact} still={still} />
             {/* Crépuscule : soleil couchant chaud à gauche, lumière froide du ciel à droite */}
-            <ambientLight intensity={1.05} color="#ddd6e8" />
-            <directionalLight position={[-3, 9, 6]} intensity={1.35} color="#ffd8b4" />
-            <directionalLight position={[6, 4, -2]} intensity={0.4} color="#8fa2d4" />
+            <hemisphereLight intensity={1.4} color="#c8d7f4" groundColor="#746276" />
+            <directionalLight position={[-3, 9, 6]} intensity={2.6} color="#ffe1ba" castShadow
+                shadow-mapSize={[1024, 1024]} shadow-camera-left={-6} shadow-camera-right={6}
+                shadow-camera-top={7} shadow-camera-bottom={-6} shadow-normalBias={0.035} shadow-bias={-0.0002} />
+            <directionalLight position={[6, 4, -2]} intensity={1.1} color="#a2b9ec" />
             <Stars still={still} />
+            <StoneContext.Provider value={stone}>
             <Turntable still={still}>
                 <Island still={still} onTouch={onTouch} />
                 <Floaters still={still} />
                 <Wanderer still={still} />
                 {!still && <Fireflies still={still} />}
             </Turntable>
+            </StoneContext.Provider>
             <Mist still={still} />
         </Canvas>
     </div>;
