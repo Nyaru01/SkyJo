@@ -24,6 +24,7 @@ import DrawReactionBubble from './virtual/DrawReactionBubble';
 import SwapReveal from './virtual/SwapReveal';
 import { FuryRail, FuryTargetBanner, FuryEffects, FuryAmbience, FuryRulesModal } from './virtual/FuryUI';
 import { FURY_TYPES } from '../lib/furyEngine';
+import { fitCardsRef } from '../lib/fitCards';
 import ExperienceBar from './ExperienceBar';
 import SkinCarousel from './SkinCarousel';
 import { useVirtualGameStore, selectAIMode, selectAIPlayers, selectIsCurrentPlayerAI, selectIsAIThinking } from '../store/virtualGameStore';
@@ -2545,6 +2546,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
 
     return (
         <div
+            ref={fitCardsRef}
             className={cn(
                 "skyjo-game-container max-w-3xl mx-auto p-0 animate-in fade-in relative min-h-[100dvh] flex flex-col overflow-x-hidden touch-none pb-safe-plus",
                 activeGameState?.players?.length <= 2 ? "justify-start gap-2 py-2" : "justify-start gap-2 py-1 pb-6"

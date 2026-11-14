@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Activity, CloudFog, Shield, Skull, Snowflake, Tornado, X, Flame } from 'lucide-react';
-import { FURY_TYPES, FURY_USES_PER_ROUND, FURY_ORDER as FURY_ORDER_UI } from '../../lib/furyEngine';
+import { FURY_TYPES, FURY_USES_PER_ROUND, FURY_RESERVE_MAX, FURY_ORDER as FURY_ORDER_UI } from '../../lib/furyEngine';
 import '../../styles/Fury.css';
 
 const FURY_ICONS = { quake: Activity, curse: Skull, fog: CloudFog, tornado: Tornado, freeze: Snowflake, shield: Shield };
@@ -19,7 +19,6 @@ export function FuryRail({ part, me, opponent, opponentName, canPlay, selected, 
         </div>;
     return <div className="fury-rail" aria-label="Votre réserve Fury">
             <span className="fury-flames" aria-label={`${FURY_USES_PER_ROUND - (me?.fury?.used || 0)} Fury restantes cette manche`}>{flames(me?.fury?.used || 0)}</span>
-            {reserve.length === 0 && <span className="fury-rail-empty">Piochez pour trouver des cartes Fury</span>}
             {reserve.map((card, i) => {
                 return <button key={card.id} type="button" disabled={!canPlay} onClick={() => onSelect(i)}
                     className={`fury-chip-card${selected === i ? ' is-selected' : ''}`} aria-pressed={selected === i}
@@ -27,6 +26,11 @@ export function FuryRail({ part, me, opponent, opponentName, canPlay, selected, 
                     <FuryCard type={card.furyType} size="mini" />
                 </button>;
             })}
+            {Array.from({ length: Math.max(0, FURY_RESERVE_MAX - reserve.length) }, (_, i) => <span key={`slot-${i}`} className="fury-slot" aria-hidden="true"><Flame size={14} /></span>)}
+            {reserve.length < FURY_RESERVE_MAX && <span className="fury-rail-hint">{reserve.length === 0
+                ? <><strong>Cachées dans la pioche</strong>Piochez normalement pour les gagner</>
+                : canPlay ? <><strong>À jouer au lieu de piocher</strong>Touchez une carte Fury</>
+                : <><strong>Votre réserve</strong>Jouable en début de tour</>}</span>}
             {me?.fury?.shield && <span className="fury-shield-chip"><Shield size={12} aria-hidden="true" />Protégé</span>}
         </div>;
 }

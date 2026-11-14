@@ -151,3 +151,9 @@ body.fury-mode .skyjo-game-container {
     --skyjo-card-h: clamp(2.8rem, calc((100dvh - 405px) / 7), 4.4rem);
     --skyjo-card-w: min(3.7rem, calc(var(--skyjo-card-h) * 0.76));
 }
+/* Réserve : 3 emplacements visibles + consigne, pour comprendre où vont les cartes Fury */
+body.fury-mode .fury-rail { justify-content: center; gap: 6px; }
+.fury-slot { display: grid; place-items: center; width: 44px; height: 46px; border-radius: 9px; border: 1.5px dashed #ff8a5566; background: #ff6a3a0d; color: #ff8a5566; flex-shrink: 0; }
+.fury-rail-hint { display: flex; flex-direction: column; gap: 1px; max-width: 138px; font-size: 10.5px; line-height: 1.25; color: #c9a596; text-align: left; }
+.fury-rail-hint strong { font-size: 11px; color: #ffcbb0; font-weight: 700; }
+body.fury-mode .fury-card--mini { width: 62px; }
