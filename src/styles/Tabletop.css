@@ -209,3 +209,22 @@ html body .game-lobby .skyjo-clear-result.skyjo-clear-result { color: #fff3d6; t
 /* Pendant une action spéciale, la dalle de pioche s'efface derrière le bandeau */
 .skyjo-action-area:has(.skyjo-banner) .skyjo-pile-zone { opacity: .18; filter: blur(1px); transition: opacity 240ms ease, filter 240ms ease; }
 .skyjo-action-area .skyjo-pile-zone { transition: opacity 240ms ease, filter 240ms ease; }
+
+/* Bulles « Aïe ! » / « Yes ! » à la pioche d'un +20 / −10 */
+.draw-bubble-layer { position: fixed; left: 0; right: 0; top: calc(50% - 190px); z-index: 650; display: flex; justify-content: center; pointer-events: none; }
+.draw-bubble { position: relative; width: 150px; height: 130px; display: grid; place-items: center; filter: drop-shadow(0 12px 16px #000000a6); }
+.draw-bubble-shape { position: absolute; inset: 0; width: 100%; height: 100%; }
+.draw-bubble-text {
+    position: relative; margin-top: -10px; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 30px;
+    letter-spacing: -.02em; color: #1d2031; transform: rotate(-6deg);
+    text-shadow: 0 2px 0 #fff3e8aa;
+}
+.draw-bubble--ouch .draw-bubble-text { color: #3a1f1c; }
+.draw-bubble-text--yes { margin-top: -22px; transform: rotate(-3deg); color: #2a2440; }
+.draw-bubble-who { position: absolute; bottom: 6px; left: 50%; translate: -50% 0; padding: 2px 8px; border-radius: 999px; background: #1d2031; color: #f1ebe2; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+.draw-bubble--yes .draw-bubble-who { bottom: 2px; }
+.draw-bubble-spark {
+    position: absolute; width: 16px; height: 16px; background: #e3c08f;
+    clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+}
+body:has(.skyjo-pause) .draw-bubble-layer { display: none; }

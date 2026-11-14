@@ -20,6 +20,7 @@ import ChestRevelationOverlay from './virtual/ChestRevelationOverlay';
 import RoundResultsPlayers from './virtual/RoundResultsPlayers';
 import AISetupScreen from './virtual/AISetupScreen';
 import GameMessageBanner from './virtual/GameMessageBanner';
+import DrawReactionBubble from './virtual/DrawReactionBubble';
 import ExperienceBar from './ExperienceBar';
 import SkinCarousel from './SkinCarousel';
 import { useVirtualGameStore, selectAIMode, selectAIPlayers, selectIsCurrentPlayerAI, selectIsAIThinking } from '../store/virtualGameStore';
@@ -2708,6 +2709,14 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
 
             {/* MIDDLE ACTION AREA - Centered between hands */}
             <div className="skyjo-action-area flex-1 flex flex-col justify-center items-center relative z-40 my-2">
+                {/* Bulle « Aïe ! » / « Yes ! » quand un +20 ou un −10 sort de la pioche */}
+                {activeGameState.drawnCard && activeDrawnCardSource !== 'discard' && [20, -10].includes(Number(activeGameState.drawnCard.value)) && (
+                    <DrawReactionBubble
+                        key={activeGameState.drawnCard.id}
+                        value={Number(activeGameState.drawnCard.value)}
+                        who={activeGameState.currentPlayerIndex === myPlayerIndex ? null : (aiMode ? 'l’IA' : 'l’adversaire')}
+                    />
+                )}
                 {/* Instruction Banner - Moved here for precise central placement over piles */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
                     <GameMessageBanner message={instruction} />
