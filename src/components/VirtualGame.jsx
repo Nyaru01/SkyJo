@@ -2535,51 +2535,43 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-md"
+                        className="skyjo-pause tourment-goal-layer"
                     >
                         <motion.div
                             initial={{ opacity: 0, scale: 0.92, y: 18 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.96 }}
-                            className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-violet-300/25 bg-gradient-to-b from-slate-900 to-slate-950 p-7 text-center shadow-[0_24px_80px_rgba(124,58,237,0.35)]"
+                            className="skyjo-pause-panel tourment-goal"
                             role="dialog"
                             aria-modal="true"
                             aria-labelledby="tourment-performance-goal-title"
                         >
-                            <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-rose-500/15 via-violet-500/10 to-transparent" />
-                            <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-rose-600 shadow-lg shadow-violet-500/25">
-                                <Flame className="h-8 w-8 text-white" />
-                            </div>
-                            <h2 id="tourment-performance-goal-title" className="relative text-2xl font-black uppercase tracking-tight text-white">
+                            <span className="skyjo-pause-emblem tourment-goal-emblem" aria-hidden="true"><Flame size={24} strokeWidth={1.8} /></span>
+                            <h2 id="tourment-performance-goal-title" className="tourment-goal-title">
                                 Objectif Tourment
                             </h2>
-                            <p className="mt-2 text-sm font-medium leading-relaxed text-slate-300">
+                            <p className="skyjo-pause-text tourment-goal-text">
                                 Les règles restent identiques. À chaque victoire longue, votre score final détermine maintenant votre rang de performance.
                             </p>
-                            <div className="my-6 grid grid-cols-2 gap-2 text-left">
-                                <div className="rounded-xl border border-amber-300/15 bg-amber-500/10 p-3">
-                                    <div className="text-sm font-black text-amber-200">Score positif</div>
-                                    <div className="text-[11px] font-medium text-slate-400">Victoire de justesse</div>
+                            <div className="tourment-goal-grid">
+                                <div className="tourment-goal-tile tourment-goal-tile--amber">
+                                    <div className="tourment-goal-score">Score positif</div>
+                                    <div className="tourment-goal-rank">Victoire de justesse</div>
                                 </div>
-                                <div className="rounded-xl border border-sky-300/15 bg-sky-500/10 p-3">
-                                    <div className="text-sm font-black text-sky-200">0 à −49</div>
-                                    <div className="text-[11px] font-medium text-slate-400">Bon début</div>
+                                <div className="tourment-goal-tile tourment-goal-tile--sky">
+                                    <div className="tourment-goal-score">0 à −49</div>
+                                    <div className="tourment-goal-rank">Bon début</div>
                                 </div>
-                                <div className="rounded-xl border border-emerald-300/15 bg-emerald-500/10 p-3">
-                                    <div className="text-sm font-black text-emerald-200">−50 à −99</div>
-                                    <div className="text-[11px] font-medium text-slate-400">Maîtrise du Tourment</div>
+                                <div className="tourment-goal-tile tourment-goal-tile--sage">
+                                    <div className="tourment-goal-score">−50 à −99</div>
+                                    <div className="tourment-goal-rank">Maîtrise du Tourment</div>
                                 </div>
-                                <div className="rounded-xl border border-violet-300/20 bg-violet-500/15 p-3">
-                                    <div className="text-sm font-black text-violet-200">−100 ou moins</div>
-                                    <div className="text-[11px] font-medium text-slate-400">Domination absolue</div>
+                                <div className="tourment-goal-tile tourment-goal-tile--violet">
+                                    <div className="tourment-goal-score">−100 ou moins</div>
+                                    <div className="tourment-goal-rank">Domination absolue</div>
                                 </div>
                             </div>
-                            <Button
-                                onClick={() => setHasSeenTourmentPerformanceGoal(true)}
-                                className="h-14 w-full rounded-2xl bg-gradient-to-r from-violet-600 to-rose-600 font-black uppercase tracking-widest text-white shadow-lg shadow-violet-600/20"
-                            >
-                                J'ai compris
-                            </Button>
+                            <button type="button" onClick={() => setHasSeenTourmentPerformanceGoal(true)} className="skyjo-pause-resume">J’ai compris</button>
                         </motion.div>
                     </motion.div>
                 )}

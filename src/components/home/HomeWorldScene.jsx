@@ -1,7 +1,8 @@
 import { Component, Suspense, lazy, useEffect, useState } from 'react';
 import '../../styles/HomeWorld.css';
 
-const HomeWorldScene3D = lazy(() => import('./HomeWorldScene3D'));
+const load3D = () => import('./HomeWorldScene3D');
+const HomeWorldScene3D = lazy(load3D);
 
 // Scène d'accueil en 3D CSS : une table SKYJO qui flotte dans le ciel.
 // Grille de 12 cartes en perspective, pioche en relief, une carte qui se retourne
@@ -79,9 +80,16 @@ class SceneBoundary extends Component {
     render() { return this.state.failed ? this.props.fallback : this.props.children; }
 }
 
+// Pendant le chargement de l'île 3D : rien que le ciel (pas l'ancienne table CSS, qui « flashait »).
+function LoadingSky() {
+    return <div className="lobby-world lobby-world--loading" aria-hidden="true" />;
+}
+
 export default function HomeWorldScene({ compact = false }) {
     const [ready, setReady] = useState(false);
     const [webgl] = useState(supportsWebGL);
+    // On lance le téléchargement de la scène 3D en même temps que l'attente des polices.
+    useEffect(() => { if (webgl) load3D().catch(() => {}); }, [webgl]);
     useEffect(() => {
         // Les textures des cartes utilisent Bricolage Grotesque : on attend la police avant de les dessiner.
         let alive = true;
@@ -89,9 +97,11 @@ export default function HomeWorldScene({ compact = false }) {
         fonts.catch(() => {}).finally(() => { if (alive) setReady(true); });
         return () => { alive = false; };
     }, []);
+    // La scène CSS ne sert plus que de secours : pas de WebGL, ou scène 3D en échec.
     const fallback = <HomeWorldSceneCss />;
-    if (!webgl || !ready) return fallback;
+    if (!webgl) return fallback;
+    if (!ready) return <LoadingSky />;
     return <SceneBoundary fallback={fallback}>
-        <Suspense fallback={fallback}><HomeWorldScene3D compact={compact} /></Suspense>
+        <Suspense fallback={<LoadingSky />}><HomeWorldScene3D compact={compact} /></Suspense>
     </SceneBoundary>;
 }

@@ -228,3 +228,17 @@ html body .game-lobby .skyjo-clear-result.skyjo-clear-result { color: #fff3d6; t
     clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
 }
 body:has(.skyjo-pause) .draw-bubble-layer { display: none; }
+
+/* Objectif Tourment : même fenêtre crépuscule que la pause */
+.tourment-goal-layer { z-index: 10000; }
+.tourment-goal-emblem { color: #eba594; background: #eba5941a; }
+html body .tourment-goal .tourment-goal-title { color: #fbf6ee !important; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; font-weight: 500; line-height: 1.1; }
+.tourment-goal-text { margin: 6px 0 16px; line-height: 1.5; }
+.tourment-goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; margin-bottom: 16px; text-align: left; }
+.tourment-goal-tile { padding: 10px 12px; border-radius: 12px; background: #ffffff0a; border: 1px solid #ffffff14; border-left: 3px solid var(--tg, #e3cfa8); }
+.tourment-goal-tile--amber { --tg: #e6c391; }
+.tourment-goal-tile--sky { --tg: #a9c6e6; }
+.tourment-goal-tile--sage { --tg: #9fcab6; }
+.tourment-goal-tile--violet { --tg: #c6b4e6; }
+.tourment-goal-score { font-size: 14px; font-weight: 700; color: var(--tg); }
+.tourment-goal-rank { margin-top: 1px; font-size: 11.5px; color: #b3acbd; }
