@@ -1,11 +1,26 @@
 export const UPDATES = [
     {
+        id: 22,
+        version: "3.5.0",
+        date: "14 Nov. 2026",
+        title: "Mode Fury",
+        description: "Un nouveau duel contre l'IA : six cartes pour détruire le jeu adverse.",
+        isNew: true,
+        type: "major",
+        changes: [
+            { text: "Fury remplace le mode Normal : Séisme, Malédiction +13, Brouillard, Tornade, Gel et Bouclier", type: "feat" },
+            { text: "Réserve de 3 cartes, 3 utilisations par manche, une Fury se joue à la place de piocher", type: "feat" },
+            { text: "Plateau volcanique, braises, onomatopées BOUM ! / CRAC ! et secousses", type: "improve" },
+            { text: "Règles expliquées au premier lancement et depuis la pause", type: "improve" }
+        ]
+    },
+    {
         id: 21,
         version: "3.4.0",
         date: "14 Nov. 2026",
         title: "Le Crépuscule",
         description: "Nouvelle direction artistique : une île suspendue dans une lumière de fin de journée, et toute l'application redessinée dans la même ambiance.",
-        isNew: true,
+        isNew: false,
         type: "major",
         changes: [
             { text: "Accueil : île en 3D avec une tour à mécanisme (touchez-la), oiseaux de papier, lanternes et étoiles filantes", type: "feat" },

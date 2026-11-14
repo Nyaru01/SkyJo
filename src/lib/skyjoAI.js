@@ -9,6 +9,7 @@ export const AI_DIFFICULTY = {
     HARD: 'hard',
     HARDCORE: 'hardcore',
     BONUS: 'bonus',
+    FURY: 'fury',
 };
 
 // AI player names (without emoji - emoji is set separately)

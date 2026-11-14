@@ -1,3 +1,4 @@
+import { initializeFuryGame, collectFuryFromPile, playFury, decideFuryAction } from '../lib/furyEngine';
 import { getActiveWeeklyChallenge, getGameChallenge, HARVEST, hasChallengeObjective, hasBestRoundScore } from '../lib/weeklyChallenge';
 import { setSeasonalPreview } from '../lib/seasonalPreview';
 let previewSnapshot = null;
@@ -264,8 +265,10 @@ export const useVirtualGameStore = create(
                 }
 
                 const isHardcoreMode = difficulty === AI_DIFFICULTY.HARDCORE;
+                // Fury : cartes de sabotage ; l'IA réfléchit comme en Difficile pour ses coups normaux.
+                const isFuryMode = difficulty === AI_DIFFICULTY.FURY;
 
-                const gameState = initializeGame(players, { isBonusMode, isHardcoreMode });
+                const gameState = isFuryMode ? initializeFuryGame(players) : initializeGame(players, { isBonusMode, isHardcoreMode });
                 gameState.isWeeklyChallenge = options.isWeeklyChallenge === true;
                 if (gameState.isWeeklyChallenge) {
                     gameState.seasonalChallengeId = options.isSeasonalPreview ? HARVEST.id : getActiveWeeklyChallenge().id;
@@ -292,7 +295,8 @@ export const useVirtualGameStore = create(
                     showScores: false,
                     aiMode: true,
                     aiPlayers: aiPlayerIndices,
-                    aiDifficulty: difficulty,
+                    aiDifficulty: isFuryMode ? AI_DIFFICULTY.HARD : difficulty,
+                    isFuryMode,
                     isBonusMode: isBonusMode,
                     isHardcoreMode: isHardcoreMode,
                     isAIThinking: false,
@@ -372,6 +376,22 @@ export const useVirtualGameStore = create(
                     const currentPlayer = gameState.players[currentPlayerIndex];
 
                     if (turnPhase === 'DRAW') {
+                        // Fury : jouer une carte de sabotage, ou ranger les Fury du dessus de la pioche.
+                        if (gameState.isFuryMode) {
+                            const action = decideFuryAction(gameState, currentPlayerIndex);
+                            if (action) {
+                                try {
+                                    const { state } = playFury(gameState, action.reserveIndex, action.targetIndex, action.target ?? null);
+                                    set({ gameState: state, isAIThinking: false, drawnCardSource: null });
+                                    return;
+                                } catch (error) { console.warn('[FURY] IA', error); }
+                            }
+                            const { state: collected, gained } = collectFuryFromPile(gameState);
+                            if (gained.length) {
+                                set({ gameState: { ...collected, lastFuryGain: { cards: gained, by: currentPlayerIndex, at: Date.now() } }, isAIThinking: false });
+                                return;
+                            }
+                        }
                         // Step 1: Decide where to draw from
                         const drawSource = decideDrawSource(gameState, aiDifficulty);
                         let newState; // eslint-disable-line no-unused-vars
@@ -638,8 +658,24 @@ export const useVirtualGameStore = create(
                     set({ humanTurnStartState: gameState });
                 }
 
-                const newState = drawFromPile(gameState);
-                set({ gameState: newState, drawnCardSource: 'pile' });
+                // Fury : les cartes Fury du dessus partent dans la réserve avant la pioche.
+                const { state: collected, gained } = collectFuryFromPile(gameState);
+                const newState = drawFromPile(collected);
+                set({ gameState: gained.length ? { ...newState, lastFuryGain: { cards: gained, by: gameState.currentPlayerIndex, at: Date.now() } } : newState, drawnCardSource: 'pile' });
+            },
+
+            // Fury : jouer une carte de la réserve (remplace la pioche, le tour se termine).
+            playFuryCard: (reserveIndex, targetIndex, target = null) => {
+                const { gameState } = get();
+                if (!gameState) return false;
+                try {
+                    const { state } = playFury(gameState, reserveIndex, targetIndex, target);
+                    set({ gameState: state, drawnCardSource: null, selectedCardIndex: null });
+                    return true;
+                } catch (error) {
+                    toast.error(error.message || 'Carte Fury impossible à jouer.');
+                    return false;
+                }
             },
 
             /**
@@ -1188,7 +1224,7 @@ export const useVirtualGameStore = create(
                     avatarId: p.avatarId,
                 }));
 
-                const newGameState = initializeGame(players, {
+                const newGameState = gameState.isFuryMode ? initializeFuryGame(players) : initializeGame(players, {
                     isBonusMode: get().isBonusMode,
                     isHardcoreMode: get().isHardcoreMode
                 });
@@ -1217,7 +1253,7 @@ export const useVirtualGameStore = create(
                 }));
 
                 // Reset everything for a new full game
-                const newGameState = initializeGame(players, {
+                const newGameState = gameState.isFuryMode ? initializeFuryGame(players) : initializeGame(players, {
                     isBonusMode: get().isBonusMode,
                     isHardcoreMode: get().isHardcoreMode
                 });
@@ -1254,6 +1290,7 @@ export const useVirtualGameStore = create(
                 aiPlayers: state.aiPlayers,
                 aiDifficulty: state.aiDifficulty,
                 isBonusMode: state.isBonusMode,
+                isFuryMode: state.isFuryMode,
                 isPaused: state.isPaused,
                 isDailyChallenge: state.isDailyChallenge,
                 isWeeklyChallenge: state.isWeeklyChallenge,

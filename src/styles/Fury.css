@@ -1,0 +1,134 @@
+/* =====================================================================
+   MODE FURY — pierre volcanique, veines de braise, onomatopées
+   ===================================================================== */
+/* Plateau : ciel rougi, bacs en pierre de lave, rivets rouges */
+body.fury-mode .game-lobby--sky::before {
+    background: radial-gradient(ellipse 90% 45% at 50% 100%, #c2452b55, transparent 70%), linear-gradient(180deg, #1c1420 0%, #2a1a24 40%, #4a2328 75%, #6a2e28 100%) !important;
+}
+body.fury-mode .game-lobby {
+    --tray-studs:
+        radial-gradient(circle at 9px 9px, #ff7a45 1.6px, #ff7a4544 2.8px, transparent 3.6px),
+        radial-gradient(circle at calc(100% - 9px) 9px, #ff7a45 1.6px, #ff7a4544 2.8px, transparent 3.6px),
+        radial-gradient(circle at 9px calc(100% - 9px), #ff7a45 1.6px, #ff7a4544 2.8px, transparent 3.6px),
+        radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #ff7a45 1.6px, #ff7a4544 2.8px, transparent 3.6px);
+}
+html body.lobby-theme.fury-mode .game-lobby .skyjo-hand.skyjo-hand.skyjo-hand {
+    background: var(--tray-grain), radial-gradient(ellipse 80% 40% at 50% 105%, #ff6a3a26, transparent 70%), linear-gradient(155deg, #2e2a2f, #1e1a1f 65%, #191518) !important;
+    background-size: 160px 160px, auto, auto !important;
+    border-color: #ff7a4533 !important;
+}
+html body.lobby-theme.fury-mode .game-lobby .skyjo-hand.skyjo-hand.skyjo-hand.skyjo-hand--opponent {
+    background: var(--tray-grain), radial-gradient(ellipse 80% 40% at 50% 105%, #ff3a2a2e, transparent 70%), linear-gradient(155deg, #33262a, #22191c 65%, #1b1316) !important;
+    background-size: 160px 160px, auto, auto !important;
+}
+html body.lobby-theme.fury-mode .game-lobby .skyjo-hand.skyjo-hand::after { border-color: #ff7a4529; box-shadow: inset 0 0 12px #ff5a2a1f, inset 0 1px 1px #00000059; }
+
+/* Braises qui montent derrière la table */
+.fury-embers { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.fury-embers i { position: absolute; bottom: -10px; border-radius: 50%; background: #ffb07a; box-shadow: 0 0 6px #ff7a45, 0 0 12px #ff5a2a88; animation: fury-ember linear infinite; opacity: 0; }
+@keyframes fury-ember { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: .9; } 100% { transform: translate(18px, -105vh); opacity: 0; } }
+
+/* Réserve et état adverse */
+.fury-rail, .fury-opponent { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; flex-wrap: nowrap; }
+.fury-rail { margin-top: 8px; }
+.fury-opponent { margin-bottom: 6px; font-size: 11.5px; color: #d9b8a8; }
+.fury-flames { display: inline-flex; gap: 1px; color: #5a3b35; }
+.fury-flames .is-on { color: #ff8a55; filter: drop-shadow(0 0 3px #ff6a3a99); }
+.fury-rail-empty { font-size: 11.5px; color: #b8958a; }
+.fury-chip {
+    display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 0 10px; border-radius: 10px;
+    background: linear-gradient(160deg, #3a2224, #22161a); border: 1px solid #ff7a4559; color: #ffd9c4; font-size: 12px; font-weight: 700;
+    box-shadow: 0 6px 12px -8px #000, inset 0 1px 0 #ffffff12; pointer-events: auto;
+}
+.fury-chip svg { color: #ff8a55; }
+.fury-chip:disabled { opacity: .5; }
+.fury-chip.is-selected { background: linear-gradient(160deg, #ff8a55, #d4502c); color: #1b1316; border-color: #ffb07a; }
+.fury-chip.is-selected svg { color: #1b1316; }
+.fury-shield-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: #9fcab61f; color: #bfe3d2; font-size: 11px; font-weight: 700; }
+
+/* Bandeau de ciblage */
+.fury-target {
+    position: fixed; z-index: 620; left: 0; right: 0; margin-inline: auto; top: calc(50% - 40px); width: min(340px, calc(100vw - 24px));
+    display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 12px; border-radius: 16px;
+    background: linear-gradient(170deg, #3a2224f5, #22161af5); border: 1px solid #ff7a4566; color: #ffe6d8; box-shadow: 0 20px 40px -16px #000;
+}
+.fury-target-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: #ff7a4526; color: #ff9a6a; flex-shrink: 0; }
+.fury-target-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.fury-target-copy strong { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 20px; font-weight: 600; line-height: 1.05; }
+.fury-target-copy small { font-size: 12.5px; color: #e0bfb2; }
+.fury-target-play { min-height: 40px; padding: 0 14px; border-radius: 10px; background: linear-gradient(160deg, #ff9a6a, #d4502c); color: #1b1316; font-weight: 800; font-size: 14px; }
+.fury-target-cancel { display: grid; place-items: center; width: 36px; height: 40px; color: #d9b8a8; }
+body:has(.fury-target) .skyjo-hand--opponent { box-shadow: 0 0 0 2px #ff7a45, 0 0 28px #ff5a2a66 !important; }
+
+/* Onomatopées */
+.fury-fx-layer { position: fixed; inset: 0; z-index: 660; pointer-events: none; display: grid; place-items: center; }
+.fury-boom { position: relative; width: 230px; height: 172px; display: grid; place-items: center; filter: drop-shadow(0 16px 20px #000000b3); }
+.fury-boom svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.fury-boom polygon { fill: #ffcf4a; stroke: #1b1316; stroke-width: 4; stroke-linejoin: round; }
+.fury-boom--curse polygon { fill: #b53a4a; }
+.fury-boom--fog polygon { fill: #c9c4d6; }
+.fury-boom--tornado polygon { fill: #8fd0c4; }
+.fury-boom--freeze polygon { fill: #a9d4f0; }
+.fury-boom--shield polygon { fill: #9fcab6; }
+.fury-boom-word { position: relative; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 900; font-size: 38px; letter-spacing: -.02em; color: #1b1316; transform: rotate(-7deg); text-shadow: 0 3px 0 #ffffff99; }
+.fury-boom--curse .fury-boom-word { color: #fff1e8; text-shadow: 0 3px 0 #00000066; }
+.fury-boom-caption { position: absolute; bottom: -10px; padding: 3px 10px; border-radius: 999px; background: #1b1316; color: #ffd9c4; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+.fury-gain {
+    position: absolute; top: calc(50% + 120px); display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px;
+    background: #22161af2; border: 1px solid #ff7a4566; color: #ffd9c4; font-size: 13px; font-weight: 700; box-shadow: 0 12px 24px -12px #000;
+}
+.fury-gain svg { color: #ff8a55; }
+.fury-shake { animation: fury-shake .55s cubic-bezier(.36, .07, .19, .97) both; }
+@keyframes fury-shake { 10%, 90% { transform: translate(-2px, 0); } 20%, 80% { transform: translate(4px, 1px); } 30%, 50%, 70% { transform: translate(-7px, -1px); } 40%, 60% { transform: translate(7px, 1px); } }
+@media (prefers-reduced-motion: reduce) { .fury-embers { display: none; } .fury-shake { animation: none; } }
+/* Fury : la réserve prend de la place, les cartes se réduisent d'autant (toujours sans défilement) */
+body.fury-mode .skyjo-game-container { --skyjo-card-h: clamp(2.5rem, calc((100dvh - 470px) / 7), 4.2rem); }
+/* Ciblage : au centre de la dalle (comme l'échange), la pioche s'efface derrière */
+.fury-target.fury-target { position: absolute; top: 50%; left: 50%; right: auto; margin: 0; translate: -50% -50%; width: min(340px, calc(100% - 32px)); pointer-events: auto; }
+.skyjo-action-area:has(.fury-target) .skyjo-pile-zone { opacity: .18; filter: blur(1px); }
+/* Ciblage : prend la place de la dalle de pioche, à la même taille */
+.fury-target.fury-target { position: relative; top: auto; left: auto; translate: none; width: 100%; min-height: 128px; padding: 16px; border-radius: 14px; flex-wrap: wrap; align-content: center; }
+.fury-target.fury-target .fury-target-copy strong { font-size: 24px; }
+.fury-target.fury-target .fury-target-copy small { font-size: 13.5px; }
+
+/* Cartes Fury dessinées */
+.fury-card {
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center;
+    border-radius: 9px; color: #ffe6d8; overflow: hidden;
+    background:
+        radial-gradient(ellipse 90% 60% at 50% 115%, color-mix(in srgb, var(--fc, #ff6a3a) 33%, transparent), transparent 70%),
+        repeating-linear-gradient(135deg, #ffffff06 0 2px, transparent 2px 7px),
+        linear-gradient(165deg, #3a2226, #1a1215);
+    border: 1.5px solid var(--fc, #ff6a3a);
+    box-shadow: inset 0 0 0 2px #1a1215, inset 0 0 0 3px color-mix(in srgb, var(--fc, #ff6a3a) 30%, transparent), 0 6px 12px -6px #000;
+}
+.fury-card--quake { --fc: #ff7a3a; } .fury-card--curse { --fc: #e0455c; } .fury-card--fog { --fc: #b7b1cf; }
+.fury-card--tornado { --fc: #6fcfbf; } .fury-card--freeze { --fc: #8cc8f0; } .fury-card--shield { --fc: #9fcab6; }
+.fury-card-emblem { display: grid; place-items: center; border-radius: 50%; color: var(--fc); background: #00000040; box-shadow: 0 0 14px color-mix(in srgb, var(--fc) 45%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--fc) 50%, transparent); }
+.fury-card-corner { position: absolute; top: 4px; left: 5px; color: var(--fc); opacity: .85; }
+.fury-card-title { font-weight: 800; letter-spacing: .01em; line-height: 1.05; }
+.fury-card--mini { width: 64px; height: 66px; padding: 0 3px; }
+.fury-card--mini .fury-card-emblem { width: 30px; height: 30px; }
+.fury-card--mini .fury-card-title { font-size: 9px; letter-spacing: -.01em; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fury-card--full { width: 100%; min-height: 118px; padding: 10px 6px 9px; }
+.fury-card--full .fury-card-emblem { width: 44px; height: 44px; }
+.fury-card--full .fury-card-title { font-size: 13px; margin-top: 2px; }
+.fury-card-text { font-size: 10.5px; line-height: 1.3; color: #d9bfb3; }
+.fury-chip-card { padding: 0; border-radius: 10px; pointer-events: auto; transition: transform 160ms ease; }
+.fury-chip-card:not(:disabled):hover, .fury-chip-card:not(:disabled):active { transform: translateY(-3px); }
+.fury-chip-card:disabled { opacity: .55; }
+.fury-chip-card.is-selected { transform: translateY(-4px); }
+.fury-chip-card.is-selected .fury-card { box-shadow: 0 0 0 2px #ffb07a, 0 0 18px #ff6a3a99, 0 8px 14px -6px #000; }
+.fury-chip-card:focus-visible { outline: 2px solid #ffb07a; outline-offset: 3px; }
+body.fury-mode .skyjo-game-container { --skyjo-card-h: clamp(2.5rem, calc((100dvh - 500px) / 7), 4.2rem); }
+
+/* Fenêtre de règles Fury */
+.fury-rules-layer { z-index: 10001; }
+.fury-rules { max-width: 380px; max-height: calc(100dvh - 32px); overflow-y: auto; }
+.fury-rules-emblem { color: #ff8a55; background: #ff7a451a; }
+html body .fury-rules .fury-rules-title { color: #fbf6ee !important; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; font-weight: 500; line-height: 1.1; }
+.fury-rules-steps { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 8px; text-align: left; width: 100%; }
+.fury-rules-steps li { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.42; color: #c9c0cf; }
+.fury-rules-steps b { flex-shrink: 0; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #ff7a4526; color: #ff9a6a; font-size: 12px; }
+.fury-rules-steps strong { color: #fbf6ee; }
+.fury-rules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; margin-bottom: 16px; }

@@ -15,6 +15,7 @@ const MOODS = {
     hard: { accent: '#c4a07a', eye: '#ecdcc2', brow: 0, eyeH: 0.55, mouth: 'flat' },
     hardcore: { accent: '#959bc0', eye: '#dcdff0', brow: 0.42, eyeH: 0.62, mouth: 'smirk' },
     bonus: { accent: '#b97f78', eye: '#ecd2cd', brow: 0.3, eyeH: 0.8, mouth: 'grin' },
+    fury: { accent: '#e2643c', eye: '#ffd3ba', brow: 0.6, eyeH: 0.55, mouth: 'grin' },
 };
 
 const BODY = new RoundedBoxGeometry(1.6, 1.36, 1.3, 5, 0.42);
@@ -118,7 +119,7 @@ function Bot({ difficulty, poke, still, pointer }) {
                 {/* Antenne et gemme (flamme en mode Tourment) */}
                 <mesh position={[0, 0.88, 0]}><cylinderGeometry args={[0.035, 0.035, 0.42, 8]} /><meshLambertMaterial color="#e6d6cc" /></mesh>
                 <group ref={gem} position={[0, 1.22, 0]}>
-                    {difficulty === 'bonus'
+                    {(difficulty === 'bonus' || difficulty === 'fury')
                         ? <mesh><coneGeometry args={[0.13, 0.34, 10]} /><meshBasicMaterial color={accent} /></mesh>
                         : <mesh><octahedronGeometry args={[0.15]} /><meshLambertMaterial color={accent} /></mesh>}
                 </group>

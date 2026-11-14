@@ -1552,3 +1552,5 @@ html body .menu-lobby .ai-rival-orbit { width: 124px; height: 124px; }
 html body .menu-lobby .ai-rival-platform { width: 112px; height: 20px; }
 html body .menu-lobby .ai-rival-dialogue { min-height: 0; padding: 4px 12px 12px; }
 html body .menu-lobby .ai-rival-dialogue p { font-size: 17px; margin-top: 2px; }
+html body .menu-lobby .ai-setup--ember { --rival-accent: #f08a5d; --rival-rgb: 240,138,93; }
+html body .menu-lobby .ai-difficulty--ember { --mode-accent: #f08a5d; --mode-rgb: 240,138,93; }

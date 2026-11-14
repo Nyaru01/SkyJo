@@ -22,6 +22,8 @@ import AISetupScreen from './virtual/AISetupScreen';
 import GameMessageBanner from './virtual/GameMessageBanner';
 import DrawReactionBubble from './virtual/DrawReactionBubble';
 import SwapReveal from './virtual/SwapReveal';
+import { FuryRail, FuryTargetBanner, FuryEffects, FuryAmbience, FuryRulesModal } from './virtual/FuryUI';
+import { FURY_TYPES } from '../lib/furyEngine';
 import ExperienceBar from './ExperienceBar';
 import SkinCarousel from './SkinCarousel';
 import { useVirtualGameStore, selectAIMode, selectAIPlayers, selectIsCurrentPlayerAI, selectIsAIThinking } from '../store/virtualGameStore';
@@ -132,6 +134,11 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     // Notifications
     const virtualLastNotification = useVirtualGameStore((s) => s.lastNotification);
     const [swapReveal, setSwapReveal] = useState(null);
+    const [furySelect, setFurySelect] = useState(null);
+    const [furyRulesOpen, setFuryRulesOpen] = useState(false);
+    const hasSeenFuryIntro = useGameStore(s => s.hasSeenFuryIntroV1);
+    const setHasSeenFuryIntro = useGameStore(s => s.setHasSeenFuryIntro);
+    const playFuryCard = useVirtualGameStore((s) => s.playFuryCard);
     const clearNotification = useVirtualGameStore((s) => s.clearNotification);
     const virtualPendingAnimation = useVirtualGameStore(s => s.pendingAnimation);
     const isDailyChallenge = useVirtualGameStore(s => s.isDailyChallenge);
@@ -245,6 +252,10 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     const isFinished = activeGameState?.phase === 'FINISHED' || (activeGameState?.phase === 'REVEALING_CHESTS' && chestsRevealed);
     const discardTop = activeGameState?.discardPile?.[activeGameState?.discardPile?.length - 1];
     const isMyTurn = !isInitialReveal && activeGameState?.currentPlayerIndex === myPlayerIndex;
+    // Mode Fury (contre l'IA uniquement pour l'instant)
+    const furyOn = Boolean(aiMode && activeGameState?.isFuryMode);
+    const furyCanPlay = furyOn && isMyTurn && activeGameState?.turnPhase === 'DRAW' && (activeGameState?.players[myPlayerIndex]?.fury?.used || 0) < 3;
+    const furyActiveType = furyCanPlay && furySelect !== null ? activeGameState.players[myPlayerIndex].fury.reserve[furySelect]?.furyType || null : null;
     const isOpponentTurn = !isInitialReveal && activeGameState?.currentPlayerIndex === opponentIndex;
 
     // Online Actions
@@ -348,7 +359,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
             playerName: savedPseudo,
             playerAvatarId: savedAvatarId,
             aiCount: 1,
-            difficulty: AI_DIFFICULTY.NORMAL,
+            difficulty: AI_DIFFICULTY.HARD,
         };
     });
 
@@ -975,6 +986,13 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
 
     // Handle card click during gameplay
     const handleCardClick = (cardIndex, playerIndex = null) => {
+        // Fury : une carte sélectionnée vise la colonne ou la carte touchée chez l'adversaire.
+        if (furyActiveType && playerIndex === opponentIndex) {
+            const need = FURY_TYPES[furyActiveType].target;
+            const target = need === 'column' ? Math.floor(cardIndex / 3) : need === 'card' ? cardIndex : null;
+            if (playFuryCard(furySelect, opponentIndex, target)) setFurySelect(null);
+            return;
+        }
         const isOnline = !!onlineGameStarted;
         const activeState = isOnline ? onlineGameState : gameState;
 
@@ -2697,7 +2715,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                         isOpponent={true}
                         isOnlineOpponent={isOnlineMode} // Show real name for online opponents
                         selectedCardIndex={null}
-                        canInteract={activeGameState.turnPhase === 'SPECIAL_ACTION_SWAP'} // Allow clicking opponent cards during swap
+                        canInteract={activeGameState.turnPhase === 'SPECIAL_ACTION_SWAP' || Boolean(furyActiveType)} // Allow clicking opponent cards during swap
                         onCardClick={(index) => handleCardClick(index, opponentIndex)} // Support swap selection
                         size="sm"
                     />
@@ -2706,6 +2724,14 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
 
             {/* MIDDLE ACTION AREA - Centered between hands */}
             <div className="skyjo-action-area flex-1 flex flex-col justify-center items-center relative z-40 my-2">
+                {/* Mode Fury : état adverse, ciblage, effets, ambiance */}
+                {furyOn && <>
+                    <FuryAmbience />
+                    <FuryRulesModal open={!hasSeenFuryIntro || furyRulesOpen} first={!hasSeenFuryIntro}
+                        onClose={() => { setHasSeenFuryIntro(true); setFuryRulesOpen(false); }} />
+                    <FuryEffects lastFury={activeGameState.lastFury} lastGain={activeGameState.lastFuryGain} myIndex={myPlayerIndex}
+                        names={activeGameState.players.map((p, i) => (i === myPlayerIndex ? 'Vous' : p.name))} />
+                </>}
                 {/* Échange de l'IA : les deux cartes échangées, au centre */}
                 <SwapReveal swap={swapReveal} />
                 {/* Bulle « Aïe ! » / « Yes ! » quand un +20 ou un −10 sort de la pioche */}
@@ -2755,8 +2781,14 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                     </motion.div>
                 )}
 
-                {/* Compact Draw/Discard Trigger Button */}
-                {!isInitialReveal && (
+                {furyOn && <FuryRail part="opponent" opponent={activeGameState.players[opponentIndex]} opponentName={activeGameState.players[opponentIndex]?.name} />}
+                {/* Compact Draw/Discard Trigger Button (remplacé par le ciblage Fury) */}
+                {furyActiveType && <div className="flex justify-center px-4 w-full"><div style={{ width: '100%', maxWidth: '340px' }}>
+                    <FuryTargetBanner type={furyActiveType}
+                        onPlay={() => { if (playFuryCard(furySelect, furyActiveType === 'shield' ? myPlayerIndex : opponentIndex)) setFurySelect(null); }}
+                        onCancel={() => setFurySelect(null)} />
+                </div></div>}
+                {!isInitialReveal && !furyActiveType && (
                     <div
                         className="flex justify-center px-4 w-full"
                         style={{ marginTop: '0', marginBottom: '0' }}
@@ -2822,6 +2854,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                         </div>
                     </div>
                 )}
+                {furyOn && !isInitialReveal && <FuryRail part="me" me={activeGameState.players[myPlayerIndex]} canPlay={furyCanPlay} selected={furyActiveType ? furySelect : null} onSelect={i => setFurySelect(prev => (prev === i ? null : i))} />}
             </div>
 
             {/* Instruction Banner - BELOW the PIOCHER button */}
@@ -3104,7 +3137,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                             <p className="skyjo-pause-label">Règles</p>
                             <div className="skyjo-pause-rules">
                                 <button type="button" onClick={() => setShowRulesModal(true)}><BookOpen size={16} aria-hidden="true" />Classique</button>
-                                <button type="button" onClick={() => setShowBonusRules(true)}><Swords size={16} aria-hidden="true" />Tourment</button>
+                                {furyOn
+                                    ? <button type="button" onClick={() => setFuryRulesOpen(true)}><Flame size={16} aria-hidden="true" />Fury</button>
+                                    : <button type="button" onClick={() => setShowBonusRules(true)}><Swords size={16} aria-hidden="true" />Tourment</button>}
                             </div>
                             <button type="button" onClick={() => confirmExit()} className="skyjo-pause-quit">Quitter la partie</button>
                             <p className="skyjo-pause-note"><Bot size={13} aria-hidden="true" />Votre progression est sauvegardée</p>

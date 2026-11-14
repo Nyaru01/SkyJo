@@ -386,7 +386,7 @@ export default function Dashboard() {
                                         const virtual = useVirtualGameStore.getState();
                                         if (!virtual.gameState) {
                                             const profile = useGameStore.getState().userProfile;
-                                            const started = virtual.startAIGame({ name: profile.name, avatarId: profile.avatarId }, 1, AI_DIFFICULTY.NORMAL);
+                                            const started = virtual.startAIGame({ name: profile.name, avatarId: profile.avatarId }, 1, AI_DIFFICULTY.HARD);
                                             if (started === false) return;
                                         }
                                         screen = 'game';

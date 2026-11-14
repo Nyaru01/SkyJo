@@ -1,18 +1,18 @@
 import { useId, useLayoutEffect, useRef } from 'react';
-import { ArrowLeft, ArrowUpRight, Check, Flame, Leaf, Play, Skull, Swords, BookOpen } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, Check, Flame, Play, Zap, Skull, Swords, BookOpen } from 'lucide-react';
 import { AI_DIFFICULTY } from '../../lib/skyjoAI';
 import RobotAvatar from './RobotAvatar';
 import '../../styles/AISetup.css';
 
 const MODES = [
-    { id: AI_DIFFICULTY.NORMAL, title: 'Normal', description: 'Prenez vos marques', icon: Leaf, theme: 'mint', line: 'On commence en douceur ?', detail: 'Le bon terrain pour découvrir le jeu et affiner vos premiers coups.' },
     { id: AI_DIFFICULTY.HARD, title: 'Difficile', description: 'Pensez un coup plus loin', icon: Swords, theme: 'amber', line: 'À vous de me surprendre.', detail: 'Un duel plus exigeant, où chaque décision peut faire la différence.' },
     { id: AI_DIFFICULTY.HARDCORE, title: 'Hardcore', description: 'Ne laissez rien au hasard', icon: Skull, theme: 'violet', line: 'Je ne vous ferai aucun cadeau.', detail: 'Une IA impitoyable et des règles spéciales. Consultez-les avant le duel.', rules: 'hardcore' },
     { id: AI_DIFFICULTY.BONUS, title: 'Tourment', description: 'Osez les cartes spéciales', icon: Flame, theme: 'coral', line: 'Prêt à jouer avec le feu ?', detail: 'Cartes spéciales et bonus de colonnes : découvrez une autre façon de jouer.', rules: 'tourment' },
+    { id: AI_DIFFICULTY.FURY, title: 'Fury', description: 'Détruisez le jeu adverse', icon: Zap, theme: 'ember', line: 'Je vais tout casser.', detail: 'Six cartes de sabotage dans la pioche : séisme, malédiction, tornade… Trois au plus par manche.' },
 ];
 
 export default function AISetupScreen({ difficulty, onDifficultyChange, onStart, onBack, onRules }) {
-    const mode = MODES.find(item => item.id === difficulty) || MODES[0];
+    const mode = MODES.find(item => item.id === difficulty) || MODES.find(item => item.id === AI_DIFFICULTY.HARD);
     const radioName = useId();
     const dockRef = useRef(null);
     useLayoutEffect(() => {
