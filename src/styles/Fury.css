@@ -140,3 +140,14 @@ body.fury-mode .skyjo-game-container { --skyjo-card-h: clamp(2.8rem, calc((100dv
 .fury-opponent { margin-bottom: 4px; }
 /* Annonce des Fury piochées : en haut, sous la barre, pour ne rien cacher */
 .fury-gain { top: calc(96px + env(safe-area-inset-top, 0px)); }
+/* v3.5.2 — cartes plus grandes : la ligne adverse se pose sur le haut de la dalle (entre « Pioche » et « Défausse »),
+   la réserve est plus basse, et les cartes s'élargissent (les plateaux ont de la place en largeur). */
+body.fury-mode .fury-opponent { position: relative; z-index: 3; margin: 0 0 -17px; translate: 0 12px; font-size: 10.5px; gap: 4px; pointer-events: none; }
+body.fury-mode .fury-opponent .fury-flames svg { width: 10px; height: 10px; }
+body.fury-mode .fury-rail { margin-top: 4px; }
+body.fury-mode .fury-card--mini { height: 46px; }
+body.fury-mode .fury-card--mini .fury-card-emblem { width: 22px; height: 22px; }
+body.fury-mode .skyjo-game-container {
+    --skyjo-card-h: clamp(2.8rem, calc((100dvh - 405px) / 7), 4.4rem);
+    --skyjo-card-w: min(3.7rem, calc(var(--skyjo-card-h) * 0.76));
+}
