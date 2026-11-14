@@ -7,32 +7,44 @@ import '../../styles/Fury.css';
 
 const FURY_ICONS = { quake: Activity, curse: Skull, fog: CloudFog, tornado: Tornado, freeze: Snowflake, shield: Shield };
 
-const flames = used => Array.from({ length: FURY_USES_PER_ROUND }, (_, i) => <Flame key={i} size={12} className={i < FURY_USES_PER_ROUND - used ? 'is-on' : ''} aria-hidden="true" />);
+const plural = n => (n > 1 ? 's' : '');
 
-// Réserve Fury du joueur (sous la dalle) + état de l'adversaire (au-dessus).
+// Panneaux Fury écrits en clair : « Fury de l'IA » (au-dessus de la pioche) et « Vos cartes Fury » (en dessous).
 export function FuryRail({ part, me, opponent, opponentName, canPlay, selected, onSelect }) {
+    if (part === 'opponent') {
+        const reserve = opponent?.fury?.reserve || [];
+        const left = FURY_USES_PER_ROUND - (opponent?.fury?.used || 0);
+        const status = [
+            reserve.length ? `${reserve.length} carte${plural(reserve.length)} en main` : 'Aucune carte pour l’instant',
+            opponent?.fury?.shield ? 'Bouclier actif' : null,
+            reserve.length && left < reserve.length ? `${left} jouable${plural(left)} cette manche` : null,
+        ].filter(Boolean).join(' · ');
+        return <div className="fury-panel fury-panel--opp">
+            <div className="fury-panel-head"><strong>Fury de {opponentName === 'IA' ? 'l’' : ''}{opponentName}</strong><small>{status}</small></div>
+            {reserve.length > 0 && <div className="fury-panel-cards">
+                {reserve.map(card => <span key={card.id} title={FURY_TYPES[card.furyType].text}><FuryCard type={card.furyType} size="mini" /></span>)}
+            </div>}
+        </div>;
+    }
     const reserve = me?.fury?.reserve || [];
-    if (part === 'opponent') return <div className="fury-opponent" aria-label={`Fury de ${opponentName}`}>
-            <span className="fury-flames" aria-label={`${FURY_USES_PER_ROUND - (opponent?.fury?.used || 0)} Fury restantes`}>{flames(opponent?.fury?.used || 0)}</span>
-            <span>{opponentName} · {opponent?.fury?.reserve?.length || 0} en réserve</span>
-            {opponent?.fury?.shield && <span className="fury-shield-chip"><Shield size={12} aria-hidden="true" />Bouclier</span>}
-        </div>;
-    return <div className="fury-rail" aria-label="Votre réserve Fury">
-            <span className="fury-flames" aria-label={`${FURY_USES_PER_ROUND - (me?.fury?.used || 0)} Fury restantes cette manche`}>{flames(me?.fury?.used || 0)}</span>
-            {reserve.map((card, i) => {
-                return <button key={card.id} type="button" disabled={!canPlay} onClick={() => onSelect(i)}
-                    className={`fury-chip-card${selected === i ? ' is-selected' : ''}`} aria-pressed={selected === i}
-                    aria-label={`${FURY_TYPES[card.furyType].title} : ${FURY_TYPES[card.furyType].text}`}>
-                    <FuryCard type={card.furyType} size="mini" />
-                </button>;
-            })}
-            {Array.from({ length: Math.max(0, FURY_RESERVE_MAX - reserve.length) }, (_, i) => <span key={`slot-${i}`} className="fury-slot" aria-hidden="true"><Flame size={14} /></span>)}
-            {reserve.length < FURY_RESERVE_MAX && <span className="fury-rail-hint">{reserve.length === 0
-                ? <><strong>Cachées dans la pioche</strong>Piochez normalement pour les gagner</>
-                : canPlay ? <><strong>À jouer au lieu de piocher</strong>Touchez une carte Fury</>
-                : <><strong>Votre réserve</strong>Jouable en début de tour</>}</span>}
-            {me?.fury?.shield && <span className="fury-shield-chip"><Shield size={12} aria-hidden="true" />Protégé</span>}
-        </div>;
+    const left = FURY_USES_PER_ROUND - (me?.fury?.used || 0);
+    const status = reserve.length === 0 ? 'Cachées dans la pioche : piochez pour en gagner'
+        : left <= 0 ? 'Plus de Fury jouable cette manche'
+        : canPlay ? 'Touchez-en une à la place de piocher'
+        : 'Jouables au début de votre tour';
+    return <div className="fury-panel fury-panel--me">
+        <div className="fury-panel-head">
+            <strong>Vos cartes Fury{me?.fury?.shield ? ' · Bouclier actif' : ''}</strong>
+            <small>{status}</small>
+        </div>
+        {reserve.length > 0 && <div className="fury-panel-cards">
+            {reserve.map((card, i) => <button key={card.id} type="button" disabled={!canPlay} onClick={() => onSelect(i)}
+                className={`fury-chip-card${selected === i ? ' is-selected' : ''}`} aria-pressed={selected === i}
+                aria-label={`${FURY_TYPES[card.furyType].title} : ${FURY_TYPES[card.furyType].text}`}>
+                <FuryCard type={card.furyType} size="mini" />
+            </button>)}
+        </div>}
+    </div>;
 }
 
 // Bandeau de ciblage : consigne, et bouton « Lancer » pour les cartes sans cible précise.
@@ -40,7 +52,7 @@ export function FuryTargetBanner({ type, onPlay, onCancel }) {
     if (!type) return null;
     const info = FURY_TYPES[type];
     const Icon = FURY_ICONS[type];
-    const hint = info.target === 'column' ? 'Touchez une colonne adverse' : info.target === 'card' ? 'Touchez une carte adverse' : info.target === 'self' ? 'Protège votre plateau' : 'Vise le plateau adverse';
+    const hint = info.target === 'column' ? 'Touchez une colonne adverse' : info.target === 'card' ? 'Touchez une carte adverse retournée' : info.target === 'self' ? 'Protège votre plateau' : 'Vise le plateau adverse';
     const direct = info.target === 'player' || info.target === 'self';
     return <div className="fury-target" role="status" aria-live="polite">
         <span className="fury-target-icon" aria-hidden="true"><Icon size={18} /></span>
@@ -68,9 +80,10 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names }) {
     useEffect(() => {
         if (!lastGain?.at) return undefined;
         const t0 = setTimeout(() => setGain(lastGain), 0);
-        const t1 = setTimeout(() => setGain(null), 1600);
+        const t1 = setTimeout(() => setGain(null), lastGain.by === myIndex ? 2600 : 2000);
+        if (lastGain.by === myIndex) { try { navigator.vibrate?.([30, 40, 30]); } catch { /* indisponible */ } }
         return () => { clearTimeout(t0); clearTimeout(t1); };
-    }, [lastGain]);
+    }, [lastGain, myIndex]);
     const word = shown ? (shown.blocked ? 'Bloqué !' : FURY_TYPES[shown.type].bubble) : '';
     const by = shown ? names[shown.by] : '';
     return createPortal(<div className="fury-fx-layer">
@@ -85,7 +98,20 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names }) {
             </Motion.div>}
         </AnimatePresence>
         <AnimatePresence>
-            {gain && <Motion.div key={gain.at} className="fury-gain" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+            {gain && gain.by === myIndex && <Motion.div key={`reveal-${gain.at}`} className="fury-reveal" role="status"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, y: 60, scale: 0.6 }} transition={{ duration: 0.3 }}>
+                <Motion.p className="fury-reveal-title" initial={reduce ? false : { y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+                    <Flame size={18} aria-hidden="true" />Carte Fury !
+                </Motion.p>
+                <div className="fury-reveal-cards">
+                    {gain.cards.map((c, i) => <Motion.div key={c.id} initial={reduce ? false : { rotateY: 180, scale: 0.4 }} animate={{ rotateY: 0, scale: 1 }}
+                        transition={{ duration: 0.55, delay: 0.1 + i * 0.12, ease: [0.2, 0.8, 0.25, 1] }}>
+                        <FuryCard type={c.furyType} />
+                    </Motion.div>)}
+                </div>
+                <p className="fury-reveal-sub">Rangée dans votre réserve, sous la pioche. Jouez-la au début d’un prochain tour, à la place de piocher.</p>
+            </Motion.div>}
+            {gain && gain.by !== myIndex && <Motion.div key={gain.at} className="fury-gain" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
                 <Flame size={16} aria-hidden="true" />
                 {gain.by === myIndex ? 'Carte Fury : ' : `${names[gain.by]} récupère : `}{gain.cards.map(c => FURY_TYPES[c.furyType].title).join(', ')}
             </Motion.div>}

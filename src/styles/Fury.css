@@ -158,3 +158,47 @@ body.fury-mode .fury-rail { justify-content: center; gap: 6px; }
 .fury-rail-hint strong { font-size: 11px; color: #ffcbb0; font-weight: 700; }
 body.fury-mode .fury-card--mini { width: 62px; }
 .skyjo-action-area:has(.skyjo-card-source-wrap) .fury-opponent { opacity: 0; }
+/* Carte Fury piochée : révélée au centre, puis rangée dans la réserve */
+.fury-reveal { position: fixed; inset: 0; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; pointer-events: none; background: radial-gradient(circle at 50% 50%, #2a0f0cf0, #0f0a0dd9 65%, #0f0a0d99); }
+.fury-reveal-title { display: flex; align-items: center; gap: 8px; margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 34px; font-weight: 600; color: #ffd2b8; text-shadow: 0 0 24px #ff6a3acc; }
+.fury-reveal-title svg { color: #ff8a55; }
+.fury-reveal-cards { display: flex; gap: 12px; perspective: 600px; }
+.fury-reveal-cards .fury-card--full { width: 150px; min-height: 196px; gap: 8px; box-shadow: 0 0 0 2px var(--fc), 0 0 40px color-mix(in srgb, var(--fc) 60%, transparent), 0 20px 40px -12px #000; }
+.fury-reveal-cards .fury-card--full .fury-card-emblem { width: 64px; height: 64px; }
+.fury-reveal-cards .fury-card--full .fury-card-emblem svg { width: 34px; height: 34px; }
+.fury-reveal-cards .fury-card--full .fury-card-title { font-size: 18px; }
+.fury-reveal-cards .fury-card--full .fury-card-text { font-size: 12.5px; padding: 0 6px; }
+.fury-reveal-sub { max-width: 280px; margin: 0; text-align: center; font-size: 13px; line-height: 1.4; color: #e8cfc3; }
+/* La nouvelle carte arrive dans la réserve avec un éclat */
+.fury-chip-card { animation: fury-chip-in .7s cubic-bezier(.2,.8,.25,1) both; }
+@keyframes fury-chip-in { 0% { transform: scale(.3); filter: brightness(2.2); } 60% { transform: scale(1.15); } 100% { transform: scale(1); filter: none; } }
+@media (prefers-reduced-motion: reduce) { .fury-chip-card { animation: none; } }
+/* Réserve de l'IA visible : une pastille par carte, à sa couleur */
+.fury-opp-chip { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px 1px 4px; border-radius: 999px; font-size: 9.5px; font-weight: 700; line-height: 14px; color: var(--fc); background: color-mix(in srgb, var(--fc) 14%, #1a1215); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fc) 55%, transparent); white-space: nowrap; animation: fury-chip-in .7s cubic-bezier(.2,.8,.25,1) both; }
+body.fury-mode .fury-opponent { max-width: 230px; margin-left: auto; margin-right: auto; flex-wrap: wrap; row-gap: 2px; }
+/* La ligne de l'IA reprend sa place au-dessus de la dalle, sur toute la largeur */
+body.fury-mode .fury-opponent { margin: 0 0 6px !important; translate: none !important; max-width: none !important; flex-wrap: nowrap !important; pointer-events: auto; font-size: 11px; }
+/* v3.5.5 — Réserve de l'IA dans la rangée de son badge : aucune ligne en plus */
+.skyjo-badge-aside { position: absolute; left: 4px; right: 4px; height: 32px; z-index: 49; pointer-events: none; display: flex; align-items: center; }
+body.fury-mode .skyjo-badge-aside .fury-opponent { margin: 0 !important; width: 100%; max-width: none !important; justify-content: space-between; translate: none !important; flex-wrap: nowrap !important; }
+.fury-opp-side { display: inline-flex; align-items: center; gap: 4px; }
+.fury-opp-card { display: grid; place-items: center; width: 24px; height: 32px; border-radius: 5px; color: var(--fc); background: linear-gradient(165deg, #3a2226, #1a1215); box-shadow: inset 0 0 0 1.5px var(--fc), 0 0 10px color-mix(in srgb, var(--fc) 45%, transparent); pointer-events: auto; animation: fury-chip-in .7s cubic-bezier(.2,.8,.25,1) both; }
+.fury-opp-card--empty { box-shadow: none; border: 1.5px dashed #ff8a5555; background: #ff6a3a0a; animation: none; }
+.fury-opp-shield { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; color: #9fcab6; background: #9fcab61f; box-shadow: inset 0 0 0 1px #9fcab680; }
+.skyjo-hand > .skyjo-badge-aside.skyjo-badge-aside { position: absolute !important; margin: 0 !important; padding: 0 !important; }
+/* v3.5.5 — Panneaux Fury lisibles : un titre, une phrase d'état, les cartes avec leur nom */
+.fury-panel { display: flex; align-items: center; gap: 10px; width: calc(100% - 24px); max-width: 380px; padding: 6px 8px 6px 12px; border-radius: 14px; background: linear-gradient(170deg, #2a1a1ecc, #1a1215cc); box-shadow: inset 0 0 0 1px #ff8a5533, 0 8px 18px -12px #000; pointer-events: auto; }
+.fury-panel--opp { margin-bottom: 6px; min-height: 30px; }
+.fury-panel--me { margin-top: 6px; min-height: 46px; }
+.fury-panel-head { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; text-align: left; }
+.fury-panel-head strong { font-size: 12px; font-weight: 800; color: #ffcbb0; letter-spacing: .01em; }
+.fury-panel-head small { font-size: 10.5px; line-height: 1.25; color: #c9a596; }
+.fury-panel-cards { display: flex; gap: 5px; flex-shrink: 0; }
+.fury-panel .fury-card--mini { width: 54px; height: 44px; gap: 2px; }
+.fury-panel .fury-card--mini .fury-card-emblem { width: 20px; height: 20px; }
+.fury-panel .fury-card--mini .fury-card-emblem svg { width: 13px; height: 13px; }
+.fury-panel .fury-card--mini .fury-card-title { font-size: 8.5px; }
+.fury-panel .fury-card--mini .fury-card-corner { display: none; }
+.fury-panel--opp .fury-card--mini { width: 50px; height: 36px; }
+.fury-panel--opp .fury-card--mini .fury-card-emblem { width: 16px; height: 16px; }
+.fury-panel--opp .fury-card--mini .fury-card-emblem svg { width: 11px; height: 11px; }

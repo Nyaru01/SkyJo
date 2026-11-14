@@ -69,7 +69,9 @@ export function furyTargets(state, type, targetIndex) {
     const hand = state.players[targetIndex].hand;
     if (type === 'quake') return [0, 1, 2, 3].filter(col => columnIndices(col).some(i => hand[i]));
     if (type === 'freeze') return [0, 1, 2, 3].filter(col => columnIndices(col).some(i => hand[i] && hand[i].isRevealed));
-    if (type === 'curse') return hand.map((c, i) => (c && !(c.lockCount > 0) && !c.isCursed ? i : -1)).filter(i => i >= 0);
+    // Malédiction : seulement sur une carte déjà révélée. Sur une carte cachée, le +13 visible pourrait
+    // retourner la dernière carte de l'adversaire et terminer la manche à sa place.
+    if (type === 'curse') return hand.map((c, i) => (c && c.isRevealed && !(c.lockCount > 0) && !c.isCursed ? i : -1)).filter(i => i >= 0);
     return [];
 }
 
@@ -133,7 +135,13 @@ export function playFury(state, reserveIndex, targetIndex, target = null) {
         if (targetIndex === me) throw new Error('Choisissez un adversaire.');
         const victim = next.players[targetIndex];
         const needs = FURY_TYPES[type].target;
-        if ((needs === 'column' || needs === 'card') && furyTargets(next, type, targetIndex).length === 0) throw new Error('Aucune cible possible pour cette carte.');
+        if (needs === 'column' || needs === 'card') {
+            const valid = furyTargets(next, type, targetIndex);
+            if (valid.length === 0) throw new Error('Aucune cible possible pour cette carte.');
+            if (target !== null && target !== undefined && !valid.includes(target)) {
+                throw new Error(type === 'curse' ? 'Visez une carte déjà retournée.' : 'Cette colonne ne peut pas être visée.');
+            }
+        }
         if (victim.fury?.shield) {
             // Le bouclier encaisse l'attaque et disparaît.
             next = replacePlayer(next, targetIndex, { ...victim, fury: { ...victim.fury, shield: false } });

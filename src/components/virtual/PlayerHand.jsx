@@ -26,6 +26,7 @@ const PlayerHand = memo(function PlayerHand({
     shakingCardIndex = null,
     columnBonus = false,
     eliminatedCards = null,
+    badgeAside = null, // Contenu posé de part et d'autre du badge (ex. réserve Fury de l'IA)
 }) {
     const reducedMotion = useReducedMotion();
     // Skyjo grid: 4 columns x 3 rows = 12 cards
@@ -174,6 +175,7 @@ const PlayerHand = memo(function PlayerHand({
 
             </div>
 
+            {badgeAside && <div className="skyjo-badge-aside" style={isOpponent ? { top: '100%', bottom: 'auto' } : { bottom: '100%', top: 'auto' }}>{badgeAside}</div>}
             {/* Player label with score - 16px margin from grid */}
             {showName && (
                 <div

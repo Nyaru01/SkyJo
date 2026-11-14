@@ -2734,6 +2734,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                     <FuryEffects lastFury={activeGameState.lastFury} lastGain={activeGameState.lastFuryGain} myIndex={myPlayerIndex}
                         names={activeGameState.players.map((p, i) => (i === myPlayerIndex ? 'Vous' : p.name))} />
                 </>}
+                {furyOn && !isInitialReveal && <FuryRail part="opponent" opponent={activeGameState.players[opponentIndex]} opponentName={activeGameState.players[opponentIndex]?.name} />}
                 {/* Échange de l'IA : les deux cartes échangées, au centre */}
                 <SwapReveal swap={swapReveal} />
                 {/* Bulle « Aïe ! » / « Yes ! » quand un +20 ou un −10 sort de la pioche */}
@@ -2783,7 +2784,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                     </motion.div>
                 )}
 
-                {furyOn && <FuryRail part="opponent" opponent={activeGameState.players[opponentIndex]} opponentName={activeGameState.players[opponentIndex]?.name} />}
                 {/* Compact Draw/Discard Trigger Button (remplacé par le ciblage Fury) */}
                 {furyActiveType && <div className="flex justify-center px-4 w-full"><div style={{ width: '100%', maxWidth: '340px' }}>
                     <FuryTargetBanner type={furyActiveType}
@@ -2838,7 +2838,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                                 isDrawing={!!(onlineGameStarted ? onlinePendingAnimation?.sourceId : virtualPendingAnimation?.sourceId)}
                                 instructionText={
                                     activeGameState.phase === 'FINAL_ROUND'
-                                        ? '⚠️ DERNIER TOUR'
+                                        ? (activeGameState.finishingPlayerIndex === myPlayerIndex
+                                            ? 'Dernier tour : vous avez tout retourné'
+                                            : `Dernier tour : ${activeGameState.players[activeGameState.finishingPlayerIndex]?.name || 'un joueur'} a tout retourné`)
                                         : (isInitialReveal ? `Retournez chacun 2 cartes ${selectedForReveal.length > 0 ? `(${selectedForReveal.length}/2)` : ''}` :
                                             // Only show action instructions when it's the human player's turn (virtual mode only)
                                             activeGameState.currentPlayerIndex !== myPlayerIndex && !isOnlineMode

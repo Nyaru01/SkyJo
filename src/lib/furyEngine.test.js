@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { initializeFuryGame, collectFuryFromPile, playFury, canPlayFury, decideFuryAction, FURY_USES_PER_ROUND } from './furyEngine.js';
+import { initializeFuryGame, collectFuryFromPile, playFury, canPlayFury, decideFuryAction, furyTargets, FURY_USES_PER_ROUND } from './furyEngine.js';
 
 const players = [{ id: 'me', name: 'Moi' }, { id: 'ai', name: 'IA' }];
 function ready(furyTypes = ['quake']) {
@@ -69,4 +69,13 @@ test("l'IA protège avec le bouclier quand l'adversaire peut attaquer", () => {
     const g = ready(['quake']);
     const aiTurn = { ...g, currentPlayerIndex: 1, players: [g.players[0], { ...g.players[1], fury: { reserve: [{ id: 's', specialType: 'F', furyType: 'shield' }], used: 0, shield: false } }] };
     assert.deepEqual(decideFuryAction(aiTurn, 1), { reserveIndex: 0, targetIndex: 1 });
+});
+
+test('Malédiction : jamais sur une carte cachée (sinon la manche peut finir à la place de la victime)', () => {
+    const g = ready(['curse']);
+    // L'adversaire n'a plus qu'une carte cachée, en position 11.
+    const hand = g.players[1].hand.map((c, i) => ({ ...c, isRevealed: i !== 11 }));
+    const state = { ...g, players: [g.players[0], { ...g.players[1], hand }] };
+    assert.equal(furyTargets(state, 'curse', 1).includes(11), false);
+    assert.throws(() => playFury(state, 0, 1, 11));
 });

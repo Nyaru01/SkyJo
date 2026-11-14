@@ -265,3 +265,9 @@ html body .tourment-goal .tourment-goal-title { color: #fbf6ee !important; font-
 .skyjo-pile-wrap > .skyjo-card-source-wrap { position: absolute; left: 50%; bottom: 1px; translate: -50% 0; z-index: 20; pointer-events: none; }
 .skyjo-pile-wrap .skyjo-card-source { font-size: 10px !important; padding: 3px 10px !important; letter-spacing: .04em !important; }
 .skyjo-pile-wrap:has(> .skyjo-card-source-wrap) .skyjo-pile-zone > :not(.skyjo-pile-group) { translate: 0 -13px; }
+/* Barre du haut en partie, plus fine : plus de place pour les plateaux */
+.skyjo-game-container > :first-child { padding-top: 0 !important; padding-bottom: 0 !important; }
+.skyjo-game-container .skyjo-game-header { padding: 4px 8px !important; gap: 10px !important; border-radius: 999px !important; }
+.skyjo-game-container .skyjo-game-header button { height: 38px !important; min-height: 38px !important; padding-top: 0 !important; padding-bottom: 0 !important; }
+.skyjo-game-container .skyjo-game-header > div { padding: 2px !important; }
+.skyjo-game-container .skyjo-game-header > div > div.h-9 { height: 32px !important; width: 32px !important; font-size: 20px !important; }
