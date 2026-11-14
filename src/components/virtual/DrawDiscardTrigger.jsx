@@ -193,7 +193,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
 
     return (
         <>
-            <div className="flex flex-col items-center gap-1 w-full">
+            <div className="skyjo-pile-wrap relative flex flex-col items-center gap-1 w-full">
                 <div className={cn('skyjo-pile-zone relative flex items-center justify-center gap-3 w-full', !hasDrawnCard && 'skyjo-pile-zone--choosing')}>
                     {/* Draw pile section */}
                     <div className="skyjo-pile-group skyjo-pile-group--draw relative flex flex-col items-center gap-1.5 shrink-0">
@@ -257,8 +257,6 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                     isHighlighted={canInteract}
                                 />
                             </motion.div>
-                            {/* Placeholder to match the bottom counter of piles */}
-                            <div className="h-[21px] invisible" aria-hidden="true" />
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0 max-w-[240px]">
@@ -341,8 +339,6 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                     </motion.div>
                                 )}
                             </motion.button>
-                            {/* Placeholder to match the bottom counter of piles */}
-                            <div className="h-[21px] invisible" aria-hidden="true" />
                         </div>
                     )}
 
@@ -412,7 +408,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
 
                 {hasDrawnCard && (
                     // Helper text below the cards
-                    <div className="whitespace-nowrap flex flex-col items-center gap-1 animate-in fade-in slide-in-from-top-2">
+                    <div className="skyjo-card-source-wrap whitespace-nowrap flex flex-col items-center gap-1 animate-in fade-in">
                         <span className={cn(
                             "skyjo-card-source text-[12px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border shadow-lg backdrop-blur-sm transition-colors duration-300",
                             drawnCardSource === 'discard'

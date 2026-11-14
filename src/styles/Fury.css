@@ -157,3 +157,4 @@ body.fury-mode .fury-rail { justify-content: center; gap: 6px; }
 .fury-rail-hint { display: flex; flex-direction: column; gap: 1px; max-width: 138px; font-size: 10.5px; line-height: 1.25; color: #c9a596; text-align: left; }
 .fury-rail-hint strong { font-size: 11px; color: #ffcbb0; font-weight: 700; }
 body.fury-mode .fury-card--mini { width: 62px; }
+.skyjo-action-area:has(.skyjo-card-source-wrap) .fury-opponent { opacity: 0; }

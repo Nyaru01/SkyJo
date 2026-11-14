@@ -260,3 +260,8 @@ html body .tourment-goal .tourment-goal-title { color: #fbf6ee !important; font-
     -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
 .skyjo-game-container input, .skyjo-game-container textarea { -webkit-user-select: text; user-select: text; }
+/* Carte piochée : la dalle garde sa hauteur (l'étiquette « Pris dans… » se pose en bas, entre les compteurs),
+   sinon la zone centrale grandit et recouvre les plateaux. */
+.skyjo-pile-wrap > .skyjo-card-source-wrap { position: absolute; left: 50%; bottom: 1px; translate: -50% 0; z-index: 20; pointer-events: none; }
+.skyjo-pile-wrap .skyjo-card-source { font-size: 10px !important; padding: 3px 10px !important; letter-spacing: .04em !important; }
+.skyjo-pile-wrap:has(> .skyjo-card-source-wrap) .skyjo-pile-zone > :not(.skyjo-pile-group) { translate: 0 -13px; }
