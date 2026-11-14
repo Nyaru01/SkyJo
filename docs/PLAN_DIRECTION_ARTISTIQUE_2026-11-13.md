@@ -113,3 +113,24 @@ Référence donnée par l'utilisateur : la DA de Monument Valley. Scène origina
 - Accueil et table (fond Original) au crépuscule : ciel ardoise → mauve éteint, texte ivoire, boutons en verre fumé, action principale ivoire, navigation nuit, barre d'état #1f2233. Les menus intermédiaires restent clairs (textes posés sur le fond).
 - Île éclairée en soleil couchant (lumière chaude à gauche, froide à droite), fenêtre de la tour allumée, brume mauve.
 - Animations : entrée cinéma (zoom avant + l'île pivote puis se pose), étoiles qui scintillent, lucioles qui montent, petite lueur qui gravit l'escalier et va jusqu'à la tour puis redescend ; en plus des cartes qui se retournent et de la tour qui pivote.
+
+### 14/11 — Vie de la scène et finitions (après le passage de Codex)
+- Serveur local relancé (Vite, http://localhost:5173). Copie locale identique à master (60c1cae, Codex).
+- Oiseaux de papier : trois origamis ivoire qui font le tour de l'île, battements par à-coups et glissades.
+- Mécanisme : toucher la tour la fait pivoter d'un quart de tour, la carte du sommet fait un tour complet, les lanternes s'embrasent un instant ; sinon la tour pivote seule toutes les ~6 s.
+- Lumière vivante : le soleil couchant varie lentement d'intensité et de teinte (doré → rosé) ; les lanternes vacillent.
+- Finitions : voile dégradé derrière le menu, icônes d'en-tête au trait fin, appui des boutons plus franc, pied de page discret (Nouveautés en lien, version en petit).
+- Remarqué : le guide de bienvenue (nouveaux joueurs) est resté dans l'ancien style lavande.
+
+### Guide de bienvenue au style crépuscule
+- Tutorial.jsx réécrit avec son propre style (src/styles/Guide.css) au lieu du thème générique : panneau nuit ardoise, texte ivoire, titres en Cormorant, progression en segments fins, bouton principal ivoire comme sur l'accueil.
+- Photo de la première étape remplacée par une petite île isométrique dessinée en SVG (aucune image chargée).
+- Textes en casse normale, sans émojis ; contenu pédagogique inchangé (9 étapes). Cartes colorées selon la répartition du moteur.
+- Vérifié étape par étape en 375 × 812.
+
+## 14/11 — Menus au crépuscule et saisons de l'accueil
+
+- Tous les menus (Jouer, Social, Stats, Profil, Réglages, barre de navigation) passent au même crépuscule que l'accueil : verre de nuit, encre ivoire, bouton principal ivoire.
+- Saisons (src/lib/season.js) : automne jusqu'au 20 décembre, **neige à partir du lundi 21 décembre 2026**, printemps le 20 mars, été le 21 juin. Test forcé : `?saison=hiver|automne|printemps|ete`.
+- Automne : feuilles rousses qui tombent, arbres roux. Printemps : pétales. Hiver : neige, place enneigée, bassin gelé, dômes blanchis.
+- Toute l'année : étoiles filantes dans le ciel (three.js, traînée additive).

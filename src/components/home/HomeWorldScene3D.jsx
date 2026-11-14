@@ -1,9 +1,19 @@
 import { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, extend, useFrame, useThree } from '@react-three/fiber';
-import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, CatmullRomCurve3, MathUtils, PlaneGeometry, SRGBColorSpace, Vector3 } from 'three';
+import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, CatmullRomCurve3, Color, MathUtils, PlaneGeometry, SRGBColorSpace, Vector3 } from 'three';
 import { backTexture, pastelFaceTexture } from './cardTextures';
 import { useGameStore } from '../../store/gameStore';
 import { getCardSkinPath } from '../../lib/skinUtils';
+import { currentSeason } from '../../lib/season';
+import { FallingLeaves, ShootingStars, Snowfall } from './SeasonEffects';
+
+// Couleurs qui changent avec la saison (feuillage, coupole, eau du bassin).
+const SEASON_TINT = {
+    autumn: { leaf: '#c9844e', dome: '#c9b2a5', water: null },
+    winter: { leaf: '#e7ecf1', dome: '#f1f4f7', water: [0.7, 0.8, 0.84] },
+    spring: { leaf: '#b9cdb0', dome: '#d6bcb6', water: null },
+    summer: { leaf: '#a8b9a6', dome: '#c9b2a5', water: null },
+};
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 extend({ RoundedBoxGeometry });
 
@@ -114,14 +124,16 @@ function PlazaCard({ value, x, z, order, clock, still, onTouch, index, register 
 }
 
 
-function PivotCard({ still, onTouch }) {
+function PivotCard({ still, onTouch, mechanism }) {
     const ref = useRef();
-    const spin = useRef({ target: 0, angle: 0 });
+    const spin = useRef({ target: 0, angle: 0, seen: 0 });
     const back = usePlayerBack();
     const face = useMemo(() => pastelFaceTexture(12), []);
     useFrame((state, delta) => {
         if (!ref.current) return;
         const s = spin.current;
+        // Le mécanisme de la tour fait faire un tour complet à la carte.
+        if (mechanism.current.count !== s.seen) { s.seen = mechanism.current.count; s.target += Math.PI * 2; }
         if (!still) s.target += delta * 0.35;
         s.angle = MathUtils.damp(s.angle, s.target, 4, delta);
         ref.current.rotation.y = s.angle;
@@ -135,31 +147,37 @@ function PivotCard({ still, onTouch }) {
         <mesh position-z={-0.021} rotation-y={Math.PI}><planeGeometry args={[0.76, 1.06]} /><meshBasicMaterial map={back} transparent alphaTest={0.5} /></mesh>
     </group>;
 }
-function TowerTop({ still }) {
+function TowerTop({ still, mechanism, onTrigger, season = 'autumn' }) {
     const ref = useRef();
-    const turn = useRef({ target: 0, last: 0 });
+    const turn = useRef({ target: 0, last: 0, seen: 0 });
     useFrame((state, delta) => {
-        if (!ref.current || still) return;
+        if (!ref.current) return;
         const t = state.clock.elapsedTime;
         const s = turn.current;
-        if (t > 4 && t - s.last > 4.2) { s.target += Math.PI / 2; s.last = t; }
+        // Un toucher déclenche un quart de tour immédiat ; sinon, un quart de tour toutes les ~6 s.
+        if (mechanism.current.count !== s.seen) { s.seen = mechanism.current.count; s.target += Math.PI / 2; s.last = t; }
+        else if (!still && t > 4 && t - s.last > 6) { s.target += Math.PI / 2; s.last = t; }
         ref.current.rotation.y = MathUtils.damp(ref.current.rotation.y, s.target, 3.5, delta);
     });
-    return <group ref={ref} position={[1.75, 0, -1.2]}>
+    return <group ref={ref} position={[1.75, 0, -1.2]}
+        onClick={e => { e.stopPropagation(); onTrigger(); }}
+        onPointerOver={() => setPointer(true)} onPointerOut={() => setPointer(false)}>
         <Block size={[1.1, 0.8, 1.1]} position={[0, 2.55, 0]} color={C.lilac} />
         <Block size={[0.56, 0.14, 0.34]} position={[0, 2.25, 0.72]} color={C.lilacDark} />
         <mesh position={[0, 2.55, 0.57]}><boxGeometry args={[0.26, 0.4, 0.04]} /><meshBasicMaterial color="#ffd9a0" /></mesh>
-        <mesh position={[0, 2.95, 0]}><sphereGeometry args={[0.46, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshLambertMaterial color={C.dome} /></mesh>
+        <mesh position={[0, 2.95, 0]}><sphereGeometry args={[0.46, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshLambertMaterial color={SEASON_TINT[season].dome} /></mesh>
         <Block size={[0.05, 0.45, 0.05]} position={[0, 3.4, 0]} color={C.stoneEdge} />
     </group>;
 }
-function Water({ still }) {
+function Water({ still, season = 'autumn' }) {
     const mat = useRef();
     const ripples = useRef([]);
     useFrame(state => {
         if (!mat.current || still) return;
         const k = (Math.sin(state.clock.elapsedTime * 1.4) + 1) / 2;
-        mat.current.color.setRGB(0.22 + k * 0.03, 0.47 + k * 0.04, 0.48 + k * 0.04);
+        const ice = SEASON_TINT[season].water;
+        if (ice) mat.current.color.setRGB(ice[0] + k * 0.02, ice[1] + k * 0.02, ice[2] + k * 0.02);
+        else mat.current.color.setRGB(0.22 + k * 0.03, 0.47 + k * 0.04, 0.48 + k * 0.04);
         ripples.current.forEach((ring, i) => {
             if (!ring) return;
             const phase = (state.clock.elapsedTime * 0.22 + i / 3) % 1;
@@ -176,22 +194,95 @@ function Water({ still }) {
         {[-1, 1].map(side => <Block key={'end'+side} size={[1.2, 0.08, 0.08]} position={[0, 0.02, side * 0.79]} color={C.stoneEdge} />)}
     </group>;
 }
-function Lanterns() {
+// Lanternes : vacillent doucement, et s'embrasent un instant quand le mécanisme de la tour joue.
+function Lanterns({ still, mechanism, clock }) {
     const glow = useMemo(() => glowTexture('rgba(255,231,183,0.7)', 'rgba(255,194,115,0.12)'), []);
     useEffect(() => () => glow.dispose(), [glow]);
+    const halos = useRef([]);
+    useFrame(state => {
+        const t = state.clock.elapsedTime;
+        const since = clock.current - mechanism.current.at;
+        const burst = since >= 0 && since < 1.6 ? Math.sin((since / 1.6) * Math.PI) : 0;
+        halos.current.forEach((h, i) => {
+            if (!h) return;
+            const flicker = still ? 0 : Math.sin(t * 7 + i * 2.1) * 0.06 + Math.sin(t * 13 + i) * 0.04;
+            h.material.opacity = 0.82 + flicker + burst * 0.4;
+            h.scale.setScalar(0.85 + burst * 0.55);
+        });
+    });
     return [[-2.35, 1.8], [2.35, 1.8], [0.85, -0.5]].map(([x, z], i) => <group key={i} position={[x, 0, z]}>
         <Block size={[0.18, 0.12, 0.18]} position={[0, 0.06, 0]} color={C.lilacDark} />
         <mesh position-y={0.23}><boxGeometry args={[0.11, 0.22, 0.11]} /><meshBasicMaterial color="#ffe3ac" /></mesh>
         <Block size={[0.2, 0.05, 0.2]} position={[0, 0.36, 0]} color={C.stone} />
-        <sprite position-y={0.23} scale={[0.85, 0.85, 1]}><spriteMaterial map={glow} transparent depthWrite={false} blending={AdditiveBlending} /></sprite>
+        <sprite ref={el => { halos.current[i] = el; }} position-y={0.23} scale={[0.85, 0.85, 1]}><spriteMaterial map={glow} transparent depthWrite={false} blending={AdditiveBlending} /></sprite>
     </group>);
 }
-function Island({ still, onTouch }) {
+
+// Oiseaux de papier : de petits origamis ivoire qui font le tour de l'île en battant des ailes.
+const BIRD_WING = new BufferGeometry();
+BIRD_WING.setAttribute('position', new BufferAttribute(new Float32Array([0, 0, -0.09, 0, 0, 0.09, 0.34, 0, 0.02]), 3));
+BIRD_WING.computeVertexNormals();
+const BIRD_BODY = new BufferGeometry();
+BIRD_BODY.setAttribute('position', new BufferAttribute(new Float32Array([0, 0, -0.16, 0.05, 0.02, 0.12, -0.05, 0.02, 0.12, 0, -0.04, 0.1]), 3));
+BIRD_BODY.setIndex([0, 1, 2, 0, 3, 1, 0, 2, 3, 1, 3, 2]);
+BIRD_BODY.computeVertexNormals();
+const BIRDS = [
+    { r: 6.2, y: 2.4, speed: 0.16, phase: 0, flap: 7.5, s: 1 },
+    { r: 7.1, y: 3.3, speed: 0.12, phase: 2.2, flap: 6.4, s: 0.85 },
+    { r: 5.6, y: 1.5, speed: 0.19, phase: 4.1, flap: 8.2, s: 0.75 },
+];
+function Bird({ r, y, speed, phase, flap, s, still }) {
+    const ref = useRef();
+    const left = useRef();
+    const right = useRef();
+    useFrame(state => {
+        const t = state.clock.elapsedTime;
+        const a = still ? phase : phase + t * speed;
+        if (ref.current) {
+            ref.current.position.set(Math.cos(a) * r, y + Math.sin(t * 0.9 + phase) * 0.35, Math.sin(a) * r * 0.75);
+            ref.current.rotation.set(0, -a, Math.sin(t * 0.7 + phase) * 0.15);
+        }
+        // Battement par à-coups, avec de courtes glissades
+        const glide = Math.sin(t * 0.5 + phase) > 0.55;
+        const w = still || glide ? 0.12 : Math.sin(t * flap + phase) * 0.7;
+        if (left.current) left.current.rotation.z = w;
+        if (right.current) right.current.rotation.z = -w;
+    });
+    return <group ref={ref} scale={s}>
+        <mesh geometry={BIRD_BODY}><meshLambertMaterial color="#efe8dc" side={2} /></mesh>
+        <group ref={left}><mesh geometry={BIRD_WING}><meshLambertMaterial color="#f4eee4" side={2} /></mesh></group>
+        <group ref={right} rotation-y={Math.PI}><mesh geometry={BIRD_WING}><meshLambertMaterial color="#e6ddcf" side={2} /></mesh></group>
+    </group>;
+}
+function Birds({ still }) {
+    return BIRDS.map((b, i) => <Bird key={i} {...b} still={still} />);
+}
+
+// Soleil couchant vivant : intensité et teinte qui respirent très lentement.
+function SunLight() {
+    const ref = useRef();
+    const warm = useMemo(() => new Color('#ffe1ba'), []);
+    const rose = useMemo(() => new Color('#ffc4b0'), []);
+    useFrame(state => {
+        if (!ref.current) return;
+        const k = (Math.sin(state.clock.elapsedTime * 0.12) + 1) / 2;
+        ref.current.intensity = 2.45 + k * 0.35;
+        ref.current.color.copy(warm).lerp(rose, k * 0.6);
+    });
+    return <directionalLight ref={ref} position={[-3, 9, 6]} intensity={2.6} color="#ffe1ba" castShadow
+        shadow-mapSize={[1024, 1024]} shadow-camera-left={-6} shadow-camera-right={6}
+        shadow-camera-top={7} shadow-camera-bottom={-6} shadow-normalBias={0.035} shadow-bias={-0.0002} />;
+}
+function Island({ still, onTouch, season = 'autumn' }) {
     const clock = useRef(0);
     const ref = useRef();
     const flippers = useRef([]);
     const register = useCallback((i, fn) => { flippers.current[i] = fn; }, []);
     const lastFlip = useRef(0);
+    // Mécanisme : un toucher sur la tour la fait pivoter, fait tourner la carte du sommet
+    // et ravive les lanternes. On garde l'instant du dernier déclenchement.
+    const mechanism = useRef({ at: -100, count: 0 });
+    const trigger = useCallback(() => { mechanism.current.at = clock.current; mechanism.current.count += 1; }, []);
     useFrame((_, delta) => {
         clock.current += Math.min(delta, 0.05);
         const t = clock.current;
@@ -212,16 +303,21 @@ function Island({ still, onTouch }) {
         {GRID.map((value, i) => <PlazaCard key={i} value={value} index={i} register={register}
             x={-2.05 + (i % 4) * 0.8} z={-0.95 + Math.floor(i / 4) * 1.04}
             order={i % 4 + Math.floor(i / 4) * 2} clock={clock} still={still} onTouch={onTouch} />)}
-        <Water still={still} /><Lanterns />
+        {/* Hiver : manteau de neige sur le parvis */}
+        {season === 'winter' && <mesh rotation-x={-Math.PI / 2} position-y={0.004} receiveShadow>
+            <planeGeometry args={[5.16, 4.16]} /><meshLambertMaterial color="#eef2f6" />
+        </mesh>}
+        <Water still={still} season={season} /><Lanterns still={still} mechanism={mechanism} clock={clock} />
         <Block size={[1.2, 0.25, 1.2]} position={[1.75, 0.125, -1.2]} color={C.stone} />
         <Block size={[0.3, 1.5, 0.3]} position={[1.4, 1.0, -1.2]} color={C.lilac} />
         <Block size={[0.3, 1.5, 0.3]} position={[2.1, 1.0, -1.2]} color={C.lilac} />
         <Block size={[1.1, 0.4, 0.42]} position={[1.75, 1.95, -1.2]} color={C.lilacDark} />
-        <TowerTop still={still} /><PivotCard still={still} onTouch={onTouch} />
+        <TowerTop still={still} season={season} mechanism={mechanism} onTrigger={() => { trigger(); onTouch(); }} />
+        <PivotCard still={still} onTouch={onTouch} mechanism={mechanism} />
         {[0, 1, 2, 3, 4].map(i => <Block key={i} size={[0.8, 0.2, 0.34]} position={[1.75, -0.1 - i * 0.2, 2.27 + i * 0.34]} color={C.stone} />)}
         {[[-2.35, -1.75], [0.85, -1.75]].map(([x, z], i) => <group key={i} position={[x, 0, z]}>
             <Block size={[0.08, 0.35, 0.08]} position={[0, 0.17, 0]} color={C.trunk} />
-            <mesh position={[0, 0.5, 0]}><sphereGeometry args={[0.24, 16, 12]} /><meshLambertMaterial color={C.leaf} /></mesh>
+            <mesh position={[0, 0.5, 0]}><sphereGeometry args={[0.24, 16, 12]} /><meshLambertMaterial color={SEASON_TINT[season].leaf} /></mesh>
         </group>)}
     </group>;
 }
@@ -416,6 +512,7 @@ export default function HomeWorldScene3D({ compact = false }) {
     const stone = useMemo(() => makeStoneTexture(), []);
     useEffect(() => () => stone.dispose(), [stone]);
     const [still] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
+    const [season] = useState(() => currentSeason());
     const wrapper = useRef(null);
     const [onScreen, setOnScreen] = useState(true);
     useEffect(() => {
@@ -437,16 +534,22 @@ export default function HomeWorldScene3D({ compact = false }) {
             <CameraRig compact={compact} still={still} />
             {/* Crépuscule : soleil couchant chaud à gauche, lumière froide du ciel à droite */}
             <hemisphereLight intensity={1.4} color="#c8d7f4" groundColor="#746276" />
-            <directionalLight position={[-3, 9, 6]} intensity={2.6} color="#ffe1ba" castShadow
-                shadow-mapSize={[1024, 1024]} shadow-camera-left={-6} shadow-camera-right={6}
-                shadow-camera-top={7} shadow-camera-bottom={-6} shadow-normalBias={0.035} shadow-bias={-0.0002} />
+            {still
+                ? <directionalLight position={[-3, 9, 6]} intensity={2.6} color="#ffe1ba" castShadow
+                    shadow-mapSize={[1024, 1024]} shadow-camera-left={-6} shadow-camera-right={6}
+                    shadow-camera-top={7} shadow-camera-bottom={-6} shadow-normalBias={0.035} shadow-bias={-0.0002} />
+                : <SunLight />}
             <directionalLight position={[6, 4, -2]} intensity={1.1} color="#a2b9ec" />
             <Stars still={still} />
+            <ShootingStars still={still} />
             <StoneContext.Provider value={stone}>
             <Turntable still={still}>
-                <Island still={still} onTouch={onTouch} />
+                <Island still={still} onTouch={onTouch} season={season} />
+                {(season === 'autumn' || season === 'spring') && <FallingLeaves season={season} still={still} />}
+                {season === 'winter' && <Snowfall still={still} />}
                 <Floaters still={still} />
                 <Wanderer still={still} />
+                <Birds still={still} />
                 {!still && <Fireflies still={still} />}
             </Turntable>
             </StoneContext.Provider>

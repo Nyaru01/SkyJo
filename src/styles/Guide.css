@@ -1,0 +1,83 @@
+/* =====================================================================
+   Guide de jeu — style crépuscule, accordé à l'accueil
+   ===================================================================== */
+.skyjo-guide {
+    position: fixed; inset: 0; z-index: 600; display: flex; align-items: center; justify-content: center;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    color: #f1ebe2;
+}
+.skyjo-guide-backdrop { position: absolute; inset: 0; background: #0d0f19cc; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.skyjo-guide-panel {
+    position: relative; width: 100%; max-width: 420px; max-height: 100%; overflow-y: auto;
+    display: flex; flex-direction: column;
+    border-radius: 22px; border: 1px solid #ffffff1a;
+    background: radial-gradient(ellipse 90% 45% at 50% 0%, #3a3d58 0%, transparent 70%), linear-gradient(180deg, #262a3d, #1c1f2e);
+    box-shadow: 0 30px 60px -20px #000000cc;
+}
+
+/* En-tête */
+.skyjo-guide-header { display: flex; align-items: center; gap: 12px; padding: 18px 16px 10px 20px; }
+.skyjo-guide-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: #ffffff10; box-shadow: inset 0 0 0 1px #ffffff1a; color: #ece4d6; }
+.skyjo-guide-meta { display: flex; flex-direction: column; flex: 1; min-width: 0; line-height: 1.25; }
+.skyjo-guide-meta span:first-child { font-size: 13px; font-weight: 600; color: #ece4d6; }
+.skyjo-guide-meta span:last-child { font-size: 12px; color: #9f99ab; font-variant-numeric: tabular-nums; }
+.skyjo-guide-close { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: #aaa3b4; }
+.skyjo-guide-close:active { background: #ffffff12; color: #fff; }
+
+/* Progression : segments fins */
+.skyjo-guide-progress { display: flex; gap: 4px; padding: 0 20px; }
+.skyjo-guide-progress i { flex: 1; height: 2px; border-radius: 2px; background: #ffffff1f; transition: background-color 240ms ease; }
+.skyjo-guide-progress i.is-done { background: #ece4d6; }
+
+/* Corps */
+.skyjo-guide-body { display: flex; flex-direction: column; align-items: center; padding: 22px 24px 8px; min-height: 330px; text-align: center; }
+.skyjo-guide-body h2 { margin: 0 0 8px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; font-weight: 500; line-height: 1.1; color: #f6f0e7; }
+.skyjo-guide-body > p { margin: 0; max-width: 32ch; font-size: 14.5px; line-height: 1.55; color: #c9c2d0; }
+.skyjo-guide-visual { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; padding: 18px 0 6px; }
+
+/* Pied */
+.skyjo-guide-footer { display: flex; gap: 10px; padding: 12px 20px 20px; }
+.skyjo-guide-btn { display: flex; align-items: center; justify-content: center; gap: 4px; min-height: 50px; border-radius: 14px; font-size: 15px; font-weight: 600; transition: transform 110ms ease, background-color 160ms ease; }
+.skyjo-guide-btn:active { transform: scale(.985); }
+.skyjo-guide-btn--primary { flex: 2; background: #ece4d6; color: #24273a; box-shadow: inset 0 1px 0 #ffffff99, 0 12px 24px -14px #000c; }
+.skyjo-guide-btn--ghost { flex: 1; color: #ddd6cc; box-shadow: inset 0 0 0 1px #ffffff26; }
+.skyjo-guide-btn--ghost:active { background: #ffffff0f; }
+.skyjo-guide button:focus-visible { outline: 2px solid #ece4d6; outline-offset: 3px; }
+
+/* Visuels des étapes */
+.guide-island { width: 220px; height: auto; }
+.guide-panel { background: #ffffff0a; border: 1px solid #ffffff14; border-radius: 14px; }
+.guide-cards { display: flex; gap: 18px; }
+.guide-card-col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.guide-card-col span { font-size: 12px; color: #aaa3b4; }
+.guide-grid { display: grid; grid-template-columns: repeat(4, auto); gap: 8px; }
+.guide-column { display: flex; flex-direction: column; align-items: center; }
+.guide-column-card { margin: 3px 0; }
+.guide-column span { margin-top: 16px; font-size: 13px; color: #b9d2c3; }
+.guide-history { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 16px 22px; }
+.guide-hint { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #c9c2d0; }
+.guide-fan { display: flex; }
+.guide-fan > * + * { margin-left: -14px; transform-origin: bottom left; }
+.guide-double { position: relative; display: flex; align-items: center; gap: 14px; color: #8f899c; }
+.guide-double-from { font-size: 30px; font-weight: 600; color: #8f899c; text-decoration: line-through; text-decoration-color: #c08080aa; }
+.guide-double-to { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 54px; font-weight: 600; color: #e7a7a0; line-height: 1; }
+.guide-double-tag { position: absolute; top: -14px; right: -26px; padding: 3px 8px; border-radius: 8px; font-size: 11px; color: #e7a7a0; background: #c0808026; }
+.guide-friends { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 250px; }
+.guide-friend { display: flex; align-items: center; gap: 12px; padding: 10px 12px; text-align: left; }
+.guide-friend.is-away { opacity: .55; }
+.guide-avatar { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #ffffff14; font-size: 13px; font-weight: 600; color: #ece4d6; }
+.guide-friend-name { flex: 1; font-size: 14px; color: #f1ebe2; }
+.guide-friend-state { font-size: 12px; color: #a9c7b8; }
+.guide-friend.is-away .guide-friend-state { color: #9f99ab; }
+.guide-room { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 28px; }
+.guide-room span { font-size: 12px; color: #aaa3b4; }
+.guide-room strong { font-size: 32px; font-weight: 600; letter-spacing: .18em; color: #f6f0e7; font-variant-numeric: tabular-nums; }
+.guide-room-seats { display: flex; gap: 6px; margin-top: 4px; }
+.guide-room-seats i { width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1px #ffffff2e; }
+.guide-room-seats i.is-taken { background: #ece4d6; box-shadow: none; }
+.guide-steps { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 300px; margin: 0; padding: 0; list-style: none; counter-reset: guide; text-align: left; }
+.guide-steps li { position: relative; padding: 10px 12px 10px 42px; font-size: 13px; line-height: 1.45; color: #ddd6cc; counter-increment: guide; }
+.guide-steps li::before { content: counter(guide); position: absolute; left: 12px; top: 10px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #ffffff14; font-size: 11px; font-weight: 600; color: #ece4d6; }
+
+@media (max-height: 700px) { .skyjo-guide-body { min-height: 0; padding-top: 14px; } .skyjo-guide-body h2 { font-size: 26px; } }
+@media (prefers-reduced-motion: reduce) { .skyjo-guide-btn, .skyjo-guide-progress i { transition: none; } }

@@ -1253,3 +1253,70 @@ html body .game-lobby--sky::after { opacity: .1 !important; }
 html body.lobby-theme .game-lobby--sky .skyjo-hand.skyjo-hand.skyjo-hand { box-shadow: inset 0 0 0 1px #ffffff40, 0 2px 0 #bfc8bd, 0 22px 36px -16px #000000aa !important; }
 html body.lobby-theme .game-lobby--sky .skyjo-hand.skyjo-hand.skyjo-hand.skyjo-hand--opponent { box-shadow: inset 0 0 0 1px #ffffff40, 0 2px 0 #d3bdb3, 0 22px 36px -16px #000000aa !important; }
 html body.lobby-theme .game-lobby--sky .skyjo-hand.skyjo-hand.skyjo-hand.skyjo-hand--active { box-shadow: inset 0 0 0 1px #ffffff40, 0 0 0 1.5px var(--turn-accent), 0 22px 36px -16px #000000aa !important; }
+
+/* =====================================================================
+   MENUS AU CRÉPUSCULE — même ambiance que l'accueil
+   Les variables du thème basculent : texte ivoire, cartes en verre fumé, filets clairs.
+   ===================================================================== */
+html body .menu-lobby {
+    --ml-ink: #f1ebe2;
+    --ml-ink-strong: #fbf6ee;
+    --ml-muted: #b3acbd;
+    --ml-soft: #9f99ab;
+    --ml-line: #ffffff1f;
+    --ml-line-strong: #ffffff33;
+    --ml-paper: #1e2133b3;
+    --ml-paper-strong: #23263ad9;
+    --ml-paper-hover: #2a2e45d9;
+    --ml-accent: #ece4d6;
+    --ml-accent-2: #d9a888;
+    --ml-shadow: 0 12px 24px -16px #000000aa, inset 0 1px 0 #ffffff12;
+    --ml-shadow-hover: 0 16px 28px -16px #000000cc, inset 0 1px 0 #ffffff1a;
+    color: var(--ml-ink);
+}
+html body .menu-lobby::before {
+    background:
+        radial-gradient(ellipse 90% 40% at 30% 80%, #c08d7a33, transparent 70%),
+        linear-gradient(180deg, #1f2233 0%, #2c2f45 34%, #4a4560 66%, #6e5f6e 88%, #7d6a6e 100%) !important;
+}
+html body .menu-lobby::after { opacity: .06 !important; }
+html body .menu-lobby :is(h1, h2, h3) { color: var(--ml-ink-strong); }
+html body .menu-lobby :is(.glass-premium, .glass-dark, [class*="rounded-"][class*="bg-"]) { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+/* Rattrapage des couleurs codées en dur dans les menus */
+html body .menu-lobby :is(.play-menu-heading h2, .play-menu-section-heading h3, .play-menu-action-title, .profile-hub-heading h1,
+    .profile-hub-links strong, .social-profile-name h2, .ai-setup-header h1, .ai-rival-dialogue p, .ai-difficulties legend, .ai-difficulty strong) {
+    color: var(--ml-ink-strong) !important;
+}
+html body .menu-lobby .play-menu-heading h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 500; }
+html body .menu-lobby :is(.play-menu-action, .ai-difficulty-body, .ai-setup-back, .mobile-panel, .career-summary, .play-menu-customization) { border-color: var(--ml-line) !important; }
+html body .menu-lobby .play-menu-action:not(:disabled):active { background: var(--ml-paper-hover); }
+html body .menu-lobby .play-menu-action:disabled { background: #ffffff0a; }
+html body .menu-lobby :is(.play-menu-modes > :nth-child(2), .play-menu-modes > :nth-child(3), .play-menu-action--daily) .play-menu-action-icon {
+    background: #ffffff12 !important; color: #e3cfa8 !important; box-shadow: inset 0 0 0 1px #ffffff1a !important;
+}
+/* Action principale des menus : ivoire, comme sur l'accueil */
+html body .menu-lobby .play-menu-action--primary { background: #ece4d6 !important; border-color: #ece4d6 !important; color: #24273a !important; }
+html body .menu-lobby .play-menu-action--primary :is(.play-menu-action-title, span, small, p, svg) { color: #24273a !important; }
+html body .menu-lobby .play-menu-action--primary .play-menu-action-icon { background: #24273a14 !important; border-color: transparent !important; }
+html body .menu-lobby .play-menu-status { color: #e3cfa8; border-color: #e3cfa855; background: #e3cfa81a; }
+html body .menu-lobby .career-progress-track { background: #ffffff1a; box-shadow: none; }
+html body .menu-lobby .career-progress-track > * { background: linear-gradient(90deg, #d9a888, #e3cfa8) !important; box-shadow: none; }
+html body .menu-lobby .social-switcher { background: #ffffff0f; border-color: var(--ml-line); }
+html body .menu-lobby .social-switcher button { color: var(--ml-muted); }
+html body .menu-lobby .social-switcher button[aria-pressed="true"] { color: #24273a; background: #ece4d6; box-shadow: none; }
+html body .menu-lobby :is(.social-profile-avatar, .social-podium-portrait .career-frame) { background: #2a2e45; border-color: #ffffff2e; }
+html body .menu-lobby .social-profile-avatar > span { border-color: #24273a; background: #ece4d6; color: #24273a; }
+html body .menu-lobby .social-profile-name input { background: #ffffff12; border-color: #e3cfa8; color: var(--ml-ink); }
+html body .menu-lobby .social-profile-id { background: #ffffff0d; }
+html body .menu-lobby .social-podium-panel { background: radial-gradient(ellipse at 50% 30%, #e3cfa81f, transparent 65%), var(--ml-paper); }
+html body .menu-lobby .social-podium-player--1 { background: linear-gradient(0deg, #e3cfa826, transparent 80%); }
+html body .menu-lobby .social-ranking-row:hover { background: #ffffff0d; }
+html body .menu-lobby .social-ranking-row--me { background: #ece4d614; }
+html body .menu-lobby .social-google-link { background: #ece4d6; border-color: #ece4d6; color: #24273a; }
+html body .menu-lobby .ai-setup-back { color: var(--ml-ink); }
+html body .menu-lobby .ai-rival-grid { background-image: linear-gradient(#ffffff0d 1px, transparent 1px), linear-gradient(90deg, #ffffff0d 1px, transparent 1px); }
+html body .menu-lobby .ai-setup-dock { background: linear-gradient(180deg, #4a456000, #3b3a52e6 35%); }
+/* Barre de navigation : verre nuit, onglet actif ivoire (comme sur l'accueil) */
+body:has(.menu-lobby) .mobile-navigation nav { background: #1b1e2ee6 !important; border-color: #ffffff1a !important; box-shadow: 0 10px 24px -14px #000c !important; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+body:has(.menu-lobby) .mobile-nav-item { color: #9f99ab !important; }
+body:has(.menu-lobby) .mobile-nav-item--active { background: #ece4d6 !important; color: #24273a !important; box-shadow: none !important; }

@@ -410,3 +410,31 @@ body:has(.home-lobby) .mobile-navigation nav { background: #1b1e2ee6; border-col
 body:has(.home-lobby) .mobile-nav-item { color: #9f99ab; }
 body:has(.home-lobby) .mobile-nav-item--active { background: #ece4d6; color: #24273a; }
 .home-lobby button:focus-visible { outline-color: #ece4d6; }
+
+/* =====================================================================
+   Finitions de l'accueil
+   ===================================================================== */
+/* Voile dégradé derrière le menu : les boutons se posent sur un fond calme */
+.home-lobby--virtual::after {
+    content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: linear-gradient(180deg, transparent 50%, #1b1d2b8c 70%, #181a27e0 100%);
+}
+
+/* En-tête : icônes au trait fin, comme la typographie */
+.lobby-header-actions button svg { stroke-width: 1.6; }
+
+/* Boutons : enfoncement net à l'appui, transitions courtes */
+.lobby-menu-btn { transition: transform 110ms ease, background-color 160ms ease, box-shadow 160ms ease; }
+.lobby-menu-btn:active { transform: scale(.985); }
+.lobby-menu-btn--primary { box-shadow: inset 0 1px 0 #ffffff99, 0 12px 24px -14px #000c; }
+.lobby-menu-btn-title { letter-spacing: .005em; }
+.lobby-menu-btn-chevron { transition: transform 160ms ease; }
+.lobby-menu-btn:active .lobby-menu-btn-chevron { transform: translateX(2px); }
+
+/* Pied de page discret : « Nouveautés » en lien, version en petit */
+.lobby-footer { gap: 14px; }
+.lobby-footer > button { background: none !important; border-color: transparent !important; padding: 6px 4px; min-height: 36px; font-size: 12.5px; color: #cfc8bd; }
+.lobby-footer > button:active { color: #fff; }
+.lobby-footer > button.lobby-version { font-size: 11.5px; color: #8f899c; }
+.lobby-unread { box-shadow: none; background: #d9a888; }
+@media (prefers-reduced-motion: reduce) { .lobby-menu-btn, .lobby-menu-btn-chevron { transition: none; } }
