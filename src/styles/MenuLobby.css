@@ -1457,3 +1457,30 @@ html body.lobby-theme :is(.menu-lobby, .game-lobby) [style*="background-color: r
     box-shadow: 0 30px 60px -24px #000000e6, inset 0 1px 0 #ffffff14 !important;
 }
 html body.lobby-theme .game-lobby [style*="background-color: rgba(15, 23, 42"]:not(.skyjo-card, .skyjo-card *):not(.skyjo-hand) h3 { color: #fbf6ee !important; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-weight: 500; }
+
+/* Profil social compact : laisse la place au classement */
+html body .menu-lobby .social-profile-panel--compact { padding: 14px 14px 12px; }
+html body .menu-lobby .social-profile-panel--compact .social-profile-identity { gap: 12px; align-items: flex-start; }
+html body .menu-lobby .social-profile-panel--compact .social-profile-avatar { width: 56px; height: 56px; border-radius: 18px; }
+html body .menu-lobby .social-profile-panel--compact .social-profile-avatar > span { width: 22px; height: 22px; border-radius: 7px; }
+html body .menu-lobby .social-profile-panel--compact .social-profile-name > p { margin-bottom: 0; font-size: 9.5px; }
+html body .menu-lobby .social-profile-panel--compact .social-profile-name h2 { font-size: 21px; }
+html body .menu-lobby .social-profile-panel--compact .social-profile-name h2 button { min-height: 32px; gap: 8px; }
+html body .menu-lobby .social-profile-panel--compact .social-profile-id {
+    margin-top: 2px; display: inline-flex; gap: 6px; padding: 0 0 0 10px; border-radius: 10px; background: #ffffff0d; border-color: #ffffff14;
+}
+html body .menu-lobby .social-profile-panel--compact .social-profile-id > span:first-child { flex: none; font-size: 11px; }
+html body .menu-lobby .social-profile-panel--compact .social-profile-id code { font-size: 12px; letter-spacing: .04em; }
+html body .menu-lobby .social-profile-panel--compact .social-profile-id button { width: 40px; min-height: 34px; }
+html body .menu-lobby .social-profile-panel--compact .social-account { margin-top: 12px; padding-top: 10px; }
+html body .menu-lobby .social-profile-panel--compact .social-account-heading h3 { font-size: 14px; }
+html body .menu-lobby .social-profile-panel--compact .social-account-heading p { font-size: 12px; }
+html body .menu-lobby .social-profile-panel--compact .social-account-heading p .social-account-restore {
+    display: inline; min-height: 0; padding: 0; margin: 0; font-size: 12px; color: #e3cfa8; text-decoration: underline; text-underline-offset: 2px; background: none; border: 0;
+}
+html body .menu-lobby .social-profile-panel--compact .social-google-link { min-height: 40px; padding: 0 12px; font-size: 13px; }
+/* Titre du podium lisible sur fond sombre */
+html body .menu-lobby .social-podium-panel h2 { color: var(--ml-ink-strong) !important; }
+html body .menu-lobby .social-profile-panel--compact .social-account-heading p { white-space: nowrap; }
+html body .menu-lobby :is(.social-podium-panel, .social-leaderboard-empty) h2 { color: var(--ml-ink-strong) !important; }
+html body .menu-lobby .social-profile-panel--compact .social-account-heading p .social-account-restore.social-account-restore { display: inline !important; width: auto !important; min-width: 0 !important; }

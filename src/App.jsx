@@ -5,7 +5,6 @@ import ImagePreloader from './components/ui/ImagePreloader';
 import ParallaxBackground from './components/ui/ParallaxBackground';
 import { UpdateProvider } from './components/UpdatePrompt';
 import { SocketProvider } from './components/SocketProvider';
-import { VersionCheck } from './components/VersionCheck';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { IntroScreen } from './components/IntroScreen';
 
@@ -88,7 +87,6 @@ function App() {
         <div>
           <UpdateProvider>
             <SocketProvider>
-              <VersionCheck />
               <MusicPlayer />
               <Toaster
                 position="bottom-center"

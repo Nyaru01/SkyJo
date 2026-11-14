@@ -1,7 +1,10 @@
 import { useEffect, useState, useCallback, createContext, useContext, useRef } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, X, CheckCircle } from 'lucide-react';
+import { RefreshCw, X } from 'lucide-react';
+import '../styles/Guide.css';
+
+/* global __APP_VERSION__ */
 
 // Context to share update functions across components
 const UpdateContext = createContext(null);
@@ -17,6 +20,10 @@ export function UpdateProvider({ children }) {
     const [isUpdating, setIsUpdating] = useState(false);
     const [updateError, setUpdateError] = useState(null);
     const updateInProgressRef = useRef(false);
+    // Version annoncée par le serveur : seconde source de détection (WebAPK qui ratent le SW).
+    // Les deux sources alimentent désormais une seule et même fenêtre.
+    const [serverVersion, setServerVersion] = useState(null);
+    const [dismissed, setDismissed] = useState(false);
 
     const {
         needRefresh: [needRefresh, setNeedRefresh],
@@ -142,11 +149,32 @@ export function UpdateProvider({ children }) {
         }
     }, [registration, updateServiceWorker, waitForWaitingWorker]);
 
+    // Interroge le serveur au lancement puis chaque minute.
+    useEffect(() => {
+        const clientVersion = __APP_VERSION__;
+        const checkVersion = async () => {
+            try {
+                const res = await fetch(`/api/config/version?t=${Date.now()}`, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } });
+                if (!res.ok || !(res.headers.get('content-type') || '').includes('application/json')) return;
+                const data = await res.json();
+                if (data.version && data.version !== clientVersion) {
+                    setServerVersion(data.version);
+                    navigator.serviceWorker?.getRegistrations?.().then(regs => regs.forEach(r => r.update())).catch(() => {});
+                }
+            } catch { /* hors ligne : on réessaiera */ }
+        };
+        checkVersion();
+        const id = window.setInterval(checkVersion, 60000);
+        return () => window.clearInterval(id);
+    }, []);
+
     const handleDismiss = () => {
         if (isUpdating) return;
         setShowPrompt(false);
         setNeedRefresh(false);
+        setDismissed(true);
     };
+    const visible = !dismissed && (showPrompt || Boolean(serverVersion));
 
     // Use a ref to always have the latest state of needRefresh in the manual check
     const needRefreshRef = useRef(needRefresh);
@@ -202,59 +230,35 @@ export function UpdateProvider({ children }) {
     return (
         <UpdateContext.Provider value={value}>
             {children}
-            {/* Update Toast */}
+            {/* Une seule fenêtre de mise à jour, au style crépuscule */}
             <AnimatePresence>
-                {showPrompt && (
+                {visible && (
                     <Motion.div
-                        initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 50, scale: 0.9 }}
-                        transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-                        className="fixed bottom-24 left-3 right-3 z-[200] max-w-md mx-auto"
+                        initial={{ opacity: 0, y: 24 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 24 }}
+                        transition={{ duration: 0.32, ease: [0.2, 0.8, 0.25, 1] }}
+                        className="skyjo-update"
+                        role="status"
+                        aria-live="polite"
                     >
-                        <div className="surface-card relative overflow-hidden rounded-3xl p-4 sm:p-5">
-
-                            <div className="relative flex items-start gap-4">
-                                {/* Icon */}
-                                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 rounded-xl shrink-0">
-                                    <RefreshCw className={`w-6 h-6 text-blue-400 ${isUpdating ? 'animate-spin' : 'animate-spin-slow'}`} />
-                                </div>
-
-                                {/* Content */}
-                                <div className="flex-1 min-w-0 pt-1">
-                                    <h3 className="font-bold text-white text-base leading-none mb-1">
-                                        {isUpdating ? 'Installation en cours…' : 'Mise à jour disponible'}
-                                    </h3>
-                                    <p className="text-slate-400 text-xs">
-                                        {updateError || (isUpdating
-                                            ? 'Skyjo va redémarrer automatiquement.'
-                                            : 'Une nouvelle version de Skyjo est prête à être installée.')}
-                                    </p>
-                                </div>
-
-                                {/* Close button */}
-                                <button
-                                    onClick={handleDismiss}
-                                    disabled={isUpdating}
-                                    aria-label="Fermer la mise à jour"
-                                    className="modal-close-button premium-focus-ring -mr-1 -mt-1 shrink-0"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
-
-                            {/* Action button */}
-                            <button
-                                onClick={applyUpdate}
-                                disabled={isUpdating}
-                                className="premium-focus-ring relative w-full min-h-12 mt-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-sm rounded-xl hover:from-blue-500 hover:to-purple-500 transition-all shadow-lg active:scale-[0.98] disabled:opacity-70 disabled:cursor-wait"
-                            >
-                                <span className="flex items-center justify-center gap-2">
-                                    <CheckCircle className="w-4 h-4" />
-                                    {isUpdating ? 'Mise à jour…' : updateError ? 'Réessayer' : 'Mettre à jour maintenant'}
-                                </span>
-                            </button>
-                        </div>
+                        <span className="skyjo-update-icon" aria-hidden="true">
+                            <RefreshCw size={18} strokeWidth={1.8} className={isUpdating ? 'animate-spin' : undefined} />
+                        </span>
+                        <span className="skyjo-update-copy">
+                            <strong>{isUpdating ? 'Installation…' : updateError ? 'Échec de la mise à jour' : 'Nouvelle version prête'}</strong>
+                            <small>
+                                {updateError || (isUpdating
+                                    ? 'Skyjo redémarre dans un instant.'
+                                    : serverVersion ? `v${__APP_VERSION__} → v${serverVersion}` : 'Quelques secondes pour l’installer.')}
+                            </small>
+                        </span>
+                        <button type="button" onClick={applyUpdate} disabled={isUpdating} className="skyjo-update-apply">
+                            {updateError ? 'Réessayer' : 'Installer'}
+                        </button>
+                        <button type="button" onClick={handleDismiss} disabled={isUpdating} aria-label="Plus tard" className="skyjo-update-close">
+                            <X size={16} aria-hidden="true" />
+                        </button>
                     </Motion.div>
                 )}
             </AnimatePresence>
