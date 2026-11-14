@@ -1,53 +1,55 @@
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Info, AlertCircle, RefreshCw, Zap } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { ArrowLeftRight, ChevronDown, ChevronUp, Info, Orbit } from 'lucide-react';
+import '../../styles/Tabletop.css';
 
-/**
- * GameMessageBanner - A premium notification banner for game instructions.
- * Replaces intrusive toasts for persistent game state messages.
- */
-const GameMessageBanner = ({ message, type = 'info' }) => {
-    const [isVisible, setIsVisible] = useState(false);
+// Lit le message de la partie pour en faire un bandeau clair : titre, consigne, étapes, direction.
+function describe(message) {
+    const msg = message.toLowerCase();
+    if (msg.includes('échange') || msg.includes('swap')) {
+        const step = msg.includes('adverse') ? 2 : 1;
+        return {
+            kind: 'swap', icon: ArrowLeftRight, title: 'Échange', step,
+            text: step === 1 ? 'Touchez une de vos cartes' : 'Touchez une carte de l’adversaire',
+            direction: step === 1 ? 'down' : 'up',
+        };
+    }
+    if (msg.includes('aspirer') || msg.includes('trou noir')) return { kind: 'hole', icon: Orbit, title: 'Trou noir', text: message, direction: null };
+    return { kind: 'info', icon: Info, title: null, text: message, direction: null };
+}
 
-    useEffect(() => {
-        if (message) {
-            setIsVisible(true);
-        } else {
-            setIsVisible(false);
-        }
-    }, [message]);
-
-    const getIcon = () => {
-        if (!message) return null;
-        const msg = message.toLowerCase();
-        if (msg.includes('échange') || msg.includes('swap')) return <RefreshCw className="w-4 h-4 text-purple-400" />;
-        if (msg.includes('pioche') || msg.includes('défausse')) return <Zap className="w-4 h-4 text-amber-400" />;
-        if (msg.includes('votre tour')) return <Info className="w-4 h-4 text-cyan-400" />;
-        return <Info className="w-4 h-4 text-blue-400" />;
-    };
-
+// Bandeau des actions spéciales, centré entre les deux plateaux.
+const GameMessageBanner = ({ message }) => {
+    const reduce = useReducedMotion();
+    const info = message ? describe(message) : null;
+    const Icon = info?.icon;
+    const Arrow = info?.direction === 'up' ? ChevronUp : ChevronDown;
     return (
-        <div className="absolute inset-x-0 top-[45%] -translate-y-1/2 z-[60] w-full pointer-events-none px-4">
-            <AnimatePresence>
-                {isVisible && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.8, y: 10 }}
+        <div className="skyjo-banner-layer" role="status" aria-live="polite">
+            <AnimatePresence mode="wait">
+                {info && (
+                    <Motion.div key={`${info.kind}-${info.step || 0}`}
+                        className={`skyjo-banner skyjo-banner--${info.kind}`}
+                        initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.92, y: 8 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.8, y: 5 }}
-                        className={cn(
-                            "mx-auto flex flex-col items-center text-center gap-2 px-8 py-4 rounded-3xl",
-                            "bg-slate-900/90 backdrop-blur-2xl border border-white/20 shadow-[0_0_40px_rgba(0,0,0,0.5)]",
-                            "transition-all duration-300 ring-1 ring-white/10"
-                        )}
-                    >
-                        <div className="shrink-0 p-1.5 bg-white/5 rounded-xl border border-white/5">
-                            {getIcon()}
+                        exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -6 }}
+                        transition={{ duration: 0.28, ease: [0.2, 0.8, 0.25, 1] }}>
+                        {info.direction === 'up' && <Motion.span className="skyjo-banner-arrow skyjo-banner-arrow--up" aria-hidden="true"
+                            animate={reduce ? undefined : { y: [0, -4, 0] }} transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}><Arrow size={18} /></Motion.span>}
+                        <div className="skyjo-banner-head">
+                            <span className="skyjo-banner-icon" aria-hidden="true"><Icon size={18} strokeWidth={1.8} /></span>
+                            <span className="skyjo-banner-copy">
+                                {info.title && <strong>{info.title}</strong>}
+                                <span>{info.text}</span>
+                            </span>
                         </div>
-                        <p className="text-sm font-bold text-slate-100 tracking-tight leading-tight">
-                            {message}
-                        </p>
-                    </motion.div>
+                        {info.kind === 'swap' && <ol className="skyjo-banner-steps" aria-label={`Étape ${info.step} sur 2`}>
+                            <li className={info.step === 1 ? 'is-current' : 'is-done'}><i>1</i>Votre carte</li>
+                            <li aria-hidden="true" className="skyjo-banner-steps-sep" />
+                            <li className={info.step === 2 ? 'is-current' : ''}><i>2</i>Carte adverse</li>
+                        </ol>}
+                        {info.direction === 'down' && <Motion.span className="skyjo-banner-arrow skyjo-banner-arrow--down" aria-hidden="true"
+                            animate={reduce ? undefined : { y: [0, 4, 0] }} transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}><Arrow size={18} /></Motion.span>}
+                    </Motion.div>
                 )}
             </AnimatePresence>
         </div>

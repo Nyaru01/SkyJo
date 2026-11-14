@@ -113,7 +113,7 @@ const PlayerHand = memo(function PlayerHand({
             const timer = setTimeout(() => {
                 setClearedCols(prev => prev.filter(item => !newCleared.some(nc => nc.col === item.col)));
                 clearTimers.current.delete(timer);
-            }, 650);
+            }, 1750);
             clearTimers.current.add(timer);
         }
 
@@ -163,7 +163,7 @@ const PlayerHand = memo(function PlayerHand({
                     padding: '10px 6px 8px 6px', // Match the hand padding and grid's 2px top margin.
                 }}>
                     {[0, 1, 2, 3].map(col => (
-                        <div key={col} className="relative w-full h-full overflow-hidden rounded-xl">
+                        <div key={col} className="relative w-full h-full overflow-visible rounded-xl">
                             {clearedCols.some(c => c.col === col) && (
                                 <ColumnBeam bonus={columnBonus} />
                             )}
@@ -315,8 +315,8 @@ const PlayerHand = memo(function PlayerHand({
                                     <Motion.div
                                         className="absolute inset-0 pointer-events-none"
                                         initial={{ opacity: 1, scale: 1, y: 0 }}
-                                        animate={{ opacity: [1, 1, 1, 0], scale: [1, 1.025, .92, .65], y: ['0%', '0%', `${(1 - row) * 107}%`, `${(1 - row) * 107}%`], filter: ['brightness(1)', 'brightness(1.5)', 'brightness(1.2)', 'brightness(1)'] }}
-                                        transition={{ duration: .6, times: [0, .2, .65, 1], ease: 'easeInOut' }}
+                                        animate={{ opacity: [1, 1, 1, 1, 0], scale: [1, 1.06, 1.02, .85, .2], rotate: [0, 0, 0, 0, row === 1 ? 180 : (row === 0 ? 120 : -120)], y: ['0%', '-4%', `${(1 - row) * 107}%`, `${(1 - row) * 107}%`, `${(1 - row) * 107}%`], filter: ['brightness(1) drop-shadow(0 0 0 #ffd98200)', 'brightness(1.45) drop-shadow(0 0 10px #ffd982cc)', 'brightness(1.3) drop-shadow(0 0 12px #ffd982cc)', 'brightness(1.6) drop-shadow(0 0 16px #ffe7b0)', 'brightness(2) drop-shadow(0 0 4px #ffe7b000)'] }}
+                                        transition={{ duration: .95, times: [0, .2, .55, .75, 1], ease: 'easeInOut' }}
                                     >
                                         <SkyjoCard card={{ ...clearedCols.find(item => item.col === col).cards[row], isRevealed: true }} size={size} />
                                     </Motion.div>
