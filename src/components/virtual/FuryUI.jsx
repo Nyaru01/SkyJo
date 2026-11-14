@@ -79,10 +79,12 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names }) {
     }, [lastFury, myIndex, reduce]);
     useEffect(() => {
         if (!lastGain?.at) return undefined;
+        const mine = lastGain.by === myIndex;
         const t0 = setTimeout(() => setGain(lastGain), 0);
-        const t1 = setTimeout(() => setGain(null), lastGain.by === myIndex ? 2600 : 2000);
-        if (lastGain.by === myIndex) { try { navigator.vibrate?.([30, 40, 30]); } catch { /* indisponible */ } }
-        return () => { clearTimeout(t0); clearTimeout(t1); };
+        // La carte du joueur reste affichée jusqu’à « OK » ; celle de l’adversaire s’efface seule.
+        const t1 = mine ? null : setTimeout(() => setGain(null), 2400);
+        if (mine) { try { navigator.vibrate?.([30, 40, 30]); } catch { /* indisponible */ } }
+        return () => { clearTimeout(t0); if (t1) clearTimeout(t1); };
     }, [lastGain, myIndex]);
     const word = shown ? (shown.blocked ? 'Bloqué !' : FURY_TYPES[shown.type].bubble) : '';
     const by = shown ? names[shown.by] : '';
@@ -110,6 +112,7 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names }) {
                     </Motion.div>)}
                 </div>
                 <p className="fury-reveal-sub">Rangée dans votre réserve, sous la pioche. Jouez-la au début d’un prochain tour, à la place de piocher.</p>
+                <button type="button" className="fury-reveal-ok" onClick={() => setGain(null)} autoFocus>OK</button>
             </Motion.div>}
             {gain && gain.by !== myIndex && <Motion.div key={gain.at} className="fury-gain" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
                 <Flame size={16} aria-hidden="true" />

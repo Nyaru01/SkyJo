@@ -159,7 +159,7 @@ body.fury-mode .fury-rail { justify-content: center; gap: 6px; }
 body.fury-mode .fury-card--mini { width: 62px; }
 .skyjo-action-area:has(.skyjo-card-source-wrap) .fury-opponent { opacity: 0; }
 /* Carte Fury piochée : révélée au centre, puis rangée dans la réserve */
-.fury-reveal { position: fixed; inset: 0; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; pointer-events: none; background: radial-gradient(circle at 50% 50%, #2a0f0cf0, #0f0a0dd9 65%, #0f0a0d99); }
+.fury-reveal { position: fixed; inset: 0; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; background: radial-gradient(circle at 50% 50%, #2a0f0cf0, #0f0a0dd9 65%, #0f0a0d99); }
 .fury-reveal-title { display: flex; align-items: center; gap: 8px; margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 34px; font-weight: 600; color: #ffd2b8; text-shadow: 0 0 24px #ff6a3acc; }
 .fury-reveal-title svg { color: #ff8a55; }
 .fury-reveal-cards { display: flex; gap: 12px; perspective: 600px; }
@@ -202,3 +202,8 @@ body.fury-mode .skyjo-badge-aside .fury-opponent { margin: 0 !important; width: 
 .fury-panel--opp .fury-card--mini { width: 50px; height: 36px; }
 .fury-panel--opp .fury-card--mini .fury-card-emblem { width: 16px; height: 16px; }
 .fury-panel--opp .fury-card--mini .fury-card-emblem svg { width: 11px; height: 11px; }
+/* Révélation : reste à l'écran jusqu'à « OK » */
+.fury-reveal { pointer-events: auto; }
+.fury-reveal-ok { margin-top: 4px; min-width: 140px; min-height: 46px; padding: 0 28px; border: 0; border-radius: 999px; font-size: 16px; font-weight: 700; letter-spacing: .04em; color: #2a0f0c; background: linear-gradient(180deg, #ffc08a, #ff7a45); box-shadow: 0 0 0 1px #ffd2b8aa inset, 0 8px 22px -6px #ff6a3acc; cursor: pointer; }
+.fury-reveal-ok:active { transform: scale(.96); }
+.fury-reveal-ok:focus-visible { outline: 2px solid #ffd2b8; outline-offset: 3px; }
