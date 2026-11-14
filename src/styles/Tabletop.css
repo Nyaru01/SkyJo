@@ -255,3 +255,8 @@ html body .tourment-goal .tourment-goal-title { color: #fbf6ee !important; font-
 .swap-reveal-side { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .swap-reveal-side small { font-size: 11.5px; color: #b3acbd; white-space: nowrap; }
 .swap-reveal-arrow { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #c6b4e61f; color: #d9ccf0; box-shadow: inset 0 0 0 1px #c6b4e633; }
+/* Table de jeu : pas de sélection de texte ni de menu « rechercher » à l'appui long */
+.skyjo-game-container, .skyjo-game-container *, .fury-rail, .fury-opponent, .skyjo-banner, .swap-reveal, .draw-bubble-layer, .fury-fx-layer {
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+.skyjo-game-container input, .skyjo-game-container textarea { -webkit-user-select: text; user-select: text; }

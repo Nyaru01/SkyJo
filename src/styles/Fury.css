@@ -132,3 +132,11 @@ html body .fury-rules .fury-rules-title { color: #fbf6ee !important; font-family
 .fury-rules-steps b { flex-shrink: 0; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #ff7a4526; color: #ff9a6a; font-size: 12px; }
 .fury-rules-steps strong { color: #fbf6ee; }
 .fury-rules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; margin-bottom: 16px; }
+/* Fury : on ne réserve que la place réelle de la réserve (≈ 70 px), les cartes gardent leur taille normale */
+body.fury-mode .skyjo-game-container { --skyjo-card-h: clamp(2.8rem, calc((100dvh - 445px) / 7), 4.2rem); }
+.fury-card--mini { height: 56px; }
+.fury-card--mini .fury-card-emblem { width: 26px; height: 26px; }
+.fury-rail { margin-top: 6px; }
+.fury-opponent { margin-bottom: 4px; }
+/* Annonce des Fury piochées : en haut, sous la barre, pour ne rien cacher */
+.fury-gain { top: calc(96px + env(safe-area-inset-top, 0px)); }
