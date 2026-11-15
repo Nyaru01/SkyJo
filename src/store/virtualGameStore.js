@@ -1,5 +1,5 @@
 import { initializeFuryGame, collectFuryFromPile, playFury, decideFuryAction } from '../lib/furyEngine';
-import { getActiveWeeklyChallenge, getGameChallenge, HARVEST, hasChallengeObjective, hasBestRoundScore } from '../lib/weeklyChallenge';
+import { getActiveWeeklyChallenge, getGameChallenge, WINTER, hasChallengeObjective, hasBestRoundScore } from '../lib/weeklyChallenge';
 import { setSeasonalPreview } from '../lib/seasonalPreview';
 let previewSnapshot = null;
 /**
@@ -271,7 +271,9 @@ export const useVirtualGameStore = create(
                 const gameState = isFuryMode ? initializeFuryGame(players) : initializeGame(players, { isBonusMode, isHardcoreMode });
                 gameState.isWeeklyChallenge = options.isWeeklyChallenge === true;
                 if (gameState.isWeeklyChallenge) {
-                    gameState.seasonalChallengeId = options.isSeasonalPreview ? HARVEST.id : getActiveWeeklyChallenge().id;
+                    const active = getActiveWeeklyChallenge();
+                    if (!active && !options.isSeasonalPreview) return false;
+                    gameState.seasonalChallengeId = options.isSeasonalPreview ? WINTER.id : active.id;
                     gameState.isSeasonalPreview = options.isSeasonalPreview === true;
                 }
 

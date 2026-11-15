@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { EQUINOX, HARVEST, getActiveWeeklyChallenge, getEquinoxCountdown, getGameChallenge, canAwardWeeklyChallenge, isWeeklyChallengeAvailable, getWeeklyChallengeRemainingDays } from './weeklyChallenge.js';
+import { EQUINOX, HARVEST, WINTER, getUpcomingWeeklyChallenge, hasIceColumn, hasChallengeObjective, getWinterCountdown, getActiveWeeklyChallenge, getEquinoxCountdown, getGameChallenge, canAwardWeeklyChallenge, isWeeklyChallengeAvailable, getWeeklyChallengeRemainingDays } from './weeklyChallenge.js';
 import { checkAndRemoveColumns, initializeGame, calculateFinalScores } from './skyjoEngine.js';
 const scores = [{ playerId: 'human-1', finalScore: -3 }, { playerId: 'ai-1', finalScore: 4 }];
 
@@ -8,9 +8,30 @@ test('Paris: last day, midnight switch, and countdown', () => {
     assert.equal(getEquinoxCountdown(new Date('2026-09-10T10:00:00Z')), 'J−13 · Jusqu’au 23 septembre inclus');
     assert.equal(getEquinoxCountdown(new Date('2026-09-22T22:00:00Z')), 'Dernier jour');
     assert.equal(getActiveWeeklyChallenge(new Date('2026-09-23T21:59:59.999Z')), EQUINOX);
-    assert.equal(getActiveWeeklyChallenge(new Date('2026-09-23T22:00:00Z')), HARVEST);
+    assert.equal(getActiveWeeklyChallenge(new Date('2026-09-23T22:00:00Z')), null);
     assert.equal(getEquinoxCountdown(new Date('2026-09-23T22:00:00Z')), null);
-    assert.equal(getActiveWeeklyChallenge(new Date('2027-01-01T00:00:00Z')), HARVEST);
+    assert.equal(getActiveWeeklyChallenge(new Date('2027-01-01T00:00:00Z')), null);
+});
+
+test('Nuit du solstice : grisée avant le 21 décembre, active du 21 au 31 décembre 23 h 59 (Paris)', () => {
+    assert.equal(getActiveWeeklyChallenge(new Date('2026-11-15T12:00:00Z')), null);
+    assert.equal(getUpcomingWeeklyChallenge(new Date('2026-11-15T12:00:00Z')), WINTER);
+    assert.equal(getActiveWeeklyChallenge(new Date('2026-12-20T22:59:59Z')), null);
+    assert.equal(getActiveWeeklyChallenge(new Date('2026-12-20T23:00:00Z')), WINTER);
+    assert.equal(getUpcomingWeeklyChallenge(new Date('2026-12-20T23:00:00Z')), null);
+    assert.equal(getActiveWeeklyChallenge(new Date('2026-12-31T22:59:59Z')), WINTER);
+    assert.equal(getActiveWeeklyChallenge(new Date('2026-12-31T23:00:00Z')), null);
+    assert.equal(getWinterCountdown(new Date('2026-12-21T10:00:00Z')), 'J−10 · Jusqu’au 31 décembre inclus');
+    assert.equal(getWinterCountdown(new Date('2026-12-31T10:00:00Z')), 'Dernier jour');
+    assert.equal(isWeeklyChallengeAvailable({}, new Date('2026-11-15T12:00:00Z')), false);
+});
+
+test('colonne de glace : trois cartes à 0 ou moins, colonne encore sur la grille', () => {
+    const c = v => ({ value: v, isRevealed: true });
+    const hand = [c(-2), c(0), c(-1), c(5), c(5), c(1), null, null, null, c(3), c(4), c(9)];
+    assert.equal(hasIceColumn(hand), true);
+    assert.equal(hasIceColumn([c(-2), c(1), c(-1), ...Array(9).fill(c(4))]), false);
+    assert.equal(hasChallengeObjective({ challenge: WINTER, hand }), true);
 });
 test('saved games retain their event, old weekly saves mean Equinox', () => {
     assert.equal(getGameChallenge({ isWeeklyChallenge: true }), EQUINOX);

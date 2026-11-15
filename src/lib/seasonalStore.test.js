@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-test('real stores: admin preview isolation, restore, seasonal reward idempotence', async () => {
+test('real stores: admin preview isolation, restore, seasonal reward idempotence', async (t) => {
     const files = new Map();
     globalThis.localStorage = {getItem:k=>files.get(k)??null,setItem:(k,v)=>files.set(k,v),removeItem:k=>files.delete(k)};
     const dir = await mkdtemp(join(tmpdir(), 'skyjo-seasonal-test-'));
@@ -25,7 +25,7 @@ test('real stores: admin preview isolation, restore, seasonal reward idempotence
         const account = () => JSON.stringify({xp:g.getState().currentXP,level:g.getState().level,history:g.getState().gameHistory,wins:g.getState().seasonalChallengeWins,daily:g.getState().lastDailyWinDate,weekly:g.getState().weeklyChallengeWinDate});
         const before = account();
         assert.equal(v.getState().startSeasonalPreview(),true);
-        assert.equal(v.getState().gameState.seasonalChallengeId,'recolte_2026');
+        assert.equal(v.getState().gameState.seasonalChallengeId,'solstice_2026');
         const finishWinningHarvest = () => {
             const state=structuredClone(v.getState().gameState);
             state.players[0].columnsCleared=2;
@@ -35,7 +35,7 @@ test('real stores: admin preview isolation, restore, seasonal reward idempotence
             v.setState({gameState:state});v.getState().debugForceEndRound();
         };
         finishWinningHarvest();
-        assert.deepEqual(v.getState().gameState.seasonalResult,{success:true,rewardXP:15,preview:true});
+        assert.deepEqual(v.getState().gameState.seasonalResult,{success:true,rewardXP:20,preview:true});
         g.getState().addXP(50);g.getState().markDailyWin();
         assert.equal(g.getState().awardWeeklyChallenge('recolte_2026',15),false);
         g.getState().archiveVirtualGame({players:[{id:'human-1'}],totalScores:{},winner:null,roundsPlayed:1});
@@ -46,7 +46,8 @@ test('real stores: admin preview isolation, restore, seasonal reward idempotence
         assert.equal(JSON.stringify(v.getState().gameState),previous);
         assert.equal(account(),before);
         assert.equal(g.getState().isAdminOpen,true);
-        // A real seasonal finish grants once, even on repeated finalization and reload.
+        // A real seasonal finish grants once, even on repeated finalization and reload (pendant l'hiver).
+        t.mock.timers.enable({ apis: ['Date'], now: Date.parse('2026-12-22T12:00:00Z') });
         v.getState().startAIGame({name:'Test'},1,'bonus',{isBonusMode:true,isWeeklyChallenge:true});
         v.setState({gameState:{...v.getState().gameState,seasonalChallengeId:'recolte_2026'}});
         finishWinningHarvest();

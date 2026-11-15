@@ -1,6 +1,6 @@
 import SeasonalChallengeButton from './ui/SeasonalChallengeButton';
 import LevelUpCelebration from './LevelUpCelebration';
-import { HARVEST } from '../lib/weeklyChallenge';
+import { WINTER } from '../lib/weeklyChallenge';
 import { useOnlineGameStore } from '../store/onlineGameStore';
 import React, { useState, useEffect } from 'react';
 import { Users, MessageSquare, Eye, Archive, Trash2, RefreshCw, X, Check, ArrowUpCircle, Sparkles, Trophy, Gift, Play, Zap } from 'lucide-react';
@@ -247,12 +247,12 @@ export function AdminDashboard({ adminPassword, onClose }) {
                 </div>
 
                 <div className="mb-6">
-                    <SeasonalChallengeButton challenge={HARVEST} preview onClick={() => {
+                    <SeasonalChallengeButton challenge={WINTER} preview onClick={() => {
                         if (useVirtualGameStore.getState().gameState) setConfirmHarvest(true);
                         else launchHarvest();
                     }} />
                     <ConfirmModal isOpen={confirmHarvest} onClose={() => setConfirmHarvest(false)} onConfirm={launchHarvest}
-                        title="Tester Récolte d’automne ?" message="La partie actuelle sera mise de côté pendant le test, puis restaurée. Aucun XP ni statistique ne sera enregistré." confirmText="Lancer l’aperçu" />
+                        title="Tester la Nuit du solstice ?" message="La partie actuelle sera mise de côté pendant le test, puis restaurée. Aucun XP ni statistique ne sera enregistré." confirmText="Lancer l’aperçu" />
                 </div>
                 {/* TEST ACTIONS (Debug Simulator) */}
                 <div className="mb-8 p-6 bg-indigo-500/10 border border-indigo-500/20 rounded-[2rem] flex flex-col lg:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-2xl">

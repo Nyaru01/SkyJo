@@ -313,7 +313,7 @@ export const useGameStore = create(
              * Atomically award the current weekly challenge and sync once.
              */
             awardWeeklyChallenge: (
-                challengeId = getActiveWeeklyChallenge().id,
+                challengeId = getActiveWeeklyChallenge()?.id,
                 rewardXP = CURRENT_WEEKLY_CHALLENGE.rewardXP,
             ) => {
                 if (isSeasonalPreview()) return false;

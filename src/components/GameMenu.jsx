@@ -334,7 +334,7 @@ export default function GameMenu({
             />
 
             {/* Weekly Challenge Announcement Modal */}
-            <ModalShell isOpen={showWeeklyAnnouncement} onClose={handleCloseAnnouncement} labelledBy="weekly-announcement-title" className="menu-dialog-shell" maxWidth="max-w-sm">
+            <ModalShell isOpen={showWeeklyAnnouncement && !!challenge} onClose={handleCloseAnnouncement} labelledBy="weekly-announcement-title" className="menu-dialog-shell" maxWidth="max-w-sm">
                         <div className="bg-gradient-to-b from-slate-900 to-slate-950 border border-indigo-400/30 rounded-[2.5rem] shadow-2xl p-8 text-center relative">
                             {/* Decorative elements */}
                             <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-indigo-500/15 via-amber-500/5 to-transparent pointer-events-none" />
@@ -344,7 +344,7 @@ export default function GameMenu({
                             {/* Icon */}
                             <div className="relative mb-6 inline-block">
                                 <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-400 via-violet-500 to-indigo-700 flex items-center justify-center shadow-lg shadow-indigo-500/25 transform -rotate-6">
-                                    <span className="text-4xl animate-float-3d">{challenge.icon}</span>
+                                    <span className="text-4xl animate-float-3d">{challenge?.icon}</span>
                                 </div>
                                 <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center border-4 border-slate-900">
                                     <Sparkles className="w-4 h-4 text-white" />
@@ -352,12 +352,12 @@ export default function GameMenu({
                             </div>
 
                             {/* Text content */}
-                            <h2 id="weekly-announcement-title" className="text-2xl font-black text-white mb-2 tracking-tight">{challenge.title}</h2>
-                            <p className="text-indigo-300 font-bold text-sm uppercase tracking-widest mb-6">{challenge.subtitle}</p>
+                            <h2 id="weekly-announcement-title" className="text-2xl font-black text-white mb-2 tracking-tight">{challenge?.title}</h2>
+                            <p className="text-indigo-300 font-bold text-sm uppercase tracking-widest mb-6">{challenge?.subtitle}</p>
                             
                             <div className="space-y-4 mb-8 text-center">
                                 <p className="text-slate-300 text-sm leading-relaxed">
-                                    En mode Tourment : <strong className="text-white">{challenge.requirementLabel}</strong>, puis obtenez le meilleur score contre l’IA en une manche. Les égalités comptent.
+                                    En mode Tourment : <strong className="text-white">{challenge?.requirementLabel}</strong>, puis obtenez le meilleur score contre l’IA en une manche. Les égalités comptent.
                                 </p>
                                 <p className="text-[10px] text-indigo-300/80 font-bold italic -mt-2">
                                     Une récompense tous les sept jours. Réessayez immédiatement après une défaite.
@@ -365,7 +365,7 @@ export default function GameMenu({
 
                                 <div className="bg-indigo-500/10 border border-indigo-400/20 rounded-2xl py-3 px-4 inline-flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-indigo-500 text-white flex items-center justify-center font-black shadow-lg">
-                                        +{challenge.rewardXP}
+                                        +{challenge?.rewardXP}
                                     </div>
                                     <div className="text-left">
                                         <div className="font-bold text-xs uppercase tracking-wider text-indigo-300">Récompense</div>

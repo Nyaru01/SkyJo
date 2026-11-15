@@ -1260,9 +1260,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
             rewardXP: activeGameState.challengeJustWon ? challenge.rewardXP : 0,
         };
         const totals = Object.fromEntries(scores.map(s => [s.playerId, s.finalScore]));
-        const canRetry = !result.success && (activeGameState.isSeasonalPreview || challenge?.id === getActiveWeeklyChallenge().id);
+        const canRetry = !result.success && (activeGameState.isSeasonalPreview || challenge?.id === getActiveWeeklyChallenge()?.id);
         const retryChallenge = () => {
-            if (!activeGameState.isSeasonalPreview && challenge?.id !== getActiveWeeklyChallenge().id) {
+            if (!activeGameState.isSeasonalPreview && challenge?.id !== getActiveWeeklyChallenge()?.id) {
                 toast.error('Cette saison est terminée. Retrouvez le nouveau défi dans le menu.');
                 return;
             }
