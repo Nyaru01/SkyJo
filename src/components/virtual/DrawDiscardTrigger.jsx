@@ -177,6 +177,9 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
 
     // Determine button state
     const isDrawPhase = turnPhase === 'DRAW';
+    // À votre tour de piocher, les deux piles parlent d'elles-mêmes : pas de bouton « Piochez ou prenez la défausse ».
+    // On garde le bouton pour « L’IA réfléchit » et le dernier tour.
+    const hideDrawLabel = isDrawPhase && canInteract && !/dernier tour/i.test(instructionText || '');
     const isReplacePhase = turnPhase === 'REPLACE_OR_DISCARD' || turnPhase === 'MUST_REPLACE';
 
     // Mini card preview for discard - use mosaic colors
@@ -261,7 +264,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0 max-w-[240px]">
-                            <motion.button
+                            {!hideDrawLabel && <motion.button
                                 onClick={onClick}
                                 disabled={!canInteract}
                                 className={cn(
@@ -339,8 +342,9 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                         <ArrowRight strokeWidth={2.5} className="h-5 w-5" />
                                     </motion.div>
                                 )}
-                            </motion.button>
+                            </motion.button>}
                             {/* Dernier coup de l’IA, sous le bouton (hors du cadre, pour ne pas être rogné) */}
+                            {hideDrawLabel && <div className="skyjo-turn-cue" role="status" aria-label="À vous : piochez ou prenez la défausse"><i className="skyjo-cue-arrow skyjo-cue-arrow--l" aria-hidden="true" /><span><small>Votre tour</small>À vous</span><i className="skyjo-cue-arrow skyjo-cue-arrow--r" aria-hidden="true" /></div>}
                             {recapText && <p className="skyjo-ai-recap">{recapText}</p>}
                         </div>
                     )}

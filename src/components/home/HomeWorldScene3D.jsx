@@ -490,6 +490,36 @@ function Greenery({ season }) {
     </group>;
 }
 
+// Arbre stylisé : tronc qui s'affine avec deux branches, feuillage en grappes de deux tons, fruits ou neige selon la saison.
+function Tree({ position, scale = 1, season, seed = 0 }) {
+    const leaf = SEASON_TINT[season].leaf;
+    const shades = useMemo(() => {
+        const base = new Color(leaf);
+        return [base.clone().offsetHSL(0, 0, -0.07).getStyle(), leaf, base.clone().offsetHSL(0.01, 0, 0.07).getStyle()];
+    }, [leaf]);
+    const crowns = [[0, 0.62, 0, 0.24, 1], [0.17, 0.52, 0.06, 0.17, 0], [-0.16, 0.55, -0.04, 0.17, 2], [0.05, 0.78, -0.05, 0.16, 2], [-0.06, 0.48, 0.15, 0.14, 0]];
+    return <group position={position} scale={scale} rotation-y={seed * 1.3}>
+        <mesh position={[0, 0.03, 0]} receiveShadow><cylinderGeometry args={[0.17, 0.2, 0.06, 18]} /><meshLambertMaterial color={C.stoneEdge} /></mesh>
+        <mesh position={[0, 0.27, 0]} castShadow><cylinderGeometry args={[0.035, 0.06, 0.48, 8]} /><meshLambertMaterial color={C.trunk} /></mesh>
+        {[[-1, 0.7], [1, -0.6]].map(([side, tilt], k) => <mesh key={k} position={[side * 0.06, 0.4, 0]} rotation-z={tilt}><cylinderGeometry args={[0.015, 0.025, 0.18, 6]} /><meshLambertMaterial color={C.trunk} /></mesh>)}
+        {crowns.map(([cx, cy, cz, r, tone], k) => <mesh key={k} position={[cx, cy, cz]} castShadow><icosahedronGeometry args={[r, 1]} /><meshLambertMaterial color={shades[tone]} flatShading /></mesh>)}
+        {season === 'winter'
+            ? <mesh position={[0, 0.84, -0.04]} scale={[1, 0.45, 1]}><sphereGeometry args={[0.17, 14, 10]} /><meshLambertMaterial color="#ffffff" /></mesh>
+            : [[0.16, 0.6, 0.15], [-0.12, 0.7, 0.14], [0.02, 0.5, 0.22]].map(([fx, fy, fz], k) => <mesh key={'f' + k} position={[fx, fy, fz]}><sphereGeometry args={[0.025, 8, 6]} /><meshBasicMaterial color={season === 'autumn' ? '#f2c25a' : '#f4c7c3'} /></mesh>)}
+    </group>;
+}
+// Guirlande de fanions entre les deux piliers de la tour.
+const PENNANTS = ['#e8907a', '#f2d48a', '#9fc7b4', '#b9a8dc', '#e8907a', '#f2d48a'];
+function Garland({ season }) {
+    const flags = PENNANTS.map((color, i) => {
+        const u = (i + 0.5) / PENNANTS.length;
+        return { color: season === 'winter' ? ['#dff3fb', '#f6efe2'][i % 2] : color, x: 1.42 + u * 0.66, y: 1.62 - Math.sin(u * Math.PI) * 0.16 };
+    });
+    return <group position={[0, 0, -1.2]}>
+        {flags.map((f, i) => <mesh key={i} position={[f.x, f.y - 0.05, 0.16]}><coneGeometry args={[0.04, 0.09, 3]} /><meshLambertMaterial color={f.color} /></mesh>)}
+    </group>;
+}
+
 function Island({ still, onTouch, season = 'autumn' }) {
     const clock = useRef(0);
     const ref = useRef();
@@ -540,10 +570,8 @@ function Island({ still, onTouch, season = 'autumn' }) {
         {season !== 'winter' && <Koi still={still} />}
         <Greenery season={season} />
         {[0, 1, 2, 3, 4].map(i => <Block key={i} size={[0.8, 0.2, 0.34]} position={[1.75, -0.1 - i * 0.2, 2.27 + i * 0.34]} color={C.stone} />)}
-        {[[-2.35, -1.75], [0.85, -1.75]].map(([x, z], i) => <group key={i} position={[x, 0, z]}>
-            <Block size={[0.08, 0.35, 0.08]} position={[0, 0.17, 0]} color={C.trunk} />
-            <mesh position={[0, 0.5, 0]}><sphereGeometry args={[0.24, 16, 12]} /><meshLambertMaterial color={SEASON_TINT[season].leaf} /></mesh>
-        </group>)}
+        {[[-2.35, -1.75, 1], [0.85, -1.75, 0.85]].map(([x, z, k], i) => <Tree key={i} position={[x, 0, z]} scale={k} season={season} seed={i} />)}
+        <Garland season={season} />
     </group>;
 }
 
@@ -589,27 +617,40 @@ function glowTexture(inner, outer) {
     return t;
 }
 
-function Floaters({ still }) {
+function Floaters({ still, season = 'autumn' }) {
     const refs = useRef([]);
-    const items = [
-        { p: [-3.4, 0.8, 1.6], s: 0.32, c: C.coral1 },
-        { p: [3.6, -1.4, 2.2], s: 0.26, c: C.lilac },
-        { p: [-2.6, -2.6, -1.8], s: 0.4, c: C.coral2 },
-        { p: [2.9, 2.6, 1.9], s: 0.18, c: C.stone },
+    const rocks = [
+        { p: [3.6, -1.4, 2.2], s: 0.16, c: C.lilac },
+        { p: [-2.6, -2.6, -1.8], s: 0.22, c: C.coral2 },
+        { p: [2.9, 2.6, 1.9], s: 0.11, c: C.stone },
     ];
     useFrame(state => {
         if (still) return;
         const t = state.clock.elapsedTime;
-        items.forEach((it, i) => {
-            const m = refs.current[i];
+        refs.current.forEach((m, i) => {
             if (!m) return;
-            m.position.y = it.p[1] + Math.sin(t * 0.7 + i * 1.7) * 0.15;
-            m.rotation.y = t * 0.2 + i;
+            const base = i === 0 ? 0.7 : rocks[i - 1].p[1];
+            m.position.y = base + Math.sin(t * 0.7 + i * 1.7) * 0.15;
+            m.rotation.y = (i === 0 ? 0.15 : 0.25) * t + i;
         });
     });
-    return items.map((it, i) => <mesh key={i} ref={el => { refs.current[i] = el; }} position={it.p}>
-        <boxGeometry args={[it.s, it.s, it.s]} /><meshLambertMaterial color={it.c} />
-    </mesh>);
+    const leaf = SEASON_TINT[season].leaf;
+    return <>
+        {/* Petit îlot flottant : terre, rocher en pointe, mini-arbre et lanterne */}
+        <group ref={el => { refs.current[0] = el; }} position={[-3.5, 0.7, 1.7]} scale={0.9}>
+            <mesh position-y={0.02}><cylinderGeometry args={[0.42, 0.44, 0.06, 7]} /><meshLambertMaterial color={season === 'winter' ? '#eef2f6' : '#c7d3b8'} flatShading /></mesh>
+            <mesh position-y={-0.08}><cylinderGeometry args={[0.44, 0.38, 0.14, 7]} /><meshLambertMaterial color={C.stone} flatShading /></mesh>
+            <mesh position-y={-0.42} rotation-x={Math.PI}><coneGeometry args={[0.38, 0.6, 7]} /><meshLambertMaterial color={C.coral2} flatShading /></mesh>
+            <mesh position-y={-0.82} rotation-x={Math.PI}><coneGeometry args={[0.12, 0.24, 6]} /><meshLambertMaterial color={C.coral3} flatShading /></mesh>
+            <group position={[-0.12, 0.05, 0.05]} scale={0.55}><mesh position-y={0.2}><cylinderGeometry args={[0.03, 0.05, 0.4, 6]} /><meshLambertMaterial color={C.trunk} /></mesh>
+                <mesh position-y={0.48}><icosahedronGeometry args={[0.22, 1]} /><meshLambertMaterial color={leaf} flatShading /></mesh></group>
+            <mesh position={[0.18, 0.12, -0.06]}><boxGeometry args={[0.07, 0.12, 0.07]} /><meshBasicMaterial color="#ffe3ac" /></mesh>
+            <mesh position={[0.08, 0.06, 0.2]}><icosahedronGeometry args={[0.07, 0]} /><meshLambertMaterial color={C.stoneEdge} flatShading /></mesh>
+        </group>
+        {rocks.map((it, i) => <mesh key={i} ref={el => { refs.current[i + 1] = el; }} position={it.p}>
+            <icosahedronGeometry args={[it.s, 0]} /><meshLambertMaterial color={it.c} flatShading />
+        </mesh>)}
+    </>;
 }
 const MIST = [
     { p: [0, -3.3, 0.6], s: [12, 5], speed: 0.18, amp: 0.5 },
@@ -710,7 +751,7 @@ function Wanderer({ still }) {
 
 // Caméra orthographique isométrique ; entrée en léger zoom avant.
 function frameCamera(camera, size, compact) {
-    const span = compact ? 12.5 : 9.6;
+    const span = compact ? 11.2 : 8.5;
     camera.userData.baseZoom = size.width / span;
     camera.zoom = camera.userData.baseZoom;
     camera.position.set(10, 8.2, 10);
@@ -773,7 +814,7 @@ export default function HomeWorldScene3D({ compact = false }) {
                 <Island still={still} onTouch={onTouch} season={season} />
                 {(season === 'autumn' || season === 'spring') && <FallingLeaves season={season} still={still} />}
                 {season === 'winter' && <Snowfall still={still} />}
-                <Floaters still={still} />
+                <Floaters still={still} season={season} />
                 <SkyLanterns still={still} />
                 <Wanderer still={still} />
                 <Birds still={still} />

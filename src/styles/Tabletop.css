@@ -290,3 +290,31 @@ html body .tourment-goal .tourment-goal-title { color: #fbf6ee !important; font-
 .round-end-veil { animation-duration: 2.3s; }
 @keyframes round-end-veil { 0%, 20% { background-color: #09122000; backdrop-filter: blur(0); } 45%, 100% { background-color: #091220b3; backdrop-filter: blur(6px); } }
 .round-end-reason { animation-duration: 2.3s; animation-delay: .35s; }
+/* Sans bouton central (à votre tour de piocher) : le résumé du coup de l'IA se centre entre les piles */
+div:has(> .skyjo-ai-recap:only-child) { justify-content: center; align-self: stretch; }
+.skyjo-ai-recap:only-child { font-size: 12px; }
+/* « À vous » : pastille qui pulse au centre quand c'est à vous de piocher */
+div:has(> .skyjo-your-turn) { justify-content: center; align-self: stretch; }
+.skyjo-your-turn { display: inline-flex; align-items: center; gap: 7px; padding: 7px 16px; border-radius: 999px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 19px; font-weight: 600; color: #24273a;
+    background: linear-gradient(180deg, #f3ecdf, #e2d6c2); box-shadow: 0 0 0 0 #ece4d699, 0 8px 18px -10px #000c; animation: skyjo-your-turn 1.6s ease-in-out infinite; }
+.skyjo-your-turn::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #8fc2a8; box-shadow: 0 0 6px #8fc2a8; }
+@keyframes skyjo-your-turn { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 #ece4d680, 0 8px 18px -10px #000c; } 50% { transform: scale(1.06); box-shadow: 0 0 0 9px #ece4d600, 0 8px 18px -10px #000c; } }
+@media (prefers-reduced-motion: reduce) { .skyjo-your-turn { animation: none; } }
+/* v2 « À vous » : titre doré sans pastille, chevrons qui désignent les deux piles, piles qui respirent */
+.skyjo-your-turn { display: none; }
+div:has(> .skyjo-turn-cue) { justify-content: center; align-self: stretch; gap: 6px; }
+.skyjo-turn-cue { position: relative; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.skyjo-turn-cue::before { content: ''; position: absolute; inset: -14px -6px; z-index: -1; border-radius: 50%; background: radial-gradient(closest-side, #f6d9a440, transparent 75%); animation: skyjo-cue-glow 2.4s ease-in-out infinite; }
+.skyjo-turn-cue span { display: flex; flex-direction: column; align-items: center; line-height: 1; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 27px; font-weight: 600; color: #fbf1dd; text-shadow: 0 0 18px #f6c88a77; }
+.skyjo-turn-cue small { margin-bottom: 3px; font-family: system-ui, sans-serif; font-size: 8.5px; font-weight: 800; letter-spacing: .24em; text-transform: uppercase; color: #e8c590; text-shadow: none; }
+.skyjo-cue-arrow { width: 9px; height: 9px; border-top: 2px solid #e8c590; border-left: 2px solid #e8c590; opacity: .85; }
+.skyjo-cue-arrow--l { rotate: -45deg; animation: skyjo-cue-l 1.6s ease-in-out infinite; }
+.skyjo-cue-arrow--r { rotate: 135deg; animation: skyjo-cue-r 1.6s ease-in-out infinite; }
+@keyframes skyjo-cue-l { 50% { translate: -5px 0; opacity: .4; } }
+@keyframes skyjo-cue-r { 50% { translate: 5px 0; opacity: .4; } }
+@keyframes skyjo-cue-glow { 50% { opacity: .55; scale: 1.08; } }
+div:has(> .skyjo-turn-cue) > .skyjo-ai-recap { padding-top: 6px; border-top: 1px solid #ffffff14; font-size: 11px; color: #aeb8c8; }
+/* Les deux piles respirent pendant que c'est à vous */
+.skyjo-pile-zone:has(.skyjo-turn-cue) :is(#deck-pile, #discard-pile) { animation: skyjo-pile-breathe 2.4s ease-in-out infinite; border-radius: 10px; }
+@keyframes skyjo-pile-breathe { 0%, 100% { box-shadow: 0 0 0 0 #f6d9a400; } 50% { box-shadow: 0 0 0 3px #f6d9a466, 0 0 18px #f6c88a55; } }
+@media (prefers-reduced-motion: reduce) { .skyjo-turn-cue::before, .skyjo-cue-arrow, .skyjo-pile-zone:has(.skyjo-turn-cue) :is(#deck-pile, #discard-pile) { animation: none; } }
