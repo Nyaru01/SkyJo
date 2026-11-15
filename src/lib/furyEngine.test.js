@@ -105,3 +105,20 @@ test("l'IA vise la meilleure colonne adverse, jamais une colonne de mauvaises ca
     const bad = { ...state, players: [{ ...opp, hand: opp.hand.map(c => ({ ...c, value: 10 })) }, ai] };
     assert.equal(decideFuryAction(bad, 1), null);
 });
+
+test('une seule Fury par pioche, et jamais deux Fury collées au départ', () => {
+    for (let n = 0; n < 50; n++) {
+        const g = initializeFuryGame(players);
+        const pile = g.drawPile;
+        assert.equal(pile.filter(c => c.specialType === 'F').length, 12);
+        pile.forEach((c, i) => { if (i > 0 && c.specialType === 'F') assert.notEqual(pile[i - 1].specialType, 'F'); });
+        assert.ok(pile.slice(-4).every(c => c.specialType !== 'F'));
+    }
+    const g = initializeFuryGame(players);
+    const f = id => ({ id, specialType: 'F', furyType: 'fog', value: 0 });
+    const state = { ...g, drawPile: [...g.drawPile.filter(c => c.specialType !== 'F'), f('a'), f('b'), f('c')], currentPlayerIndex: 0 };
+    const { state: after, gained } = collectFuryFromPile(state);
+    assert.equal(gained.length, 1);
+    assert.notEqual(after.drawPile[after.drawPile.length - 1].specialType, 'F');
+    assert.equal(after.drawPile.filter(c => c.specialType === 'F').length, 2);
+});

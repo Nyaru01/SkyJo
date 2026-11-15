@@ -276,3 +276,7 @@ body.fury-mode .skyjo-badge-aside .fury-opponent { margin: 0 !important; width: 
 /* Bouclier : passif, toujours affiché « prêt » */
 .fury-chip-card--passive { display: inline-block; cursor: help; }
 .fury-chip-card--passive .fury-card { box-shadow: 0 0 0 1.5px #9fcab6, 0 0 14px #9fcab666; }
+/* Plusieurs cartes révélées d'un coup (cas rare) : elles rétrécissent au lieu de déborder */
+.fury-reveal-cards { max-width: 100%; justify-content: center; }
+.fury-reveal-cards > * { flex: 0 1 150px; min-width: 0; }
+.fury-reveal-cards .fury-card--full { width: 100%; }

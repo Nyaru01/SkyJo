@@ -29,9 +29,23 @@ export function initializeFuryGame(players, options = {}) {
     return {
         ...base,
         isFuryMode: true,
-        drawPile: shuffleDeck([...base.drawPile, ...furies]),
+        drawPile: spreadFuries(base.drawPile, shuffleDeck(furies)),
         players: base.players.map(p => ({ ...p, fury: emptyFury() })),
     };
+}
+
+// Répartit les Fury régulièrement dans la pioche (une par tranche), jamais deux à la suite ni tout en haut.
+// La fin du tableau est le dessus de la pioche.
+function spreadFuries(pile, furies) {
+    const cards = [...pile];
+    const usable = Math.max(0, cards.length - 4);
+    const slice = usable / furies.length;
+    // On insère de la plus haute tranche à la plus basse pour que les index restent valables.
+    for (let k = furies.length - 1; k >= 0; k--) {
+        const at = Math.floor(k * slice + 1 + Math.random() * Math.max(1, slice - 2));
+        cards.splice(Math.min(at, usable), 0, furies[k]);
+    }
+    return cards;
 }
 
 const columnIndices = col => [col * 3, col * 3 + 1, col * 3 + 2];
@@ -41,22 +55,23 @@ const replacePlayer = (state, index, player) => {
     return { ...state, players };
 };
 
-// Avant une pioche normale : les Fury du dessus de la pioche vont dans la réserve du joueur.
-// Réserve pleine : la carte retourne sous la pioche. Renvoie aussi les Fury gagnées (pour l'animation).
+// Avant une pioche normale : la Fury du dessus de la pioche va dans la réserve du joueur (une seule par pioche).
+// Réserve pleine : elle retourne sous la pioche. D'autres Fury collées dessous sont remélangées plus bas.
 export function collectFuryFromPile(state) {
     if (!state.isFuryMode) return { state, gained: [] };
     let drawPile = [...state.drawPile];
+    if (!drawPile.length || drawPile[drawPile.length - 1].specialType !== 'F') return { state, gained: [] };
     const index = state.currentPlayerIndex;
     const player = state.players[index];
     const fury = { ...(player.fury || emptyFury()), reserve: [...(player.fury?.reserve || [])] };
+    const card = drawPile.pop();
     const gained = [];
     const buried = [];
-    while (drawPile.length && drawPile[drawPile.length - 1].specialType === 'F') {
-        const card = drawPile.pop();
-        if (fury.reserve.length < FURY_RESERVE_MAX) { fury.reserve.push(card); gained.push(card); } else buried.push(card);
-    }
+    if (fury.reserve.length < FURY_RESERVE_MAX) { fury.reserve.push(card); gained.push(card); } else buried.push(card);
+    const extra = [];
+    while (drawPile.length && drawPile[drawPile.length - 1].specialType === 'F') extra.push(drawPile.pop());
+    extra.forEach(f => drawPile.splice(Math.floor(Math.random() * Math.max(1, drawPile.length - 6)), 0, f));
     drawPile = [...buried, ...drawPile];
-    if (!gained.length && !buried.length) return { state, gained };
     return { state: replacePlayer({ ...state, drawPile }, index, { ...player, fury }), gained };
 }
 

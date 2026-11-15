@@ -34,9 +34,9 @@ export function FuryRail({ part, me, opponent, opponentName, canPlay, selected, 
     const status = reserve.length === 0 ? 'Cachées dans la pioche : piochez pour en gagner'
         : finalRound ? 'Dernier tour : plus de Fury jouable'
         : attacks === 0 ? 'Votre Bouclier bloquera tout seul la prochaine attaque'
-        : left <= 0 ? 'Plus de Fury jouable cette manche'
-        : canPlay ? 'Touchez-en une à la place de piocher'
-        : 'Jouables au début de votre tour';
+        : left <= 0 ? `Limite atteinte : ${FURY_USES_PER_ROUND} Fury jouées cette manche`
+        : canPlay ? `Touchez-en une à la place de piocher · encore ${left} cette manche`
+        : `Jouables au début de votre tour · encore ${left} cette manche`;
     return <div className="fury-panel fury-panel--me">
         <div className="fury-panel-head">
             <strong>Vos cartes Fury{hasShield(me?.fury) ? ' · protégé' : ''}</strong>
