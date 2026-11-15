@@ -1258,7 +1258,7 @@ export const decideDrawSource = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
  * Decide what to do with a drawn card (replace or discard+reveal)
  * Returns: { action: 'REPLACE' | 'DISCARD_AND_REVEAL', cardIndex: number }
  */
-export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) => {
+const decideCardActionBase = (gameState, difficulty = AI_DIFFICULTY.NORMAL) => {
     const drawnCard = gameState.drawnCard;
     if (!drawnCard) return { action: 'DISCARD_AND_REVEAL', cardIndex: 0 }; // Fallback
 
@@ -1444,7 +1444,7 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
         }
         // Fallback: original denial logic if lookahead says discard but opponent would benefit
         if (wouldHelpOpponent(gameState, drawnValue)) {
-            if (highest.index !== -1 && highest.value >= drawnValue) {
+            if (highest.index !== -1 && highest.value > drawnValue) {
                 aiLog(difficulty, `Preventing opponent from getting ${drawnValue} by keeping it!`);
                 return { action: 'REPLACE', cardIndex: highest.index };
             }
@@ -1782,4 +1782,34 @@ export const planAITurn = (gameState, difficulty = AI_DIFFICULTY.NORMAL) => {
     }
 
     return actions;
+};
+
+/**
+ * Garde-fou de fin de manche : ne pas retourner sa dernière carte cachée (ce qui termine la manche)
+ * quand on est nettement derrière — le score serait doublé. On sacrifie plutôt sa pire carte visible,
+ * si le coût reste raisonnable. S'applique à tous les niveaux.
+ */
+export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) => {
+    const decision = decideCardActionBase(gameState, difficulty);
+    if (gameState.phase !== 'PLAYING' || !gameState.drawnCard) return decision;
+    const me = gameState.players[gameState.currentPlayerIndex];
+    const hand = me.hand;
+    const hidden = hand.map((c, i) => (c && !c.isRevealed ? i : -1)).filter(i => i >= 0);
+    const target = hand[decision.cardIndex];
+    if (hidden.length !== 1 || !target || target.isRevealed) return decision;
+    const drawn = Number(gameState.drawnCard.value);
+    if (!Number.isFinite(drawn)) return decision;
+    const value = c => (c ? (c.isRevealed ? Number(c.value) || 0 : 5) : 0);
+    // Score estimé si la manche se termine maintenant
+    const myEnd = hand.reduce((t, c, i) => t + (i === decision.cardIndex ? (decision.action === 'REPLACE' ? drawn : value({ ...c, isRevealed: true }) ) : value(c)), 0);
+    const others = gameState.players.filter((_, i) => i !== gameState.currentPlayerIndex);
+    const bestOpp = Math.min(...others.map(p => p.hand.reduce((t, c) => t + value(c), 0)));
+    if (myEnd <= bestOpp + 3) return decision;
+    // Pire carte visible remplaçable (pas verrouillée), pour continuer la manche
+    const candidates = hand.map((c, i) => ({ c, i })).filter(({ c }) => c && c.isRevealed && !(c.lockCount > 0) && typeof c.value === 'number');
+    if (!candidates.length) return decision;
+    const worst = candidates.reduce((a, b) => (b.c.value > a.c.value ? b : a));
+    const cost = drawn - worst.c.value; // points ajoutés en gardant la carte piochée
+    if (cost > 6) return decision;
+    return { action: 'REPLACE', cardIndex: worst.i };
 };

@@ -60,15 +60,13 @@ const applyGameEndLogic = (newState) => {
             newState.chestResults = chestResults;
         }
 
-        // Reveal all cards for final score visibility
-        newState.players.forEach(p => {
-            p.hand.forEach(c => {
-                if (c && !c.isRevealed) {
-                    c.isRevealed = true;
-                    c.wasAutoRevealed = true; // Tag for UI
-                }
-            });
-        });
+        // Reveal all cards for final score visibility.
+        // Copie (pas de mutation) : les cartes sont partagées avec l'état précédent ; les modifier en place
+        // les faisait apparaître retournées un instant sur le plateau, avant de se recacher.
+        newState.players = newState.players.map(p => ({
+            ...p,
+            hand: p.hand.map(c => (c && !c.isRevealed ? { ...c, isRevealed: true, wasAutoRevealed: true } : c)),
+        }));
 
         // Seasonal challenge is awarded only from the dedicated weekly entry point.
         const gameStore = useGameStore.getState();
