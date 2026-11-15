@@ -382,7 +382,7 @@ export const useVirtualGameStore = create(
                             if (action) {
                                 try {
                                     const { state } = playFury(gameState, action.reserveIndex, action.targetIndex, action.target ?? null);
-                                    set({ gameState: state, isAIThinking: false, drawnCardSource: null });
+                                    set({ gameState: { ...state, aiLastMove: null }, isAIThinking: false, drawnCardSource: null });
                                     return;
                                 } catch (error) { console.warn('[FURY] IA', error); }
                             }
@@ -498,7 +498,10 @@ export const useVirtualGameStore = create(
                                     card: drawnCard,
                                     onComplete: () => {
                                         // 3. Commit
+                                        const old = get().gameState.players[get().gameState.currentPlayerIndex].hand[decision.cardIndex];
                                         let ns = replaceCard(get().gameState, decision.cardIndex);
+                                        // Résumé du coup de l'IA, affiché au joueur au début de son tour.
+                                        ns = { ...ns, aiLastMove: { kind: 'replace', card: drawnCard.value, old: old?.value, oldHidden: !old?.isRevealed, at: Date.now() } };
                                         ns = endTurn(ns);
                                         ns = applyGameEndLogic(ns);
 
@@ -547,7 +550,9 @@ export const useVirtualGameStore = create(
                                             ns = playActionCard(get().gameState);
                                             // Optional: notify about action
                                         } else {
+                                            const flipped = get().gameState.players[get().gameState.currentPlayerIndex].hand[decision.cardIndex];
                                             ns = discardAndReveal(get().gameState, decision.cardIndex);
+                                            ns = { ...ns, aiLastMove: { kind: 'discard', card: drawnCard.value, revealed: flipped?.value, at: Date.now() } };
                                         }
 
                                         ns = endTurn(ns);

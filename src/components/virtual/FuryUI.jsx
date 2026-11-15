@@ -62,11 +62,25 @@ export function FuryTargetBanner({ type, onPlay, onCancel }) {
     </div>;
 }
 
+// Ce que la Fury adverse vient de vous faire, en clair.
+function furyExplain(f, byName) {
+    const col = f.column !== undefined ? `n° ${f.column + 1}` : '';
+    if (f.type === 'shield') return `${byName === 'IA' ? 'L’IA' : byName} se protège : votre prochaine Fury contre lui sera annulée.`;
+    if (f.blocked) return 'Votre Bouclier a encaissé l’attaque : il ne se passe rien, et le Bouclier disparaît.';
+    if (f.type === 'quake') return `Votre colonne ${col} est remise à zéro : ses cartes repartent dans la pioche, remplacées par des cartes cachées.`;
+    if (f.type === 'curse') return 'Une de vos cartes est remplacée par un +13, bloqué pendant 3 tours.';
+    if (f.type === 'fog') return `${f.cards?.length || 2} de vos cartes retournées sont recachées.`;
+    if (f.type === 'tornado') return 'Toutes vos cartes ont changé de place.';
+    if (f.type === 'freeze') return `Votre colonne ${col} est gelée 2 tours : impossible d’y remplacer une carte.`;
+    return FURY_TYPES[f.type].text;
+}
+
 // Effets : onomatopée façon BD, secousse du plateau visé, et annonce des Fury piochées.
 export function FuryEffects({ lastFury, lastGain, myIndex, names }) {
     const reduce = useReducedMotion();
     const [shown, setShown] = useState(null);
     const [gain, setGain] = useState(null);
+    const [announce, setAnnounce] = useState(null);
     useEffect(() => {
         if (!lastFury?.at) return undefined;
         const t0 = setTimeout(() => setShown(lastFury), 0);
@@ -74,8 +88,11 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names }) {
         const el = document.querySelector(target);
         if (el && !reduce && !lastFury.blocked && lastFury.type !== 'shield') { el.classList.remove('fury-shake'); void el.offsetWidth; el.classList.add('fury-shake'); }
         if (lastFury.targetIndex === myIndex && lastFury.type !== 'shield') { try { navigator.vibrate?.([40, 30, 60]); } catch { /* indisponible */ } }
-        const t1 = setTimeout(() => setShown(null), 1700);
-        return () => { clearTimeout(t0); clearTimeout(t1); };
+        // Fury adverse : après l’onomatopée, une annonce au centre explique ce qui s’est passé (fermée par « OK »).
+        const theirs = lastFury.by !== myIndex;
+        const t1 = setTimeout(() => setShown(null), theirs ? 1000 : 1700);
+        const t2 = theirs ? setTimeout(() => setAnnounce(lastFury), 900) : null;
+        return () => { clearTimeout(t0); clearTimeout(t1); if (t2) clearTimeout(t2); };
     }, [lastFury, myIndex, reduce]);
     useEffect(() => {
         if (!lastGain?.at) return undefined;
@@ -97,6 +114,17 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names }) {
                 <svg viewBox="0 0 200 150" aria-hidden="true"><polygon points="100,4 118,40 160,14 148,56 196,58 156,82 190,118 140,106 128,146 100,112 72,146 60,106 10,118 44,82 4,58 52,56 40,14 82,40" /></svg>
                 <span className="fury-boom-word">{word}</span>
                 <span className="fury-boom-caption">{by} · {FURY_TYPES[shown.type].title}</span>
+            </Motion.div>}
+        </AnimatePresence>
+        <AnimatePresence>
+            {announce && <Motion.div key={`announce-${announce.at}`} className="fury-reveal fury-announce" role="alertdialog" aria-label="Fury adverse"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+                <p className="fury-reveal-title"><Flame size={18} aria-hidden="true" />{names[announce.by] === 'IA' ? 'L’IA' : names[announce.by]} joue une Fury</p>
+                <Motion.div initial={reduce ? false : { rotateY: 180, scale: 0.5 }} animate={{ rotateY: 0, scale: 1 }} transition={{ duration: 0.5, ease: [0.2, 0.8, 0.25, 1] }} className="fury-reveal-cards">
+                    <FuryCard type={announce.type} />
+                </Motion.div>
+                <p className={`fury-announce-effect${announce.blocked ? ' is-blocked' : ''}`}>{furyExplain(announce, names[announce.by])}</p>
+                <button type="button" className="fury-reveal-ok" onClick={() => setAnnounce(null)} autoFocus>OK</button>
             </Motion.div>}
         </AnimatePresence>
         <AnimatePresence>

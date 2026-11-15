@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom';
+import { describeAiMove } from '../lib/aiMoveText';
 import { useState, useCallback, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Users, ArrowLeft, RotateCcw, RefreshCw, Trophy, Info, HelpCircle, Sparkles, CheckCircle, BookOpen, X, Bot, Lock, Image as ImageIcon, Palette, Copy, Share2, Wifi, Globe, Plus, ChevronRight, WifiOff, Music, Music2, Leaf, Swords, Skull, Gem, SkipForward, Pause, PlayCircle, Star, Zap, Award, QrCode, Flame } from 'lucide-react';
@@ -2861,6 +2862,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                                                                 activeGameState.turnPhase === 'SPECIAL_ACTION_SWAP' ? 'Échangez une carte' : ''))
                                 }
                                 isAIThinking={isAIThinking}
+                                recapText={aiMode && !isInitialReveal && activeGameState.currentPlayerIndex === myPlayerIndex && activeGameState.turnPhase === 'DRAW' ? describeAiMove(activeGameState.aiLastMove) : ''}
                             />
                         </div>
                     </div>

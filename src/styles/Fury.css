@@ -235,3 +235,10 @@ body.fury-mode .skyjo-badge-aside .fury-opponent { margin: 0 !important; width: 
 .fury-reveal-cards .fury-card--full .fury-card-emblem { width: 58px; height: 58px; margin: 12px 0 8px; }
 .fury-reveal-cards .fury-card--full .fury-card-title { font-size: 18px; letter-spacing: .03em; }
 @media (prefers-reduced-motion: reduce) { .fury-card--full::after { animation: none; } }
+/* Annonce d'une Fury adverse */
+.fury-announce-effect { max-width: 300px; margin: 0; padding: 10px 14px; border-radius: 12px; text-align: center; font-size: 14.5px; line-height: 1.4; font-weight: 600; color: #fff1e8; background: #00000059; border: 1px solid #ff8a5566; }
+.fury-announce-effect.is-blocked { border-color: #9fcab699; color: #dff3ea; }
+/* Titres : taille calée sur la largeur de la carte pour ne jamais déborder */
+.fury-card--full { container-type: inline-size; }
+.fury-card--full .fury-card-title { font-size: min(15px, 11.5cqi); letter-spacing: .03em; max-width: 100%; }
+.fury-reveal-cards .fury-card--full .fury-card-title { font-size: min(19px, 12cqi); }

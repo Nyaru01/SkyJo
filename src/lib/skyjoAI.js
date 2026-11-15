@@ -589,6 +589,15 @@ const checkColumnPotential = (hand, cardIndex, cardValue, forceCheck = false, di
 
         if (estimatedTotal <= 0) return false;
 
+        // Une « colonne en construction » suppose au moins une autre carte retournée assortie.
+        // Sans elle, poser une carte moyenne ou forte ne construit rien : c'est juste une mauvaise carte
+        // (ex. : un 10 posé à la place d'un 5 dans une colonne encore cachée).
+        const othersMatching = colIndices.filter(i => i !== cardIndex && hand[i] && hand[i].isRevealed
+            && (hand[i].specialType === 'C' || hand[i].value === 'C' || Number(hand[i].value) === Number(cardValue))).length;
+        const replaced = hand[cardIndex];
+        if (othersMatching === 0 && Number(cardValue) > 4) return false;
+        if (othersMatching === 0 && replaced && replaced.isRevealed && Number(replaced.value) <= Number(cardValue)) return false;
+
         // STRATEGY REFINEMENT: Don't build potential for 20s if it's too late or if we replace a good card
         if (cardValue === 20 || Number(cardValue) === 20) {
             const totalRevealed = hand.filter(c => c && c.isRevealed).length;

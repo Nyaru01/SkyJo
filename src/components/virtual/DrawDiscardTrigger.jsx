@@ -133,6 +133,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
     isDrawing = false,
     isAIThinking = false,
     drawnCardSource = null,
+    recapText = '', // Dernier coup de l'IA, en clair
 }) {
     const cardSkin = useGameStore(s => (s && s.cardSkin) ? s.cardSkin : 'classic');
     const gameMode = useGameStore(s => (s && s.gameMode) ? s.gameMode : 'normal');
@@ -322,6 +323,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                     {!canInteract && isAIThinking && (
                                         <span className="skyjo-thinking-dots" aria-hidden="true"><i /><i /><i /></span>
                                     )}
+                                    {recapText && <span className="skyjo-ai-recap">{recapText}</span>}
                                 </div>
 
                                 {/* Right Arrow - pointing to discard pile */}

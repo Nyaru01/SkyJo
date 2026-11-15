@@ -274,3 +274,6 @@ html body .tourment-goal .tourment-goal-title { color: #fbf6ee !important; font-
 /* Fin de manche : le plateau final reste visible, puis s'assombrit avant le bilan */
 .round-end-veil { position: fixed; inset: 0; z-index: 79; pointer-events: auto; animation: round-end-veil 1.3s ease-in both; }
 @keyframes round-end-veil { 0%, 35% { background-color: #09122000; backdrop-filter: blur(0); } 100% { background-color: #091220b3; backdrop-filter: blur(6px); } }
+/* Dernier coup de l'IA, sous la consigne */
+.skyjo-ai-recap { position: absolute; top: calc(100% + 4px); left: 50%; transform: translateX(-50%); width: max-content; max-width: 210px; text-align: center; white-space: normal; font-size: 10.5px; line-height: 1.25; font-weight: 600; letter-spacing: 0; text-transform: none; color: #c9d4e3; animation: skyjo-recap-in .5s ease-out both; }
+@keyframes skyjo-recap-in { from { opacity: 0; transform: translate(-50%, -4px); } to { opacity: 1; transform: translate(-50%, 0); } }
