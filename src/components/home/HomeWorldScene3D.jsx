@@ -5,6 +5,7 @@ import { backTexture, pastelFaceTexture } from './cardTextures';
 import { useGameStore } from '../../store/gameStore';
 import { getCardSkinPath } from '../../lib/skinUtils';
 import { currentSeason } from '../../lib/season';
+import { useSeasonalClock } from '../../hooks/useSeasonalClock';
 import { FallingLeaves, ShootingStars, Snowfall } from './SeasonEffects';
 import { MascotBot } from '../virtual/Mascot3D';
 
@@ -401,23 +402,71 @@ function waterfallTexture() {
     t.wrapS = t.wrapT = RepeatWrapping;
     return t;
 }
-function Waterfall({ still }) {
+function Waterfall({ still, season }) {
+    const frozen = season === 'winter';
     const tex = useMemo(() => waterfallTexture(), []);
     const glow = useMemo(() => glowTexture('rgba(235,250,248,0.9)', 'rgba(200,236,232,0.15)'), []);
     useEffect(() => () => { tex.dispose(); glow.dispose(); }, [tex, glow]);
     const foam = useRef();
     const fall = useRef();
     useFrame((state, delta) => {
-        if (still) return;
+        if (still || frozen) return;
         if (fall.current?.map) fall.current.map.offset.y += delta * 0.9;
         if (foam.current) { const k = 1 + Math.sin(state.clock.elapsedTime * 5) * 0.08; foam.current.scale.set(0.9 * k, 0.5 * k, 1); }
     });
     return <group position={[0, 0, 1.05]}>
         <mesh rotation-x={-Math.PI / 2} position={[2.46, 0.05, 0]}><planeGeometry args={[0.34, 0.26]} /><meshBasicMaterial map={tex} transparent depthWrite={false} /></mesh>
-        <mesh rotation-y={Math.PI / 2} position={[2.64, -1.25, 0]}><planeGeometry args={[0.26, 2.6]} /><meshBasicMaterial ref={fall} map={tex} transparent opacity={0.85} depthWrite={false} /></mesh>
-        <sprite ref={foam} position={[2.66, -2.5, 0]} scale={[0.9, 0.5, 1]}><spriteMaterial map={glow} transparent opacity={0.7} depthWrite={false} blending={AdditiveBlending} /></sprite>
+        <mesh rotation-y={Math.PI / 2} position={[2.64, -1.25, 0]}><planeGeometry args={[0.26, 2.6]} /><meshBasicMaterial ref={fall} map={tex} color={frozen ? '#cfe9f5' : '#ffffff'} transparent opacity={frozen ? 0.95 : 0.85} depthWrite={false} /></mesh>
+        {frozen && [0, 1, 2, 3].map(i => <mesh key={i} position={[2.66, -2.58 - (i % 2) * 0.06, -0.09 + i * 0.06]} rotation-x={Math.PI}><coneGeometry args={[0.035, 0.22 + (i % 3) * 0.07, 6]} /><meshLambertMaterial color="#e6f5fc" /></mesh>)}
+        {!frozen && <sprite ref={foam} position={[2.66, -2.5, 0]} scale={[0.9, 0.5, 1]}><spriteMaterial map={glow} transparent opacity={0.7} depthWrite={false} blending={AdditiveBlending} /></sprite>}
     </group>;
 }
+// Carpes koï qui tournent dans le bassin (cachées sous la glace en hiver).
+function Koi({ still }) {
+    const fish = useRef([]);
+    useFrame(state => {
+        const t = still ? 0 : state.clock.elapsedTime;
+        fish.current.forEach((f, i) => {
+            if (!f) return;
+            const a = t * (0.55 + i * 0.12) + i * Math.PI;
+            const x = Math.cos(a) * 0.28, z = Math.sin(a) * 0.5;
+            f.position.set(1.75 + x, 0.03, 1.05 + z);
+            f.rotation.y = -a + (i % 2 ? Math.PI : 0);
+            f.rotation.z = Math.sin(t * 6 + i) * 0.15;
+        });
+    });
+    return [['#f08a4b', '#fff3e6'], ['#fff3e6', '#e45c3a']].map(([body, spot], i) => <group key={i} ref={el => { fish.current[i] = el; }}>
+        <mesh rotation-z={Math.PI / 2} scale={[1, 1, 0.7]}><capsuleGeometry args={[0.035, 0.1, 4, 8]} /><meshLambertMaterial color={body} /></mesh>
+        <mesh position={[0.02, 0.025, 0]}><sphereGeometry args={[0.022, 8, 6]} /><meshLambertMaterial color={spot} /></mesh>
+        <mesh position={[-0.1, 0, 0]} rotation-z={Math.PI / 2}><coneGeometry args={[0.035, 0.07, 6]} /><meshLambertMaterial color={body} /></mesh>
+    </group>);
+}
+
+// Lanternes célestes : de petites lumières chaudes qui montent lentement autour de l'île.
+const SKY_LANTERNS = Array.from({ length: 7 }, (_, i) => ({ r: 3.1 + (i % 3) * 0.55, a: i * 0.9, speed: 0.11 + (i % 4) * 0.025, phase: i / 7 }));
+function SkyLanterns({ still }) {
+    const glow = useMemo(() => glowTexture('rgba(255,214,150,0.95)', 'rgba(255,170,90,0.25)'), []);
+    useEffect(() => () => glow.dispose(), [glow]);
+    const refs = useRef([]);
+    useFrame(state => {
+        const t = still ? 6 : state.clock.elapsedTime;
+        refs.current.forEach((g, i) => {
+            if (!g) return;
+            const l = SKY_LANTERNS[i];
+            const k = (t * l.speed * 0.12 + l.phase) % 1;
+            const a = l.a + t * 0.05;
+            g.position.set(Math.cos(a) * l.r, -2.4 + k * 7.5, Math.sin(a) * l.r);
+            g.rotation.z = Math.sin(t * 1.3 + i) * 0.12;
+            const fade = Math.min(1, k * 6, (1 - k) * 4);
+            g.children.forEach(c => { if (c.material) c.material.opacity = fade * (c.isSprite ? 0.75 : 1); });
+        });
+    });
+    return SKY_LANTERNS.map((_, i) => <group key={i} ref={el => { refs.current[i] = el; }}>
+        <mesh><cylinderGeometry args={[0.06, 0.045, 0.13, 8]} /><meshBasicMaterial color="#ffd49a" transparent /></mesh>
+        <sprite scale={[0.55, 0.55, 1]}><spriteMaterial map={glow} transparent depthWrite={false} blending={AdditiveBlending} /></sprite>
+    </group>);
+}
+
 // Buissons fleuris et lianes : un peu de vie sur la pierre.
 const BUSHES = [[-1.6, 1.82, 1], [-0.35, 1.86, 0.8], [-1.25, -1.78, 0.9], [0.32, -1.84, 0.75], [2.45, -0.2, 0.7]];
 const FLOWERS = ['#f4c7c3', '#f7e1a8', '#d9c6f0'];
@@ -427,11 +476,13 @@ function Greenery({ season }) {
         {BUSHES.map(([x, z, s], i) => <group key={i} position={[x, 0, z]} scale={s}>
             {[[0, 0.12, 0, 0.16], [0.14, 0.09, 0.05, 0.12], [-0.13, 0.08, -0.03, 0.11], [0.03, 0.08, -0.13, 0.1]].map(([bx, by, bz, r], k) =>
                 <mesh key={k} position={[bx, by, bz]} castShadow><sphereGeometry args={[r, 14, 10]} /><meshLambertMaterial color={leaf} /></mesh>)}
-            {[[0.06, 0.25, 0.08], [-0.1, 0.19, 0.1], [0.16, 0.17, -0.06]].map(([fx, fy, fz], k) =>
+            {season !== 'winter' && [[0.06, 0.25, 0.08], [-0.1, 0.19, 0.1], [0.16, 0.17, -0.06]].map(([fx, fy, fz], k) =>
                 <mesh key={'f' + k} position={[fx, fy, fz]}><sphereGeometry args={[0.03, 8, 6]} /><meshBasicMaterial color={FLOWERS[(i + k) % 3]} /></mesh>)}
         </group>)}
-        {/* Lianes qui pendent du rebord avant */}
-        {[-2.2, -1.5, -0.6, 0.3].map((x, i) => <group key={'v' + i} position={[x, -0.5, 2.13 + (i % 2) * 0.05]}>
+        {/* Lianes qui pendent du rebord avant (stalactites de glace en hiver) */}
+        {season === 'winter' ? [-2.3, -1.9, -1.4, -0.9, -0.4, 0.1, 0.6].map((x, i) => <mesh key={'ice' + i} position={[x, -0.6 - (i % 3) * 0.04, 2.13]} rotation-x={Math.PI}>
+            <coneGeometry args={[0.04, 0.2 + (i % 4) * 0.08, 6]} /><meshLambertMaterial color="#eaf6fc" />
+        </mesh>) : [-2.2, -1.5, -0.6, 0.3].map((x, i) => <group key={'v' + i} position={[x, -0.5, 2.13 + (i % 2) * 0.05]}>
             {Array.from({ length: 3 + (i % 3) }, (_, k) => <mesh key={k} position={[Math.sin(k * 1.7) * 0.03, -k * 0.13, 0]}>
                 <sphereGeometry args={[0.055 - k * 0.006, 8, 6]} /><meshLambertMaterial color={leaf} />
             </mesh>)}
@@ -485,7 +536,8 @@ function Island({ still, onTouch, season = 'autumn' }) {
         <HaloRing still={still} mechanism={mechanism} />
         <PivotCard still={still} onTouch={onTouch} mechanism={mechanism} />
         <IslandBot still={still} clock={clock} flippers={flippers} botAtRef={botAt} />
-        <Waterfall still={still} />
+        <Waterfall still={still} season={season} />
+        {season !== 'winter' && <Koi still={still} />}
         <Greenery season={season} />
         {[0, 1, 2, 3, 4].map(i => <Block key={i} size={[0.8, 0.2, 0.34]} position={[1.75, -0.1 - i * 0.2, 2.27 + i * 0.34]} color={C.stone} />)}
         {[[-2.35, -1.75], [0.85, -1.75]].map(([x, z], i) => <group key={i} position={[x, 0, z]}>
@@ -685,7 +737,8 @@ export default function HomeWorldScene3D({ compact = false }) {
     const stone = useMemo(() => makeStoneTexture(), []);
     useEffect(() => () => stone.dispose(), [stone]);
     const [still] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
-    const [season] = useState(() => currentSeason());
+    const now = useSeasonalClock();
+    const season = currentSeason(now);
     const wrapper = useRef(null);
     const [onScreen, setOnScreen] = useState(true);
     useEffect(() => {
@@ -721,6 +774,7 @@ export default function HomeWorldScene3D({ compact = false }) {
                 {(season === 'autumn' || season === 'spring') && <FallingLeaves season={season} still={still} />}
                 {season === 'winter' && <Snowfall still={still} />}
                 <Floaters still={still} />
+                <SkyLanterns still={still} />
                 <Wanderer still={still} />
                 <Birds still={still} />
                 {!still && <Fireflies still={still} />}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import SkyjoLoader from '../SkyjoLoader';
 
 const CRITICAL_IMAGES = [
@@ -120,7 +120,7 @@ export default function ImagePreloader({ children }) {
         <>
             <AnimatePresence mode="wait">
                 {isLoading && (
-                    <motion.div
+                    <Motion.div
                         key="loader"
                         initial={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -129,21 +129,16 @@ export default function ImagePreloader({ children }) {
                         style={{ willChange: 'opacity' }}
                     >
                         <SkyjoLoader progress={displayProgress} />
-                    </motion.div>
+                    </Motion.div>
                 )}
             </AnimatePresence>
 
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{
-                    opacity: isLoading ? 0 : 1,
-                }}
-                transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-                className="w-full h-full"
-                style={{ willChange: 'opacity' }}
-            >
+            {/* Pas de fondu d'opacité sur toute l'app : sur mobile, il coupe puis rallume les flous
+                (backdrop-filter) des menus, ce qui faisait clignoter l'écran. C'est l'écran de
+                chargement, posé par-dessus, qui s'efface pour révéler les menus déjà en place. */}
+            <div className="w-full h-full">
                 {children}
-            </motion.div>
+            </div>
         </>
     );
 }
