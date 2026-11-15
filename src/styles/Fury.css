@@ -242,3 +242,32 @@ body.fury-mode .skyjo-badge-aside .fury-opponent { margin: 0 !important; width: 
 .fury-card--full { container-type: inline-size; }
 .fury-card--full .fury-card-title { font-size: min(15px, 11.5cqi); letter-spacing: .03em; max-width: 100%; }
 .fury-reveal-cards .fury-card--full .fury-card-title { font-size: min(19px, 12cqi); }
+
+/* ===== Annonce d'une Fury adverse v2 : scène teintée par la carte + effet three.js ===== */
+.fury-fx3d { position: absolute; inset: 0; pointer-events: none; }
+.fury-fx3d canvas { display: block; width: 100% !important; height: 100% !important; }
+.fury-board-fx { position: fixed; z-index: 661; pointer-events: none; }
+.fury-announce { position: fixed; inset: 0; z-index: 9000; display: grid; place-items: center; padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom)); overflow: hidden;
+    background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--fc) 34%, #1a0d10) 0%, #0e080bf5 58%, #060305fa 100%); }
+.fury-announce::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 55%, #000000b3 100%); }
+.fury-announce-fx { z-index: 0; }
+.fury-announce-body { position: relative; z-index: 1; width: 100%; max-width: 340px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.fury-announce-kicker { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
+    color: color-mix(in srgb, var(--fc) 70%, #fff); background: #0000004d; border: 1px solid color-mix(in srgb, var(--fc) 45%, transparent); }
+.fury-announce-word { margin: 0; font-family: system-ui, sans-serif; font-size: 46px; line-height: 1; font-weight: 900; font-style: italic; letter-spacing: -.02em; color: #fff;
+    -webkit-text-stroke: 1.5px color-mix(in srgb, var(--fc) 60%, #000); text-shadow: 0 0 24px color-mix(in srgb, var(--fc) 85%, transparent), 0 4px 0 color-mix(in srgb, var(--fc2, #3a2226) 90%, #000); }
+.fury-announce-stage { position: relative; width: 168px; perspective: 700px; animation: fury-announce-float 3.2s ease-in-out .8s infinite; }
+.fury-announce-stage::before { content: ''; position: absolute; inset: -30% -40%; z-index: -1; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--fc) 55%, transparent), transparent 65%); filter: blur(8px); }
+@keyframes fury-announce-float { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-7px) rotate(1deg); } }
+.fury-announce-stage .fury-card--full { width: 168px; min-height: 214px; gap: 8px; box-shadow: 0 0 0 2px var(--fc), 0 0 44px color-mix(in srgb, var(--fc) 65%, transparent), 0 22px 40px -14px #000; }
+.fury-announce-stage .fury-card--full .fury-card-emblem { width: 62px; height: 62px; margin: 14px 0 8px; }
+.fury-announce-stage .fury-card--full .fury-card-emblem svg { width: 32px; height: 32px; }
+.fury-announce-stage .fury-card--full .fury-card-title { font-size: min(20px, 12cqi); }
+.fury-announce-stage .fury-card--full .fury-card-text { font-size: 12.5px; }
+.fury-announce .fury-announce-effect { width: 100%; max-width: none; display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; text-align: left; border-radius: 16px;
+    background: linear-gradient(180deg, #1d1216e6, #120b0ee6); border: 1px solid color-mix(in srgb, var(--fc) 40%, transparent); box-shadow: 0 12px 30px -12px #000, inset 0 1px 0 #ffffff14; backdrop-filter: blur(6px); }
+.fury-announce .fury-announce-effect p { margin: 0; font-size: 15px; line-height: 1.4; font-weight: 600; color: #fff1e8; }
+.fury-announce-target { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--fc) 75%, #fff); }
+.fury-announce-ok { width: 100%; max-width: 260px; margin-top: 2px; background: linear-gradient(180deg, color-mix(in srgb, var(--fc) 55%, #fff), var(--fc)); color: #1a0d10; box-shadow: 0 0 0 1px #ffffff55 inset, 0 10px 26px -8px color-mix(in srgb, var(--fc) 80%, transparent); }
+@media (max-height: 680px) { .fury-announce-word { font-size: 36px; } .fury-announce-stage, .fury-announce-stage .fury-card--full { width: 140px; } .fury-announce-stage .fury-card--full { min-height: 178px; } }
+@media (prefers-reduced-motion: reduce) { .fury-announce-stage { animation: none; } }
