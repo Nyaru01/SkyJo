@@ -72,3 +72,16 @@
 @media (prefers-reduced-motion: reduce) {
     .play-menu-action, .play-menu-tools button { transition: none; }
 }
+/* Rendez-vous : défi quotidien en éphéméride, récompense visible, état « Fait » */
+.play-menu-challenges .play-menu-section-heading span { font-size: 11px; }
+.play-menu-action--daily { position: relative; overflow: hidden; }
+.play-menu-action--daily::after { content: ''; position: absolute; right: -40px; top: -60px; width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(closest-side, #f2c77a2e, transparent 70%); pointer-events: none; }
+.daily-calendar { position: relative; flex-direction: column; gap: 0; overflow: hidden; padding-top: 7px; color: #3a2c1c !important; background: linear-gradient(180deg, #fbf3e3, #ecdcc0) !important; box-shadow: 0 6px 14px -8px #000c, inset 0 -2px 0 #d8c39f; }
+.daily-calendar i { position: absolute; top: 0; left: 0; right: 0; height: 9px; background: linear-gradient(180deg, #e8907a, #d4735c); }
+.daily-calendar b { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 21px; font-weight: 700; line-height: .95; color: #3a2c1c; }
+.daily-calendar small { font-size: 8px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #8a6e4a; }
+.daily-reward { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; padding: 6px 10px; border-radius: 12px; color: #f5d79e; background: #f2c77a17; box-shadow: inset 0 0 0 1px #f2c77a40; }
+.daily-reward b { font-size: 17px; font-weight: 800; line-height: 1; }
+.daily-reward small { font-size: 8.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
+.daily-done { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; color: #b8e2cb; background: #8fc2a81f; box-shadow: inset 0 0 0 1px #8fc2a855; }
+.play-menu-action--daily.is-done .daily-calendar { filter: saturate(.6); opacity: .8; }

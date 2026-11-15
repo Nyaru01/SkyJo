@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion as Motion, useReducedMotion } from 'framer-motion';
-import { Bell, Check, Gamepad2, HelpCircle, Play, RefreshCw, Settings, Sparkles, Users, Zap } from 'lucide-react';
+import { Bell, Check, Gamepad2, HelpCircle, Play, RefreshCw, Settings, ScrollText, Users, Zap } from 'lucide-react';
 import InstallPWA from './InstallPWA';
 import { useGameStore } from '../store/gameStore';
 import { useSocialStore } from '../store/socialStore';
@@ -103,7 +103,7 @@ export default function GameSetup({ onNavigate, onVirtualAction, onOpenTutorial,
         </Motion.div></AnimatePresence>
         <footer className="lobby-footer">
             {showGuide && <button type="button" onClick={onOpenTutorial}><HelpCircle size={15} aria-hidden="true"/>Guide</button>}
-            <button type="button" onClick={() => { setIsNewsManuallyOpen(true); localStorage.setItem('skyjo_news_version', CURRENT_NEWS_VERSION.toString()); }}><Sparkles size={15} aria-hidden="true"/>Nouveautés{hasUnreadNews && <span className="lobby-unread"/>}</button>
+            <button type="button" onClick={() => { setIsNewsManuallyOpen(true); localStorage.setItem('skyjo_news_version', CURRENT_NEWS_VERSION.toString()); }}><ScrollText size={15} aria-hidden="true"/>Nouveautés{hasUnreadNews && <span className="lobby-unread"/>}</button>
             <button type="button" className="lobby-version" onClick={checkForUpdates} disabled={isChecking} aria-label={isChecking ? 'Recherche de mise à jour' : `Version ${__APP_VERSION__} · rechercher une mise à jour`}>{checkResult === 'update-available' ? <Zap size={13} aria-hidden="true"/> : checkResult === 'up-to-date' ? <Check size={13} aria-hidden="true"/> : <RefreshCw size={13} className={isChecking ? 'animate-spin' : ''} aria-hidden="true"/>}{isChecking ? 'Recherche…' : checkResult === 'update-available' ? 'Mise à jour disponible' : `v${__APP_VERSION__}`}</button>
             <InstallPWA className="lobby-install"/>
         </footer>

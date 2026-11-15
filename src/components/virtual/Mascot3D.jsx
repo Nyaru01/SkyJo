@@ -86,7 +86,25 @@ function Arm({ side, accent, armRef, foreRef }) {
 
 const NO_POINTER = { current: { x: 0, y: 0 } };
 // Petites scènes de vie jouées au hasard quand on ne la touche pas.
-const ACTS = ['look', 'tilt', 'happy', 'wave', 'scan', 'talk', 'look', 'tilt'];
+const ACTS = ['look', 'tilt', 'happy', 'wave', 'scan', 'talk', 'look', 'dance', 'sleepy', 'tilt'];
+const ACT_DURATION = { dance: 2.6, sleepy: 3.2 };
+// Bulles d'émotion au-dessus de la tête : ♥ content, ! repère, ? curieux, ♪ danse, z sieste.
+const EMOTE = { happy: '♥', scan: '!', look: '?', tilt: '?', dance: '♪', sleepy: 'z' };
+function emoteTexture(glyph) {
+    const c = document.createElement('canvas');
+    c.width = c.height = 128;
+    const g = c.getContext('2d');
+    g.fillStyle = 'rgba(255,250,242,0.96)';
+    g.beginPath(); g.arc(64, 58, 44, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.moveTo(52, 96); g.lineTo(64, 120); g.lineTo(74, 96); g.fill();
+    g.fillStyle = glyph === '♥' ? '#e2643c' : '#3a3150';
+    g.font = 'bold 56px Georgia, serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(glyph, 64, 60);
+    const t = new CanvasTexture(c);
+    t.colorSpace = SRGBColorSpace;
+    return t;
+}
 
 export function MascotBot({ difficulty = 'normal', poke = 0, still = false, pointer = NO_POINTER, shadow: showShadow = true }) {
     const mood = MOODS[difficulty] || MOODS.normal;
@@ -106,6 +124,8 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, poin
     const happyEyes = useRef();
     const mouth = useRef();
     const torso = useRef();
+    const emote = useRef();
+    const emoteTextures = useMemo(() => Object.fromEntries([...new Set(Object.values(EMOTE))].map(g => [g, emoteTexture(g)])), []);
     const anim = useRef({ t: 0, hop: 0, spin: 0, wave: 0, blinkAt: 2.2, act: null, actAt: 0, nextAct: 3.2, look: { x: 0, y: 0 }, prevYaw: 0, spring: 0, springV: 0 });
     const shadow = useMemo(() => radialTexture([[0, 'rgba(94,75,124,0.38)'], [1, 'rgba(94,75,124,0)']]), []);
     const glow = useMemo(() => radialTexture([[0, 'rgba(255,255,255,1)'], [0.4, 'rgba(255,255,255,0.35)'], [1, 'rgba(255,255,255,0)']]), []);
@@ -133,15 +153,16 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, poin
             if (a.act === 'wave') a.wave = 1.6;
             if (a.act === 'happy') a.hop = Math.max(a.hop, 0.55);
         }
-        const actK = a.act ? (t - a.actAt) / 1.8 : 1;
+        const actK = a.act ? (t - a.actAt) / (ACT_DURATION[a.act] || 1.8) : 1;
         if (actK >= 1) a.act = null;
         const act = a.act;
         const ptr = pointer.current;
         const hopY = Math.sin((1 - a.hop) * Math.PI) * (a.hop > 0 ? 0.5 : 0);
-        const bob = still ? 0 : Math.sin(t * 1.8) * 0.07;
+        const bob = still ? 0 : act === 'sleepy' ? Math.sin(t * 0.9) * 0.04 - 0.05 : act === 'dance' ? Math.abs(Math.sin(t * 7)) * 0.16 : Math.sin(t * 1.8) * 0.07;
         if (root.current) {
             root.current.position.y = bob + hopY;
             root.current.rotation.y = MathUtils.damp(root.current.rotation.y, a.spin, 5, dt);
+            root.current.rotation.z = MathUtils.damp(root.current.rotation.z, act === 'dance' ? Math.sin(t * 7) * 0.14 : 0, 8, dt);
             const squash = a.hop > 0 ? 1 + Math.sin(a.hop * Math.PI) * 0.08 : 1;
             root.current.scale.set(2 - squash, squash, 2 - squash);
         }
@@ -153,7 +174,7 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, poin
         if (head.current && !still) {
             const scanYaw = act === 'scan' ? Math.sin(actK * Math.PI * 2) * 0.55 : 0;
             const yaw = act === 'look' ? a.look.x : ptr.x * 0.35 + scanYaw;
-            const pitch = act === 'look' ? a.look.y : act === 'happy' ? -0.12 : ptr.y * 0.18;
+            const pitch = act === 'look' ? a.look.y : act === 'happy' ? -0.12 : act === 'sleepy' ? 0.28 : ptr.y * 0.18;
             head.current.rotation.y = MathUtils.damp(head.current.rotation.y, yaw, 4, dt);
             head.current.rotation.x = MathUtils.damp(head.current.rotation.x, pitch + Math.sin(t * 0.9) * 0.03, 4, dt);
             head.current.rotation.z = MathUtils.damp(head.current.rotation.z, (act === 'tilt' ? 0.26 : 0) + Math.sin(t * 1.1) * 0.04, 5, dt);
@@ -173,7 +194,7 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, poin
             const happy = act === 'happy';
             eyes.current.visible = !happy;
             if (happyEyes.current) happyEyes.current.visible = happy;
-            eyes.current.scale.y = MathUtils.damp(eyes.current.scale.y, mood.eyeH * Math.max(blink, 0.08) * (act === 'tilt' ? 0.8 : 1), 18, dt);
+            eyes.current.scale.y = MathUtils.damp(eyes.current.scale.y, act === 'sleepy' ? 0.1 : mood.eyeH * Math.max(blink, 0.08) * (act === 'tilt' ? 0.8 : 1), act === 'sleepy' ? 4 : 18, dt);
             const eyeX = act === 'scan' ? Math.sin(actK * Math.PI * 2) * 0.09 : act === 'look' ? a.look.x * 0.12 : ptr.x * 0.05;
             if (!still) eyes.current.position.x = MathUtils.damp(eyes.current.position.x, eyeX, 6, dt);
             // Clin d'œil en penchant la tête : l'œil droit se plisse.
@@ -184,6 +205,15 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, poin
             const talk = act === 'talk' ? 0.6 + Math.abs(Math.sin(t * 16)) * 0.9 : act === 'happy' ? 1.3 : 1;
             mouth.current.scale.y = MathUtils.damp(mouth.current.scale.y, talk, 20, dt);
             mouth.current.scale.x = MathUtils.damp(mouth.current.scale.x, act === 'happy' ? 1.2 : 1, 12, dt);
+        }
+        if (emote.current) {
+            const glyph = act ? EMOTE[act] : null;
+            const k = act ? Math.min(1, actK * 6, (1 - actK) * 5) : 0;
+            if (glyph && emote.current.userData.glyph !== glyph) { emote.current.material.map = emoteTextures[glyph]; emote.current.material.needsUpdate = true; emote.current.userData.glyph = glyph; }
+            emote.current.material.opacity = glyph ? k : 0;
+            const pop = 0.55 + k * 0.1 + (act === 'sleepy' ? actK * 0.25 : 0);
+            emote.current.scale.set(pop, pop, 1);
+            emote.current.position.set(0.85 + (act === 'sleepy' ? actK * 0.25 : 0), 1.75 + (act === 'sleepy' ? actK * 0.4 : Math.sin(t * 3) * 0.04), 0.2);
         }
         if (torso.current) torso.current.scale.set(1 + Math.sin(t * 2) * 0.012, 1 + Math.sin(t * 2 + 0.4) * 0.018, 1);
         if (gem.current) { gem.current.rotation.y = t * (act === 'scan' ? 5 : 1.6); gem.current.position.y = 1.36 + Math.sin(t * 2.4) * 0.03; gem.current.position.x = a.spring * 0.6; gem.current.rotation.z = -a.spring * 1.4; }
@@ -197,7 +227,8 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, poin
             if (!g) return;
             const side = i === 0 ? -1 : 1;
             const waving = side === 1 && a.wave > 0;
-            const target = waving ? side * 2.5 : side * (0.32 + (still ? 0 : Math.sin(t * 2 + i * Math.PI) * 0.08));
+            const dancing = act === 'dance';
+            const target = waving ? side * 2.5 : dancing ? side * (1.4 + Math.sin(t * 7 + i * Math.PI) * 0.9) : act === 'sleepy' ? side * 0.12 : side * (0.32 + (still ? 0 : Math.sin(t * 2 + i * Math.PI) * 0.08));
             g.rotation.z = MathUtils.damp(g.rotation.z, target, 6, dt);
             if (fores.current[i]) fores.current[i].rotation.z = MathUtils.damp(fores.current[i].rotation.z, waving ? Math.sin(t * 14) * 0.5 : side * -0.15, 8, dt);
         });
@@ -274,6 +305,7 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, poin
                     <mesh position-y={-0.08} rotation-x={Math.PI}><coneGeometry args={[0.05, 0.18, 10]} /><meshBasicMaterial color="#fff6e8" transparent opacity={0.9} blending={AdditiveBlending} depthWrite={false} /></mesh>
                 </group>}
             </group>
+            <sprite ref={emote} position={[0.85, 1.75, 0.2]} scale={[0.55, 0.55, 1]}><spriteMaterial transparent opacity={0} depthWrite={false} /></sprite>
             {/* ---------- Bras ---------- */}
             {[-1, 1].map((s, i) => <Arm key={s} side={s} accent={accent} armRef={el => { arms.current[i] = el; }} foreRef={el => { fores.current[i] = el; }} />)}
         </group>

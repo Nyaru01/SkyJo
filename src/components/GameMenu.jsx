@@ -2,7 +2,7 @@ import SeasonalChallengeButton from './ui/SeasonalChallengeButton';
 import { useSeasonalClock } from '../hooks/useSeasonalClock';
 import { getActiveWeeklyChallenge } from '../lib/weeklyChallenge';
 import React from 'react';
-import { Bot, ChevronRight, Wifi, HelpCircle, Palette, X, Sparkles, RotateCcw, Zap, Image as ImageIcon } from 'lucide-react';
+import { Bot, Check, ChevronRight, Wifi, HelpCircle, Palette, X, Sparkles, RotateCcw, Image as ImageIcon } from 'lucide-react';
 import { Card, CardHeader, CardContent } from './ui/Card';
 import { Button } from './ui/Button';
 import SkinCarousel from './SkinCarousel';
@@ -137,17 +137,20 @@ export default function GameMenu({
                     <h3 id="play-menu-challenges-title">Les rendez-vous</h3>
                     <span>Défis & bonus XP</span>
                 </div>
-                <button type="button" className="play-menu-action play-menu-action--daily" disabled={!isDailyAvailable} onClick={() => {
+                <button type="button" className={`play-menu-action play-menu-action--daily${isDailyAvailable ? '' : ' is-done'}`} disabled={!isDailyAvailable} onClick={() => {
                     if (!isDailyAvailable) return;
                     playClick();
                     setShowDailyChallengeModal(true);
                 }}>
-                    <span className="play-menu-action-icon"><Zap aria-hidden="true" /></span>
+                    {/* Icône : une page d'éphéméride avec le jour du mois */}
+                    <span className="play-menu-action-icon daily-calendar" aria-hidden="true"><i /><b>{now.getDate()}</b><small>{now.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}</small></span>
                     <span className="play-menu-action-copy">
                         <span className="play-menu-action-title">Défi quotidien</span>
-                        <span className="play-menu-action-description">{isDailyAvailable ? 'Gagnez une partie pour le bonus XP.' : 'Déjà terminé · À demain !'}</span>
+                        <span className="play-menu-action-description">{isDailyAvailable ? 'Gagnez une partie aujourd’hui contre l’IA.' : `Défi réussi. Le prochain dans ${24 - now.getHours()} h.`}</span>
                     </span>
-                    <span className="play-menu-status">{isDailyAvailable ? 'À jouer' : 'Terminé'}</span>
+                    {isDailyAvailable
+                        ? <span className="daily-reward"><b>+6</b><small>XP max</small></span>
+                        : <span className="daily-done"><Check size={14} strokeWidth={3} aria-hidden="true" />Fait</span>}
                 </button>
                 <SeasonalChallengeButton
                     calm
