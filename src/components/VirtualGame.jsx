@@ -49,6 +49,7 @@ import PseudoModal from './PseudoModal';
 import BonusTutorial from './BonusTutorial';
 import Tutorial from './Tutorial';
 import SkyjoLoader from './SkyjoLoader';
+import '../styles/OnlineLobby.css';
 import { PremiumTiltButton } from './ui/PremiumTiltButton';
 
 // Player colors for avatars
@@ -1782,291 +1783,86 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
             );
         }
 
-        // Join or Create UI
+        // Join or Create UI — DA crépuscule, comme l'écran « Rencontrez votre rival »
         return (
-            <div className="max-w-md mx-auto p-4 space-y-3 animate-in fade-in">
-                <div className="relative flex items-center justify-center py-4 mb-2">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleBackToMenu}
-                        className="absolute left-0 w-10 h-10 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 hover:scale-110 active:scale-95 transition-all shadow-xl backdrop-blur-md z-20"
-                    >
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
+            <main className="ol-screen">
+                <header className="ol-header">
+                    <button type="button" onClick={handleBackToMenu} className="ol-back" aria-label="Retour au menu Jouer"><ArrowLeft size={20} aria-hidden="true" /></button>
+                    <div><p>À PLUSIEURS</p><h1>Jouer en ligne.</h1></div>
+                </header>
 
-                    <div className="text-center group relative">
-                        {/* Title Glow */}
-                        <div className="absolute inset-0 bg-blue-500/20 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                {onlineError && <div className="ol-error" role="alert"><Info size={16} aria-hidden="true" />{onlineError}</div>}
 
-                        <h2 className="text-2xl font-black text-white tracking-tighter flex items-center justify-center gap-2.5 relative z-10">
-                            <div className="relative flex items-center justify-center">
-                                <Globe className="h-6 w-6 text-blue-400 animate-pulse" />
-                                <div className="absolute inset-0 bg-blue-400/30 blur-md rounded-full animate-pulse" />
-                            </div>
-                            <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400 uppercase tracking-[0.08em]">
-                                MULTIJOUEUR
-                            </span>
-                        </h2>
-                        <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: 30 }}
-                            className="h-1 bg-gradient-to-r from-blue-600 to-cyan-400 mx-auto rounded-full mt-1 shadow-[0_0_8px_rgba(56,189,248,0.4)]"
-                        />
+                {/* Profil */}
+                <section className="ol-profile" aria-label="Votre profil">
+                    <button type="button" className="ol-avatar" onClick={() => setOpenAvatarSelector('online-setup')} aria-label="Changer d’avatar">
+                        <img src={getAvatarPath(myAvatarId)} alt="" onError={(e) => { e.target.src = '/avatars/cat.png'; }} />
+                        <span className="ol-avatar-edit" aria-hidden="true"><Palette size={13} /></span>
+                        <i className="ol-online-dot" aria-hidden="true" />
+                    </button>
+                    <div className="ol-profile-main">
+                        <label className="ol-label" htmlFor="ol-pseudo">Votre pseudo</label>
+                        <input id="ol-pseudo" className="ol-pseudo" placeholder="Pseudo" value={myPseudo} required
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setMyPseudo(val);
+                                if (val.trim()) { updateUserProfile({ name: val.trim() }); setPlayerInfo(val.trim(), myAvatarId); }
+                            }} />
+                        <span className="ol-ready"><i aria-hidden="true" />Prêt à jouer</span>
                     </div>
-                </div>
+                    <button type="button" className="ol-skyid" onClick={() => { if (userProfile?.vibeId) { navigator.clipboard?.writeText(userProfile.vibeId); toast.success('SkyID copié'); } }} aria-label={`Copier mon SkyID ${userProfile?.vibeId || ''}`}>
+                        <small>SkyID</small><b>{userProfile?.vibeId || '—'}</b><Copy size={12} aria-hidden="true" />
+                    </button>
+                </section>
 
-                <Card className="glass-premium dark:glass-dark shadow-xl border-t border-white/10">
-                    <CardContent className="space-y-6 pt-6">
-                        {onlineError && (
-                            <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-200 text-sm rounded-xl flex items-center gap-2 animate-in slide-in-from-top-2">
-                                <Info className="h-4 w-4 text-red-400" />
-                                {onlineError}
-                            </div>
-                        )}
-
-                        {/* Player Profile */}
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between px-1">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400/80">Votre Profil</label>
-                                <span className="text-[10px] font-bold text-slate-500 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">SkyID: {userProfile?.vibeId || '---'}</span>
-                            </div>
-
-                            <div className="relative group">
-                                {/* Background Ambient Glow */}
-                                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-cyan-500/20 rounded-3xl blur opacity-25 group-hover:opacity-50 transition-opacity" />
-
-                                <div className="relative flex gap-3.5 items-center bg-slate-900/60 backdrop-blur-xl p-2.5 rounded-[22px] border border-white/10 shadow-2xl transition-all group-hover:border-blue-500/30">
-                                    <div className="relative">
-                                        <button
-                                            onClick={() => setOpenAvatarSelector('online-setup')}
-                                            className="w-14 h-14 rounded-xl flex items-center justify-center shadow-2xl transition-all hover:scale-105 border-2 border-blue-500/40 overflow-hidden relative group/avatar bg-slate-800"
-                                        >
-                                            <div className="absolute inset-0">
-                                                <img
-                                                    src={getAvatarPath(myAvatarId)}
-                                                    alt="Avatar"
-                                                    className="w-full h-full object-cover group-hover/avatar:scale-110 transition-transform duration-500"
-                                                    onError={(e) => { e.target.src = '/avatars/cat.png' }}
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/30 via-transparent to-white/10" />
-                                            </div>
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center">
-                                                <Palette className="w-4 h-4 text-white" />
-                                            </div>
-                                        </button>
-                                        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900 shadow-[0_0_10px_rgba(34,197,94,0.5)] animate-pulse" />
-                                    </div>
-
-                                    <div className="flex-1 min-w-0">
-                                        <div className="relative">
-                                            <Input
-                                                placeholder="Pseudo"
-                                                value={myPseudo}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    setMyPseudo(val);
-                                                    if (val.trim()) {
-                                                        updateUserProfile({ name: val.trim() });
-                                                        setPlayerInfo(val.trim(), myAvatarId);
-                                                    }
-                                                }}
-                                                className="h-8 bg-transparent border-0 text-lg font-black text-white placeholder:text-slate-600 focus-visible:ring-0 px-0"
-                                                required
-                                            />
-                                            <motion.div
-                                                className="h-0.5 w-full bg-gradient-to-r from-blue-500 to-transparent rounded-full"
-                                                initial={{ scaleX: 0 }}
-                                                animate={{ scaleX: 1 }}
-                                            />
-                                        </div>
-                                        <div className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1 flex items-center gap-1.5">
-                                            <span className="w-1 h-1 rounded-full bg-blue-500" />
-                                            Prêt à jouer
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                {/* Créer / rejoindre */}
+                <section className="ol-actions" aria-label="Créer ou rejoindre une partie">
+                    <button type="button" className="ol-create" onClick={() => { setPlayerInfo(myPseudo || 'Joueur', myAvatarId); createRoom(); requestPermission(); }}>
+                        <span className="ol-create-icon"><Plus size={22} aria-hidden="true" /></span>
+                        <span><strong>Créer une partie</strong><small>Un code à partager avec votre adversaire</small></span>
+                        <ChevronRight size={22} aria-hidden="true" />
+                    </button>
+                    <div className="ol-join">
+                        <label className="ol-label" htmlFor="ol-code">Rejoindre avec un code</label>
+                        <div className="ol-join-row">
+                            <input id="ol-code" className="ol-code" placeholder="ABCD" value={lobbyCode} maxLength={4} autoComplete="off" autoCapitalize="characters"
+                                onChange={(e) => setLobbyCode(e.target.value.toUpperCase())} />
+                            <button type="button" className="ol-join-btn" disabled={lobbyCode.trim().length < 4}
+                                onClick={() => { setPlayerInfo(myPseudo || 'Joueur', myAvatarId); joinRoom(lobbyCode); }}>Rejoindre</button>
                         </div>
+                    </div>
+                </section>
 
-                        {/* Actions Grid */}
-                        <div className="grid grid-cols-1 gap-4 pt-2">
-                            <PremiumTiltButton
-                                className="w-full"
-                                onClick={() => {
-                                    setPlayerInfo(myPseudo || 'Joueur', myAvatarId);
-                                    createRoom();
-                                    requestPermission();
-                                }}
-                                gradientFrom="from-[#1e40af]"
-                                gradientTo="to-[#0369a1]"
-                                shadowColor="shadow-blue-900/40"
-                            >
-                                <span className="flex items-center justify-center gap-3">
-                                    <Plus className="h-6 w-6" />
-                                    CRÉER UNE PARTIE
-                                </span>
-                            </PremiumTiltButton>
+                {/* Salons publics */}
+                <section className="ol-section" aria-label="Salons publics">
+                    <h2><Globe size={15} aria-hidden="true" />Salons publics<span>{publicRooms.length}</span></h2>
+                    {publicRooms.length === 0 ? <p className="ol-empty">Aucun salon ouvert pour l’instant. Créez le vôtre !</p> : <ul className="ol-list">
+                        {publicRooms.map(room => <li key={room.code}>
+                            <button type="button" className="ol-row" onClick={() => { setPlayerInfo(myPseudo || 'Joueur', myAvatarId); joinRoom(room.code); }}>
+                                <span className="ol-row-avatar">{getAvatarPath(room.emoji) ? <img src={getAvatarPath(room.emoji)} alt="" /> : <span>{room.emoji}</span>}</span>
+                                <span className="ol-row-main"><strong>{room.hostName}</strong><small>#{room.code} · Public</small></span>
+                                <span className="ol-row-count"><Users size={13} aria-hidden="true" />{room.playerCount}/2</span>
+                                <ChevronRight size={18} aria-hidden="true" />
+                            </button>
+                        </li>)}
+                    </ul>}
+                </section>
 
-                            <div className="grid grid-cols-5 gap-3">
-                                <div className="col-span-3 relative group">
-                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-slate-700 to-slate-800 rounded-2xl opacity-0 group-focus-within:opacity-100 blur transition-opacity" />
-                                    <Input
-                                        placeholder="CODE"
-                                        value={lobbyCode}
-                                        onChange={(e) => setLobbyCode(e.target.value.toUpperCase())}
-                                        maxLength={4}
-                                        className="h-14 bg-slate-900/80 border-white/10 text-center font-mono tracking-[0.3em] font-black text-xl text-white uppercase placeholder:tracking-normal placeholder:font-bold rounded-2xl relative z-10 transition-all focus:border-blue-500/50"
-                                    />
-                                </div>
-                                <Button
-                                    className="col-span-2 h-14 bg-slate-800 hover:bg-slate-700 text-white border border-white/10 rounded-2xl font-black text-sm tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-xl"
-                                    onClick={() => {
-                                        setPlayerInfo(myPseudo || 'Joueur', myAvatarId);
-                                        joinRoom(lobbyCode);
-                                    }}
-                                >
-                                    REJOINDRE
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Public Lobbies & Friends Split */}
-                        <div className="space-y-4 pt-4 border-t border-white/5">
-                            {/* Public Lobbies */}
-                            <div className="space-y-3">
-                                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2 mb-2 px-1">
-                                    <Globe className="h-3.5 w-3.5 text-blue-500" />
-                                    Salons publics ({publicRooms.length})
-                                </h3>
-
-                                {publicRooms.length === 0 ? (
-                                    <div className="text-center p-3.5 border-2 border-dashed border-white/5 rounded-[22px] bg-white/5 backdrop-blur-sm">
-                                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-wider">Aucun salon disponible</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3 max-h-[220px] overflow-y-auto custom-scrollbar pr-1">
-                                        {publicRooms.map((room) => (
-                                            <motion.div
-                                                key={room.code}
-                                                whileHover={{ scale: 1.01, x: 4 }}
-                                                whileTap={{ scale: 0.98 }}
-                                                className="flex items-center justify-between p-3 pl-4 bg-slate-900/40 hover:bg-slate-800/60 border border-white/5 hover:border-blue-500/40 rounded-[20px] transition-all cursor-pointer group shadow-lg"
-                                                onClick={() => {
-                                                    setPlayerInfo(myPseudo || 'Joueur', myAvatarId);
-                                                    joinRoom(room.code);
-                                                }}
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-11 h-11 rounded-xl bg-slate-800 flex items-center justify-center text-sm shadow-2xl overflow-hidden ring-2 ring-white/5 group-hover:ring-blue-500/30 transition-all">
-                                                        {getAvatarPath(room.emoji) ? (
-                                                            <img src={getAvatarPath(room.emoji)} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                                                        ) : (
-                                                            <span className="text-xl">{room.emoji}</span>
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-black text-white text-sm group-hover:text-blue-400 transition-colors">
-                                                            {room.hostName}
-                                                        </p>
-                                                        <div className="flex items-center gap-2 mt-0.5">
-                                                            <span className="text-[10px] text-blue-400 font-black tracking-widest uppercase">
-                                                                #{room.code}
-                                                            </span>
-                                                            <div className="w-1 h-1 rounded-full bg-slate-700" />
-                                                            <span className="text-[9px] text-slate-500 font-bold uppercase">Public</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex items-center gap-1.5 bg-blue-500/10 px-3 py-1.5 rounded-full border border-blue-500/20 shadow-inner">
-                                                        <Users className="h-3.5 w-3.5 text-blue-400" />
-                                                        <span className="text-xs font-black text-blue-400">
-                                                            {room.playerCount}/2
-                                                        </span>
-                                                    </div>
-                                                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-blue-500 group-hover:text-white transition-all shadow-lg">
-                                                        <ChevronRight className="h-5 w-5" />
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Friends List */}
-                            <div className="space-y-3 pt-2">
-                                <div className="flex items-center justify-between px-1">
-                                    <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                                        <div className="p-1 bg-emerald-500/10 rounded-lg">
-                                            <Users className="h-3.5 w-3.5 text-emerald-500" />
-                                        </div>
-                                        Mes Amis ({friends.length})
-                                    </h3>
-                                </div>
-
-                                <div className="space-y-2.5">
-                                    {friends.length === 0 ? (
-                                        <div className="p-3.5 bg-white/5 border-2 border-dashed border-white/5 rounded-[22px] flex flex-col items-center justify-center opacity-60 backdrop-blur-sm">
-                                            <div className="text-[9px] text-slate-500 text-center font-black uppercase tracking-[0.2em]">
-                                                Liste vide
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        friends.map(friend => (
-                                            <motion.div
-                                                key={friend.id}
-                                                whileHover={{ scale: 1.01, x: 4 }}
-                                                className={`p-3 border rounded-[20px] flex items-center justify-between group transition-all shadow-xl backdrop-blur-md bg-slate-900/40 border-white/10 hover:border-indigo-500/40`}
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    <div className="relative">
-                                                        <div className={`w-12 h-12 rounded-xl bg-slate-900 border-2 overflow-hidden shadow-2xl transition-all ${friend.isOnline ? 'border-emerald-500/30' : 'border-white/5 grayscale'}`}>
-                                                            <img src={getAvatarPath(friend.avatar_id)} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                                                        </div>
-                                                        {friend.isOnline && (
-                                                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-slate-900 shadow-[0_0_10px_rgba(16,185,129,0.5)] flex items-center justify-center">
-                                                                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        <p className={`text-sm font-black tracking-tight ${friend.isOnline ? 'text-white' : 'text-slate-200'}`}>{friend.name}</p>
-                                                        <div className={`text-[9px] font-black uppercase tracking-[0.15em] flex items-center gap-1.5 mt-0.5 ${friend.isOnline ? 'text-emerald-400' : 'text-slate-500'}`}>
-                                                            {friend.isOnline ? (
-                                                                <>
-                                                                    <span className="w-1 h-1 rounded-full bg-emerald-500" />
-                                                                    Disponible
-                                                                </>
-                                                            ) : 'Hors ligne'}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <Button
-                                                    size="sm"
-                                                    className={`h-9 px-4 rounded-xl text-[10px] font-black shadow-xl active:scale-95 transition-all tracking-wider flex items-center gap-2 group/invite bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-indigo-500/25`}
-                                                    onClick={() => {
-                                                        if (onlineRoomCode) {
-                                                            inviteFriend(friend.id, onlineRoomCode, userProfile.name);
-                                                        } else {
-                                                            useOnlineGameStore.getState().createRoomAndInvite(friend.id);
-                                                        }
-                                                        playSocialInvite();
-                                                    }}
-                                                >
-                                                    <span>DÉFIER</span>
-                                                    <Swords className="w-3.5 h-3.5 group-hover/invite:rotate-12 transition-transform" />
-                                                </Button>
-                                            </motion.div>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                {/* Amis */}
+                <section className="ol-section" aria-label="Mes amis">
+                    <h2><Users size={15} aria-hidden="true" />Mes amis<span>{friends.length}</span></h2>
+                    {friends.length === 0 ? <p className="ol-empty">Ajoutez des amis depuis l’onglet Social pour les défier ici.</p> : <ul className="ol-list">
+                        {friends.map(friend => <li key={friend.id} className="ol-row ol-row--friend">
+                            <span className={`ol-row-avatar${friend.isOnline ? ' is-online' : ' is-offline'}`}><img src={getAvatarPath(friend.avatar_id)} alt="" />{friend.isOnline && <i aria-hidden="true" />}</span>
+                            <span className="ol-row-main"><strong>{friend.name}</strong><small className={friend.isOnline ? 'is-online' : ''}>{friend.isOnline ? 'Disponible' : 'Hors ligne'}</small></span>
+                            <button type="button" className="ol-challenge" onClick={() => {
+                                if (onlineRoomCode) inviteFriend(friend.id, onlineRoomCode, userProfile.name);
+                                else useOnlineGameStore.getState().createRoomAndInvite(friend.id);
+                                playSocialInvite();
+                            }}><Swords size={14} aria-hidden="true" />Défier</button>
+                        </li>)}
+                    </ul>}
+                </section>
 
                 {/* Premium Countdown Overlay */}
                 <AnimatePresence>
@@ -2099,7 +1895,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </div>
+            </main>
         );
     }
 
