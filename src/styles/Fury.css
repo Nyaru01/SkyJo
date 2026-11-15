@@ -271,3 +271,5 @@ body.fury-mode .skyjo-badge-aside .fury-opponent { margin: 0 !important; width: 
 .fury-announce-ok { width: 100%; max-width: 260px; margin-top: 2px; background: linear-gradient(180deg, color-mix(in srgb, var(--fc) 55%, #fff), var(--fc)); color: #1a0d10; box-shadow: 0 0 0 1px #ffffff55 inset, 0 10px 26px -8px color-mix(in srgb, var(--fc) 80%, transparent); }
 @media (max-height: 680px) { .fury-announce-word { font-size: 36px; } .fury-announce-stage, .fury-announce-stage .fury-card--full { width: 140px; } .fury-announce-stage .fury-card--full { min-height: 178px; } }
 @media (prefers-reduced-motion: reduce) { .fury-announce-stage { animation: none; } }
+/* L'annonce est dans un calque qui laisse passer les touches : elle doit les capter pour que « Compris » fonctionne */
+.fury-announce { pointer-events: auto; }

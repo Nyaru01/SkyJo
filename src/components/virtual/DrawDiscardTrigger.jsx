@@ -323,7 +323,6 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                     {!canInteract && isAIThinking && (
                                         <span className="skyjo-thinking-dots" aria-hidden="true"><i /><i /><i /></span>
                                     )}
-                                    {recapText && <span className="skyjo-ai-recap">{recapText}</span>}
                                 </div>
 
                                 {/* Right Arrow - pointing to discard pile */}
@@ -341,6 +340,8 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                     </motion.div>
                                 )}
                             </motion.button>
+                            {/* Dernier coup de l’IA, sous le bouton (hors du cadre, pour ne pas être rogné) */}
+                            {recapText && <p className="skyjo-ai-recap">{recapText}</p>}
                         </div>
                     )}
 
