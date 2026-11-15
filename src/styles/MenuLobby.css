@@ -1580,3 +1580,10 @@ html body .menu-lobby .ai-mode-detail button { flex-shrink: 0; min-height: 34px;
 /* Fury : la pioche est plus étroite (rails sur les côtés) → consigne plus petite, sans flèches */
 html body.lobby-theme.fury-mode :is(.menu-lobby, .game-lobby) .skyjo-draw-button span[class][class] { font-size: 14px !important; line-height: 1.1 !important; white-space: normal !important; letter-spacing: 0 !important; }
 html body.fury-mode .skyjo-draw-button > :is(.text-emerald-400, .text-amber-400) { display: none; }
+/* Fury, en jeu : pioche plus étroite (rails sur les côtés) → libellés des piles plus petits, « À vous » sur une ligne */
+html body.lobby-theme.fury-mode .game-lobby .skyjo-pile-zone .skyjo-pile-group .skyjo-pile-label { font-size: 12px !important; letter-spacing: .02em !important; }
+html body.fury-mode .skyjo-cue-arrow { display: none; }
+html body .game-lobby div:has(> .skyjo-turn-cue) { min-width: 104px; }
+html body .game-lobby .skyjo-turn-cue span { white-space: nowrap; font-size: 25px; }
+html body .game-lobby .skyjo-turn-cue small { white-space: nowrap; letter-spacing: .16em; }
+html body .game-lobby div:has(> .skyjo-turn-cue) > .skyjo-ai-recap { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 10.5px !important; line-height: 1.3; }
