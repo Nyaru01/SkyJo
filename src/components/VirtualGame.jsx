@@ -251,6 +251,12 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     const currentPlayer = activeGameState?.players?.[activeGameState?.currentPlayerIndex];
     const isInitialReveal = activeGameState?.phase === 'INITIAL_REVEAL';
     const isFinished = activeGameState?.phase === 'FINISHED' || (activeGameState?.phase === 'REVEALING_CHESTS' && chestsRevealed);
+    // Fin de manche : on laisse voir le plateau final, il s'assombrit, puis le bilan apparaît en fondu.
+    const [resultsReady, setResultsReady] = useState(false);
+    useEffect(() => {
+        const t = setTimeout(() => setResultsReady(isFinished), isFinished ? 1300 : 0);
+        return () => clearTimeout(t);
+    }, [isFinished]);
     const discardTop = activeGameState?.discardPile?.[activeGameState?.discardPile?.length - 1];
     const isMyTurn = !isInitialReveal && activeGameState?.currentPlayerIndex === myPlayerIndex;
     // Mode Fury (contre l'IA uniquement pour l'instant)
@@ -2157,7 +2163,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     const selectedForReveal = initialReveals[currentPlayerKey] || [];
 
     // If game finished, show scores
-    if (isFinished) {
+    if (isFinished && resultsReady) {
         // Calculate scores directly from activeGameState (works for both local and online)
         const scores = calculateFinalScores(activeGameState);
 
@@ -2711,7 +2717,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                 >
                     <PlayerHand
                         player={activeGameState.players[opponentIndex]}
-                        columnBonus={activeGameState.isBonusMode || activeGameState.isHardcoreMode}
+                        columnBonus={activeGameState.isBonusMode || activeGameState.isHardcoreMode || activeGameState.isFuryMode}
                         eliminatedCards={activeGameState.lastEliminatedCards}
                         isCurrentPlayer={!isInitialReveal && activeGameState.currentPlayerIndex === opponentIndex}
                         isOpponent={true}
@@ -2726,6 +2732,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
 
             {/* MIDDLE ACTION AREA - Centered between hands */}
             <div className="skyjo-action-area flex-1 flex flex-col justify-center items-center relative z-40 my-2">
+                {isFinished && !resultsReady && createPortal(<div className="round-end-veil" aria-hidden="true" />, document.body)}
                 {/* Mode Fury : état adverse, ciblage, effets, ambiance */}
                 {furyOn && <>
                     <FuryAmbience />
@@ -2880,7 +2887,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                 >
                     <PlayerHand
                         player={activeGameState.players[myPlayerIndex]}
-                        columnBonus={activeGameState.isBonusMode || activeGameState.isHardcoreMode}
+                        columnBonus={activeGameState.isBonusMode || activeGameState.isHardcoreMode || activeGameState.isFuryMode}
                         eliminatedCards={activeGameState.lastEliminatedCards}
                         isCurrentPlayer={!isInitialReveal && activeGameState.currentPlayerIndex === myPlayerIndex}
                         isOpponent={false}

@@ -271,3 +271,6 @@ html body .tourment-goal .tourment-goal-title { color: #fbf6ee !important; font-
 .skyjo-game-container .skyjo-game-header button { height: 38px !important; min-height: 38px !important; padding-top: 0 !important; padding-bottom: 0 !important; }
 .skyjo-game-container .skyjo-game-header > div { padding: 2px !important; }
 .skyjo-game-container .skyjo-game-header > div > div.h-9 { height: 32px !important; width: 32px !important; font-size: 20px !important; }
+/* Fin de manche : le plateau final reste visible, puis s'assombrit avant le bilan */
+.round-end-veil { position: fixed; inset: 0; z-index: 79; pointer-events: auto; animation: round-end-veil 1.3s ease-in both; }
+@keyframes round-end-veil { 0%, 35% { background-color: #09122000; backdrop-filter: blur(0); } 100% { background-color: #091220b3; backdrop-filter: blur(6px); } }

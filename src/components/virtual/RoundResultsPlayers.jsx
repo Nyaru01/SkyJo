@@ -4,7 +4,7 @@ import '../../styles/RoundResults.css';
 
 export default function RoundResultsPlayers({ scores = [], gameState, totals }) {
     const ordered = [...scores].sort((a, b) => a.finalScore - b.finalScore);
-    const bonusMode = gameState.isBonusMode || gameState.isHardcoreMode;
+    const bonusMode = gameState.isBonusMode || gameState.isHardcoreMode || gameState.isFuryMode;
     return <div className="round-results-list">
         {ordered.map(score => {
             const player = gameState.players.find(p => p.id === score.playerId);

@@ -66,3 +66,9 @@
 .round-results-viewport .round-actions-content > div { letter-spacing:.025em!important; }
 .round-results-viewport .round-results-legend { margin:3px 0;font-size:9px; }
 @media(max-height:700px){.round-results-viewport .round-results-heading{padding:10px!important}.round-results-heading::before{display:none}.round-results-viewport .round-results-heading h3{font-size:20px!important}}
+/* Fin de manche : fondu du plateau vers le bilan, plutôt qu'une apparition brute */
+.round-results-viewport { animation: round-results-fade .7s ease-out both; }
+.round-results-viewport .round-results-shell { animation: round-results-rise .65s cubic-bezier(.2,.8,.25,1) .3s both; }
+@keyframes round-results-fade { from { background-color: #091220b3; backdrop-filter: blur(6px); } to { background-color: #091220b3; backdrop-filter: blur(6px); } }
+@keyframes round-results-rise { from { opacity: 0; transform: translateY(28px) scale(.96); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .round-results-viewport, .round-results-viewport .round-results-shell { animation-duration: .2s; animation-delay: 0s; } .round-results-viewport .round-results-shell { transform: none; } }

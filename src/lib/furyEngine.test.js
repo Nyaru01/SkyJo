@@ -12,9 +12,9 @@ function ready(furyTypes = ['quake']) {
     return { ...g, phase: 'PLAYING', turnPhase: 'DRAW', currentPlayerIndex: 0, players: [p0, p1] };
 }
 
-test('la pioche contient 6 Fury, jamais distribuées', () => {
+test('la pioche contient 12 Fury, jamais distribuées', () => {
     const g = initializeFuryGame(players);
-    assert.equal(g.drawPile.filter(c => c.specialType === 'F').length, 6);
+    assert.equal(g.drawPile.filter(c => c.specialType === 'F').length, 12);
     assert.ok(g.players.every(p => p.hand.every(c => c.specialType !== 'F')));
     assert.ok(g.discardPile.every(c => c.specialType !== 'F'));
 });
@@ -78,4 +78,15 @@ test('Malédiction : jamais sur une carte cachée (sinon la manche peut finir à
     const state = { ...g, players: [g.players[0], { ...g.players[1], hand }] };
     assert.equal(furyTargets(state, 'curse', 1).includes(11), false);
     assert.throws(() => playFury(state, 0, 1, 11));
+});
+
+test("l'IA vise la meilleure colonne adverse, jamais une colonne de mauvaises cartes", () => {
+    const g = ready(['quake']);
+    const values = [12, 11, 10, 0, 0, 5, 9, 9, 8, 7, 7, 7];
+    const opp = { ...g.players[0], hand: g.players[0].hand.map((c, i) => ({ ...c, isRevealed: true, value: values[i] })) };
+    const ai = { ...g.players[1], fury: { reserve: [{ id: 'q', specialType: 'F', furyType: 'quake' }], used: 0, shield: false } };
+    const state = { ...g, currentPlayerIndex: 1, players: [opp, ai] };
+    assert.deepEqual(decideFuryAction(state, 1), { reserveIndex: 0, targetIndex: 0, target: 1 });
+    const bad = { ...state, players: [{ ...opp, hand: opp.hand.map(c => ({ ...c, value: 10 })) }, ai] };
+    assert.equal(decideFuryAction(bad, 1), null);
 });

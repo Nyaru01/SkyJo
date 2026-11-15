@@ -156,9 +156,10 @@ export function FuryRulesModal({ open, onClose, first = false }) {
             <h2 id="fury-rules-title" className="fury-rules-title">Mode Fury</h2>
             <p className="skyjo-pause-text">Les règles du Skyjo, plus six cartes pour saboter le jeu adverse.</p>
             <ol className="fury-rules-steps">
-                <li><b>1</b><span><strong>Piochez-les.</strong> Une carte Fury tirée de la pioche file dans votre réserve (3 au plus), puis vous piochez normalement.</span></li>
+                <li><b>1</b><span><strong>Piochez-les.</strong> 12 cartes Fury sont cachées dans la pioche. Celle que vous tirez file dans votre réserve (3 au plus), puis vous piochez normalement.</span></li>
                 <li><b>2</b><span><strong>Jouez-les à la place de piocher.</strong> Touchez la carte, puis la cible chez l’adversaire. Votre tour s’arrête là.</span></li>
-                <li><b>3</b><span><strong>Trois par manche.</strong> Les flammes indiquent ce qu’il vous reste. Le Bouclier annule la prochaine attaque reçue.</span></li>
+                <li><b>3</b><span><strong>Trois par manche.</strong> Le Bouclier annule la prochaine attaque reçue.</span></li>
+                <li><b>4</b><span><strong>Colonne nettoyée : −3 points.</strong> Trois cartes identiques dans une colonne disparaissent et vous rapportent −3 en fin de manche.</span></li>
             </ol>
             <div className="fury-rules-grid">{FURY_ORDER_UI.map(type => <FuryCard key={type} type={type} />)}</div>
             <button type="button" className="skyjo-pause-resume" onClick={onClose}>{first ? 'Au combat' : 'Compris'}</button>

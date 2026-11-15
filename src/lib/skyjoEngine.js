@@ -717,7 +717,7 @@ export const calculateFinalScores = (gameState) => {
     const isBonusMode = gameState.isBonusMode || gameState.players.some(p => p.hand.some(c => c && (c.value === 20 || c.value === -10)));
 
     const scores = gameState.players.map((player, index) => {
-        const isHardcore = gameState.isHardcoreMode || false;
+        const isHardcore = gameState.isHardcoreMode || gameState.isFuryMode || false; // Fury : colonne nettoyée = −3
         let score = calculateHandScore(player.hand, chestResults, player.columnsCleared, isBonusMode, isHardcore);
 
         // Penalty: if finisher doesn't have lowest score, double their score

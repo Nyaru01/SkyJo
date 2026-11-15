@@ -1,6 +1,6 @@
 // Mode Fury : des cartes spéciales pour saboter le jeu de l'adversaire.
 // Module à part, pour ne pas toucher aux règles des autres modes.
-// - 6 cartes Fury mélangées dans la pioche (jamais distribuées ni défaussées).
+// - 12 cartes Fury (2 de chaque) mélangées dans la pioche (jamais distribuées ni défaussées).
 // - Piocher une Fury l'envoie dans la réserve du joueur (3 au plus), puis on repioche.
 // - Jouer une Fury remplace la pioche : le tour se termine ensuite.
 // - 3 Fury utilisées au plus par manche et par joueur.
@@ -17,13 +17,14 @@ export const FURY_TYPES = {
 export const FURY_ORDER = ['quake', 'curse', 'fog', 'tornado', 'freeze', 'shield'];
 export const FURY_RESERVE_MAX = 3;
 export const FURY_USES_PER_ROUND = 3;
+export const FURY_COPIES = 2;
 
 const furyCard = (type, n) => ({ id: `fury-${type}-${n}`, value: 0, specialType: 'F', furyType: type, color: 'fury', isRevealed: false });
 const emptyFury = () => ({ reserve: [], used: 0, shield: false });
 
 export function initializeFuryGame(players, options = {}) {
     const base = initializeGame(players, options);
-    const furies = FURY_ORDER.map((type, i) => furyCard(type, i));
+    const furies = FURY_ORDER.flatMap((type, i) => Array.from({ length: FURY_COPIES }, (_, k) => furyCard(type, i * FURY_COPIES + k)));
     return {
         ...base,
         isFuryMode: true,
@@ -156,47 +157,68 @@ export function playFury(state, reserveIndex, targetIndex, target = null) {
     return { state: ended, result };
 }
 
-// IA : joue une Fury quand c'est rentable. Renvoie { reserveIndex, targetIndex, target } ou null.
+// IA : estime, pour chaque Fury et chaque cible, combien de points elle fait perdre à l'adversaire,
+// et ne joue que si le coup vaut mieux qu'une pioche normale. Renvoie { reserveIndex, targetIndex, target } ou null.
+const HIDDEN_EV = 5; // valeur moyenne d'une carte cachée
+const sameValuePair = cards => cards.length >= 2 && cards.some((c, k) => cards.some((d, j) => j !== k && d.value === c.value));
+
+export function scoreFuryMove(state, aiIndex, type, target) {
+    const oppIndex = state.players.findIndex((_, i) => i !== aiIndex);
+    const opp = state.players[oppIndex];
+    const hand = opp.hand;
+    const hidden = hand.filter(c => c && !c.isRevealed).length;
+    // Plus l'adversaire est près de finir la manche, plus le ralentir compte.
+    const urgency = hidden <= 1 ? 6 : hidden <= 3 ? 3 : hidden <= 5 ? 1 : 0;
+    const colCards = col => columnIndices(col).map(i => hand[i]).filter(c => c && c.isRevealed && !c.isCursed);
+    if (type === 'shield') {
+        const threat = (opp.fury?.reserve.length || 0) > 0 && (opp.fury?.used || 0) < FURY_USES_PER_ROUND;
+        return state.players[aiIndex].fury.shield || !threat ? -1 : 5 + (opp.fury.reserve.length - 1) * 2;
+    }
+    if (opp.fury?.shield) return 1; // l'attaque finira sur le bouclier : seulement pour le retirer
+    if (type === 'quake') {
+        const cards = colCards(target);
+        const gain = cards.reduce((s, c) => s + (HIDDEN_EV - c.value), 0);
+        return gain + (sameValuePair(cards) ? 6 : 0) + cards.length * (urgency / 2);
+    }
+    if (type === 'curse') {
+        const card = hand[target];
+        const others = columnIndices(Math.floor(target / 3)).filter(i => i !== target).map(i => hand[i]).filter(c => c && c.isRevealed);
+        return 13 - card.value + (others.some(c => c.value === card.value) ? 5 : 0);
+    }
+    if (type === 'freeze') {
+        const cards = colCards(target);
+        // Bloque une mauvaise carte que l'adversaire voudrait remplacer, ou une paire prête à être complétée.
+        const stuck = cards.reduce((s, c) => s + Math.max(0, c.value - 6), 0);
+        return stuck * 0.8 + (sameValuePair(cards) && cards.length === 2 ? 4 : 0) + (cards.length ? urgency / 2 : -1);
+    }
+    if (type === 'fog') {
+        const revealed = hand.filter(c => c && c.isRevealed && !(c.lockCount > 0)).length;
+        return revealed < 2 ? -1 : urgency * 1.2 + 1;
+    }
+    if (type === 'tornado') {
+        const pairs = [0, 1, 2, 3].filter(col => sameValuePair(colCards(col))).length;
+        const low = hand.filter(c => c && c.isRevealed && c.value <= 2).length;
+        return pairs * 5 + low * 0.5 + urgency;
+    }
+    return -1;
+}
+
 export function decideFuryAction(state, aiIndex) {
     if (!canPlayFury(state, aiIndex)) return null;
     const reserve = state.players[aiIndex].fury.reserve;
     const oppIndex = state.players.findIndex((_, i) => i !== aiIndex);
-    const opp = state.players[oppIndex];
-    const pick = type => reserve.findIndex(c => c.furyType === type);
-    const revealed = opp.hand.filter(c => c && c.isRevealed);
-
-    // Bouclier : dès que l'adversaire a de quoi attaquer.
-    if (pick('shield') >= 0 && !state.players[aiIndex].fury.shield && (opp.fury?.reserve.length || 0) > 0) return { reserveIndex: pick('shield'), targetIndex: aiIndex };
-    // Séisme : sur la colonne la plus avancée (deux cartes révélées identiques ou très basses).
-    if (pick('quake') >= 0) {
-        const cols = furyTargets(state, 'quake', oppIndex).map(col => {
-            const cards = columnIndices(col).map(i => opp.hand[i]).filter(c => c && c.isRevealed);
-            const pair = cards.length >= 2 && cards.some((c, k) => cards.some((d, j) => j !== k && d.value === c.value));
-            return { col, score: (pair ? 10 : 0) + cards.reduce((s, c) => s + (6 - c.value), 0) };
-        }).sort((a, b) => b.score - a.score);
-        if (cols[0] && cols[0].score >= 8) return { reserveIndex: pick('quake'), targetIndex: oppIndex, target: cols[0].col };
-    }
-    // Malédiction : sur sa meilleure carte révélée.
-    if (pick('curse') >= 0) {
-        const targets = furyTargets(state, 'curse', oppIndex).filter(i => opp.hand[i].isRevealed).sort((a, b) => opp.hand[a].value - opp.hand[b].value);
-        if (targets.length && opp.hand[targets[0]].value <= 3) return { reserveIndex: pick('curse'), targetIndex: oppIndex, target: targets[0] };
-    }
-    if (pick('tornado') >= 0 && revealed.length >= 6) return { reserveIndex: pick('tornado'), targetIndex: oppIndex };
-    if (pick('fog') >= 0 && revealed.length >= 5) return { reserveIndex: pick('fog'), targetIndex: oppIndex };
-    if (pick('freeze') >= 0) {
-        const cols = furyTargets(state, 'freeze', oppIndex);
-        const high = cols.find(col => columnIndices(col).some(i => opp.hand[i] && opp.hand[i].isRevealed && opp.hand[i].value >= 9));
-        if (high !== undefined) return { reserveIndex: pick('freeze'), targetIndex: oppIndex, target: high };
-    }
-    // Réserve pleine : on ne garde pas tout.
-    if (reserve.length >= FURY_RESERVE_MAX) {
-        const i = reserve.findIndex(c => c.furyType !== 'shield');
-        if (i >= 0) {
-            const type = reserve[i].furyType;
-            const t = FURY_TYPES[type].target;
-            const targets = t === 'column' || t === 'card' ? furyTargets(state, type, oppIndex) : [null];
-            if (targets.length) return { reserveIndex: i, targetIndex: oppIndex, target: targets[0] };
-        }
-    }
-    return null;
+    let best = null;
+    reserve.forEach((card, reserveIndex) => {
+        const type = card.furyType;
+        const t = FURY_TYPES[type].target;
+        const targets = t === 'column' || t === 'card' ? furyTargets(state, type, oppIndex) : [null];
+        targets.forEach(target => {
+            const value = scoreFuryMove(state, aiIndex, type, target);
+            if (!best || value > best.value) best = { value, reserveIndex, targetIndex: type === 'shield' ? aiIndex : oppIndex, target };
+        });
+    });
+    // Jouer une Fury coûte la pioche du tour : il faut que ça vaille plus. Réserve pleine : on est moins exigeant.
+    if (!best || best.value < (reserve.length >= FURY_RESERVE_MAX ? 2 : 5)) return null;
+    const { reserveIndex, targetIndex, target } = best;
+    return target === null ? { reserveIndex, targetIndex } : { reserveIndex, targetIndex, target };
 }
