@@ -35,6 +35,12 @@ import {
     resolveBlackHole,
     generateChestResults
 } from '../src/lib/skyjoEngine.js';
+import { initializeFuryGame, collectFuryFromPile, playFury } from '../src/lib/furyEngine.js';
+
+// Nouvelle manche selon le mode du salon : Classique, Tourment (bonus) ou Fury.
+const newRoundState = (room, gamePlayers) => (room.gameMode === 'fury'
+    ? initializeFuryGame(gamePlayers)
+    : initializeGame(gamePlayers, { isBonusMode: room.gameMode === 'bonus' }));
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -401,7 +407,7 @@ io.on('connection', (socket) => {
             dbId: p.dbId,
             socketId: p.socketId
         }));
-        room.gameState = initializeGame(gamePlayers, { isBonusMode: room.gameMode === 'bonus' });
+        room.gameState = newRoundState(room, gamePlayers);
         room.gameStarted = true;
         room.totalScores = {};
         gamePlayers.forEach(p => {
@@ -437,10 +443,24 @@ io.on('connection', (socket) => {
                     lastAction.card = initialCard;
                     lastAction.cardValue = initialCard ? initialCard.value : null;
                     break;
-                case 'draw_pile':
-                    newState = drawFromPile(newState);
+                case 'draw_pile': {
+                    // Fury : la carte Fury du dessus file d'abord dans la réserve du joueur.
+                    const { state: collected, gained } = collectFuryFromPile(newState);
+                    newState = drawFromPile(collected);
+                    if (gained.length) newState.lastFuryGain = { cards: gained, by: newState.currentPlayerIndex, at: Date.now() };
                     lastAction.card = newState.drawnCard;
                     break;
+                }
+                case 'play_fury': {
+                    // Le serveur arbitre : seulement à votre tour, avec les règles du moteur Fury
+                    // (3 par manche, jamais au dernier tour, cibles valides, Bouclier automatique).
+                    if (!newState.isFuryMode) throw new Error('Ce salon n’est pas en mode Fury.');
+                    if (pIdx !== newState.currentPlayerIndex) throw new Error('Ce n’est pas votre tour.');
+                    const { state } = playFury(newState, payload.reserveIndex, payload.targetIndex, payload.target ?? null);
+                    newState = state;
+                    lastAction.fury = state.lastFury;
+                    break;
+                }
                 case 'draw_discard':
                     newState = drawFromDiscard(newState);
                     lastAction.card = newState.drawnCard;
@@ -555,7 +575,7 @@ io.on('connection', (socket) => {
         if (!room) return;
 
         const gamePlayers = room.players.map(p => ({ id: p.id, name: p.name, emoji: p.emoji, dbId: p.dbId, socketId: p.socketId }));
-        room.gameState = initializeGame(gamePlayers, { isBonusMode: room.gameMode === 'bonus' });
+        room.gameState = newRoundState(room, gamePlayers);
         room.roundNumber = (room.roundNumber || 1) + 1;
 
         io.to(roomCode.toUpperCase()).emit('game_started', {
@@ -576,7 +596,7 @@ io.on('connection', (socket) => {
         room.roundNumber = 1;
 
         const gamePlayers = room.players.map(p => ({ id: p.id, name: p.name, emoji: p.emoji, dbId: p.dbId, socketId: p.socketId }));
-        room.gameState = initializeGame(gamePlayers, { isBonusMode: room.gameMode === 'bonus' });
+        room.gameState = newRoundState(room, gamePlayers);
 
         io.to(roomCode.toUpperCase()).emit('game_started', {
             gameState: room.gameState,

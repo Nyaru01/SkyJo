@@ -24,6 +24,7 @@ import GameMessageBanner from './virtual/GameMessageBanner';
 import DrawReactionBubble from './virtual/DrawReactionBubble';
 import SwapReveal from './virtual/SwapReveal';
 import { FuryRail, FuryTargetBanner, FuryEffects, FuryAmbience, FuryRulesModal } from './virtual/FuryUI';
+import { NormalIcon, TourmentIcon, FuryIcon } from './virtual/ModeIcons';
 import { FURY_TYPES } from '../lib/furyEngine';
 import { fitCardsRef } from '../lib/fitCards';
 import ExperienceBar from './ExperienceBar';
@@ -262,7 +263,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     const discardTop = activeGameState?.discardPile?.[activeGameState?.discardPile?.length - 1];
     const isMyTurn = !isInitialReveal && activeGameState?.currentPlayerIndex === myPlayerIndex;
     // Mode Fury (contre l'IA uniquement pour l'instant)
-    const furyOn = Boolean(aiMode && activeGameState?.isFuryMode);
+    // Fury contre l'IA comme en ligne : c'est l'état de la partie qui le dit.
+    const furyOn = Boolean(activeGameState?.isFuryMode);
     const furyCanPlay = furyOn && isMyTurn && activeGameState?.phase === 'PLAYING' && activeGameState?.turnPhase === 'DRAW' && (activeGameState?.players[myPlayerIndex]?.fury?.used || 0) < 3;
     const furyActiveType = furyCanPlay && furySelect !== null ? activeGameState.players[myPlayerIndex].fury.reserve[furySelect]?.furyType || null : null;
     const isOpponentTurn = !isInitialReveal && activeGameState?.currentPlayerIndex === opponentIndex;
@@ -993,13 +995,19 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
         }
     };
 
+    // Jouer une Fury : en local via le store, en ligne via le serveur (qui valide le coup).
+    const doPlayFury = (reserveIndex, targetIndex, target = null) => {
+        if (onlineGameStarted) { emitGameAction('play_fury', { reserveIndex, targetIndex, target }); return true; }
+        return playFuryCard(reserveIndex, targetIndex, target);
+    };
+
     // Handle card click during gameplay
     const handleCardClick = (cardIndex, playerIndex = null) => {
         // Fury : une carte sélectionnée vise la colonne ou la carte touchée chez l'adversaire.
         if (furyActiveType && playerIndex === opponentIndex) {
             const need = FURY_TYPES[furyActiveType].target;
             const target = need === 'column' ? Math.floor(cardIndex / 3) : need === 'card' ? cardIndex : null;
-            if (playFuryCard(furySelect, opponentIndex, target)) setFurySelect(null);
+            if (doPlayFury(furySelect, opponentIndex, target)) setFurySelect(null);
             return;
         }
         const isOnline = !!onlineGameStarted;
@@ -1601,119 +1609,29 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                             </div>
                         </div>
 
-                        {/* Unified Mode Selection Container */}
-                        <div className="bg-slate-900/60 backdrop-blur-xl rounded-[26px] border border-white/10 shadow-2xl overflow-hidden">
-                            <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between bg-white/5">
-                                <h3 className="text-[10px] font-black text-slate-400/80 uppercase tracking-[0.2em] flex items-center gap-2">
-                                    <Award className="h-3.5 w-3.5 text-blue-500" />
-                                    Mode de Jeu
-                                </h3>
-                                {onlineGameMode === 'bonus' && (
-                                    <div className="bg-rose-500/20 px-2 py-0.5 rounded-full border border-rose-500/30">
-                                        <span className="text-[8px] font-black text-rose-400 uppercase tracking-widest">Tourment Actif</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="p-3">
-                                {onlineIsHost ? (
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div
-                                            onClick={() => setOnlineGameMode('classic')}
-                                            className={cn(
-                                                "flex flex-col items-center justify-center py-3 px-2 rounded-[18px] transition-all relative overflow-hidden group cursor-pointer",
-                                                onlineGameMode === 'classic'
-                                                    ? "bg-blue-600/20 border border-blue-500/40 text-blue-400"
-                                                    : "border border-transparent text-slate-500 hover:text-slate-300 hover:bg-white/5"
-                                            )}
-                                        >
-                                            <Trophy className={cn("h-5 w-5 mb-1.5 transition-transform group-hover:scale-110", onlineGameMode === 'classic' ? "fill-current" : "")} />
-                                            <span className="text-[10px] font-black uppercase tracking-widest">Classique</span>
-                                            {onlineGameMode === 'classic' && (
-                                                <motion.div layoutId="active-mode" className="absolute inset-0 bg-blue-400/5 z-0" />
-                                            )}
-                                        </div>
-                                        <div
-                                            onClick={() => setOnlineGameMode('bonus')}
-                                            className={cn(
-                                                "flex flex-col items-center justify-center py-3 px-2 rounded-[18px] transition-all relative overflow-hidden group cursor-pointer",
-                                                onlineGameMode === 'bonus'
-                                                    ? "bg-rose-600/30 border border-rose-500/50 text-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.15)]"
-                                                    : "border border-transparent text-slate-500 hover:text-slate-300 hover:bg-white/5"
-                                            )}
-                                        >
-                                            <div className="relative">
-                                                <Swords className={cn("h-5 w-5 mb-1.5 transition-transform group-hover:scale-110", onlineGameMode === 'bonus' ? "text-rose-500 fill-rose-500/20" : "")} />
-                                            </div>
-                                            <span className="text-[10px] font-black uppercase tracking-widest">Tourment</span>
-
-                                            {onlineGameMode === 'bonus' && (
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setShowBonusRules(true);
-                                                    }}
-                                                    className="mt-1.5 bg-rose-500/20 hover:bg-rose-500/40 px-2 py-0.5 rounded-lg border border-rose-500/30 flex items-center gap-1 transition-all active:scale-95 z-20"
-                                                >
-                                                    <BookOpen className="h-3 w-3 text-rose-400" />
-                                                    <span className="text-[8px] font-bold text-rose-400 uppercase">Règles</span>
-                                                </button>
-                                            )}
-
-                                            {onlineGameMode === 'bonus' && (
-                                                <motion.div layoutId="active-mode" className="absolute inset-0 bg-gradient-to-tr from-rose-500/10 to-transparent z-0" />
-                                            )}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div
-                                        onClick={() => onlineGameMode === 'bonus' && setShowBonusRules(true)}
-                                        className={cn(
-                                            "relative group/mode flex items-center justify-between p-3 rounded-[18px] border transition-all overflow-hidden",
-                                            onlineGameMode === 'bonus'
-                                                ? "bg-rose-500/10 border-rose-500/20 cursor-pointer hover:bg-rose-500/20"
-                                                : "bg-white/5 border-white/5"
-                                        )}
-                                    >
-                                        <div className="flex items-center gap-3 relative z-10">
-                                            <div className={cn(
-                                                "w-10 h-10 rounded-xl flex items-center justify-center shadow-xl",
-                                                onlineGameMode === 'bonus' ? "bg-rose-500/20" : "bg-blue-500/10"
-                                            )}>
-                                                {onlineGameMode === 'bonus' ? (
-                                                    <Swords className="h-5 w-5 text-rose-400 fill-rose-400/20" />
-                                                ) : (
-                                                    <Trophy className="h-5 w-5 text-blue-400 fill-blue-400/20" />
-                                                )}
-                                            </div>
-                                            <div>
-                                                <p className={cn(
-                                                    "text-xs font-black uppercase tracking-tighter",
-                                                    onlineGameMode === 'bonus' ? "text-rose-400" : "text-white"
-                                                )}>
-                                                    MODE {onlineGameMode === 'bonus' ? 'TOURMENT' : 'Classique'}
-                                                </p>
-                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Sélectionné par l'hôte</p>
-                                            </div>
-                                        </div>
-                                        {onlineGameMode === 'bonus' && (
-                                            <div className="flex items-center gap-2 relative z-10">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setShowBonusRules(true);
-                                                    }}
-                                                    className="bg-rose-500/20 hover:bg-rose-500/40 px-2 py-1 rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition-all active:scale-95 shadow-sm"
-                                                >
-                                                    <BookOpen className="h-3 w-3 text-rose-400" />
-                                                    <span className="text-[8px] font-black text-rose-400 uppercase">Règles</span>
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                        {/* Mode de jeu du salon : Classique, Tourment ou Fury (choisi par l'hôte) */}
+                        <div className="ol-modes">
+                            <h3 className="ol-modes-title">Mode de jeu{!onlineIsHost && <small>choisi par l’hôte</small>}</h3>
+                            <div className="ol-modes-grid" role="radiogroup" aria-label="Mode de jeu">
+                                {[
+                                    { id: 'classic', title: 'Classique', text: 'Les règles du Skyjo', Icon: NormalIcon, tone: 'amber' },
+                                    { id: 'bonus', title: 'Tourment', text: 'Cartes spéciales', Icon: TourmentIcon, tone: 'coral', rules: () => setShowBonusRules(true) },
+                                    { id: 'fury', title: 'Fury', text: 'Cartes de sabotage', Icon: FuryIcon, tone: 'ember', rules: () => setFuryRulesOpen(true) },
+                                ].map(m => {
+                                    const active = onlineGameMode === m.id;
+                                    if (!onlineIsHost && !active) return null;
+                                    return <div key={m.id} className={`ol-mode ol-mode--${m.tone}${active ? ' is-active' : ''}${!onlineIsHost ? ' is-readonly' : ''}`}>
+                                        <button type="button" role="radio" aria-checked={active} disabled={!onlineIsHost} onClick={() => setOnlineGameMode(m.id)}>
+                                            <span className="ol-mode-icon"><m.Icon width={22} height={22} /></span>
+                                            <strong>{m.title}</strong><small>{m.text}</small>
+                                        </button>
+                                        {m.rules && active && <button type="button" className="ol-mode-rules" onClick={m.rules}><BookOpen size={12} aria-hidden="true" />Règles</button>}
+                                    </div>;
+                                })}
+                                {!onlineIsHost && !onlineGameMode && <p className="ol-empty">L’hôte n’a pas encore choisi le mode.</p>}
                             </div>
                         </div>
+                        <FuryRulesModal open={furyRulesOpen} onClose={() => setFuryRulesOpen(false)} />
 
                         {/* Start Button / Status */}
                         <div className="pt-4">
@@ -2599,7 +2517,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                 {/* Compact Draw/Discard Trigger Button (remplacé par le ciblage Fury) */}
                 {furyActiveType && <div className="flex justify-center px-4 w-full"><div style={{ width: '100%', maxWidth: '340px' }}>
                     <FuryTargetBanner type={furyActiveType}
-                        onPlay={() => { if (playFuryCard(furySelect, furyActiveType === 'shield' ? myPlayerIndex : opponentIndex)) setFurySelect(null); }}
+                        onPlay={() => { if (doPlayFury(furySelect, furyActiveType === 'shield' ? myPlayerIndex : opponentIndex)) setFurySelect(null); }}
                         onCancel={() => setFurySelect(null)} />
                 </div></div>}
                 {!isInitialReveal && !furyActiveType && (

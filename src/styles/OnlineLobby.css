@@ -67,3 +67,19 @@ html body.lobby-theme .ol-screen .ol-section h2 { color: #e7e1ea !important; }
 html body.lobby-theme .ol-screen .ol-header p { color: #e8907a !important; }
 html body.lobby-theme .ol-screen .ol-row-main strong, html body.lobby-theme .ol-screen .ol-pseudo { color: #fbf6ee !important; }
 html body.lobby-theme .ol-screen .ol-create strong { color: #24273a !important; }
+/* Choix du mode dans le salon en ligne */
+.ol-modes { padding: 14px; border-radius: 22px; background: linear-gradient(160deg, #2c2b41e6, #222134e6); box-shadow: inset 0 0 0 1px #ffffff17; }
+html body .ol-modes .ol-modes-title { display: flex; align-items: baseline; gap: 8px; margin: 0 0 10px; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #a9a3b8 !important; font-family: system-ui, sans-serif; }
+.ol-modes-title small { font-size: 10px; letter-spacing: 0; text-transform: none; font-weight: 600; color: #8f899f; }
+.ol-modes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.ol-modes-grid:has(.is-readonly) { grid-template-columns: 1fr; }
+.ol-mode { --tone: #e6c391; position: relative; display: flex; flex-direction: column; border-radius: 16px; background: #ffffff08; box-shadow: inset 0 0 0 1px #ffffff14; transition: box-shadow .2s, background .2s; }
+.ol-mode--amber { --tone: #e6c391; } .ol-mode--coral { --tone: #eba594; } .ol-mode--ember { --tone: #f08a5d; }
+.ol-mode > button:first-child { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 6px 10px; color: #e7e1ea; text-align: center; }
+.ol-mode.is-readonly > button:first-child { flex-direction: row; justify-content: flex-start; gap: 12px; padding: 10px 12px; text-align: left; }
+.ol-mode.is-readonly > button:first-child small { margin-left: auto; }
+.ol-mode-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; color: var(--tone); background: color-mix(in srgb, var(--tone) 16%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 32%, transparent); }
+.ol-mode strong { font-size: 13.5px; font-weight: 800; color: #fbf6ee !important; }
+.ol-mode small { font-size: 10.5px; color: #a9a3b8; }
+.ol-mode.is-active { background: color-mix(in srgb, var(--tone) 12%, #ffffff05); box-shadow: inset 0 0 0 1.5px var(--tone), 0 10px 22px -16px var(--tone); }
+.ol-mode-rules { display: inline-flex; align-items: center; justify-content: center; gap: 4px; margin: 0 8px 8px; padding: 5px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 800; color: var(--tone); background: color-mix(in srgb, var(--tone) 14%, transparent); }

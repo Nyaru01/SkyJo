@@ -92,36 +92,41 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names }) {
     const [gain, setGain] = useState(null);
     const [announce, setAnnounce] = useState(null);
     const [boardFx, setBoardFx] = useState(null);
+    // En ligne, chaque mise à jour du serveur recrée ces objets : on ne rejoue un effet que pour un nouvel événement (nouvel « at »).
+    const [furyEvent, setFuryEvent] = useState(null);
+    const [gainEvent, setGainEvent] = useState(null);
+    if (lastFury?.at && lastFury.at !== furyEvent?.at) setFuryEvent(lastFury);
+    if (lastGain?.at && lastGain.at !== gainEvent?.at) setGainEvent(lastGain);
     useEffect(() => {
-        if (!lastFury?.at) return undefined;
-        const t0 = setTimeout(() => setShown(lastFury), 0);
-        const target = lastFury.targetIndex === myIndex ? '.skyjo-hand:not(.skyjo-hand--opponent)' : '.skyjo-hand--opponent';
+        if (!furyEvent?.at) return undefined;
+        const t0 = setTimeout(() => setShown(furyEvent), 0);
+        const target = furyEvent.targetIndex === myIndex ? '.skyjo-hand:not(.skyjo-hand--opponent)' : '.skyjo-hand--opponent';
         const el = document.querySelector(target);
-        if (el && !reduce && !lastFury.blocked && lastFury.type !== 'shield') { el.classList.remove('fury-shake'); void el.offsetWidth; el.classList.add('fury-shake'); }
-        if (lastFury.targetIndex === myIndex && lastFury.type !== 'shield') { try { navigator.vibrate?.([40, 30, 60]); } catch { /* indisponible */ } }
+        if (el && !reduce && !furyEvent.blocked && furyEvent.type !== 'shield') { el.classList.remove('fury-shake'); void el.offsetWidth; el.classList.add('fury-shake'); }
+        if (furyEvent.targetIndex === myIndex && furyEvent.type !== 'shield') { try { navigator.vibrate?.([40, 30, 60]); } catch { /* indisponible */ } }
         // Fury adverse : après l’onomatopée, une annonce au centre explique ce qui s’est passé (fermée par « OK »).
-        const theirs = lastFury.by !== myIndex;
+        const theirs = furyEvent.by !== myIndex;
         const t1 = setTimeout(() => setShown(null), theirs ? 1000 : 1700);
-        const t2 = theirs ? setTimeout(() => setAnnounce(lastFury), 900) : null;
+        const t2 = theirs ? setTimeout(() => setAnnounce(furyEvent), 900) : null;
         // Votre Fury : l'effet 3D éclate sur le plateau visé.
         let t3 = null, t4 = null;
-        const zone = !theirs && !reduce ? document.querySelector(lastFury.type === 'shield' ? '.skyjo-hand:not(.skyjo-hand--opponent)' : '.skyjo-hand--opponent') : null;
+        const zone = !theirs && !reduce ? document.querySelector(furyEvent.type === 'shield' ? '.skyjo-hand:not(.skyjo-hand--opponent)' : '.skyjo-hand--opponent') : null;
         if (zone) {
             const r = zone.getBoundingClientRect();
-            t3 = setTimeout(() => setBoardFx({ type: lastFury.blocked ? 'shield' : lastFury.type, at: lastFury.at, rect: { left: r.left - 30, top: r.top - 30, width: r.width + 60, height: r.height + 60 } }), 0);
+            t3 = setTimeout(() => setBoardFx({ type: furyEvent.blocked ? 'shield' : furyEvent.type, at: furyEvent.at, rect: { left: r.left - 30, top: r.top - 30, width: r.width + 60, height: r.height + 60 } }), 0);
             t4 = setTimeout(() => setBoardFx(null), 2500);
         }
         return () => { clearTimeout(t0); clearTimeout(t1); if (t2) clearTimeout(t2); if (t3) clearTimeout(t3); if (t4) clearTimeout(t4); };
-    }, [lastFury, myIndex, reduce]);
+    }, [furyEvent, myIndex, reduce]);
     useEffect(() => {
-        if (!lastGain?.at) return undefined;
-        const mine = lastGain.by === myIndex;
-        const t0 = setTimeout(() => setGain(lastGain), 0);
+        if (!gainEvent?.at) return undefined;
+        const mine = gainEvent.by === myIndex;
+        const t0 = setTimeout(() => setGain(gainEvent), 0);
         // La carte du joueur reste affichée jusqu’à « OK » ; celle de l’adversaire s’efface seule.
         const t1 = mine ? null : setTimeout(() => setGain(null), 2400);
         if (mine) { try { navigator.vibrate?.([30, 40, 30]); } catch { /* indisponible */ } }
         return () => { clearTimeout(t0); if (t1) clearTimeout(t1); };
-    }, [lastGain, myIndex]);
+    }, [gainEvent, myIndex]);
     const word = shown ? (shown.blocked ? 'Bloqué !' : FURY_TYPES[shown.type].bubble) : '';
     const by = shown ? names[shown.by] : '';
     return createPortal(<div className="fury-fx-layer">
