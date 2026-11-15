@@ -49,3 +49,20 @@
 .sl-pct-sign { font-size: 20px; fill: #e3cfa8; }
 .sl-progress { text-align: center; }
 .sl-message { font-size: 13px; letter-spacing: .02em; }
+/* v3 : île flottante sous l'arc, pourcentage sous l'horizon */
+.sl-island { transform-box: fill-box; transform-origin: center; animation: sl-island-float 4s ease-in-out infinite; }
+@keyframes sl-island-float { 50% { transform: translateY(-3px); } }
+.sl-island-top { fill: #efe5d8; }
+.sl-island-left { fill: #c9b4b0; }
+.sl-island-right { fill: #a8939a; }
+.sl-island-rock { fill: #7d6b7d; opacity: .9; }
+.sl-island-tower { fill: #b9bdd6; }
+.sl-island-dome { fill: #d8c3bb; }
+.sl-island-tree { fill: #c9844e; }
+.sl-island-light { fill: #ffe3ac; filter: drop-shadow(0 0 3px #ffd58a); animation: sl-light 2.4s ease-in-out infinite; }
+@keyframes sl-light { 50% { opacity: .45; } }
+.sl-arc { margin-bottom: -6px; }
+p.sl-pct { margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 38px; font-weight: 600; line-height: 1; color: #fbf6ee; font-variant-numeric: tabular-nums; animation: sl-rise .9s .2s cubic-bezier(.2,.8,.25,1) both; }
+p.sl-pct span { margin-left: 2px; font-size: 19px; color: #e3cfa8; }
+.sl-content { gap: 22px; }
+@media (prefers-reduced-motion: reduce) { .sl-island, .sl-island-light { animation: none; } }

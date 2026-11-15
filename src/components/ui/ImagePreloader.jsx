@@ -123,8 +123,9 @@ export default function ImagePreloader({ children }) {
                     <Motion.div
                         key="loader"
                         initial={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        // Sortie : l'écran s'éclaire, grandit légèrement et se floute en s'effaçant, pour laisser place à l'accueil.
+                        exit={{ opacity: 0, scale: 1.05, filter: 'blur(8px) brightness(1.15)' }}
+                        transition={{ duration: 0.85, ease: [0.4, 0, 0.2, 1] }}
                         className="fixed inset-0 z-[9999]"
                         style={{ willChange: 'opacity' }}
                     >

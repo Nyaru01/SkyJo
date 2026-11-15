@@ -80,6 +80,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     const selectOnlineCard = useOnlineGameStore(s => s.selectCard);
 
     const { friends, fetchFriends, inviteFriend } = useSocialStore();
+    const onlineCrowd = useSocialStore(s => s.onlinePlayers);
+    const fetchOnlinePlayers = useSocialStore(s => s.fetchOnlinePlayers);
 
     // 2. Local State
     const [screen, setScreen] = useState(initialScreen); // menu, setup, game, scores
@@ -178,6 +180,13 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     const onlineGameWinner = useOnlineGameStore(s => s.gameWinner);
     const onlineError = useOnlineGameStore(s => s.error);
     const onlineRoomCode = useOnlineGameStore(s => s.roomCode);
+    // Joueurs en ligne : rafraîchis toutes les 15 s tant que le menu « Jouer en ligne » est ouvert.
+    useEffect(() => {
+        if (screen !== 'lobby' || onlineRoomCode) return undefined;
+        fetchOnlinePlayers();
+        const id = setInterval(fetchOnlinePlayers, 15000);
+        return () => clearInterval(id);
+    }, [screen, onlineRoomCode, fetchOnlinePlayers]);
     const onlineIsHost = useOnlineGameStore(s => s.isHost);
     const publicRooms = useOnlineGameStore(s => s.publicRooms);
     const socketId = useOnlineGameStore(s => s.socketId);
@@ -254,6 +263,15 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     const currentPlayer = activeGameState?.players?.[activeGameState?.currentPlayerIndex];
     const isInitialReveal = activeGameState?.phase === 'INITIAL_REVEAL';
     const isFinished = activeGameState?.phase === 'FINISHED' || (activeGameState?.phase === 'REVEALING_CHESTS' && chestsRevealed);
+    // Temps de jeu : compté par tranches de 15 s quand une partie est affichée à l'écran.
+    const isPlayingNow = screen === 'game' && !!activeGameState && !isFinished && !isGameOverState;
+    useEffect(() => {
+        if (!isPlayingNow) return undefined;
+        const id = setInterval(() => {
+            if (document.visibilityState === 'visible') useGameStore.getState().addPlayTime(15000);
+        }, 15000);
+        return () => clearInterval(id);
+    }, [isPlayingNow]);
     // Fin de manche : on laisse voir le plateau final, il s'assombrit, puis le bilan apparaît en fondu.
     const [resultsReady, setResultsReady] = useState(false);
     useEffect(() => {
@@ -1628,7 +1646,15 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                                         {m.rules && active && <button type="button" className="ol-mode-rules" onClick={m.rules}><BookOpen size={12} aria-hidden="true" />Règles</button>}
                                     </div>;
                                 })}
-                                {!onlineIsHost && !onlineGameMode && <p className="ol-empty">L’hôte n’a pas encore choisi le mode.</p>}
+                                {!onlineIsHost && !onlineGameMode && <div className="ol-mode-wait" role="status">
+                                    <span className="ol-mode-wait-icons" aria-hidden="true">
+                                        <span className="ol-mode-icon ol-mode--amber"><NormalIcon width={20} height={20} /></span>
+                                        <span className="ol-mode-icon ol-mode--coral"><TourmentIcon width={20} height={20} /></span>
+                                        <span className="ol-mode-icon ol-mode--ember"><FuryIcon width={20} height={20} /></span>
+                                    </span>
+                                    <strong>L’hôte choisit le mode<span className="ol-dots" aria-hidden="true"><i /><i /><i /></span></strong>
+                                    <small>Classique, Tourment ou Fury : la partie commencera dès qu’il aura lancé.</small>
+                                </div>}
                             </div>
                         </div>
                         <FuryRulesModal open={furyRulesOpen} onClose={() => setFuryRulesOpen(false)} />
@@ -1763,6 +1789,27 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                                 <ChevronRight size={18} aria-hidden="true" />
                             </button>
                         </li>)}
+                    </ul>}
+                </section>
+
+                {/* Joueurs en ligne (amis ou non) */}
+                <section className="ol-section" aria-label="Joueurs en ligne">
+                    <h2><i className="ol-live-dot" aria-hidden="true" />En ligne maintenant<span>{onlineCrowd.length}</span></h2>
+                    {onlineCrowd.length === 0 ? <p className="ol-empty">Personne d’autre n’est connecté pour l’instant.</p> : <ul className="ol-list">
+                        {onlineCrowd.map(p => {
+                            const isFriend = friends.some(f => String(f.id) === String(p.id));
+                            const busy = p.status !== 'AVAILABLE';
+                            return <li key={p.id} className="ol-row ol-row--friend">
+                                <span className="ol-row-avatar is-online"><img src={getAvatarPath(p.avatarId)} alt="" onError={(e) => { e.target.src = '/avatars/cat.png'; }} /><i aria-hidden="true" /></span>
+                                <span className="ol-row-main"><strong>{p.name}{isFriend && <em className="ol-tag">Ami</em>}</strong><small className={busy ? '' : 'is-online'}>{p.status === 'IN_GAME' ? 'En partie' : p.status === 'IN_ROOM' ? 'Dans un salon' : 'Disponible'}</small></span>
+                                <button type="button" className="ol-challenge" disabled={busy} onClick={() => {
+                                    setPlayerInfo(myPseudo || 'Joueur', myAvatarId);
+                                    if (onlineRoomCode) inviteFriend(p.id, onlineRoomCode, userProfile.name);
+                                    else useOnlineGameStore.getState().createRoomAndInvite(p.id);
+                                    playSocialInvite();
+                                }}><Swords size={14} aria-hidden="true" />Défier</button>
+                            </li>;
+                        })}
                     </ul>}
                 </section>
 

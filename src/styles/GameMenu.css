@@ -85,3 +85,4 @@
 .daily-reward small { font-size: 8.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
 .daily-done { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; color: #b8e2cb; background: #8fc2a81f; box-shadow: inset 0 0 0 1px #8fc2a855; }
 .play-menu-action--daily.is-done .daily-calendar { filter: saturate(.6); opacity: .8; }
+html body .menu-lobby .play-menu-action--daily .daily-calendar.play-menu-action-icon[class], html body .play-menu-action--daily .daily-calendar.play-menu-action-icon[class] { background: linear-gradient(180deg, #fbf3e3, #ecdcc0) !important; color: #3a2c1c !important; box-shadow: 0 6px 14px -8px #000c, inset 0 -2px 0 #d8c39f !important; border: 0 !important; }

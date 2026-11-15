@@ -317,7 +317,7 @@ const getPublicRooms = () => {
 io.on('connection', (socket) => {
     socket.emit('room_list_update', getPublicRooms());
 
-    socket.on('register_user', ({ id, name }) => {
+    socket.on('register_user', ({ id, name, avatarId, vibeId }) => {
         if (!id) {
             console.warn(`[USER] Registration failed: Missing ID for ${name}`);
             return;
@@ -325,8 +325,23 @@ io.on('connection', (socket) => {
         socket.dbId = String(id);
         if (!userStatus.has(socket.dbId)) userStatus.set(socket.dbId, new Set());
         userStatus.get(socket.dbId).add(socket.id);
+        // Fiche publique pour la liste « En ligne maintenant » (nom, avatar, SkyID).
+        userMetadata.set(socket.dbId, { name: name || 'Joueur', avatarId: avatarId || null, vibeId: vibeId || null });
         io.emit('user_presence_update', { userId: socket.dbId, status: 'ONLINE' });
         console.log(`[USER] Registered: ${name} (${socket.dbId}) | Socket: ${socket.id} | Total Sockets: ${userStatus.get(socket.dbId).size}`);
+    });
+
+    // Joueurs connectés (amis ou non), avec leur statut : disponible, dans un salon, en partie.
+    socket.on('online_players', (ack) => {
+        if (typeof ack !== 'function') return;
+        const inRoom = new Map();
+        for (const room of rooms.values()) room.players.forEach(p => { if (p.dbId) inRoom.set(String(p.dbId), room.gameStarted ? 'IN_GAME' : 'IN_ROOM'); });
+        const list = [];
+        for (const [id, meta] of userMetadata.entries()) {
+            if (!userStatus.has(id) || id === socket.dbId) continue;
+            list.push({ id, name: meta.name, avatarId: meta.avatarId, vibeId: meta.vibeId, status: inRoom.get(id) || 'AVAILABLE' });
+        }
+        ack(list.slice(0, 50));
     });
 
     socket.on('create_room', ({ playerName, emoji, isPublic, autoInviteFriendId }) => {
@@ -347,7 +362,7 @@ io.on('connection', (socket) => {
             const fId = String(autoInviteFriendId);
             if (userStatus.has(fId)) {
                 userStatus.get(fId).forEach(sid => {
-                    io.to(sid).emit('game_invitation', { roomCode, fromName: playerName });
+                    io.to(sid).emit('game_invitation', { roomCode, fromName: playerName, fromAvatar: userMetadata.get(socket.dbId)?.avatarId || null });
                 });
                 console.log(`[INVITE] Auto-inviting ${fId} to ${roomCode}`);
             } else {
@@ -616,7 +631,7 @@ io.on('connection', (socket) => {
             const sockets = userStatus.get(fId);
             console.log(`[INVITE] Sending to ${sockets.size} sockets for user ${fId}`);
             sockets.forEach(sid => {
-                io.to(sid).emit('game_invitation', { roomCode, fromName });
+                io.to(sid).emit('game_invitation', { roomCode, fromName, fromAvatar: userMetadata.get(socket.dbId)?.avatarId || null });
             });
             socket.emit('invitation_sent');
         } else {
@@ -727,6 +742,7 @@ io.on('connection', (socket) => {
             userStatus.get(socket.dbId).delete(socket.id);
             if (userStatus.get(socket.dbId).size === 0) {
                 userStatus.delete(socket.dbId);
+                userMetadata.delete(socket.dbId);
                 io.emit('user_presence_update', { userId: socket.dbId, status: 'OFFLINE' });
             }
         }

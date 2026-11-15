@@ -43,6 +43,9 @@ export const useGameStore = create(
             rounds: [],
             gameStatus: 'SETUP',
             gameHistory: [], // Array of archived finished games
+            // Temps de jeu réel (ms), compté en partie depuis playTimeSince ; avant cette date, il est estimé.
+            playTimeMs: 0,
+            playTimeSince: null,
             achievements: [], // Array of unlocked achievements
             darkMode: true, // Always default to dark mode
             soundEnabled: true,
@@ -274,6 +277,11 @@ export const useGameStore = create(
              * Add XP points (called on victory)
              * @param {number} amount - XP to add (default 1)
              */
+            addPlayTime: (ms) => {
+                if (!(ms > 0)) return;
+                set(state => ({ playTimeMs: (state.playTimeMs || 0) + ms, playTimeSince: state.playTimeSince || new Date().toISOString() }));
+            },
+
             addXP: (amount = 1) => {
                 if (isSeasonalPreview()) return;
                 const { currentXP, level, syncProfileWithBackend } = get();

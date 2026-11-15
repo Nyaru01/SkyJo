@@ -83,3 +83,25 @@ html body .ol-modes .ol-modes-title { display: flex; align-items: baseline; gap:
 .ol-mode small { font-size: 10.5px; color: #a9a3b8; }
 .ol-mode.is-active { background: color-mix(in srgb, var(--tone) 12%, #ffffff05); box-shadow: inset 0 0 0 1.5px var(--tone), 0 10px 22px -16px var(--tone); }
 .ol-mode-rules { display: inline-flex; align-items: center; justify-content: center; gap: 4px; margin: 0 8px 8px; padding: 5px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 800; color: var(--tone); background: color-mix(in srgb, var(--tone) 14%, transparent); }
+/* « En ligne maintenant » */
+.ol-live-dot { width: 8px; height: 8px; border-radius: 50%; background: #8fc2a8; box-shadow: 0 0 0 0 #8fc2a888; animation: ol-live 2s ease-out infinite; }
+@keyframes ol-live { 0% { box-shadow: 0 0 0 0 #8fc2a888; } 100% { box-shadow: 0 0 0 7px #8fc2a800; } }
+.ol-tag { margin-left: 6px; padding: 1px 6px; border-radius: 999px; font-style: normal; font-size: 9.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #e3cfa8; background: #e3cfa81a; vertical-align: 2px; }
+.ol-challenge:disabled { opacity: .4; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) { .ol-live-dot { animation: none; } }
+.ol-section h2 i.ol-live-dot { margin: 0 2px 0 3px; min-width: 0; padding: 0; width: 8px; height: 8px; flex-shrink: 0; background: #8fc2a8; border-radius: 50%; }
+/* Invité : attente du choix du mode */
+.ol-mode-wait { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 12px 14px; border-radius: 16px; text-align: center; background: #ffffff06; box-shadow: inset 0 0 0 1px #ffffff12; }
+.ol-mode-wait-icons { display: flex; gap: 10px; }
+.ol-mode-wait-icons .ol-mode-icon { animation: ol-mode-wait 2.4s ease-in-out infinite; }
+.ol-mode-wait-icons .ol-mode-icon:nth-child(2) { animation-delay: .8s; }
+.ol-mode-wait-icons .ol-mode-icon:nth-child(3) { animation-delay: 1.6s; }
+.ol-mode-wait-icons .ol-mode--amber { --tone: #e6c391; } .ol-mode-wait-icons .ol-mode--coral { --tone: #eba594; } .ol-mode-wait-icons .ol-mode--ember { --tone: #f08a5d; }
+@keyframes ol-mode-wait { 0%, 60%, 100% { opacity: .4; transform: none; } 20% { opacity: 1; transform: translateY(-4px); } }
+html body .ol-mode-wait strong { display: inline-flex; align-items: baseline; gap: 2px; font-size: 14.5px; font-weight: 800; color: #fbf6ee !important; }
+.ol-mode-wait small { font-size: 11.5px; line-height: 1.4; color: #a9a3b8; max-width: 260px; }
+.ol-dots { display: inline-flex; gap: 3px; margin-left: 3px; }
+.ol-dots i { width: 4px; height: 4px; border-radius: 50%; background: #e3cfa8; animation: ol-dot 1.2s ease-in-out infinite; }
+.ol-dots i:nth-child(2) { animation-delay: .2s; } .ol-dots i:nth-child(3) { animation-delay: .4s; }
+@keyframes ol-dot { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .ol-mode-wait-icons .ol-mode-icon, .ol-dots i { animation: none; opacity: .8; } }

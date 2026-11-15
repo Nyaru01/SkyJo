@@ -453,3 +453,24 @@ body:has(.home-lobby) .mobile-nav-item--active { background: #ece4d6; color: #24
 }
 .lobby-menu-btn--primary .lobby-menu-btn-icon svg { filter: drop-shadow(0 3px 4px #24273a40); }
 @media (prefers-reduced-motion: reduce) { .lobby-menu-btn-icon svg { transition: none; } }
+/* Brume d'ouverture : voile flou + nappes douces, sans bords, qui se dissipe au lancement */
+.intro-haze { position: absolute; inset: -10% -6%; z-index: 2; pointer-events: none; overflow: hidden;
+    -webkit-backdrop-filter: blur(9px); backdrop-filter: blur(9px);
+    background: radial-gradient(60% 45% at 50% 42%, #e9dff230, transparent 75%), radial-gradient(70% 50% at 50% 70%, #f2d4c626, transparent 75%);
+    -webkit-mask-image: radial-gradient(75% 70% at 50% 45%, #000 45%, transparent 100%); mask-image: radial-gradient(75% 70% at 50% 45%, #000 45%, transparent 100%); }
+.intro-haze i { position: absolute; width: 70%; height: 32%; border-radius: 50%; background: radial-gradient(closest-side, #f1eaf7a8, #e9dcf040 55%, transparent); filter: blur(6px); }
+.intro-haze i:nth-child(1) { left: 2%; top: 26%; }
+.intro-haze i:nth-child(2) { right: 0; top: 36%; width: 64%; background: radial-gradient(closest-side, #f6e3d9a0, #f2d6cb38 55%, transparent); }
+.intro-haze i:nth-child(3) { left: 18%; top: 50%; width: 60%; height: 26%; }
+.intro-haze i:nth-child(4) { left: 26%; top: 14%; width: 48%; height: 24%; background: radial-gradient(closest-side, #ece6f590, transparent); }
+.intro-haze.is-lifting { animation: intro-haze-clear 3.2s cubic-bezier(.4,0,.2,1) forwards; }
+.intro-haze.is-lifting i:nth-child(1) { animation: haze-drift-l 3.2s cubic-bezier(.3,.1,.2,1) forwards; }
+.intro-haze.is-lifting i:nth-child(2) { animation: haze-drift-r 3.2s cubic-bezier(.3,.1,.2,1) forwards; }
+.intro-haze.is-lifting i:nth-child(3) { animation: haze-drift-d 3.2s cubic-bezier(.3,.1,.2,1) forwards; }
+.intro-haze.is-lifting i:nth-child(4) { animation: haze-drift-u 3.4s cubic-bezier(.3,.1,.2,1) forwards; }
+@keyframes intro-haze-clear { 0% { -webkit-backdrop-filter: blur(9px); backdrop-filter: blur(9px); opacity: 1; } 70% { opacity: .55; } 100% { -webkit-backdrop-filter: blur(0); backdrop-filter: blur(0); opacity: 0; } }
+@keyframes haze-drift-l { to { transform: translate(-45%, -12%) scale(1.3); opacity: 0; } }
+@keyframes haze-drift-r { to { transform: translate(45%, -8%) scale(1.3); opacity: 0; } }
+@keyframes haze-drift-d { to { transform: translate(-10%, 30%) scale(1.25); opacity: 0; } }
+@keyframes haze-drift-u { 0%, 25% { transform: none; opacity: 1; } to { transform: translate(5%, -60%) scale(1.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .intro-haze { display: none; } }

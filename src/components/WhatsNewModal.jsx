@@ -2,17 +2,18 @@
 import { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion as Motion, useReducedMotion } from 'framer-motion';
-import { Gauge, Snowflake, X } from 'lucide-react';
+import { BarChart3, Gauge, Snowflake, X } from 'lucide-react';
 import { FuryIcon } from './virtual/ModeIcons';
 import { useDialogFocus } from '../hooks/useDialogFocus';
 import { WelcomeIsland } from './Tutorial';
 import '../styles/Guide.css';
 
 // Monter ce numéro fait réapparaître la fenêtre une fois chez chaque joueur au lancement suivant.
-export const CURRENT_NEWS_VERSION = 15;
+export const CURRENT_NEWS_VERSION = 16;
 
 const HIGHLIGHTS = [
     { icon: FuryIcon, title: 'Mode Fury', text: 'Des cartes de sabotage cachées dans la pioche, contre l’IA et maintenant en ligne entre amis.' },
+    { icon: BarChart3, title: 'Les statistiques font peau neuve', text: 'Taux de victoire, temps de jeu, derniers scores et parties récentes : votre parcours en un coup d’œil.' },
     { icon: Gauge, title: 'Un jeu plus fluide', text: 'Animations plus légères, table qui tient dans l’écran, menus qui s’affichent sans clignoter.' },
     { icon: Snowflake, title: 'Prochaine saison à venir', text: 'La Nuit du solstice ouvre le 21 décembre : un nouveau défi, et l’île passe sous la neige.' },
 ];

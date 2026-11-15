@@ -66,7 +66,7 @@ export function IntroScreen({ onComplete }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: reduceMotion ? 0 : 1, ease: 'easeInOut' }}
-            className="fixed inset-0 z-[99999] flex items-center justify-center bg-black overflow-hidden"
+            className="studio-intro fixed inset-0 z-[99999] flex items-center justify-center bg-black overflow-hidden"
         >
             <video
                 src="/introv2.mp4"

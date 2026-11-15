@@ -33,9 +33,13 @@ export default function GameMenu({
 
     React.useEffect(() => {
         if (initialFocus !== 'challenges') return;
-        challengeSectionRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' });
-        challengeSectionRef.current?.focus({ preventScroll: true });
-        onInitialFocusHandled?.();
+        // On attend la fin de la transition de page, sinon la mise en page bouge encore et le centrage tombe à côté.
+        const t = setTimeout(() => {
+            challengeSectionRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            challengeSectionRef.current?.focus({ preventScroll: true });
+            onInitialFocusHandled?.();
+        }, 380);
+        return () => clearTimeout(t);
     }, [initialFocus, onInitialFocusHandled]);
 
     const virtualGameState = useVirtualGameStore(state => state.gameState);

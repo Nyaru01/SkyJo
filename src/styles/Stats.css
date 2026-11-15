@@ -1,0 +1,75 @@
+/* Écran Statistiques : DA crépuscule (cartes prune, titres Cormorant, accents crème / corail / or) */
+.st-screen { width: 100%; max-width: 448px; margin: 0 auto; padding: 14px 16px 130px; display: flex; flex-direction: column; gap: 14px; color: #f3f0e9; }
+html body .st-screen .st-header p { margin: 0; font-size: 10.5px; font-weight: 800; letter-spacing: .16em; color: #e8907a !important; }
+html body .st-screen .st-header h1 { margin: 2px 0 4px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600; line-height: 1.05; color: #fbf6ee !important; }
+.st-card, .st-hero, .st-empty { border-radius: 22px; background: linear-gradient(160deg, #2c2b41e6, #222134e6); box-shadow: inset 0 0 0 1px #ffffff17, 0 18px 34px -24px #000c; }
+.st-card { padding: 14px 14px 12px; }
+html body .st-screen .st-card h2 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 0 12px; font-family: system-ui, sans-serif; font-size: 13.5px; font-weight: 800; color: #e7e1ea !important; }
+.st-card h2 span { font-size: 11px; font-weight: 600; color: #a9a3b8; }
+/* Vide */
+.st-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 30px 22px; text-align: center; }
+.st-empty-icon { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 18px; color: #e3cfa8; background: #e3cfa814; box-shadow: inset 0 0 0 1px #e3cfa833; }
+html body .st-screen .st-empty h2 { margin: 6px 0 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; color: #fbf6ee !important; }
+.st-empty p { margin: 0; font-size: 13px; line-height: 1.5; color: #a9a3b8; }
+/* Taux de victoire */
+.st-hero { display: flex; align-items: center; gap: 16px; padding: 16px; }
+.st-ring-wrap { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
+.st-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+.st-ring-track { fill: none; stroke: #ffffff12; stroke-width: 9; }
+.st-ring-value { fill: none; stroke: #e3cfa8; stroke-width: 9; stroke-linecap: round; filter: drop-shadow(0 0 6px #f2c77a66); }
+.st-ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.st-ring-label strong { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 34px; font-weight: 600; line-height: 1; color: #fbf6ee; }
+.st-ring-label strong small { font-size: 18px; color: #e3cfa8; }
+.st-ring-label span { font-size: 10px; color: #a9a3b8; }
+.st-hero-copy { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.st-hero-copy p { margin: 0; font-size: 14px; line-height: 1.45; color: #d8d2df; }
+.st-hero-copy b { font-weight: 800; color: #fbf6ee; }
+.st-streak { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding: 5px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; color: #f5c3a6; background: #e8907a1c; box-shadow: inset 0 0 0 1px #e8907a44; }
+.st-streak.is-calm { color: #c9c0cf; background: #ffffff0a; box-shadow: inset 0 0 0 1px #ffffff17; }
+/* Chiffres clés */
+.st-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.st-tile { --tone: #c9c0cf; display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 18px; background: #ffffff0a; box-shadow: inset 0 0 0 1px #ffffff14; }
+.st-tile svg { color: var(--tone); margin-bottom: 4px; }
+.st-tile strong { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 28px; font-weight: 600; line-height: 1; color: #fbf6ee; }
+.st-tile span { font-size: 11px; color: #a9a3b8; }
+.st-tile--gold { --tone: #e3cfa8; } .st-tile--coral { --tone: #e8907a; }
+/* Barres des derniers scores */
+.st-bars { display: flex; align-items: flex-end; gap: 6px; height: 110px; padding: 0 2px; }
+.st-bar-slot { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; }
+.st-bar { display: block; width: 100%; max-width: 22px; border-radius: 6px 6px 3px 3px; transform-origin: bottom; background: linear-gradient(180deg, #8f899f, #5d5870); }
+.st-bar.is-win { background: linear-gradient(180deg, #f2d9a8, #d9a85e); box-shadow: 0 0 10px #f2c77a44; }
+.st-bar.is-neg { opacity: .9; border-radius: 3px 3px 6px 6px; }
+.st-bar-slot small { font-size: 9.5px; font-weight: 700; color: #a9a3b8; }
+.st-legend { display: flex; align-items: center; gap: 6px; margin: 10px 0 0; font-size: 10.5px; color: #a9a3b8; }
+.st-legend i { width: 9px; height: 9px; border-radius: 3px; background: #6f6a80; margin-left: 6px; }
+.st-legend i.is-win { background: #e3c08a; margin-left: 0; }
+/* Parties récentes et palmarès */
+.st-games, .st-ranking { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.st-games li, .st-ranking li { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 14px; background: #ffffff08; }
+.st-game-mode { display: grid; place-items: center; width: 32px; height: 32px; flex-shrink: 0; border-radius: 10px; color: #c9c0cf; background: #ffffff0f; }
+.st-game-mode--ai { color: #e3cfa8; } .st-game-mode--online { color: #8fb6e0; } .st-game-mode--local { color: #8fc2a8; }
+.st-game-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.st-game-main strong { font-size: 13.5px; font-weight: 700; color: #f3f0e9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-game-main small { font-size: 11px; color: #a9a3b8; }
+.st-game-result { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
+.st-game-result b { font-size: 16px; font-weight: 800; color: #d8d2df; }
+.st-game-result small { font-size: 10px; font-weight: 700; color: #a9a3b8; }
+.st-game-result.is-win b { color: #f2d9a8; } .st-game-result.is-win small { color: #e3c08a; }
+.st-rank { display: grid; place-items: center; width: 28px; height: 28px; flex-shrink: 0; border-radius: 9px; font-size: 13px; font-weight: 800; color: #c9c0cf; background: #ffffff0f; }
+.st-rank--1 { color: #3a2c1c; background: linear-gradient(160deg, #f6e1b4, #d9b170); }
+.st-rank--2 { color: #2a2c3a; background: linear-gradient(160deg, #e6e8ef, #b9bdcb); }
+.st-rank--3 { color: #3a2219; background: linear-gradient(160deg, #f0b996, #c98063); }
+.st-wins { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; color: #e3cfa8; }
+.st-wins b { font-size: 15px; font-weight: 800; color: #fbf6ee; }
+.st-more { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 8px; padding: 9px; border-radius: 12px; font-size: 12px; font-weight: 700; color: #c9c0cf; background: #ffffff08; }
+.st-more svg { transition: transform .3s; } .st-more svg.is-open { transform: rotate(180deg); }
+.st-data { display: flex; justify-content: center; gap: 18px; padding-top: 4px; }
+.st-data button { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; color: #8f899f; }
+/* Temps de jeu */
+.st-time { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4px 14px; padding: 14px 16px; border-radius: 20px; background: radial-gradient(120% 120% at 0% 0%, #e3cfa81f, transparent 60%), linear-gradient(160deg, #2c2b41e6, #222134e6); box-shadow: inset 0 0 0 1px #e3cfa833; }
+.st-time-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 14px; color: #e3cfa8; background: #e3cfa817; }
+.st-time-copy { display: flex; flex-direction: column; }
+.st-time-copy span { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #a9a3b8; }
+.st-time-copy strong { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 34px; font-weight: 600; line-height: 1; color: #fbf6ee; }
+.st-time-copy strong small { font-size: 18px; color: #e3cfa8; }
+.st-time-note { grid-column: 1 / -1; margin: 6px 0 0; font-size: 11px; color: #8f899f; }

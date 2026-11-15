@@ -52,8 +52,19 @@ export default function SkyjoLoaderPremium({ progress = 0, isFullPage = true }) 
                 <line x1="6" y1="112" x2="234" y2="112" className="sl-horizon" />
                 <circle cx={sunX} cy={sunY} r="30" fill="url(#sl-sun-glow)" />
                 <circle cx={sunX} cy={sunY} r="9" className="sl-sun-disc" />
-                <text x="120" y="98" textAnchor="middle" className="sl-pct">{pct}<tspan dx="2" className="sl-pct-sign">%</tspan></text>
+                {/* Silhouette de l'île flottante, qui se balance doucement sous l'arc du soleil */}
+                <g className="sl-island">
+                    <path d="M92 74 L120 62 L148 74 L120 86 Z" className="sl-island-top" />
+                    <path d="M92 74 L120 86 L120 96 L96 84 Z" className="sl-island-left" />
+                    <path d="M148 74 L120 86 L120 96 L144 84 Z" className="sl-island-right" />
+                    <path d="M98 84 L120 96 L142 84 L128 104 L120 110 L112 104 Z" className="sl-island-rock" />
+                    <rect x="129" y="56" width="7" height="14" rx="1" className="sl-island-tower" />
+                    <path d="M128 57 Q132.5 49 137 57 Z" className="sl-island-dome" />
+                    <circle cx="105" cy="71" r="3.2" className="sl-island-tree" />
+                    <circle cx="132.5" cy="62" r="1.3" className="sl-island-light" />
+                </g>
             </svg>
+            <p className="sl-pct">{pct}<span>%</span></p>
             <div className="sl-progress">
                 <Message />
             </div>

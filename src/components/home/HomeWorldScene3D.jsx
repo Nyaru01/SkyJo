@@ -527,12 +527,13 @@ function Island({ still, onTouch, season = 'autumn' }) {
     const register = useCallback((i, fn) => { flippers.current[i] = fn; }, []);
     const lastFlip = useRef(0);
     const botAt = useRef(5);
+    const [instantRise] = useState(() => !INTRO.fogPlayed);
     // Mécanisme : un toucher sur la tour la fait pivoter, fait tourner la carte du sommet
     // et ravive les lanternes. On garde l'instant du dernier déclenchement.
     const mechanism = useRef({ at: -100, count: 0 });
     const trigger = useCallback(() => { mechanism.current.at = clock.current; mechanism.current.count += 1; }, []);
     useFrame((_, delta) => {
-        clock.current += Math.min(delta, 0.05);
+        if (!introBlocked() || clock.current > 0.5) clock.current += Math.min(delta, 0.05);
         const t = clock.current;
         if (!still && t > 3.4 && t - lastFlip.current > 2.1) {
             lastFlip.current = t;
@@ -540,7 +541,8 @@ function Island({ still, onTouch, season = 'autumn' }) {
             if (pick !== botAt.current) flippers.current[pick]?.();
         }
         if (!ref.current) return;
-        const rise = still ? 1 : easeOut(clamp01((t - 0.15) / 1.8));
+        // Au lancement, l'île est déjà en place sous la brume ; aux retours sur l'accueil, elle remonte.
+        const rise = still || instantRise ? 1 : easeOut(clamp01((t - 0.15) / 1.8));
         ref.current.position.y = (rise - 1) * 5;
     });
     return <group ref={ref}>
@@ -652,6 +654,32 @@ function Floaters({ still, season = 'autumn' }) {
         </mesh>)}
     </>;
 }
+// L'intro (montée de l'île, brume) attend que l'accueil soit vraiment visible :
+// ni écran de chargement, ni fenêtre « Nouveautés » par-dessus.
+// La brume ne se joue qu'une fois par lancement de l'app, pas à chaque retour sur l'accueil.
+const INTRO = { fogPlayed: false };
+const introBlocked = () => typeof document !== 'undefined' && !!document.querySelector('.studio-intro, .sl-root, .da-news');
+
+// Brume d'ouverture (au-dessus de la scène 3D) : un voile flou teinté du couchant, avec quelques nappes,
+// qui se dissipe en ~3 s. Une seule fois par lancement, et seulement une fois l'accueil visible.
+function IntroHaze({ still }) {
+    const [phase, setPhase] = useState(() => (still || INTRO.fogPlayed ? 'done' : 'waiting'));
+    useEffect(() => {
+        if (phase !== 'waiting') return undefined;
+        const id = setInterval(() => {
+            if (!introBlocked()) { INTRO.fogPlayed = true; setPhase('lifting'); }
+        }, 100);
+        return () => clearInterval(id);
+    }, [phase]);
+    useEffect(() => {
+        if (phase !== 'lifting') return undefined;
+        const t = setTimeout(() => setPhase('done'), 3400);
+        return () => clearTimeout(t);
+    }, [phase]);
+    if (phase === 'done') return null;
+    return <div className={`intro-haze is-${phase}`} aria-hidden="true"><i /><i /><i /><i /></div>;
+}
+
 const MIST = [
     { p: [0, -3.3, 0.6], s: [12, 5], speed: 0.18, amp: 0.5 },
     { p: [-2.4, -2.9, 2.4], s: [6, 2.4], speed: 0.27, amp: 0.8 },
@@ -823,5 +851,6 @@ export default function HomeWorldScene3D({ compact = false }) {
             </StoneContext.Provider>
             <Mist still={still} />
         </Canvas>
+        <IntroHaze still={still} />
     </div>;
 }

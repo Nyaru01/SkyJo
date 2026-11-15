@@ -39,9 +39,11 @@ export const useSocialStore = create(
                 }
             },
             setGameInvitation: (val) => {
-                set({ gameInvitation: val });
-                if (val) {
-                    setTimeout(() => set({ gameInvitation: null }), 10000); // 10s for game invites
+                // L'invitation reste 15 s (compte à rebours visible), et ne s'efface que si c'est toujours la même.
+                const stamped = val ? { ...val, receivedAt: Date.now() } : null;
+                set({ gameInvitation: stamped });
+                if (stamped) {
+                    setTimeout(() => { if (get().gameInvitation?.receivedAt === stamped.receivedAt) set({ gameInvitation: null }); }, 15000);
                 }
             },
 
@@ -50,7 +52,16 @@ export const useSocialStore = create(
                     console.log('[SOCIAL] Socket not connected, connecting before registration...');
                     socket.connect();
                 }
-                socket.emit('register_user', { id: String(id), name, emoji, vibeId });
+                socket.emit('register_user', { id: String(id), name, emoji, vibeId, avatarId: useGameStore.getState().userProfile?.avatarId || null });
+            },
+
+            // Joueurs connectés en ce moment (amis ou non), fournis par le serveur.
+            onlinePlayers: [],
+            fetchOnlinePlayers: () => {
+                if (!socket.connected) return;
+                socket.timeout(5000).emit('online_players', (err, list) => {
+                    if (!err && Array.isArray(list)) set({ onlinePlayers: list });
+                });
             },
 
             fetchFriends: async (userId) => {

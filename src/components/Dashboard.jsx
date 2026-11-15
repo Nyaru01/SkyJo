@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
-import { Settings, Trophy, Sparkles, History, Undo2, BarChart3, Play, LogOut, CheckCircle2, Users, HelpCircle, X, ArrowLeft, Palette, Check, Lock } from 'lucide-react';
+import { Settings, Trophy, Sparkles, History, Undo2, BarChart3, Play, LogOut, CheckCircle2, Users, HelpCircle, X, ArrowLeft, Palette, Check, Lock, Swords } from 'lucide-react';
+import { getAvatarPath } from '../lib/avatars';
+import '../styles/Invitation.css';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useGameStore, selectPlayers, selectRounds, selectThreshold, selectGameStatus } from '../store/gameStore';
 import { useVirtualGameStore } from '../store/virtualGameStore';
@@ -812,47 +814,30 @@ export default function Dashboard() {
 
             <AnimatePresence>
                 {gameInvitation && (
-                    <Motion.div
-                        initial={{ opacity: 0, y: 50, scale: 0.9, x: '-50%' }}
-                        animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
-                        exit={{ opacity: 0, scale: 0.8, x: '-50%' }}
-                        className="fixed bottom-24 left-1/2 z-[100] bg-slate-900/95 backdrop-blur-2xl border-2 border-emerald-500/50 rounded-[2rem] p-4 shadow-[0_20px_50px_rgba(16,185,129,0.3)] flex items-center gap-4 min-w-[340px] max-w-[92vw]"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/5 via-transparent to-emerald-500/10 rounded-[2rem] pointer-events-none" />
-
-                        <div className="relative w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)] animate-breathing shrink-0">
-                            <Play className="h-7 w-7 text-white fill-white shadow-sm" />
-                            <div className="absolute -inset-1 bg-emerald-500/20 blur-md rounded-2xl -z-10 animate-pulse" />
-                        </div>
-
-                        <div className="flex-1 overflow-hidden relative">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400 mb-0.5">Invitation de {gameInvitation.fromName}</p>
-                            <p className="text-white font-black text-lg tracking-tight leading-none">Partie en ligne</p>
-                        </div>
-
-                        <div className="flex gap-2 shrink-0 relative">
-                            <Button
-                                size="sm"
-                                className="bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl font-black text-xs px-5 h-11 transition-all active:scale-95 shadow-[0_4px_15px_rgba(16,185,129,0.4)] hover:shadow-[0_8px_25px_rgba(16,185,129,0.5)] border-b-4 border-emerald-700 active:border-b-0"
-                                onClick={() => {
-                                    const { userProfile } = useGameStore.getState();
-                                    setOnlinePlayerInfo(userProfile.name, userProfile.avatarId);
-
-                                    joinRoom(gameInvitation.roomCode);
-                                    setGameInvitation(null);
-                                    setVirtualScreen('lobby');
-                                    setActiveTab('virtual');
-                                }}
-                            >
-                                Rejoindre
-                            </Button>
-                            <button
-                                onClick={() => setGameInvitation(null)}
-                                className="w-11 h-11 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors border border-white/10"
-                            >
-                                <X className="h-6 w-6" />
-                            </button>
-                        </div>
+                    <Motion.div key={gameInvitation.receivedAt} className="invite-card" role="alertdialog" aria-label={`Invitation de ${gameInvitation.fromName}`}
+                        initial={{ opacity: 0, y: 40, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 24, scale: 0.97 }}
+                        transition={{ type: 'spring', stiffness: 320, damping: 26 }}>
+                        <span className="invite-avatar">
+                            <img src={getAvatarPath(gameInvitation.fromAvatar)} alt="" onError={(e) => { e.target.src = '/avatars/cat.png'; }} />
+                            <i aria-hidden="true"><Swords size={12} /></i>
+                        </span>
+                        <span className="invite-copy">
+                            <small>Invitation</small>
+                            <strong>{gameInvitation.fromName} vous défie</strong>
+                            <em>Partie en ligne{gameInvitation.roomCode ? ` · ${gameInvitation.roomCode}` : ''}</em>
+                        </span>
+                        <span className="invite-actions">
+                            <button type="button" className="invite-join" onClick={() => {
+                                const { userProfile } = useGameStore.getState();
+                                setOnlinePlayerInfo(userProfile.name, userProfile.avatarId);
+                                joinRoom(gameInvitation.roomCode);
+                                setGameInvitation(null);
+                                setVirtualScreen('lobby');
+                                setActiveTab('virtual');
+                            }}>Rejoindre</button>
+                            <button type="button" className="invite-later" onClick={() => setGameInvitation(null)} aria-label="Refuser l’invitation"><X size={18} aria-hidden="true" /></button>
+                        </span>
+                        <span className="invite-timer" aria-hidden="true"><i /></span>
                     </Motion.div>
                 )}
             </AnimatePresence>
