@@ -5,7 +5,11 @@ import hardSheet from '../../assets/sprites/ai-robot-hard.png';
 import hardcoreSheet from '../../assets/sprites/ai-robot-hardcore.png';
 import bonusSheet from '../../assets/sprites/ai-robot-bonus.png';
 
-const Mascot3D = lazy(() => import('./Mascot3D'));
+const loadMascot = () => import('./Mascot3D');
+const Mascot3D = lazy(loadMascot);
+// La 3D se charge dès que possible : plus d'ancien robot (sprite) affiché le temps du chargement.
+if (typeof window !== 'undefined' && supportsWebGLOnce()) loadMascot();
+function supportsWebGLOnce() { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch { return false; } }
 
 function supportsWebGL() {
     try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch { return false; }
@@ -86,7 +90,7 @@ export default function RobotAvatar({ className = '', difficulty = 'normal', siz
             className={`block shrink-0 rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 ${SIZES[size] || SIZES.md} ${className}`}
         >
             {webgl
-                ? <MascotBoundary fallback={sprite}><Suspense fallback={sprite}><Mascot3D difficulty={difficulty} poke={poke} /></Suspense></MascotBoundary>
+                ? <MascotBoundary fallback={sprite}><Suspense fallback={<span className="robot-avatar-loading" aria-hidden="true" />}><Mascot3D difficulty={difficulty} poke={poke} /></Suspense></MascotBoundary>
                 : sprite}
         </button>
     );

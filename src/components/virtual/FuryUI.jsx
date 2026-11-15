@@ -163,6 +163,7 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names }) {
         <AnimatePresence>
             {gain && gain.by === myIndex && <Motion.div key={`reveal-${gain.at}`} className="fury-reveal" role="status"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, y: 60, scale: 0.6 }} transition={{ duration: 0.3 }}>
+                {!reduce && <Suspense fallback={null}><FuryFX3D type={gain.cards[0].furyType} loop className="fury-announce-fx" /></Suspense>}
                 <Motion.p className="fury-reveal-title" initial={reduce ? false : { y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
                     <Flame size={18} aria-hidden="true" />Carte Fury !
                 </Motion.p>

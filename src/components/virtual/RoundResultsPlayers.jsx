@@ -6,7 +6,7 @@ export default function RoundResultsPlayers({ scores = [], gameState, totals }) 
     const ordered = [...scores].sort((a, b) => a.finalScore - b.finalScore);
     const bonusMode = gameState.isBonusMode || gameState.isHardcoreMode || gameState.isFuryMode;
     return <div className="round-results-list">
-        {ordered.map(score => {
+        {ordered.map((score, playerOrder) => {
             const player = gameState.players.find(p => p.id === score.playerId);
             const rank = 1 + ordered.filter(s => s.finalScore < score.finalScore).length;
             const cleared = [0, 1, 2, 3].filter(col => [0, 1, 2].every(row => player?.hand[col * 3 + row] === null)).length;
@@ -25,7 +25,19 @@ export default function RoundResultsPlayers({ scores = [], gameState, totals }) 
                                 const card = player?.hand[i];
                                 const result = gameState.chestResults?.[card?.id];
                                 const resolved = card ? { ...card, isRevealed: true, value: result ?? card.value, specialType: result !== undefined ? null : card.specialType } : null;
-                                return <div className="round-card-cell" key={i}><SkyjoCard card={resolved} size="xs" style={{ width: '100%', height: '100%' }} />{card && (card.wasAutoRevealed || !card.isRevealed) && <span className="round-auto-reveal" role="img" aria-label="Carte révélée en fin de manche" title="Carte révélée en fin de manche"><Eye size={11} strokeWidth={2.2} /></span>}</div>;
+                                const hiddenBefore = card && (card.wasAutoRevealed || !card.isRevealed);
+                                // Cartes restées cachées : elles se retournent ici, une à une, plutôt que sur le plateau.
+                                const order = hiddenBefore ? player.hand.slice(0, i).filter(c => c && (c.wasAutoRevealed || !c.isRevealed)).length : 0;
+                                const face = <SkyjoCard card={resolved} size="xs" style={{ width: '100%', height: '100%' }} />;
+                                return <div className="round-card-cell" key={i} style={hiddenBefore ? { '--flip-delay': `${700 + playerOrder * 350 + order * 140}ms` } : undefined}>
+                                    {hiddenBefore ? <div className="round-flip">
+                                        <div className="round-flip-inner">
+                                            <div className="round-flip-face">{face}</div>
+                                            <div className="round-flip-face round-flip-back"><SkyjoCard card={{ ...card, isRevealed: false }} size="xs" style={{ width: '100%', height: '100%' }} /></div>
+                                        </div>
+                                    </div> : face}
+                                    {hiddenBefore && <span className="round-auto-reveal" role="img" aria-label="Carte révélée en fin de manche" title="Carte révélée en fin de manche"><Eye size={11} strokeWidth={2.2} /></span>}
+                                </div>;
                             })}</div>;
                         })}
                     </div>

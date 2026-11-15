@@ -1,0 +1,47 @@
+/* Guide du mode Tourment : DA crépuscule (panneau prune, titres Cormorant, accents doux) */
+.tr-layer { position: fixed; inset: 0; z-index: 600; display: grid; place-items: center; padding: 16px; background: #0f111bd9; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.tr-panel { --tone: #e8907a; --tone-soft: #e8907a24; position: relative; width: 100%; max-width: 400px; max-height: calc(100dvh - 32px); overflow: hidden auto; display: flex; flex-direction: column;
+    border-radius: 26px; color: #fbf6ee; background: radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--tone) 16%, transparent), transparent 60%), linear-gradient(170deg, #2b2a3d, #1c1b29 70%);
+    box-shadow: inset 0 0 0 1px #ffffff14, 0 30px 60px -24px #000; transition: background .4s ease; }
+.tr-panel--coral { --tone: #e8907a; } .tr-panel--plum { --tone: #b49ad8; } .tr-panel--sage { --tone: #8fc2a8; }
+.tr-panel--sky { --tone: #8fb6e0; } .tr-panel--gold { --tone: #e5c27a; }
+.tr-head { display: flex; align-items: center; gap: 12px; padding: 18px 18px 10px; }
+.tr-emblem { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 14px; color: var(--tone); background: color-mix(in srgb, var(--tone) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 30%, transparent); }
+.tr-head > div { flex: 1; min-width: 0; }
+.tr-head p { margin: 0; font-size: 10.5px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--tone); }
+.tr-head small { font-size: 11px; color: #9d97ab; }
+.tr-close { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; color: #b3acbd; }
+.tr-close:hover { background: #ffffff0f; }
+.tr-progress { display: flex; gap: 4px; padding: 0 18px; }
+.tr-progress i { flex: 1; height: 3px; border-radius: 3px; background: #ffffff14; transition: background .3s; }
+.tr-progress i.is-on { background: var(--tone); }
+.tr-body { display: flex; flex-direction: column; align-items: center; padding: 18px 22px 6px; text-align: center; min-height: 330px; }
+.tr-body h2 { margin: 0 0 6px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 29px; font-weight: 600; line-height: 1.08; color: #fbf6ee; }
+.tr-text { margin: 0; font-size: 13.5px; line-height: 1.5; color: #c9c0cf; max-width: 320px; }
+.tr-stage { flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 18px 0 8px; }
+.tr-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.tr-arrow { color: #9d97ab; font-size: 18px; }
+.tr-swap { display: flex; gap: 8px; }
+.tr-history { display: flex; }
+.tr-history > * + * { margin-left: -14px; }
+.tr-history > :nth-child(2) { transform: rotate(6deg); } .tr-history > :nth-child(3) { transform: rotate(12deg); }
+.tr-tag { margin: 0; padding: 5px 12px; border-radius: 999px; font-size: 10.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--tag); background: color-mix(in srgb, var(--tag) 13%, transparent); }
+.tr-tag--cream { --tag: #e3cfa8; } .tr-tag--coral { --tag: #e8907a; } .tr-tag--plum { --tag: #b49ad8; } .tr-tag--sage { --tag: #8fc2a8; } .tr-tag--sky { --tag: #8fb6e0; }
+.tr-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.tr-stats--small { max-width: 240px; }
+.tr-stat { display: flex; flex-direction: column; gap: 3px; padding: 14px 10px; border-radius: 16px; background: color-mix(in srgb, var(--s) 10%, #ffffff05); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--s) 26%, transparent); }
+.tr-stat strong { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 28px; font-weight: 600; line-height: 1; color: var(--s); }
+.tr-stat span { font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #c9c0cf; }
+.tr-stat--plum { --s: #c4adea; } .tr-stat--coral { --s: #ee9f8b; } .tr-stat--sage { --s: #9fd2b8; }
+/* Éventail de cartes spéciales (remplace l'ancienne image) */
+.tr-fan { position: relative; width: 100%; height: 150px; display: grid; place-items: center; }
+.tr-fan-halo { position: absolute; width: 230px; height: 130px; border-radius: 50%; background: radial-gradient(closest-side, #e8907a40, transparent); filter: blur(6px); }
+.tr-fan-card { position: absolute; transform-origin: 50% 120%; filter: drop-shadow(0 10px 14px #0008); }
+.tr-actions { display: flex; gap: 10px; padding: 12px 18px 18px; }
+.tr-back, .tr-next { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 50px; border-radius: 14px; font-size: 15px; font-weight: 700; }
+.tr-back { flex: 1; color: #e7e1ea; background: #ffffff0d; box-shadow: inset 0 0 0 1px #ffffff1a; }
+.tr-next { flex: 2; color: #24273a; background: #ece4d6; box-shadow: 0 12px 22px -14px #000c; }
+.tr-next:active, .tr-back:active { transform: scale(.98); }
+.tr-fan { height: 190px; }
+.tr-fan-card { scale: 1.35; }
+.tr-fan-halo { width: 280px; height: 160px; }

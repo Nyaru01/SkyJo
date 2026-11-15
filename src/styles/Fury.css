@@ -280,3 +280,8 @@ body.fury-mode .skyjo-badge-aside .fury-opponent { margin: 0 !important; width: 
 .fury-reveal-cards { max-width: 100%; justify-content: center; }
 .fury-reveal-cards > * { flex: 0 1 150px; min-width: 0; }
 .fury-reveal-cards .fury-card--full { width: 100%; }
+/* Carte Fury piochée : largeur fixe (la règle précédente l'écrasait à zéro) */
+.fury-reveal-cards { width: min(100%, 480px); }
+.fury-reveal-cards > * { flex: 0 1 150px; width: 150px; min-width: 96px; }
+.fury-reveal { overflow: hidden; }
+.fury-reveal > :not(.fury-fx3d) { position: relative; z-index: 1; }

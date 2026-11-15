@@ -1,372 +1,158 @@
-import React, { useState } from 'react';
-import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, ChevronLeft, Star, Skull, TrendingUp, Swords, RefreshCw, Eraser, Zap, Flame, HelpCircle } from 'lucide-react';
-import { Button } from './ui/Button';
+import { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { X, ChevronRight, ChevronLeft, Skull, TrendingUp, Gem, RefreshCw, Eraser, Sparkles, Flame, HelpCircle, Hand } from 'lucide-react';
 import SkyjoCard from './virtual/SkyjoCard';
+import '../styles/TourmentRules.css';
 
-const BONUS_STEPS = [
-    {
-        title: "Le Mode Tourment",
-        description: "Bienvenue dans la variante la plus extrême de Skyjo ! Ici, nous avons ajouté 24 cartes spéciales au deck original pour rendre les parties stratégiques et impitoyables.",
-        icon: Flame,
-        color: "text-rose-500",
-        bg: "bg-rose-500/10",
-        content: (
-            <div className="flex justify-center my-4">
-                <div className="inline-block rounded-2xl bg-gradient-to-br from-rose-500/40 via-purple-500/30 to-rose-500/40 p-[2px] shadow-lg shadow-rose-500/25">
-                    <div className="rounded-[14px] overflow-hidden bg-slate-900">
-                        <img
-                            src="/Tourment.png"
-                            alt="Tourment Mode"
-                            className="block max-w-full h-auto rounded-[14px]"
-                        />
-                    </div>
-                </div>
-            </div>
-        )
-    },
-    {
-        title: "L'Objectif de Domination",
-        description: "OBJECTIF PERSONNEL : Les règles ne changent pas, mais votre victoire est désormais évaluée selon votre score quand l'adversaire atteint 100. Descendez à -100 ou moins pour obtenir le rang ultime : Domination absolue.",
-        icon: TrendingUp,
-        color: "text-violet-400",
-        bg: "bg-violet-400/10",
-        content: (
-            <div className="grid w-full grid-cols-2 gap-3 py-5">
-                <div className="rounded-2xl border border-violet-400/20 bg-violet-500/10 p-4 text-center">
-                    <div className="text-2xl font-black text-violet-300">≤ −100</div>
-                    <div className="mt-1 text-[9px] font-black uppercase tracking-wider text-violet-100">Domination absolue</div>
-                    <div className="mt-1 text-[9px] text-slate-500">Rang ultime</div>
-                </div>
-                <div className="rounded-2xl border border-rose-400/20 bg-rose-500/10 p-4 text-center">
-                    <div className="text-2xl font-black text-rose-300">+100</div>
-                    <div className="mt-1 text-[9px] font-black uppercase tracking-wider text-rose-100">Fin normale</div>
-                    <div className="mt-1 text-[9px] text-slate-500">Les règles restent identiques</div>
-                </div>
-            </div>
-        )
-    },
-    {
-        title: "Le Nettoyage de Colonne",
-        description: "NOUVELLE RÈGLE : Chaque fois que vous complétez et éliminez une colonne de 3 cartes identiques, vous recevez un bonus de -3 points sur votre score final. C'est le moment de viser le combo parfait !",
-        icon: Eraser,
-        color: "text-cyan-400",
-        bg: "bg-cyan-400/10",
-        content: (
-            <div className="flex flex-col items-center gap-4 py-4">
-                <div className="flex gap-2 relative group">
-                    <div className="flex flex-col gap-1 items-center">
-                        <div className="text-[10px] font-black text-cyan-400 mb-1 animate-bounce">BONUS -3</div>
-                        <div className="flex gap-1">
-                            <SkyjoCard card={{ value: 8, color: 'orange', isRevealed: true }} size="xs" isClickable={false} />
-                            <SkyjoCard card={{ value: 8, color: 'orange', isRevealed: true }} size="xs" isClickable={false} />
-                            <SkyjoCard card={{ value: 8, color: 'orange', isRevealed: true }} size="xs" isClickable={false} />
-                        </div>
-                    </div>
-                </div>
-                <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Éliminez pour gagner plus !</p>
-            </div>
-        )
-    },
-    {
-        title: "La Carte (-10)",
-        description: "La meilleure carte du jeu ! Elle est de couleur violette et vaut -10 points. Il n'en existe que 6 dans tout le deck.",
-        icon: Swords,
-        color: "text-violet-400",
-        bg: "bg-violet-400/10",
-        content: (
-            <div className="flex flex-col items-center gap-4 py-4">
-                <Motion.div
-                    animate={{ y: [0, -10, 0], scale: [1, 1.05, 1] }}
-                    transition={{ repeat: Infinity, duration: 2 }}
-                    className="relative z-10"
-                >
-                    <SkyjoCard
-                        card={{ id: 'bonus-star', value: -10, color: 'violet', isRevealed: true }}
-                        size="sm"
-                        isClickable={false}
-                    />
-                </Motion.div>
-                <p className="text-[10px] font-bold text-violet-400 uppercase tracking-widest">Votre meilleure alliée !</p>
-            </div>
-        )
-    },
-    {
-        title: "Le Crâne Maudit",
-        description: "ATTENTION ! Cette carte vaut 20 points. (6 exemplaires). MALÉDICTION : Si vous la piochez, vous êtes OBLIGÉ de la placer ! Une fois posée, elle est VERROUILLÉE pendant 3 rounds (impossible à échanger).",
-        icon: Skull,
-        color: "text-rose-600",
-        bg: "bg-rose-600/10",
-        content: (
-            <div className="flex flex-col items-center gap-4 py-4">
-                <Motion.div
-                    animate={{ rotate: [0, -2, 2, 0], x: [0, -1, 1, 0] }}
-                    transition={{ repeat: Infinity, duration: 0.5 }}
-                    className="relative z-10"
-                >
-                    <SkyjoCard
-                        card={{ id: 'bonus-skull', value: 20, color: 'darkred', isRevealed: true }}
-                        size="sm"
-                        isClickable={false}
-                    />
-                </Motion.div>
-                <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">Débarrassez-vous en vite !</p>
-            </div>
-        )
-    },
-    {
-        title: "L'Échange",
-        description: "CARTE ÉCHANGE (4 exemplaires) : Le symbole des flèches circulaires vous permet de permuter l'une de vos cartes (visible ou cachée) avec celle d'un autre joueur. Utilisez-la stratégiquement pour récupérer un -10 par exemple !",
-        icon: RefreshCw,
-        color: "text-indigo-400",
-        bg: "bg-indigo-400/10",
-        content: (
-            <div className="flex flex-col items-center gap-4 py-4">
-                <div className="flex items-center gap-4 relative">
-                    {/* The S card that triggers it */}
-                    <div className="relative group">
-                        <SkyjoCard
-                            card={{ id: 'tut-s-card', value: 0, color: 'special', specialType: 'S', isRevealed: true }}
-                            size="xs"
-                            isClickable={false}
-                        />
-                        <div className="absolute -top-1 -right-1 bg-indigo-500 rounded-full p-0.5 border border-white/20">
-                            <RefreshCw className="w-2 h-2 text-white animate-spin-slow" />
-                        </div>
-                    </div>
+// Guide du mode Tourment (et règle « colonne −3 » du mode Difficile), dans la DA crépuscule du jeu.
+const card = (id, value, color, extra = {}) => ({ id, value, color, isRevealed: true, ...extra });
 
-                    <div className="w-4 h-[1px] bg-white/20" />
+function Fan() {
+    const reduce = useReducedMotion();
+    const cards = [
+        card('fan-s', 0, 'special', { specialType: 'S' }),
+        card('fan-10', -10, 'violet'),
+        card('fan-ch', 0, 'gold', { specialType: 'CH' }),
+        card('fan-20', 20, 'darkred'),
+        card('fan-c', 0, 'special', { specialType: 'C' }),
+    ];
+    return <div className="tr-fan" aria-hidden="true">
+        <span className="tr-fan-halo" />
+        {cards.map((c, i) => {
+            const k = i - 2;
+            return <Motion.div key={c.id} className="tr-fan-card" style={{ zIndex: 5 - Math.abs(k) }}
+                initial={reduce ? false : { rotate: 0, x: 0, y: 30, opacity: 0 }}
+                animate={{ rotate: k * 10, x: k * 36, y: Math.abs(k) * 8, opacity: 1 }}
+                transition={{ delay: 0.08 * i, type: 'spring', stiffness: 160, damping: 16 }}>
+                <SkyjoCard card={c} size="sm" isClickable={false} />
+            </Motion.div>;
+        })}
+    </div>;
+}
 
-                    <div className="flex items-center gap-3">
-                        <Motion.div
-                            animate={{ x: [0, 20, 0], opacity: [1, 0.5, 1] }}
-                            transition={{ repeat: Infinity, duration: 2 }}
-                        >
-                            <SkyjoCard
-                                card={{ id: 'tut-swap-1', value: 12, color: 'red', isRevealed: true }}
-                                size="xs"
-                                isClickable={false}
-                            />
-                        </Motion.div>
-                        <RefreshCw className="w-4 h-4 text-indigo-400 animate-spin-slow" />
-                        <Motion.div
-                            animate={{ x: [0, -20, 0], opacity: [1, 0.5, 1] }}
-                            transition={{ repeat: Infinity, duration: 2 }}
-                        >
-                            <SkyjoCard
-                                card={{ id: 'tut-swap-2', value: -10, color: 'violet', isRevealed: true }}
-                                size="xs"
-                                isClickable={false}
-                            />
-                        </Motion.div>
-                    </div>
-                </div>
-                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Échangez votre pire carte contre sa meilleure !</p>
-            </div>
-        )
+const Row = ({ children }) => <div className="tr-row">{children}</div>;
+const Tag = ({ tone = 'cream', children }) => <p className={`tr-tag tr-tag--${tone}`}>{children}</p>;
+
+const STEPS = [
+    {
+        id: 'intro', title: 'Le mode Tourment', icon: Flame, tone: 'coral',
+        text: '24 cartes spéciales rejoignent le paquet. Les règles du Skyjo restent les mêmes, mais chaque pioche peut tout changer.',
+        content: <Fan />,
     },
     {
-        title: "Le Nettoyage",
-        description: "CARTE ÉTOILE (4 exemplaires) : Agit comme un joker de complétion. Si vous l'alignez avec une paire sur une même ligne, la ligne entière est supprimée. Sa valeur intrinsèque est de 0 point.",
-        icon: Zap,
-        color: "text-indigo-400",
-        bg: "bg-indigo-400/10",
-        content: (
-            <div className="flex flex-col items-center gap-4 py-4">
-                <div className="flex gap-2 relative">
-                    <SkyjoCard
-                        card={{ id: 'tut-clean-1', value: 5, color: 'green', isRevealed: true }}
-                        size="xs"
-                        isClickable={false}
-                    />
-                    <SkyjoCard
-                        card={{ id: 'tut-clean-2', value: 5, color: 'green', isRevealed: true }}
-                        size="xs"
-                        isClickable={false}
-                    />
-                    <Motion.div
-                        animate={{ scale: [1, 1.1, 1] }}
-                        transition={{ repeat: Infinity, duration: 2 }}
-                    >
-                        <SkyjoCard
-                            card={{ id: 'tut-clean-3', value: 0, color: 'special', specialType: 'C', isRevealed: true }}
-                            size="xs"
-                            isClickable={false}
-                        />
-                    </Motion.div>
-                </div>
-                <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Faites place nette dans votre jeu !</p>
-            </div>
-        )
+        id: 'goal', title: 'L’objectif de domination', icon: TrendingUp, tone: 'plum',
+        text: 'La partie s’arrête toujours quand quelqu’un atteint 100. Votre rang dépend de votre score à ce moment-là : descendez à −100 pour la domination absolue.',
+        content: <div className="tr-stats">
+            <div className="tr-stat tr-stat--plum"><strong>≤ −100</strong><span>Domination absolue</span></div>
+            <div className="tr-stat tr-stat--coral"><strong>+100</strong><span>Fin de partie</span></div>
+        </div>,
     },
     {
-        title: "La Carte Mystère",
-        description: "CARTE MYSTÈRE (4 exemplaires) : Sa valeur résolue (-15 ou +15) n'est révélée qu'à la fin de la partie. ASTUCE : Elle agit comme un 0 pour les combos : utile pour sécuriser une colonne... au risque de perdre un bonus de -15 !",
-        icon: HelpCircle,
-        color: "text-amber-500",
-        bg: "bg-amber-500/10",
-        content: (
-            <div className="flex flex-col items-center gap-4 py-4">
-                <Motion.div
-                    animate={{
-                        rotateY: [0, 180, 0],
-                        scale: [1, 1.1, 1]
-                    }}
-                    transition={{ repeat: Infinity, duration: 4 }}
-                    style={{ perspective: 1000 }}
-                >
-                    <SkyjoCard
-                        card={{ id: 'tut-chest', value: 0, color: 'gold', specialType: 'CH', isRevealed: true }}
-                        size="sm"
-                        isClickable={false}
-                    />
-                </Motion.div>
-                <div className="flex items-center gap-4">
-                    <div className="flex flex-col items-center">
-                        <span className="text-xl font-black text-emerald-400">-15</span>
-                        <span className="text-[8px] font-bold text-slate-500">TRÉSOR</span>
-                    </div>
-                    <div className="w-px h-6 bg-white/10" />
-                    <div className="flex flex-col items-center">
-                        <span className="text-xl font-black text-rose-500">+15</span>
-                        <span className="text-[8px] font-bold text-slate-500">PIÈGE</span>
-                    </div>
-                </div>
-            </div>
-        )
+        id: 'column', title: 'Colonne nettoyée : −3', icon: Eraser, tone: 'sage',
+        text: 'Trois cartes identiques dans une colonne disparaissent, et vous rapportent −3 points en fin de manche.',
+        content: <><Row>{[1, 2, 3].map(i => <SkyjoCard key={i} card={card(`col-${i}`, 8, 'orange')} size="xs" isClickable={false} />)}</Row><Tag tone="sage">Bonus −3 par colonne</Tag></>,
     },
     {
-        title: "Astuce",
-        description: "Vous avez un doute sur les cartes passées ? Faites un appui long sur la défausse pour voir les 3 dernières cartes jouées !",
-        icon: Zap,
-        color: "text-sky-400",
-        bg: "bg-sky-400/10",
-        content: (
-            <div className="flex flex-col items-center justify-center py-4 bg-slate-800/30 rounded-2xl border border-white/5 p-4">
-                <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 rounded-full bg-slate-700/50 animate-pulse border border-white/10" />
-                    <span className="text-xs font-bold text-slate-400">Maintenez appuyé...</span>
-                </div>
-                <div className="flex -space-x-4">
-                    <SkyjoCard card={{ value: 5, color: 'blue', isRevealed: true }} size="xs" isClickable={false} />
-                    <div className="rotate-6 origin-bottom-left"><SkyjoCard card={{ value: -2, color: 'blue', isRevealed: true }} size="xs" isClickable={false} /></div>
-                    <div className="rotate-12 origin-bottom-left"><SkyjoCard card={{ value: 12, color: 'red', isRevealed: true }} size="xs" isClickable={false} /></div>
-                </div>
-            </div>
-        )
-    }
+        id: 'minus10', title: 'La carte −10', icon: Gem, tone: 'plum',
+        text: 'La meilleure carte du jeu, en six exemplaires seulement. Gardez-la précieusement.',
+        content: <><Row><Floating><SkyjoCard card={card('m10', -10, 'violet')} size="sm" isClickable={false} /></Floating></Row><Tag tone="plum">Votre meilleure alliée</Tag></>,
+    },
+    {
+        id: 'skull', title: 'Le Crâne maudit', icon: Skull, tone: 'coral',
+        text: 'Il vaut 20 points (six exemplaires). Pioché, il doit être posé dans votre grille, puis il reste bloqué 3 tours.',
+        content: <><Row><Shaking><SkyjoCard card={card('skull', 20, 'darkred')} size="sm" isClickable={false} /></Shaking></Row><Tag tone="coral">Débarrassez-vous-en vite</Tag></>,
+    },
+    {
+        id: 'swap', title: 'L’Échange', icon: RefreshCw, tone: 'sky',
+        text: 'Quatre exemplaires. Échangez une de vos cartes, visible ou cachée, avec celle d’un adversaire.',
+        content: <><Row>
+            <SkyjoCard card={card('sw-s', 0, 'special', { specialType: 'S' })} size="xs" isClickable={false} />
+            <span className="tr-arrow" aria-hidden="true">→</span>
+            <Swap a={<SkyjoCard card={card('sw-12', 12, 'red')} size="xs" isClickable={false} />} b={<SkyjoCard card={card('sw-m10', -10, 'violet')} size="xs" isClickable={false} />} />
+        </Row><Tag tone="sky">Votre pire carte contre sa meilleure</Tag></>,
+    },
+    {
+        id: 'joker', title: 'L’Étoile', icon: Sparkles, tone: 'sage',
+        text: 'Quatre exemplaires, valeur 0. Posée avec une paire dans une colonne, elle la complète : la colonne disparaît.',
+        content: <><Row>
+            <SkyjoCard card={card('j1', 5, 'green')} size="xs" isClickable={false} />
+            <SkyjoCard card={card('j2', 5, 'green')} size="xs" isClickable={false} />
+            <Floating><SkyjoCard card={card('j3', 0, 'special', { specialType: 'C' })} size="xs" isClickable={false} /></Floating>
+        </Row><Tag tone="sage">Faites place nette</Tag></>,
+    },
+    {
+        id: 'chest', title: 'La carte Mystère', icon: HelpCircle, tone: 'gold',
+        text: 'Quatre exemplaires. Sa valeur, −15 ou +15, n’est dévoilée qu’en fin de manche. Pour les colonnes, elle compte comme un 0.',
+        content: <><Row><Floating><SkyjoCard card={card('chest', 0, 'gold', { specialType: 'CH' })} size="sm" isClickable={false} /></Floating></Row>
+            <div className="tr-stats tr-stats--small">
+                <div className="tr-stat tr-stat--sage"><strong>−15</strong><span>Trésor</span></div>
+                <div className="tr-stat tr-stat--coral"><strong>+15</strong><span>Piège</span></div>
+            </div></>,
+    },
+    {
+        id: 'tip', title: 'Astuce', icon: Hand, tone: 'sky',
+        text: 'Un doute sur les cartes jouées ? Appuyez longuement sur la défausse pour revoir les trois dernières.',
+        content: <Row><div className="tr-history">
+            <SkyjoCard card={card('h1', 5, 'blue')} size="xs" isClickable={false} />
+            <SkyjoCard card={card('h2', -2, 'blue')} size="xs" isClickable={false} />
+            <SkyjoCard card={card('h3', 12, 'red')} size="xs" isClickable={false} />
+        </div></Row>,
+    },
 ];
 
+function Floating({ children }) {
+    const reduce = useReducedMotion();
+    return <Motion.div animate={reduce ? undefined : { y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }}>{children}</Motion.div>;
+}
+function Shaking({ children }) {
+    const reduce = useReducedMotion();
+    return <Motion.div animate={reduce ? undefined : { rotate: [0, -3, 3, -2, 0] }} transition={{ repeat: Infinity, duration: 1.4, repeatDelay: 0.8 }}>{children}</Motion.div>;
+}
+function Swap({ a, b }) {
+    const reduce = useReducedMotion();
+    return <div className="tr-swap">
+        <Motion.div animate={reduce ? undefined : { x: [0, 52, 52, 0], y: [0, -10, -10, 0] }} transition={{ repeat: Infinity, duration: 3, times: [0, 0.35, 0.65, 1] }}>{a}</Motion.div>
+        <Motion.div animate={reduce ? undefined : { x: [0, -52, -52, 0], y: [0, 10, 10, 0] }} transition={{ repeat: Infinity, duration: 3, times: [0, 0.35, 0.65, 1] }}>{b}</Motion.div>
+    </div>;
+}
+
 export default function BonusTutorial({ isOpen, onClose, mode = 'tourment' }) {
-    const [currentStep, setCurrentStep] = useState(0);
+    const [index, setIndex] = useState(0);
+    const steps = mode === 'hardcore' ? STEPS.filter(s => s.id === 'column') : STEPS;
+    const step = steps[Math.min(index, steps.length - 1)];
+    const Icon = step.icon;
+    const last = index >= steps.length - 1;
+    const close = () => { setIndex(0); onClose(); };
 
-    // Filter steps based on mode
-    const filteredSteps = mode === 'hardcore'
-        ? BONUS_STEPS.filter(step => step.title === "Le Nettoyage de Colonne")
-        : BONUS_STEPS;
-
-    const step = filteredSteps[currentStep];
-
-    const handleNext = () => {
-        if (currentStep < filteredSteps.length - 1) {
-            setCurrentStep(currentStep + 1);
-        } else {
-            onClose();
-            setCurrentStep(0);
-        }
-    };
-
-    const handleBack = () => {
-        if (currentStep > 0) {
-            setCurrentStep(currentStep - 1);
-        }
-    };
-
-    return (
-        <AnimatePresence>
-            {isOpen && (
-                <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
-                    <Motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="absolute inset-0 bg-slate-950/95"
-                    />
-
-                    <Motion.div
-                        initial={{ scale: 0.9, y: 20, opacity: 0 }}
-                        animate={{ scale: 1, y: 0, opacity: 1 }}
-                        exit={{ scale: 0.9, y: 20, opacity: 0 }}
-                        className="relative w-full max-w-md bg-slate-900 overflow-hidden rounded-[3rem] shadow-2xl border-rose-500/30 border"
-                    >
-                    <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-rose-500/10 to-transparent pointer-events-none" />
-
-                    <div className="p-6 pb-2 flex items-center justify-between relative z-10">
-                        <div className="flex items-center gap-3">
-                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${step.bg} border border-white/10 group`}>
-                                <step.icon className={`w-6 h-6 ${step.color} group-hover:scale-110 transition-transform`} />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-rose-400 uppercase tracking-[0.2em]">
-                                    {mode === 'hardcore' ? 'RÈGLES HARDCORE' : 'GUIDE DU MODE TOURMENT'}
-                                </span>
-                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-                                    Étape {currentStep + 1} / {filteredSteps.length}
-                                </span>
-                            </div>
-                        </div>
-                        <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors text-slate-500">
-                            <X className="w-5 h-5" />
-                        </button>
+    return createPortal(<AnimatePresence>
+        {isOpen && <Motion.div className="tr-layer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={close}>
+            <Motion.section className={`tr-panel tr-panel--${step.tone}`} role="dialog" aria-modal="true" aria-labelledby="tr-title"
+                initial={{ y: 24, scale: 0.97, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: 24, opacity: 0 }}
+                onClick={e => e.stopPropagation()}>
+                <header className="tr-head">
+                    <span className="tr-emblem"><Icon size={20} strokeWidth={1.8} aria-hidden="true" /></span>
+                    <div>
+                        <p>{mode === 'hardcore' ? 'Règle du mode Difficile' : 'Guide du mode Tourment'}</p>
+                        {steps.length > 1 && <small>Étape {index + 1} sur {steps.length}</small>}
                     </div>
-
-                    <div className="px-6 flex gap-1 h-1 mb-4">
-                        {filteredSteps.map((_, i) => (
-                            <div
-                                key={i}
-                                className={`flex-1 rounded-full transition-all duration-300 ${i <= currentStep ? 'bg-purple-500' : 'bg-white/10'}`}
-                            />
-                        ))}
-                    </div>
-
-                    <div className="px-8 py-2 flex flex-col items-center min-h-[260px]">
-                        <h2 className="text-xl font-black text-white text-center mb-2 tracking-tight">
-                            {step.title}
-                        </h2>
-                        <p className="text-xs text-slate-400 text-center leading-relaxed px-4">
-                            {step.description}
-                        </p>
-
-                        <div className="flex-1 flex items-center justify-center w-full">
-                            <div className="w-full">
-                                {step.content}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="p-6 flex gap-3">
-                        {currentStep > 0 && (
-                            <Button
-                                variant="outline"
-                                onClick={handleBack}
-                                className="flex-1 h-12 rounded-2xl border-white/10 text-white font-bold"
-                            >
-                                <ChevronLeft className="w-5 h-5 mr-1" />
-                                RETOUR
-                            </Button>
-                        )}
-                        <Button
-                            onClick={handleNext}
-                            className="flex-[2] h-12 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 font-black shadow-lg shadow-purple-500/30"
-                        >
-                            {currentStep === filteredSteps.length - 1 ? "C'EST PARTI !" : "SUIVANT"}
-                            {currentStep < filteredSteps.length - 1 && <ChevronRight className="w-5 h-5 ml-1" />}
-                        </Button>
-                    </div>
+                    <button type="button" className="tr-close" onClick={close} aria-label="Fermer"><X size={18} aria-hidden="true" /></button>
+                </header>
+                {steps.length > 1 && <div className="tr-progress" aria-hidden="true">{steps.map((s, i) => <i key={s.id} className={i <= index ? 'is-on' : ''} />)}</div>}
+                <AnimatePresence mode="wait">
+                    <Motion.div key={step.id} className="tr-body" initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -18 }} transition={{ duration: 0.22 }}>
+                        <h2 id="tr-title">{step.title}</h2>
+                        <p className="tr-text">{step.text}</p>
+                        <div className="tr-stage">{step.content}</div>
                     </Motion.div>
-                </div>
-            )}
-        </AnimatePresence>
-    );
+                </AnimatePresence>
+                <footer className="tr-actions">
+                    {index > 0 && <button type="button" className="tr-back" onClick={() => setIndex(i => i - 1)}><ChevronLeft size={18} aria-hidden="true" />Retour</button>}
+                    <button type="button" className="tr-next" onClick={() => (last ? close() : setIndex(i => i + 1))}>
+                        {last ? 'C’est parti' : 'Suivant'}{!last && <ChevronRight size={18} aria-hidden="true" />}
+                    </button>
+                </footer>
+            </Motion.section>
+        </Motion.div>}
+    </AnimatePresence>, document.body);
 }

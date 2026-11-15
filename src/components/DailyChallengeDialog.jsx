@@ -1,13 +1,14 @@
 import { useId } from 'react';
-import { Check, Flame, Swords, Trophy, ArrowRight } from 'lucide-react';
+import { Check, Trophy, ArrowRight } from 'lucide-react';
+import { NormalIcon, TourmentIcon } from './virtual/ModeIcons';
 import ModalShell, { ModalCloseButton } from './ui/ModalShell';
 import RobotAvatar from './virtual/RobotAvatar';
 import { AI_DIFFICULTY } from '../lib/skyjoAI';
 import '../styles/DailyChallenge.css';
 
 const MODES = [
-    { id: AI_DIFFICULTY.HARD, title: 'Difficile', reward: 3, description: 'Un duel stratégique', icon: Swords },
-    { id: AI_DIFFICULTY.BONUS, title: 'Tourment', reward: 6, description: 'Les cartes spéciales entrent en jeu', icon: Flame },
+    { id: AI_DIFFICULTY.HARD, title: 'Normal', reward: 3, description: 'Un duel stratégique', icon: NormalIcon },
+    { id: AI_DIFFICULTY.BONUS, title: 'Tourment', reward: 6, description: 'Les cartes spéciales entrent en jeu', icon: TourmentIcon },
 ];
 
 export default function DailyChallengeDialog({ isOpen, onClose, difficulty, onDifficultyChange, onStart }) {
@@ -37,7 +38,7 @@ export default function DailyChallengeDialog({ isOpen, onClose, difficulty, onDi
                 <div>{MODES.map(({ id, title, reward, description, icon: Icon }) => <label key={id}>
                     <input type="radio" name={radioName} value={id} checked={difficulty === id} onChange={() => onDifficultyChange(id)} />
                     <span className="daily-challenge-choice">
-                        <span className="daily-challenge-choice-top"><Icon size={22} aria-hidden="true" /><span className="daily-challenge-check">{difficulty === id && <Check size={12} strokeWidth={3} aria-hidden="true" />}</span></span>
+                        <span className="daily-challenge-choice-top"><Icon width={22} height={22} /><span className="daily-challenge-check">{difficulty === id && <Check size={12} strokeWidth={3} aria-hidden="true" />}</span></span>
                         <strong>{title}</strong><span className="daily-challenge-xp">+{reward} XP</span><small>{description}</small>
                     </span>
                 </label>)}</div>

@@ -1,11 +1,12 @@
 import { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, extend, useFrame, useThree } from '@react-three/fiber';
-import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, CatmullRomCurve3, Color, MathUtils, PlaneGeometry, SRGBColorSpace, Vector3 } from 'three';
+import { AdditiveBlending, RepeatWrapping, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, CatmullRomCurve3, Color, MathUtils, PlaneGeometry, SRGBColorSpace, Vector3 } from 'three';
 import { backTexture, pastelFaceTexture } from './cardTextures';
 import { useGameStore } from '../../store/gameStore';
 import { getCardSkinPath } from '../../lib/skinUtils';
 import { currentSeason } from '../../lib/season';
 import { FallingLeaves, ShootingStars, Snowfall } from './SeasonEffects';
+import { MascotBot } from '../virtual/Mascot3D';
 
 // Couleurs qui changent avec la saison (feuillage, coupole, eau du bassin).
 const SEASON_TINT = {
@@ -335,12 +336,116 @@ function SunLight() {
         shadow-mapSize={[1024, 1024]} shadow-camera-left={-6} shadow-camera-right={6}
         shadow-camera-top={7} shadow-camera-bottom={-6} shadow-normalBias={0.035} shadow-bias={-0.0002} />;
 }
+// La mascotte de l'IA saute de carte en carte sur le parvis, et retourne parfois celle qu'elle quitte.
+const cardPos = i => [-2.05 + (i % 4) * 0.8, -0.95 + Math.floor(i / 4) * 1.04];
+const neighbours = i => [i - 4, i + 4, i % 4 ? i - 1 : -1, i % 4 < 3 ? i + 1 : -1].filter(n => n >= 0 && n < 12);
+const BOT_SCALE = 0.27;
+const BOT_FEET = 0.47;
+function IslandBot({ still, clock, flippers, botAtRef }) {
+    const ref = useRef();
+    const [poke, setPoke] = useState(0);
+    const hop = useRef({ from: 5, to: 5, start: 0, next: 4.6, yaw: 0, landed: true, bounceAt: 0 });
+    useFrame((_, delta) => {
+        const g = ref.current;
+        if (!g) return;
+        const t = clock.current;
+        const h = hop.current;
+        // Apparition : petit saut d'arrivée après l'intro de l'île.
+        const appear = still ? 1 : clamp01((t - 3.4) / 0.5);
+        if (!still && t > h.next && t - h.start > 0.6) {
+            const options = neighbours(h.to);
+            h.from = h.to;
+            h.to = options[Math.floor(Math.random() * options.length)];
+            h.start = t;
+            h.next = t + 0.6 + 0.5 + 1.1 + Math.random() * 1.6;
+            botAtRef.current = h.to;
+            h.landed = false;
+        }
+        const k = still ? 1 : clamp01((t - h.start) / 0.6);
+        const [x0, z0] = cardPos(h.from);
+        const [x1, z1] = cardPos(h.to);
+        const e = easeInOut(k);
+        const x = x0 + (x1 - x0) * e;
+        const z = z0 + (z1 - z0) * e;
+        // À l'atterrissage : la carte se retourne sous lui, et il rebondit le temps qu'elle pivote.
+        if (!still && k >= 1 && !h.landed && t > 3.9) { h.landed = true; h.bounceAt = t; flippers.current[h.to]?.(); }
+        const b = h.bounceAt ? clamp01((t - h.bounceAt) / 0.5) : 1;
+        const arc = Math.sin(k * Math.PI) * 0.45 + Math.sin(b * Math.PI) * 0.42;
+        if (k < 1 && (x1 !== x0 || z1 !== z0)) h.yaw = Math.atan2(x1 - x0, z1 - z0);
+        g.position.set(x, BOT_FEET + arc + (1 - appear) * 1.2, z);
+        g.rotation.y = MathUtils.damp(g.rotation.y, k < 1 ? h.yaw : h.yaw * 0.4 + 0.5, 6, delta);
+        // Écrasement à l'atterrissage
+        const land = k >= 1 ? Math.max(0, 1 - (t - h.start - 0.6) / 0.25, h.bounceAt ? 1 - (t - h.bounceAt - 0.5) / 0.25 : 0) * (b >= 1 || k < 1 ? 1 : 0) : 0;
+        const sq = 1 + Math.sin(land * Math.PI) * 0.18;
+        g.scale.set(BOT_SCALE * (2 - sq) * appear, BOT_SCALE * sq * appear, BOT_SCALE * (2 - sq) * appear);
+    });
+    return <group ref={ref} scale={0.0001}
+        onClick={e => { e.stopPropagation(); setPoke(n => n + 1); }}
+        onPointerOver={() => setPointer(true)} onPointerOut={() => setPointer(false)}>
+        <MascotBot difficulty="normal" poke={poke} still={still} shadow={false} />
+    </group>;
+}
+
+// Cascade : le bassin déborde par un petit canal et tombe le long de l'île.
+function waterfallTexture() {
+    const c = document.createElement('canvas');
+    c.width = 64; c.height = 256;
+    const g = c.getContext('2d');
+    g.fillStyle = 'rgba(190,232,226,0.55)'; g.fillRect(0, 0, 64, 256);
+    for (let i = 0; i < 46; i++) {
+        g.fillStyle = `rgba(255,255,255,${0.15 + (i % 5) * 0.08})`;
+        g.fillRect((i * 23) % 60, (i * 37) % 256, 2 + (i % 3), 18 + (i % 7) * 6);
+    }
+    const t = new CanvasTexture(c);
+    t.colorSpace = SRGBColorSpace;
+    t.wrapS = t.wrapT = RepeatWrapping;
+    return t;
+}
+function Waterfall({ still }) {
+    const tex = useMemo(() => waterfallTexture(), []);
+    const glow = useMemo(() => glowTexture('rgba(235,250,248,0.9)', 'rgba(200,236,232,0.15)'), []);
+    useEffect(() => () => { tex.dispose(); glow.dispose(); }, [tex, glow]);
+    const foam = useRef();
+    const fall = useRef();
+    useFrame((state, delta) => {
+        if (still) return;
+        if (fall.current?.map) fall.current.map.offset.y += delta * 0.9;
+        if (foam.current) { const k = 1 + Math.sin(state.clock.elapsedTime * 5) * 0.08; foam.current.scale.set(0.9 * k, 0.5 * k, 1); }
+    });
+    return <group position={[0, 0, 1.05]}>
+        <mesh rotation-x={-Math.PI / 2} position={[2.46, 0.05, 0]}><planeGeometry args={[0.34, 0.26]} /><meshBasicMaterial map={tex} transparent depthWrite={false} /></mesh>
+        <mesh rotation-y={Math.PI / 2} position={[2.64, -1.25, 0]}><planeGeometry args={[0.26, 2.6]} /><meshBasicMaterial ref={fall} map={tex} transparent opacity={0.85} depthWrite={false} /></mesh>
+        <sprite ref={foam} position={[2.66, -2.5, 0]} scale={[0.9, 0.5, 1]}><spriteMaterial map={glow} transparent opacity={0.7} depthWrite={false} blending={AdditiveBlending} /></sprite>
+    </group>;
+}
+// Buissons fleuris et lianes : un peu de vie sur la pierre.
+const BUSHES = [[-1.6, 1.82, 1], [-0.35, 1.86, 0.8], [-1.25, -1.78, 0.9], [0.32, -1.84, 0.75], [2.45, -0.2, 0.7]];
+const FLOWERS = ['#f4c7c3', '#f7e1a8', '#d9c6f0'];
+function Greenery({ season }) {
+    const leaf = SEASON_TINT[season].leaf;
+    return <group>
+        {BUSHES.map(([x, z, s], i) => <group key={i} position={[x, 0, z]} scale={s}>
+            {[[0, 0.12, 0, 0.16], [0.14, 0.09, 0.05, 0.12], [-0.13, 0.08, -0.03, 0.11], [0.03, 0.08, -0.13, 0.1]].map(([bx, by, bz, r], k) =>
+                <mesh key={k} position={[bx, by, bz]} castShadow><sphereGeometry args={[r, 14, 10]} /><meshLambertMaterial color={leaf} /></mesh>)}
+            {[[0.06, 0.25, 0.08], [-0.1, 0.19, 0.1], [0.16, 0.17, -0.06]].map(([fx, fy, fz], k) =>
+                <mesh key={'f' + k} position={[fx, fy, fz]}><sphereGeometry args={[0.03, 8, 6]} /><meshBasicMaterial color={FLOWERS[(i + k) % 3]} /></mesh>)}
+        </group>)}
+        {/* Lianes qui pendent du rebord avant */}
+        {[-2.2, -1.5, -0.6, 0.3].map((x, i) => <group key={'v' + i} position={[x, -0.5, 2.13 + (i % 2) * 0.05]}>
+            {Array.from({ length: 3 + (i % 3) }, (_, k) => <mesh key={k} position={[Math.sin(k * 1.7) * 0.03, -k * 0.13, 0]}>
+                <sphereGeometry args={[0.055 - k * 0.006, 8, 6]} /><meshLambertMaterial color={leaf} />
+            </mesh>)}
+        </group>)}
+    </group>;
+}
+
 function Island({ still, onTouch, season = 'autumn' }) {
     const clock = useRef(0);
     const ref = useRef();
     const flippers = useRef([]);
     const register = useCallback((i, fn) => { flippers.current[i] = fn; }, []);
     const lastFlip = useRef(0);
+    const botAt = useRef(5);
     // Mécanisme : un toucher sur la tour la fait pivoter, fait tourner la carte du sommet
     // et ravive les lanternes. On garde l'instant du dernier déclenchement.
     const mechanism = useRef({ at: -100, count: 0 });
@@ -350,7 +455,8 @@ function Island({ still, onTouch, season = 'autumn' }) {
         const t = clock.current;
         if (!still && t > 3.4 && t - lastFlip.current > 2.1) {
             lastFlip.current = t;
-            flippers.current[Math.floor(Math.random() * flippers.current.length)]?.();
+            const pick = Math.floor(Math.random() * flippers.current.length);
+            if (pick !== botAt.current) flippers.current[pick]?.();
         }
         if (!ref.current) return;
         const rise = still ? 1 : easeOut(clamp01((t - 0.15) / 1.8));
@@ -378,6 +484,9 @@ function Island({ still, onTouch, season = 'autumn' }) {
         <TowerTop still={still} season={season} mechanism={mechanism} onTrigger={() => { trigger(); onTouch(); }} />
         <HaloRing still={still} mechanism={mechanism} />
         <PivotCard still={still} onTouch={onTouch} mechanism={mechanism} />
+        <IslandBot still={still} clock={clock} flippers={flippers} botAtRef={botAt} />
+        <Waterfall still={still} />
+        <Greenery season={season} />
         {[0, 1, 2, 3, 4].map(i => <Block key={i} size={[0.8, 0.2, 0.34]} position={[1.75, -0.1 - i * 0.2, 2.27 + i * 0.34]} color={C.stone} />)}
         {[[-2.35, -1.75], [0.85, -1.75]].map(([x, z], i) => <group key={i} position={[x, 0, z]}>
             <Block size={[0.08, 0.35, 0.08]} position={[0, 0.17, 0]} color={C.trunk} />

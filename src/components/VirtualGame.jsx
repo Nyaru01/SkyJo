@@ -255,7 +255,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     // Fin de manche : on laisse voir le plateau final, il s'assombrit, puis le bilan apparaît en fondu.
     const [resultsReady, setResultsReady] = useState(false);
     useEffect(() => {
-        const t = setTimeout(() => setResultsReady(isFinished), isFinished ? 1300 : 0);
+        const t = setTimeout(() => setResultsReady(isFinished), isFinished ? 2300 : 0);
         return () => clearTimeout(t);
     }, [isFinished]);
     const discardTop = activeGameState?.discardPile?.[activeGameState?.discardPile?.length - 1];
@@ -2717,6 +2717,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                     className="relative rounded-2xl"
                 >
                     <PlayerHand
+                        hideAutoRevealed={isFinished}
                         player={activeGameState.players[opponentIndex]}
                         columnBonus={activeGameState.isBonusMode || activeGameState.isHardcoreMode || activeGameState.isFuryMode}
                         eliminatedCards={activeGameState.lastEliminatedCards}
@@ -2733,7 +2734,13 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
 
             {/* MIDDLE ACTION AREA - Centered between hands */}
             <div className="skyjo-action-area flex-1 flex flex-col justify-center items-center relative z-40 my-2">
-                {isFinished && !resultsReady && createPortal(<div className="round-end-veil" aria-hidden="true" />, document.body)}
+                {isFinished && !resultsReady && createPortal(<div className="round-end-veil" role="status">
+                    <div className="round-end-reason">
+                        <strong>Fin de la manche</strong>
+                        <span>{activeGameState.finishingPlayerIndex === myPlayerIndex ? 'Vous avez retourné toutes vos cartes' : activeGameState.players[activeGameState.finishingPlayerIndex] ? `${activeGameState.players[activeGameState.finishingPlayerIndex].name === 'IA' ? 'L’IA' : activeGameState.players[activeGameState.finishingPlayerIndex].name} a retourné toutes ses cartes` : 'Manche terminée'}</span>
+                        <small>Chacun a joué son dernier tour.</small>
+                    </div>
+                </div>, document.body)}
                 {/* Mode Fury : état adverse, ciblage, effets, ambiance */}
                 {furyOn && <>
                     <FuryAmbience />
@@ -2888,6 +2895,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                     className="relative rounded-2xl"
                 >
                     <PlayerHand
+                        hideAutoRevealed={isFinished}
                         player={activeGameState.players[myPlayerIndex]}
                         columnBonus={activeGameState.isBonusMode || activeGameState.isHardcoreMode || activeGameState.isFuryMode}
                         eliminatedCards={activeGameState.lastEliminatedCards}

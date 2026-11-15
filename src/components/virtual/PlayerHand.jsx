@@ -27,6 +27,7 @@ const PlayerHand = memo(function PlayerHand({
     columnBonus = false,
     eliminatedCards = null,
     badgeAside = null, // Contenu posé de part et d'autre du badge (ex. réserve Fury de l'IA)
+    hideAutoRevealed = false, // Fin de manche : les cartes retournées d'office restent cachées sur le plateau (dévoilées dans le bilan)
 }) {
     const reducedMotion = useReducedMotion();
     // Skyjo grid: 4 columns x 3 rows = 12 cards
@@ -50,7 +51,7 @@ const PlayerHand = memo(function PlayerHand({
 
     // Calculate score for display
     const currentScore = (player?.hand || [])
-        .filter((c) => c?.isRevealed)
+        .filter((c) => c?.isRevealed && !(hideAutoRevealed && c.wasAutoRevealed))
         .reduce((sum, c) => sum + (c.value !== undefined ? Number(c.value) : 0), 0);
 
     const chestCount = (player?.hand || []).filter(c => c && c.isRevealed && (c.specialType === 'CH' || c.value === 'CH')).length;
@@ -292,9 +293,11 @@ const PlayerHand = memo(function PlayerHand({
                         const isPendingReveal = pendingRevealIndices.includes(cardIndex);
 
                         // Create a modified card for visual display if pending reveal
-                        const displayCard = card && isPendingReveal && !card.isRevealed
-                            ? { ...card, isRevealed: true }
-                            : card;
+                        const displayCard = card && hideAutoRevealed && card.wasAutoRevealed
+                            ? { ...card, isRevealed: false }
+                            : card && isPendingReveal && !card.isRevealed
+                                ? { ...card, isRevealed: true }
+                                : card;
 
                         return (
                             <Motion.div

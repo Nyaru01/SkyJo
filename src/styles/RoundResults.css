@@ -72,3 +72,12 @@
 @keyframes round-results-fade { from { background-color: #091220b3; backdrop-filter: blur(6px); } to { background-color: #091220b3; backdrop-filter: blur(6px); } }
 @keyframes round-results-rise { from { opacity: 0; transform: translateY(28px) scale(.96); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .round-results-viewport, .round-results-viewport .round-results-shell { animation-duration: .2s; animation-delay: 0s; } .round-results-viewport .round-results-shell { transform: none; } }
+/* Cartes restées cachées : retournées une à une dans le bilan */
+.round-flip { width: 100%; height: 100%; perspective: 400px; }
+.round-flip-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transform: rotateY(180deg); animation: round-flip .55s cubic-bezier(.3,.7,.3,1) var(--flip-delay, .7s) forwards; }
+.round-flip-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.round-flip-back { transform: rotateY(180deg); }
+@keyframes round-flip { to { transform: rotateY(0deg); } }
+.round-card-cell:has(.round-flip) .round-auto-reveal { opacity: 0; animation: round-eye-in .3s ease-out calc(var(--flip-delay, .7s) + .45s) forwards; }
+@keyframes round-eye-in { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .round-flip-inner { animation-duration: .01s; } }
