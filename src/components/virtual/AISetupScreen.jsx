@@ -9,7 +9,7 @@ const MODES = [
     { id: AI_DIFFICULTY.HARD, title: 'Normal', description: 'Un duel équilibré', icon: NormalIcon, theme: 'amber', line: 'À vous de me surprendre.', detail: 'Le bon niveau pour une partie posée : l’IA joue juste, sans vous écraser.' },
     { id: AI_DIFFICULTY.HARDCORE, title: 'Difficile', description: 'Ne laissez rien au hasard', icon: HardIcon, theme: 'violet', line: 'Je ne vous ferai aucun cadeau.', detail: 'Une IA impitoyable et des règles spéciales. Consultez-les avant le duel.', rules: 'hardcore' },
     { id: AI_DIFFICULTY.BONUS, title: 'Tourment', description: 'Osez les cartes spéciales', icon: TourmentIcon, theme: 'coral', line: 'Prêt à jouer avec le feu ?', detail: 'Cartes spéciales et bonus de colonnes : découvrez une autre façon de jouer.', rules: 'tourment' },
-    { id: AI_DIFFICULTY.FURY, title: 'Fury', description: 'Détruisez le jeu adverse', icon: FuryIcon, theme: 'ember', line: 'Je vais tout casser.', detail: '12 cartes de sabotage cachées dans la pioche : séisme, malédiction, tornade… Trois au plus par manche.' },
+    { id: AI_DIFFICULTY.FURY, title: 'Fury', description: 'Détruisez le jeu adverse', icon: FuryIcon, theme: 'ember', line: 'Je vais tout casser.', detail: '12 cartes de sabotage cachées dans la pioche : séisme, malédiction, tornade… Trois au plus par manche.', rules: 'fury' },
 ];
 
 export default function AISetupScreen({ difficulty, onDifficultyChange, onStart, onBack, onRules }) {
@@ -62,7 +62,7 @@ export default function AISetupScreen({ difficulty, onDifficultyChange, onStart,
 
         <div className="ai-mode-detail">
             <p>{mode.detail}</p>
-            {mode.rules && <button type="button" onClick={() => onRules(mode.rules)}><BookOpen size={16} aria-hidden="true" />Règles {mode.title}<ArrowUpRight size={15} aria-hidden="true" /></button>}
+            {mode.rules && <button type="button" onClick={() => onRules(mode.rules)} aria-label={`Règles du mode ${mode.title}`}><BookOpen size={15} aria-hidden="true" />Règles<ArrowUpRight size={14} aria-hidden="true" /></button>}
         </div>
         <div ref={dockRef} className="ai-setup-dock"><button type="button" onClick={onStart} className="ai-setup-launch">
             <span className="ai-setup-launch-icon"><Play size={21} fill="currentColor" aria-hidden="true" /></span>

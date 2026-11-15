@@ -11,47 +11,50 @@ const plural = n => (n > 1 ? 's' : '');
 // Effets three.js, chargés seulement quand une Fury est jouée.
 const FuryFX3D = lazy(() => import('./FuryFX3D'));
 
-// Panneaux Fury écrits en clair : « Fury de l'IA » (au-dessus de la pioche) et « Vos cartes Fury » (en dessous).
+// Rails Fury, de part et d'autre de la pioche : l'adversaire à gauche, vous à droite.
+// Trois emplacements (la réserve), les Fury restantes de la manche en points, et une consigne courte.
+const Slots = ({ children, count }) => <>{children}{Array.from({ length: Math.max(0, FURY_RESERVE_MAX - count) }, (_, i) => <span key={`empty-${i}`} className="fury-slot-empty" aria-hidden="true" />)}</>;
+const Uses = ({ left }) => <span className="fury-rail-uses" aria-hidden="true">{Array.from({ length: FURY_USES_PER_ROUND }, (_, i) => <i key={i} className={i < left ? 'is-on' : ''} />)}</span>;
+
 export function FuryRail({ part, me, opponent, opponentName, canPlay, selected, onSelect, finalRound = false }) {
     if (part === 'opponent') {
         const reserve = opponent?.fury?.reserve || [];
-        const left = FURY_USES_PER_ROUND - (opponent?.fury?.used || 0);
-        const status = [
-            reserve.length ? `${reserve.length} carte${plural(reserve.length)} en main` : 'Aucune carte pour l’instant',
-            hasShield(opponent?.fury) ? 'protégée par un Bouclier' : null,
-            reserve.length && left < reserve.length ? `${left} jouable${plural(left)} cette manche` : null,
-        ].filter(Boolean).join(' · ');
-        return <div className="fury-panel fury-panel--opp">
-            <div className="fury-panel-head"><strong>Fury de {opponentName === 'IA' ? 'l’' : ''}{opponentName}</strong><small>{status}</small></div>
-            {reserve.length > 0 && <div className="fury-panel-cards">
-                {reserve.map(card => <span key={card.id} title={FURY_TYPES[card.furyType].text}><FuryCard type={card.furyType} size="mini" /></span>)}
-            </div>}
-        </div>;
+        const left = Math.max(0, FURY_USES_PER_ROUND - (opponent?.fury?.used || 0));
+        const shielded = hasShield(opponent?.fury);
+        const who = opponentName === 'IA' ? 'l’IA' : opponentName;
+        const status = `Fury de ${who} : ${reserve.length ? `${reserve.length} carte${plural(reserve.length)}` : 'aucune carte'}${shielded ? ', protégée par un Bouclier' : ''}, encore ${left} jouable${plural(left)} cette manche`;
+        return <aside className={`fury-rail fury-rail--opp${shielded ? ' is-shielded' : ''}`} aria-label={status} title={status}>
+            <span className="fury-rail-label"><small>Fury</small>{opponentName}</span>
+            <div className="fury-rail-slots">
+                <Slots count={reserve.length}>{reserve.map(card => <span key={card.id} className="fury-rail-card" title={`${FURY_TYPES[card.furyType].title} : ${FURY_TYPES[card.furyType].text}`}><FuryCard type={card.furyType} size="mini" /></span>)}</Slots>
+            </div>
+            <Uses left={left} />
+        </aside>;
     }
     const reserve = me?.fury?.reserve || [];
-    const left = FURY_USES_PER_ROUND - (me?.fury?.used || 0);
+    const left = Math.max(0, FURY_USES_PER_ROUND - (me?.fury?.used || 0));
     const attacks = reserve.filter(c => c.furyType !== 'shield').length;
-    const status = reserve.length === 0 ? 'Cachées dans la pioche : piochez pour en gagner'
-        : finalRound ? 'Dernier tour : plus de Fury jouable'
-        : attacks === 0 ? 'Votre Bouclier bloquera tout seul la prochaine attaque'
-        : left <= 0 ? `Limite atteinte : ${FURY_USES_PER_ROUND} Fury jouées cette manche`
-        : canPlay ? `Touchez-en une à la place de piocher · encore ${left} cette manche`
-        : `Jouables au début de votre tour · encore ${left} cette manche`;
-    return <div className="fury-panel fury-panel--me">
-        <div className="fury-panel-head">
-            <strong>Vos cartes Fury{hasShield(me?.fury) ? ' · protégé' : ''}</strong>
-            <small>{status}</small>
+    const ready = canPlay && attacks > 0 && left > 0 && !finalRound;
+    const [hint, status] = reserve.length === 0 ? ['Piochez', 'Les Fury sont cachées dans la pioche : piochez pour en gagner']
+        : finalRound ? ['Dernier tour', 'Dernier tour : plus de Fury jouable']
+        : attacks === 0 ? ['Protégé', 'Votre Bouclier bloquera tout seul la prochaine attaque']
+        : left <= 0 ? ['Limite', `Limite atteinte : ${FURY_USES_PER_ROUND} Fury jouées cette manche`]
+        : ready ? ['Touchez', `Touchez une Fury à la place de piocher (encore ${left} cette manche)`]
+        : ['Votre tour', `Jouables au début de votre tour (encore ${left} cette manche)`];
+    return <aside className={`fury-rail fury-rail--me${ready ? ' is-ready' : ''}${hasShield(me?.fury) ? ' is-shielded' : ''}`} aria-label={`Vos cartes Fury. ${status}`} title={status}>
+        <span className="fury-rail-label"><small>Fury</small>Vous</span>
+        <div className="fury-rail-slots">
+            <Slots count={reserve.length}>{reserve.map((card, i) => card.furyType === 'shield'
+                ? <span key={card.id} className="fury-rail-card fury-chip-card--passive" title="Le Bouclier se déclenche tout seul quand on vous attaque" aria-label="Bouclier : bloque tout seul la prochaine Fury reçue"><FuryCard type="shield" size="mini" /></span>
+                : <button key={card.id} type="button" disabled={!canPlay} onClick={() => onSelect(i)}
+                    className={`fury-rail-card fury-chip-card${selected === i ? ' is-selected' : ''}`} aria-pressed={selected === i}
+                    aria-label={`${FURY_TYPES[card.furyType].title} : ${FURY_TYPES[card.furyType].text}`}>
+                    <FuryCard type={card.furyType} size="mini" />
+                </button>)}</Slots>
         </div>
-        {reserve.length > 0 && <div className="fury-panel-cards">
-            {reserve.map((card, i) => card.furyType === 'shield' ? <span key={card.id} className="fury-chip-card fury-chip-card--passive" title="Le Bouclier se déclenche tout seul quand on vous attaque" aria-label="Bouclier : bloque tout seul la prochaine Fury reçue">
-                <FuryCard type="shield" size="mini" />
-            </span> : <button key={card.id} type="button" disabled={!canPlay} onClick={() => onSelect(i)}
-                className={`fury-chip-card${selected === i ? ' is-selected' : ''}`} aria-pressed={selected === i}
-                aria-label={`${FURY_TYPES[card.furyType].title} : ${FURY_TYPES[card.furyType].text}`}>
-                <FuryCard type={card.furyType} size="mini" />
-            </button>)}
-        </div>}
-    </div>;
+        <Uses left={left} />
+        <span className="fury-rail-hint">{hint}</span>
+    </aside>;
 }
 
 // Bandeau de ciblage : consigne, et bouton « Lancer » pour les cartes sans cible précise.

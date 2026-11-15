@@ -1336,8 +1336,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                     onDifficultyChange={difficulty => setAIConfig(prev => ({ ...prev, difficulty }))}
                     onStart={handleStartAIGame}
                     onBack={handleBackToMenu}
-                    onRules={mode => { setRulesMode(mode); setShowBonusTutorial(true); }}
+                    onRules={mode => { if (mode === 'fury') { setFuryRulesOpen(true); return; } setRulesMode(mode); setShowBonusTutorial(true); }}
                 />
+                <FuryRulesModal open={furyRulesOpen} onClose={() => setFuryRulesOpen(false)} />
                 {avatarSelectorComponent}
                 <BonusTutorial
                     isOpen={showBonusTutorial}

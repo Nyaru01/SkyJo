@@ -2,16 +2,9 @@ import { useEffect, useState, memo } from 'react';
 import { cn } from '../lib/utils';
 import '../styles/SkyjoLoader.css';
 
-// Écran de chargement dans la DA crépuscule : ciel du soir, étoiles, et une grille de 12 cartes
-// qui se retournent une à une au fil du pourcentage — comme une manche de Skyjo qui se met en place.
+// Écran de chargement dans la DA crépuscule : ciel du soir, étoiles, et un soleil qui parcourt
+// son arc au-dessus de l'horizon au fil du pourcentage.
 const MESSAGES = ['On dresse la table', 'On mélange le paquet', 'On distribue les cartes', 'On allume les lanternes', 'Presque prêt'];
-// Valeurs et couleurs pastel des cartes de la grille (ordre de retournement en spirale douce).
-const CARDS = [
-    { v: 5, c: 'gold' }, { v: 0, c: 'sky' }, { v: -1, c: 'violet' }, { v: 3, c: 'sage' },
-    { v: 9, c: 'coral' }, { v: 2, c: 'sage' }, { v: 12, c: 'rose' }, { v: 4, c: 'gold' },
-    { v: -2, c: 'violet' }, { v: 7, c: 'gold' }, { v: 1, c: 'sky' }, { v: 0, c: 'sky' },
-];
-const ORDER = [0, 4, 8, 9, 10, 11, 7, 3, 2, 1, 5, 6];
 const STARS = Array.from({ length: 28 }, (_, i) => ({ x: (i * 37) % 100, y: (i * 53) % 62, d: (i % 7) * 0.6, s: 1 + (i % 3) }));
 
 const Message = memo(function Message() {
@@ -33,7 +26,10 @@ export default function SkyjoLoaderPremium({ progress = 0, isFullPage = true }) 
         return () => clearInterval(timer);
     }, [progress]);
     const pct = Math.round(internal);
-    const flipped = Math.min(12, Math.floor((internal / 100) * 12 + 0.0001));
+    // Arc du soleil : de l'horizon gauche (0 %) à l'horizon droit (100 %), en passant par le zénith.
+    const angle = Math.PI * (1 - internal / 100);
+    const sunX = 120 + Math.cos(angle) * 96;
+    const sunY = 112 - Math.sin(angle) * 86;
 
     return <div className={cn('sl-root', isFullPage ? 'sl-root--full' : 'sl-root--inline')} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label="Chargement de Skyjo">
         <div className="sl-sky" aria-hidden="true">
@@ -46,20 +42,20 @@ export default function SkyjoLoaderPremium({ progress = 0, isFullPage = true }) 
                 <h1>Skyjo</h1>
                 <p>Virtuel</p>
             </header>
-            <div className="sl-board" aria-hidden="true">
-                {CARDS.map((card, i) => {
-                    const up = ORDER.indexOf(i) < flipped;
-                    return <div key={i} className={`sl-card${up ? ' is-up' : ''}`}>
-                        <div className="sl-card-inner">
-                            <span className="sl-face sl-back"><b /></span>
-                            <span className={`sl-face sl-front sl-front--${card.c}`}>{card.v}</span>
-                        </div>
-                    </div>;
-                })}
-            </div>
+            <svg className="sl-arc" viewBox="0 0 240 132" aria-hidden="true">
+                <defs>
+                    <radialGradient id="sl-sun-glow"><stop offset="0" stopColor="#fff1d6" /><stop offset=".35" stopColor="#ffc995" stopOpacity=".8" /><stop offset="1" stopColor="#f2a07a" stopOpacity="0" /></radialGradient>
+                    <linearGradient id="sl-arc-done" x1="0" x2="1"><stop offset="0" stopColor="#e3cfa8" /><stop offset="1" stopColor="#f6b48e" /></linearGradient>
+                </defs>
+                <path d="M24 112 A96 86 0 0 1 216 112" className="sl-arc-track" />
+                <path d="M24 112 A96 86 0 0 1 216 112" className="sl-arc-done" stroke="url(#sl-arc-done)" pathLength="100" style={{ strokeDasharray: 100, strokeDashoffset: 100 - internal }} />
+                <line x1="6" y1="112" x2="234" y2="112" className="sl-horizon" />
+                <circle cx={sunX} cy={sunY} r="30" fill="url(#sl-sun-glow)" />
+                <circle cx={sunX} cy={sunY} r="9" className="sl-sun-disc" />
+                <text x="120" y="98" textAnchor="middle" className="sl-pct">{pct}<tspan dx="2" className="sl-pct-sign">%</tspan></text>
+            </svg>
             <div className="sl-progress">
-                <div className="sl-track"><span style={{ width: `${internal}%` }} /></div>
-                <div className="sl-meta"><Message /><strong>{pct}%</strong></div>
+                <Message />
             </div>
         </div>
     </div>;

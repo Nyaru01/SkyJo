@@ -12,8 +12,10 @@ function fit(el) {
     let h = card.getBoundingClientRect().height;
     for (let pass = 0; pass < 3; pass++) {
         const box = area.getBoundingClientRect();
-        let top = Infinity, bottom = -Infinity;
+        let top = Infinity, bottom = -Infinity, rails = 0;
         for (const child of area.children) {
+            // Rails Fury (absolus, sur les côtés) : la zone doit au moins les contenir.
+            if (child.classList.contains('fury-rail')) { rails = Math.max(rails, child.getBoundingClientRect().height); continue; }
             if (getComputedStyle(child).position === 'absolute') continue;
             const r = child.getBoundingClientRect();
             if (!r.height) continue;
@@ -22,7 +24,7 @@ function fit(el) {
         }
         if (top === Infinity) return;
         // Place libre dans la zone centrale, moins ce qui dépasse du conteneur.
-        const slack = box.height - (bottom - top) - 12 - Math.max(0, el.scrollHeight - el.clientHeight);
+        const slack = box.height - Math.max(bottom - top, rails + 4) - 12 - Math.max(0, el.scrollHeight - el.clientHeight);
         if (Math.abs(slack) < 6) return;
         const next = Math.max(MIN_H, Math.min(MAX_H, h + slack / rows));
         if (Math.abs(next - h) < 1) return;

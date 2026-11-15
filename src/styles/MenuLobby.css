@@ -1572,3 +1572,11 @@ html body .menu-lobby .ai-setup-dock::before { content: ''; position: absolute; 
     -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
     -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 55%); mask-image: linear-gradient(180deg, transparent 0%, #000 55%); }
 html body .menu-lobby .ai-setup-launch { box-shadow: 0 14px 28px -14px #00000099, 0 2px 0 #ffffff22 inset; }
+/* Description du mode : hauteur fixe et bouton « Règles » compact, pour que la page ne bouge pas d'un mode à l'autre */
+html body .menu-lobby .ai-mode-detail { display: flex; align-items: flex-start; gap: 10px; min-height: 58px; margin: 10px 0 0; }
+html body .menu-lobby .ai-mode-detail p { flex: 1; min-width: 0; margin: 0; font-size: 12.5px; line-height: 1.45; }
+html body .menu-lobby .ai-mode-detail button { flex-shrink: 0; min-height: 34px; padding: 0 12px; gap: 5px; border-radius: 999px; font-size: 12px; font-weight: 700;
+    background: color-mix(in srgb, var(--rival-accent) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rival-accent) 35%, transparent); }
+/* Fury : la pioche est plus étroite (rails sur les côtés) → consigne plus petite, sans flèches */
+html body.lobby-theme.fury-mode :is(.menu-lobby, .game-lobby) .skyjo-draw-button span[class][class] { font-size: 14px !important; line-height: 1.1 !important; white-space: normal !important; letter-spacing: 0 !important; }
+html body.fury-mode .skyjo-draw-button > :is(.text-emerald-400, .text-amber-400) { display: none; }

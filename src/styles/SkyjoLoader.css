@@ -39,3 +39,13 @@
 .sl-meta strong { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; color: #fbf6ee; }
 @media (max-height: 640px) { .sl-brand h1 { font-size: 46px; } .sl-card { width: 40px; height: 56px; } .sl-content { gap: 22px; } }
 @media (prefers-reduced-motion: reduce) { .sl-sun, .sl-star, .sl-cloud { animation: none; } .sl-card-inner { transition-duration: .01s; } }
+/* v2 : arc du soleil au lieu des cartes */
+.sl-arc { width: 100%; max-width: 300px; overflow: visible; animation: sl-rise .9s .12s cubic-bezier(.2,.8,.25,1) both; }
+.sl-arc-track { fill: none; stroke: #ffffff1f; stroke-width: 1.5; stroke-dasharray: 2 5; stroke-linecap: round; }
+.sl-arc-done { fill: none; stroke-width: 2.5; stroke-linecap: round; transition: stroke-dashoffset .3s ease-out; filter: drop-shadow(0 0 4px #f6b48e99); }
+.sl-horizon { stroke: #fbe3cc55; stroke-width: 1; }
+.sl-sun-disc { fill: #fff3dc; filter: drop-shadow(0 0 6px #ffd9b0); }
+.sl-pct { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; font-weight: 600; fill: #fbf6ee; font-variant-numeric: tabular-nums; }
+.sl-pct-sign { font-size: 20px; fill: #e3cfa8; }
+.sl-progress { text-align: center; }
+.sl-message { font-size: 13px; letter-spacing: .02em; }
