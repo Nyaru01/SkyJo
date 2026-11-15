@@ -2573,8 +2573,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                                             : `Dernier tour : ${activeGameState.players[activeGameState.finishingPlayerIndex]?.name || 'un joueur'} a tout retourné`)
                                         : (isInitialReveal ? `Retournez chacun 2 cartes ${selectedForReveal.length > 0 ? `(${selectedForReveal.length}/2)` : ''}` :
                                             // Only show action instructions when it's the human player's turn (virtual mode only)
-                                            activeGameState.currentPlayerIndex !== myPlayerIndex && !isOnlineMode
-                                                ? (isAIThinking ? `IA réfléchit...` : `Tour de l'IA`)
+                                            // Pas votre tour : « Tour de l'IA » / « Tour de Claude » (en ligne), jamais vos consignes à vous.
+                                            activeGameState.currentPlayerIndex !== myPlayerIndex
+                                                ? (isOnlineMode ? `Tour de ${activeGameState.players[activeGameState.currentPlayerIndex]?.name || 'l’adversaire'}` : (isAIThinking ? `IA réfléchit...` : `Tour de l'IA`))
                                                 : (activeGameState.turnPhase === 'DRAW' ? 'Piochez ou prenez la défausse' :
                                                     activeGameState.turnPhase === 'REPLACE_OR_DISCARD' ?
                                                         ((activeGameState.drawnCard?.specialType === 'C' || (Number(activeGameState.drawnCard?.value) === 0 && activeGameState.drawnCard?.color === 'special')) ? 'Complétez une colonne (Joker)' : 'Jouez dans votre grille ou défaussez') :

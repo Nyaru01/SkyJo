@@ -279,7 +279,8 @@ app.get('/api/social/friends/:userId', async (req, res) => {
             JOIN friends f ON (f.user_id = $1 AND f.friend_id = u.id) OR (f.friend_id = $1 AND f.user_id = u.id)
             WHERE u.id != $1
         `, [userId]);
-        res.json(result.rows);
+        // Présence en direct : sans elle, un ami déjà connecté apparaissait « hors ligne » jusqu'à sa prochaine (dé)connexion.
+        res.json(result.rows.map(row => ({ ...row, isOnline: userStatus.has(String(row.id)) })));
     } catch (err) {
         res.status(500).json({ error: 'Fetch failed' });
     }
