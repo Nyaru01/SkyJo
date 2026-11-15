@@ -175,7 +175,7 @@ export function premiumBackTexture() {
     return texture;
 }
 
-// Carte héros : grande carte nuit, filigrane or et mot SKYJO gravé.
+// Carte héros : grande carte nuit, filigrane or et mot VESPER gravé.
 export function heroTexture() {
     if (cache.has('hero')) return cache.get('hero');
     const canvas = document.createElement('canvas');
@@ -195,7 +195,7 @@ export function heroTexture() {
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.font = "800 84px 'Bricolage Grotesque', system-ui, sans-serif";
     if ('letterSpacing' in ctx) ctx.letterSpacing = '14px';
-    ctx.fillText('SKYJO', w / 2 + 7, h * .82);
+    ctx.fillText('VESPER', w / 2 + 7, h * .82);
     const texture = new CanvasTexture(canvas);
     texture.colorSpace = SRGBColorSpace;
     texture.anisotropy = 8;

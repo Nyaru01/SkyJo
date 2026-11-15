@@ -63,7 +63,7 @@ const WALLPAPERS = [
     { id: 'star-temple', name: 'Temple des Étoiles', url: '/master/wallpaper-star-temple.webp', color: 'bg-indigo-950', level: 140 },
     { id: 'infinite-constellation', name: 'Constellation Infinie', url: '/master/wallpaper-infinite-constellation.webp', color: 'bg-cyan-950', level: 160 },
     { id: 'event-horizon', name: 'Horizon des Événements', url: '/master/wallpaper-event-horizon.webp', color: 'bg-violet-950', level: 180 },
-    { id: 'skyjo-ascension', name: 'Ascension Skyjo', url: '/master/wallpaper-skyjo-ascension.webp', color: 'bg-amber-950', level: 200 },
+    { id: 'skyjo-ascension', name: 'Ascension Vesper', url: '/master/wallpaper-skyjo-ascension.webp', color: 'bg-amber-950', level: 200 },
 ];
 
 export default function Dashboard() {
@@ -672,7 +672,7 @@ export default function Dashboard() {
                                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-md animate-float overflow-hidden bg-slate-900 border border-skyjo-blue/30">
                                         <img
                                             src="/Gemini_Generated_Image_auzhtfauzhtfauzh.png"
-                                            alt="Skyjo Logo"
+                                            alt="Vesper"
                                             className="w-full h-full object-cover scale-110"
                                         />
                                     </div>

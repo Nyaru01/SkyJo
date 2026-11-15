@@ -70,9 +70,9 @@ export default function GameSetup({ onNavigate, onVirtualAction, onOpenTutorial,
 
     return <div className={`home-lobby home-lobby--${mode}`}>
         <header className="lobby-header">
-            <h1 className="lobby-brand" aria-label="SKYJO">
+            <h1 className="lobby-brand" aria-label="VESPER">
                 <span className="lobby-brand-mark" aria-hidden="true"><i/><i/><i/></span>
-                <span aria-hidden="true">SKYJO</span>
+                <span aria-hidden="true">VESPER</span>
             </h1>
             <div className="lobby-header-actions">
                 <button type="button" className="lobby-player-chip" aria-label={`Profil · ${careerLabel} · ${currentXP || 0} sur 10 XP`} onClick={() => onNavigate?.('profile')} style={{ '--xp': `${xpPercent}%` }}>
@@ -88,7 +88,7 @@ export default function GameSetup({ onNavigate, onVirtualAction, onOpenTutorial,
             <button type="button" aria-pressed={mode === 'virtual'} onClick={() => { playClick(); setMode('virtual'); }}><Gamepad2 size={22} aria-hidden="true"/><span>Virtuel</span></button>
         </div>
         <section className="lobby-hero" aria-labelledby="lobby-mode-title">
-            <div className="lobby-hero-copy"><h2 id="lobby-mode-title" className={mode === 'virtual' ? 'sr-only' : undefined}>{mode === 'virtual' ? 'Skyjo virtuel' : 'Vos cartes, nos calculs.'}</h2>{mode === 'real' && <p>Jusqu’à 8 joueurs, partie en 100 points.</p>}</div>
+            <div className="lobby-hero-copy"><h2 id="lobby-mode-title" className={mode === 'virtual' ? 'sr-only' : undefined}>{mode === 'virtual' ? 'Vesper' : 'Vos cartes, nos calculs.'}</h2>{mode === 'real' && <p>Jusqu’à 8 joueurs, partie en 100 points.</p>}</div>
             <HomeWorldScene compact={mode === 'real'}/>
         </section>
         <AnimatePresence mode="wait" initial={false}><Motion.div key={mode} className="lobby-mode-content" initial={reducedMotion ? false : { opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 0 }} transition={{ duration: reducedMotion ? 0 : .14 }}>

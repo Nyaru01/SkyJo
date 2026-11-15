@@ -110,7 +110,7 @@ const LevelUpCelebration = ({ previewLevel = null, onPreviewClose } = {}) => {
                         className={`level-award relative flex max-h-[90dvh] w-full max-w-sm flex-col overflow-hidden rounded-[2rem] shadow-2xl ${celebratedLevel > 200 ? 'level-award-prestige' : ''}`}
                     >
                         <div className="overflow-y-auto px-7 pt-8 pb-4 text-center">
-                            <p className="level-award-kicker">{previewLevel !== null ? 'APERÇU ADMIN · AUCUN XP MODIFIÉ' : 'CARRIÈRE SKYJO'}</p>
+                            <p className="level-award-kicker">{previewLevel !== null ? 'APERÇU ADMIN · AUCUN XP MODIFIÉ' : 'CARRIÈRE VESPER'}</p>
                             <div className="level-award-number" aria-hidden="true">{getMasterProgress(celebratedLevel).cycle >= 2 ? getMasterProgress(celebratedLevel).masterLevel : celebratedLevel}</div>
                             <h1 id={titleId} className="mt-3 text-3xl font-black tracking-tight text-white">{getCareerIdentity(celebratedLevel).label}</h1>
                             <p className="mt-2 text-sm text-slate-400">{celebratedLevel > 200 ? 'Votre prestige prend une nouvelle dimension.' : 'Un palier de plus. Une nouvelle distinction.'}</p>

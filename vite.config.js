@@ -32,27 +32,21 @@ export default defineConfig({
         '*.mp4'          // Intro Videos
       ],
       manifest: {
-        name: 'Skyjo Score V2',
-        short_name: 'SkyjoScore',
-        description: 'Calculateur de score & Hub Social pour Skyjo',
+        id: '/',
+        name: 'Vesper',
+        short_name: 'Vesper',
+        description: 'Vesper, le jeu de cartes au crépuscule : contre l’IA, en ligne entre amis, et le mode Fury.',
         version,
         theme_color: '#1f2233',
-        background_color: '#0f172a',
+        background_color: '#171a2e',
         display: 'standalone',
         orientation: 'portrait',
+        // Chemins stables : un horodatage changeant ferait croire à Android que l'icône change à chaque version.
         icons: [
-          {
-            src: '/pwa-192-v5.png?t=' + Date.now(),
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any maskable'
-          },
-          {
-            src: '/pwa-512-v5.png?t=' + Date.now(),
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
-          }
+          { src: '/brand/vesper-v-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/brand/vesper-v-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/brand/vesper-v-maskable-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+          { src: '/brand/vesper-v-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
         ]
       }
     })

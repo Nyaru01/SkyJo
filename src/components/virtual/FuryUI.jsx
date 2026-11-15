@@ -227,7 +227,7 @@ export function FuryRulesModal({ open, onClose, first = false }) {
         <div className="skyjo-pause-panel fury-rules" role="dialog" aria-modal="true" aria-labelledby="fury-rules-title" onClick={e => e.stopPropagation()}>
             <span className="skyjo-pause-emblem fury-rules-emblem" aria-hidden="true"><Flame size={24} strokeWidth={1.8} /></span>
             <h2 id="fury-rules-title" className="fury-rules-title">Mode Fury</h2>
-            <p className="skyjo-pause-text">Les règles du Skyjo, plus six cartes pour saboter le jeu adverse.</p>
+            <p className="skyjo-pause-text">Les règles de Vesper, plus six cartes pour saboter le jeu adverse.</p>
             <ol className="fury-rules-steps">
                 <li><b>1</b><span><strong>Piochez-les.</strong> 12 cartes Fury sont cachées dans la pioche. Celle que vous tirez file dans votre réserve (3 au plus), puis vous piochez normalement.</span></li>
                 <li><b>2</b><span><strong>Jouez-les à la place de piocher.</strong> Touchez la carte, puis la cible chez l’adversaire. Votre tour s’arrête là.</span></li>

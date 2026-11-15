@@ -4,7 +4,7 @@ import { Card, CardContent } from './ui/Card';
 
 const ACHIEVEMENTS = [
     { id: 1, title: 'Première Victoire', description: 'Gagner une partie contre l\'IA ou en ligne.', icon: Trophy, color: 'text-amber-500', achieved: true },
-    { id: 2, title: 'Maître du Skyjo', description: 'Atteindre le niveau 10.', icon: Award, color: 'text-skyjo-blue', achieved: false },
+    { id: 2, title: 'Maître de Vesper', description: 'Atteindre le niveau 10.', icon: Award, color: 'text-skyjo-blue', achieved: false },
     { id: 3, title: 'Inarrêtable', description: 'Gagner 3 parties d\'affilée.', icon: Zap, color: 'text-purple-500', achieved: false },
     { id: 4, title: 'Collectionneur', description: 'Débloquer 3 skins de cartes.', icon: Star, color: 'text-emerald-500', achieved: true },
 ];

@@ -62,8 +62,8 @@ const PLAYER_COLORS = ['🐱', '🐶', '🦊', '🐻', '🐼', '🦁', '🐸', '
 // ChestRevelationOverlay moved to ./virtual/ChestRevelationOverlay.jsx
 
 /**
- * Virtual Skyjo Game Component
- * Main component for playing virtual Skyjo locally
+ * Virtual Vesper Game Component
+ * Main component for playing virtual Vesper locally
  */
 export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onScreenChange }) {
     // 1. Data Stores
@@ -610,7 +610,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
 
                 // Send browser notification if tab is in background
                 if (isTabHidden()) {
-                    sendNotification('Skyjo - Nouveau joueur ! 🎮', {
+                    sendNotification('Vesper - Nouveau joueur ! 🎮', {
                         body: onlineLastNotificationRaw.message,
                         tag: 'player-joined', // Prevents duplicate notifications
                         renotify: true
@@ -1632,7 +1632,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                             <h3 className="ol-modes-title">Mode de jeu{!onlineIsHost && <small>choisi par l’hôte</small>}</h3>
                             <div className="ol-modes-grid" role="radiogroup" aria-label="Mode de jeu">
                                 {[
-                                    { id: 'classic', title: 'Classique', text: 'Les règles du Skyjo', Icon: NormalIcon, tone: 'amber' },
+                                    { id: 'classic', title: 'Classique', text: 'Les règles de Vesper', Icon: NormalIcon, tone: 'amber' },
                                     { id: 'bonus', title: 'Tourment', text: 'Cartes spéciales', Icon: TourmentIcon, tone: 'coral', rules: () => setShowBonusRules(true) },
                                     { id: 'fury', title: 'Fury', text: 'Cartes de sabotage', Icon: FuryIcon, tone: 'ember', rules: () => setFuryRulesOpen(true) },
                                 ].map(m => {

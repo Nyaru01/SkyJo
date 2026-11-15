@@ -56,7 +56,7 @@ const setPointer = on => { document.body.style.cursor = on ? 'pointer' : ''; };
 
 const C = {
     stone: '#ece5db', stoneEdge: '#dcd2c6',
-    coral1: '#cdb7aa', coral2: '#bca398', coral3: '#a9938d', coral4: '#98868a',
+    coral1: '#d3c6db', coral2: '#bfb1cc', coral3: '#a99bb9', coral4: '#968aa8',
     lilac: '#adb3c6', lilacDark: '#9299b0', dome: '#c9b2a5',
     water: '#aec5c4', leaf: '#a8b9a6', trunk: '#a48c7c', gold: '#d9b77e',
 };
@@ -183,6 +183,7 @@ function ArchWindow({ z, y }) {
     return <group position={[0, y, z]}>
         <mesh position-y={-0.04}><planeGeometry args={[0.2, 0.24]} /><meshBasicMaterial color="#ffd9a0" /></mesh>
         <mesh position-y={0.08}><circleGeometry args={[0.1, 16, 0, Math.PI]} /><meshBasicMaterial color="#ffe6bd" /></mesh>
+        <mesh position={[0, 0.0, 0.01]}><circleGeometry args={[0.24, 24]} /><meshBasicMaterial color="#ffcf8a" transparent opacity={0.16} depthWrite={false} blending={AdditiveBlending} /></mesh>
         <mesh position={[0, -0.18, 0.02]}><boxGeometry args={[0.28, 0.035, 0.06]} /><meshLambertMaterial color={C.stone} /></mesh>
     </group>;
 }
@@ -199,7 +200,8 @@ function HaloRing({ still, mechanism }) {
         ref.current.position.y = 3.72 + (still ? 0 : Math.sin(state.clock.elapsedTime * 1.2) * 0.04);
     });
     return <group ref={ref} position={[1.75, 3.72, -1.2]} rotation-x={-Math.PI / 2}>
-        <mesh><torusGeometry args={[0.34, 0.016, 8, 48]} /><meshLambertMaterial color={C.gold} emissive={C.gold} emissiveIntensity={0.3} /></mesh>
+        <mesh><torusGeometry args={[0.34, 0.016, 8, 48]} /><meshLambertMaterial color={C.gold} emissive={C.gold} emissiveIntensity={0.8} /></mesh>
+        <mesh><torusGeometry args={[0.34, 0.05, 8, 48]} /><meshBasicMaterial color="#ffd58a" transparent opacity={0.18} depthWrite={false} blending={AdditiveBlending} /></mesh>
         {[0, 1, 2, 3, 4, 5].map(i => <mesh key={i} position={[Math.cos(i * Math.PI / 3) * 0.34, Math.sin(i * Math.PI / 3) * 0.34, 0]}>
             <sphereGeometry args={[0.03, 10, 8]} /><meshLambertMaterial color={C.gold} emissive={C.gold} emissiveIntensity={0.3} />
         </mesh>)}
@@ -520,6 +522,98 @@ function Garland({ season }) {
     </group>;
 }
 
+// ---- Touches « Vesper » (d'après l'icône) ----
+function starTexture() {
+    const c = document.createElement('canvas');
+    c.width = c.height = 128;
+    const g = c.getContext('2d');
+    const glow = g.createRadialGradient(64, 64, 0, 64, 64, 60);
+    glow.addColorStop(0, 'rgba(255,240,205,0.9)'); glow.addColorStop(0.25, 'rgba(255,214,150,0.35)'); glow.addColorStop(1, 'rgba(255,200,130,0)');
+    g.fillStyle = glow; g.fillRect(0, 0, 128, 128);
+    g.fillStyle = 'rgba(255,248,230,1)';
+    g.beginPath();
+    for (let k = 0; k < 8; k++) {
+        const a = (k / 8) * Math.PI * 2 - Math.PI / 2;
+        const r = k % 2 === 0 ? 46 : 9;
+        g.lineTo(64 + Math.cos(a) * r, 64 + Math.sin(a) * r);
+    }
+    g.closePath(); g.fill();
+    const t = new CanvasTexture(c);
+    t.colorSpace = SRGBColorSpace;
+    return t;
+}
+// Arches sombres creusées dans les flancs visibles du socle, avec une lueur au fond.
+function UnderArches() {
+    const faces = [
+        { pos: [2.152, -1.28, 0], rot: Math.PI / 2, xs: [-1.05, 0, 1.05] },
+        { pos: [0, -1.28, 1.702], rot: 0, xs: [-1.4, -0.3, 0.8, 1.7] },
+    ];
+    return faces.map((f, i) => <group key={i} position={f.pos} rotation-y={f.rot}>
+        {f.xs.map(x => <group key={x} position-x={x}>
+            <mesh position-y={-0.08}><planeGeometry args={[0.36, 0.46]} /><meshBasicMaterial color="#5f5474" /></mesh>
+            <mesh position-y={0.15}><circleGeometry args={[0.18, 18, 0, Math.PI]} /><meshBasicMaterial color="#5f5474" /></mesh>
+            <mesh position={[0, -0.12, 0.002]}><planeGeometry args={[0.2, 0.22]} /><meshBasicMaterial color="#e7b98a" transparent opacity={0.35} /></mesh>
+        </group>)}
+    </group>);
+}
+// Étoile qui brille dans le bassin, et losanges dorés qui flottent autour de l'île.
+const DIAMONDS = [[-2.9, 2.6, -0.4, 0.09], [3.1, 1.9, 0.6, 0.07], [-1.2, 3.6, -2.2, 0.06], [2.4, 3.4, -2.6, 0.08], [0.4, -4.6, 0.4, 0.11], [-3.3, 0.2, 2.4, 0.06]];
+function VesperSparkles({ still, season }) {
+    const star = useMemo(() => starTexture(), []);
+    useEffect(() => () => star.dispose(), [star]);
+    const pool = useRef();
+    const gems = useRef([]);
+    useFrame(state => {
+        const t = still ? 0 : state.clock.elapsedTime;
+        if (pool.current) { const k = 0.85 + Math.sin(t * 1.6) * 0.15; pool.current.scale.set(0.62 * k, 0.62 * k, 1); pool.current.material.opacity = 0.75 + Math.sin(t * 1.6) * 0.2; }
+        gems.current.forEach((m, i) => {
+            if (!m) return;
+            const d = DIAMONDS[i];
+            m.position.y = d[1] + Math.sin(t * 0.9 + i * 1.3) * 0.12;
+            m.rotation.y = t * 0.8 + i;
+            m.material.emissiveIntensity = 0.6 + Math.sin(t * 2 + i) * 0.3;
+        });
+    });
+    return <group>
+        {season !== 'winter' && <sprite ref={pool} position={[1.75, 0.06, 1.05]} scale={[0.62, 0.62, 1]}><spriteMaterial map={star} transparent depthWrite={false} blending={AdditiveBlending} /></sprite>}
+        {DIAMONDS.map((d, i) => <mesh key={i} ref={el => { gems.current[i] = el; }} position={[d[0], d[1], d[2]]} scale={[d[3], d[3] * 1.5, d[3]]}>
+            <octahedronGeometry args={[1, 0]} /><meshLambertMaterial color="#f6dca2" emissive="#f2c77a" emissiveIntensity={0.7} />
+        </mesh>)}
+    </group>;
+}
+// Mer de nuages sous l'île, qui dérive lentement.
+function cloudPuff() {
+    const c = document.createElement('canvas');
+    c.width = 256; c.height = 128;
+    const g = c.getContext('2d');
+    [[70, 76, 54], [128, 64, 64], [190, 78, 50], [100, 90, 46], [160, 92, 44]].forEach(([x, y, r]) => {
+        const grad = g.createRadialGradient(x, y, 0, x, y, r);
+        grad.addColorStop(0, 'rgba(255,255,255,0.55)'); grad.addColorStop(0.6, 'rgba(255,255,255,0.22)'); grad.addColorStop(1, 'rgba(255,255,255,0)');
+        g.fillStyle = grad; g.fillRect(0, 0, 256, 128);
+    });
+    const t = new CanvasTexture(c);
+    t.colorSpace = SRGBColorSpace;
+    return t;
+}
+const CLOUDS = Array.from({ length: 9 }, (_, i) => ({ a: (i / 9) * Math.PI * 2, r: 2.6 + (i % 3) * 0.9, y: -4.6 + (i % 2) * 0.5, s: 3.4 + (i % 3) * 0.8, tint: ['#d9cdea', '#efd6cf', '#cfc7e6'][i % 3] }));
+function CloudSea({ still }) {
+    const tex = useMemo(() => cloudPuff(), []);
+    useEffect(() => () => tex.dispose(), [tex]);
+    const refs = useRef([]);
+    useFrame(state => {
+        const t = still ? 0 : state.clock.elapsedTime;
+        refs.current.forEach((sp, i) => {
+            if (!sp) return;
+            const c = CLOUDS[i];
+            const a = c.a + t * 0.015;
+            sp.position.set(Math.cos(a) * c.r, c.y + Math.sin(t * 0.3 + i) * 0.08, Math.sin(a) * c.r);
+        });
+    });
+    return CLOUDS.map((c, i) => <sprite key={i} ref={el => { refs.current[i] = el; }} scale={[c.s, c.s * 0.5, 1]}>
+        <spriteMaterial map={tex} color={c.tint} transparent opacity={0.7} depthWrite={false} />
+    </sprite>);
+}
+
 function Island({ still, onTouch, season = 'autumn' }) {
     const clock = useRef(0);
     const ref = useRef();
@@ -551,6 +645,8 @@ function Island({ still, onTouch, season = 'autumn' }) {
         <Block size={[4.3, 1.1, 3.4]} position={[0, -1.19, 0]} color={C.coral1} />
         <Block size={[3.2, 1.3, 2.5]} position={[0.1, -2.39, 0.1]} color={C.coral2} />
         <Block size={[2.0, 1.4, 1.5]} position={[0.2, -3.74, 0.2]} color={C.coral3} />
+        <UnderArches />
+        <VesperSparkles still={still} season={season} />
         {GRID.map((value, i) => <PlazaCard key={i} value={value} index={i} register={register}
             x={-2.05 + (i % 4) * 0.8} z={-0.95 + Math.floor(i / 4) * 1.04}
             order={i % 4 + Math.floor(i / 4) * 2} clock={clock} still={still} onTouch={onTouch} />)}
@@ -843,6 +939,7 @@ export default function HomeWorldScene3D({ compact = false }) {
                 {(season === 'autumn' || season === 'spring') && <FallingLeaves season={season} still={still} />}
                 {season === 'winter' && <Snowfall still={still} />}
                 <Floaters still={still} season={season} />
+                <CloudSea still={still} />
                 <SkyLanterns still={still} />
                 <Wanderer still={still} />
                 <Birds still={still} />

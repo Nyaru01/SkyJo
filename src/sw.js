@@ -60,7 +60,7 @@ self.addEventListener('push', (event) => {
     console.log('📦 [SW] Données extraites:', data);
 
     // Sécurisation contre les "undefined" (Cause du crash précédent)
-    const title = data.title || '🎮 Skyjo Score';
+    const title = data.title || '🎮 Vesper';
     const body = data.body || 'Nouvelle notification';
     const roomId = data.roomId || '';
     const invitationId = data.invitationId || '';

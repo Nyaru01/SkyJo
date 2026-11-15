@@ -16,7 +16,7 @@ export const CAREER_REWARDS = {
         description: 'Pour jouer comme en 1999 av. J-C. Attention, fragile.',
         rarity: 'uncommon'
     },
-    4: { type: 'emoji', content: '🎓', name: 'Savant Fou', description: 'E=mc² ? Non, Skyjo = -2. C\'est ça la vraie science.', rarity: 'common' },
+    4: { type: 'emoji', content: '🎓', name: 'Savant Fou', description: 'E=mc² ? Non, Vesper = -2. C\'est ça la vraie science.', rarity: 'common' },
     5: {
         type: 'skin',
         image: '/card-backs/neon.svg',
@@ -56,7 +56,7 @@ export const CAREER_REWARDS = {
         description: 'Si brillant que vos adversaires seront éblouis (littéralement).',
         rarity: 'epic'
     },
-    14: { type: 'emoji', content: '👑', name: 'Roi du Skyjo', description: 'Inclinez-vous, mortels. Le patron est dans la place.', rarity: 'epic' },
+    14: { type: 'emoji', content: '👑', name: 'Roi de Vesper', description: 'Inclinez-vous, mortels. Le patron est dans la place.', rarity: 'epic' },
     15: { type: 'generic', content: '🧙‍♂️', name: 'Grand Master', description: 'Vous voyez les chiffres en vert comme dans Matrix.', rarity: 'epic' },
     16: { type: 'emoji', content: '💎', name: 'Précieux', description: 'Mon préééciiiieux... Ne le jetez pas dans la lave.', rarity: 'legendary' },
     17: { type: 'generic', content: '🏆', name: 'Légende', description: 'On racontera vos exploits aux générations futures.', rarity: 'legendary' },
@@ -71,7 +71,7 @@ export const CAREER_REWARDS = {
         type: 'generic',
         content: '🥇',
         name: 'Trophée de Légende',
-        description: 'L\'ultime récompense du maître absolu du Skyjo.',
+        description: 'L\'ultime récompense du maître absolu de Vesper.',
         rarity: 'mythic'
     },
     20: { type: 'emoji', content: '🕶️', name: 'Lunettes de Pro', description: 'Pour ne pas montrer que vous paniquez quand vous piochez un 12.', rarity: 'legendary' },
@@ -82,7 +82,7 @@ export const CAREER_REWARDS = {
     25: { type: 'emoji', content: '🌌', name: 'Vide Intersidéral', description: 'Une représentation parfaite de votre score idéal : le néant.', rarity: 'mythic' },
     26: { type: 'generic', content: '🏛️', name: 'Architecte du Plateau', description: 'Vos colonnes sont alignées avec une précision chirurgicale.', rarity: 'mythic' },
     27: { type: 'emoji', content: '⚡', name: 'Éclair de Génie', description: 'Quand vous trouvez la défausse parfaite au dernier tour.', rarity: 'mythic' },
-    28: { type: 'generic', content: '👁️', name: 'Oracle du Skyjo', description: 'Vous savez déjà ce que l\'adversaire va piocher avant lui.', rarity: 'mythic' },
+    28: { type: 'generic', content: '👁️', name: 'Oracle de Vesper', description: 'Vous savez déjà ce que l\'adversaire va piocher avant lui.', rarity: 'mythic' },
     29: { type: 'generic', content: '🪐', name: 'Souverain du Cosmos', description: 'Maître du temps, de l\'espace et du score négatif universel.', rarity: 'divine' },
     30: {
         type: 'ultime',
@@ -106,13 +106,13 @@ export const CAREER_REWARDS = {
     43: { type: 'generic', content: '🌠', name: 'Maître de la Probabilité', description: 'Le hasard commence à obéir à vos désirs.', rarity: 'legendary' },
     44: { type: 'generic', content: '🔮', name: 'Oracle Prismatique', description: 'Vous voyez les cartes à travers les couleurs du spectre.', rarity: 'legendary' },
     45: { type: 'generic', content: '🧭', name: 'Boussole Éthérée', description: 'Vous trouvez toujours le chemin vers le score minimal.', rarity: 'epic' },
-    46: { type: 'generic', content: '🗝️', name: 'Gardien du Savoir', description: 'Les secrets du Skyjo n\'ont plus de mystère pour vous.', rarity: 'epic' },
+    46: { type: 'generic', content: '🗝️', name: 'Gardien du Savoir', description: 'Les secrets de Vesper n\'ont plus de mystère pour vous.', rarity: 'epic' },
     47: { type: 'generic', content: '📜', name: 'Archiviste Suprême', description: 'Chaque partie est une page de votre légende.', rarity: 'epic' },
     48: { type: 'generic', content: '🎭', name: 'Maître des Illusions', description: 'Vos adversaires ne savent plus ce qui est vrai.', rarity: 'epic' },
     49: { type: 'generic', content: '🌪️', name: 'Tempête de l\'Esprit', description: 'Un tourbillon de calculs mentaux ultra-rapides.', rarity: 'epic' },
     50: { type: 'ultime', content: '🏆', name: 'Légende du Demi-Siècle', description: 'Cinquante paliers de pure domination stratégique.', rarity: 'legendary' },
     51: { type: 'generic', content: '🕯️', name: 'Veilleur de l\'Aube', description: 'Vous restez lucide jusque tard dans la nuit.', rarity: 'epic' },
-    52: { type: 'generic', content: '⚔️', name: 'Templier du Skyjo', description: 'Une défense de fer pour protéger vos précieux -2.', rarity: 'epic' },
+    52: { type: 'generic', content: '⚔️', name: 'Templier de Vesper', description: 'Une défense de fer pour protéger vos précieux -2.', rarity: 'epic' },
     53: { type: 'generic', content: '🛡️', name: 'Rempart Inébranlable', description: 'Plus rien ne peut ébranler votre calme olympien.', rarity: 'epic' },
     54: { type: 'generic', content: '🦅', name: 'Œil de l\'Aigle', description: 'Une vision globale parfaite de tout le plateau.', rarity: 'epic' },
     55: { type: 'generic', content: '⚖️', name: 'Juge de l\'Équilibre', description: 'Le parfait dosage entre risque et sécurité.', rarity: 'mythic' },
@@ -129,7 +129,7 @@ export const CAREER_REWARDS = {
     66: { type: 'generic', content: '☀️', name: 'Rayonnement Solaire', description: 'Éblouissez vos rivaux par votre maîtrise absolue.', rarity: 'mythic' },
     67: { type: 'generic', content: '🌀', name: 'Nébuleuse de Pensées', description: 'Un esprit capable de gérer mille probabilités.', rarity: 'mythic' },
     68: { type: 'generic', content: '🌌', name: 'Voyageur Astral', description: 'Jouer n\'est plus un jeu, c\'est un voyage spirituel.', rarity: 'mythic' },
-    69: { type: 'generic', content: '⛩️', name: 'Gardien du Temple', description: 'L\'ultime défenseur des valeurs sacrées du Skyjo.', rarity: 'mythic' },
+    69: { type: 'generic', content: '⛩️', name: 'Gardien du Temple', description: 'L\'ultime défenseur des valeurs sacrées de Vesper.', rarity: 'mythic' },
     70: { type: 'ultime', content: '🌟', name: 'Étoile de la Persévérance', description: 'Septante échelons gravis avec honneur.', rarity: 'divine' },
     71: { type: 'generic', content: '⚡', name: 'Éclair de Sagesse', description: 'Une foudre qui purifie les gros chiffres.', rarity: 'divine' },
     72: { type: 'generic', content: '🌋', name: 'Puissance Tellurique', description: 'Une force de jeu qui déplace des montagnes.', rarity: 'divine' },
@@ -155,12 +155,12 @@ export const CAREER_REWARDS = {
     92: { type: 'generic', content: '👁️', name: 'L\'Œil Divin', description: 'Rien ne vous échappe, pas même le destin.', rarity: 'éternel' },
     93: { type: 'generic', content: '⚡', name: 'Énergie Primordiale', description: 'La source même de toute stratégie.', rarity: 'éternel' },
     94: { type: 'generic', content: '🌋', name: 'Forge de l\'Univers', description: 'Là où les cartes ont été créées.', rarity: 'éternel' },
-    95: { type: 'generic', content: '🧬', name: 'Code du Cosmos', description: 'Vous avez déchiffré l\'ADN du Skyjo.', rarity: 'éternel' },
+    95: { type: 'generic', content: '🧬', name: 'Code du Cosmos', description: 'Vous avez déchiffré l\'ADN de Vesper.', rarity: 'éternel' },
     96: { type: 'generic', content: '🌌', name: 'Nébuleuse Originelle', description: 'Le berceau de toute réflexion stratégique.', rarity: 'éternel' },
     97: { type: 'generic', content: '🌑', name: 'Horizon des Événements', description: 'Au-delà, plus rien ne peut vous arrêter.', rarity: 'éternel' },
     98: { type: 'generic', content: '✨', name: 'Éclat du Vide', description: 'La lumière la plus pure dans le néant le plus total.', rarity: 'éternel' },
     99: { type: 'generic', content: '⏳', name: 'L\'Ultime Seconde', description: 'Le dernier pas avant l\'immortalité.', rarity: 'éternel' },
-    100: { type: 'ultime', content: '🌌', name: 'TRANSCENDANCE TOTALE', description: 'Vous n\'êtes plus un joueur. Vous êtes devenu l\'Esprit Pur du Skyjo.', rarity: 'transcendant' },
+    100: { type: 'ultime', content: '🌌', name: 'TRANSCENDANCE TOTALE', description: 'Vous n\'êtes plus un joueur. Vous êtes devenu l\'Esprit Pur de Vesper.', rarity: 'transcendant' },
 };
 
 // Backward-compatible name used by older consumers.
@@ -176,7 +176,7 @@ const MASTER_CHAPTERS = [
     { name: 'Prisme Éternel', icon: '🔮', rarity: 'éternel', titles: ['Éclat', 'Rayon', 'Spectre', 'Cristal', 'Reflet', 'Faisceau', 'Réfraction', 'Diamant', 'Lumière', 'Prisme'] },
     { name: 'Horizon des Événements', icon: '🕳️', rarity: 'éternel', titles: ['Signal', 'Onde', 'Gravité', 'Paradoxe', 'Faille', 'Singularité', 'Abîme', 'Voyageur', 'Point Zéro', 'Horizon'] },
     { name: 'Vide Transcendant', icon: '🌑', rarity: 'transcendant', titles: ['Silence', 'Ombre', 'Néant', 'Essence', 'Âme', 'Monolithe', 'Entité', 'Souverain', 'Absolu', 'Vide'] },
-    { name: 'Ascension Skyjo', icon: '👑', rarity: 'transcendant', titles: ['Élu', 'Prodige', 'Parangon', 'Légende', 'Immortel', 'Avatar', 'Démiurge', 'Omniscient', 'Esprit Pur', 'Ascension'] }
+    { name: 'Ascension Vesper', icon: '👑', rarity: 'transcendant', titles: ['Élu', 'Prodige', 'Parangon', 'Légende', 'Immortel', 'Avatar', 'Démiurge', 'Omniscient', 'Esprit Pur', 'Ascension'] }
 ];
 
 const MASTER_MILESTONES = {
@@ -189,7 +189,7 @@ const MASTER_MILESTONES = {
     70: { type: 'skin', skinId: 'eternal-prism', image: '/card-backs/eternal-prism.svg', name: 'Dos Prisme Éternel', content: '🎨' },
     80: { type: 'background', backgroundId: 'event-horizon', image: '/master/wallpaper-event-horizon.webp', name: 'Fond Horizon des Événements', content: '🖼️' },
     90: { type: 'skin', skinId: 'transcendent-void', image: '/card-backs/transcendent-void.svg', name: 'Dos Vide Transcendant', content: '🎨' },
-    100: { type: 'background', backgroundId: 'skyjo-ascension', image: '/master/wallpaper-skyjo-ascension.webp', name: 'Fond Ascension Skyjo', content: '🖼️' }
+    100: { type: 'background', backgroundId: 'skyjo-ascension', image: '/master/wallpaper-skyjo-ascension.webp', name: 'Fond Ascension Vesper', content: '🖼️' }
 };
 
 export const MASTER_REWARDS = Object.fromEntries(

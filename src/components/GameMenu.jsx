@@ -235,7 +235,7 @@ export default function GameMenu({
                         <div className="relative p-6 px-8 border-b border-white/5 flex items-center justify-between shrink-0">
                             <div>
                                 <h2 id="game-rules-title" className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
-                                    <span className="text-3xl">📜</span> Règles du Skyjo
+                                    <span className="text-3xl">📜</span> Règles de Vesper
                                 </h2>
                                 <p className="text-xs font-medium text-white/40 uppercase tracking-widest mt-1">Manuel de jeu officiel v2.0</p>
                             </div>

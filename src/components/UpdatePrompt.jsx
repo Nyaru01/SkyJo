@@ -249,7 +249,7 @@ export function UpdateProvider({ children }) {
                             <strong>{isUpdating ? 'Installation…' : updateError ? 'Échec de la mise à jour' : 'Nouvelle version prête'}</strong>
                             <small>
                                 {updateError || (isUpdating
-                                    ? 'Skyjo redémarre dans un instant.'
+                                    ? 'Vesper redémarre dans un instant.'
                                     : serverVersion ? `v${__APP_VERSION__} → v${serverVersion}` : 'Quelques secondes pour l’installer.')}
                             </small>
                         </span>

@@ -31,7 +31,7 @@ export default function SkyjoLoaderPremium({ progress = 0, isFullPage = true }) 
     const sunX = 120 + Math.cos(angle) * 96;
     const sunY = 112 - Math.sin(angle) * 86;
 
-    return <div className={cn('sl-root', isFullPage ? 'sl-root--full' : 'sl-root--inline')} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label="Chargement de Skyjo">
+    return <div className={cn('sl-root', isFullPage ? 'sl-root--full' : 'sl-root--inline')} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label="Chargement de Vesper">
         <div className="sl-sky" aria-hidden="true">
             <span className="sl-sun" />
             {STARS.map((s, i) => <i key={i} className="sl-star" style={{ left: `${s.x}%`, top: `${s.y}%`, width: s.s, height: s.s, animationDelay: `${s.d}s` }} />)}
@@ -39,7 +39,7 @@ export default function SkyjoLoaderPremium({ progress = 0, isFullPage = true }) 
         </div>
         <div className="sl-content">
             <header className="sl-brand">
-                <h1>Skyjo</h1>
+                <h1>Vesper</h1>
                 <p>Virtuel</p>
             </header>
             <svg className="sl-arc" viewBox="0 0 240 132" aria-hidden="true">

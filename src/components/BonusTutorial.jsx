@@ -37,7 +37,7 @@ const Tag = ({ tone = 'cream', children }) => <p className={`tr-tag tr-tag--${to
 const STEPS = [
     {
         id: 'intro', title: 'Le mode Tourment', icon: Flame, tone: 'coral',
-        text: '24 cartes spéciales rejoignent le paquet. Les règles du Skyjo restent les mêmes, mais chaque pioche peut tout changer.',
+        text: '24 cartes spéciales rejoignent le paquet. Les règles de Vesper restent les mêmes, mais chaque pioche peut tout changer.',
         content: <Fan />,
     },
     {
