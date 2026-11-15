@@ -65,10 +65,25 @@ test('limite de 3 Fury par manche', () => {
     assert.equal(canPlayFury(capped, 0), false);
 });
 
-test("l'IA protège avec le bouclier quand l'adversaire peut attaquer", () => {
+test('le Bouclier en réserve bloque tout seul, quelle que soit sa place', () => {
     const g = ready(['quake']);
+    const reserve = [{ id: 'x', specialType: 'F', furyType: 'fog' }, { id: 's', specialType: 'F', furyType: 'shield' }];
+    const state = { ...g, players: [g.players[0], { ...g.players[1], fury: { reserve, used: 0, shield: false } }] };
+    const before = state.players[1].hand.map(c => c.id).join();
+    const { state: after, result } = playFury(state, 0, 1, 0);
+    assert.equal(result.blocked, true);
+    assert.equal(after.players[1].hand.map(c => c.id).join(), before);
+    assert.deepEqual(after.players[1].fury.reserve.map(c => c.furyType), ['fog']);
+    // Le Bouclier ne se joue pas à la main, et l'IA ne le joue pas.
+    const own = { ...g, players: [{ ...g.players[0], fury: { reserve: [{ id: 's2', specialType: 'F', furyType: 'shield' }, ...g.players[0].fury.reserve], used: 0, shield: false } }, g.players[1]] };
+    assert.throws(() => playFury(own, 0, 0));
     const aiTurn = { ...g, currentPlayerIndex: 1, players: [g.players[0], { ...g.players[1], fury: { reserve: [{ id: 's', specialType: 'F', furyType: 'shield' }], used: 0, shield: false } }] };
-    assert.deepEqual(decideFuryAction(aiTurn, 1), { reserveIndex: 0, targetIndex: 1 });
+    assert.equal(decideFuryAction(aiTurn, 1), null);
+});
+
+test('pas de Fury pendant le dernier tour', () => {
+    const g = ready(['fog']);
+    assert.equal(canPlayFury({ ...g, phase: 'FINAL_ROUND', finishingPlayerIndex: 1 }, 0), false);
 });
 
 test('Malédiction : jamais sur une carte cachée (sinon la manche peut finir à la place de la victime)', () => {

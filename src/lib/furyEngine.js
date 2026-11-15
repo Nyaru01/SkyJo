@@ -3,7 +3,8 @@
 // - 12 cartes Fury (2 de chaque) mélangées dans la pioche (jamais distribuées ni défaussées).
 // - Piocher une Fury l'envoie dans la réserve du joueur (3 au plus), puis on repioche.
 // - Jouer une Fury remplace la pioche : le tour se termine ensuite.
-// - 3 Fury utilisées au plus par manche et par joueur.
+// - 3 Fury utilisées au plus par manche et par joueur, jamais pendant le dernier tour.
+// - Le Bouclier ne se joue pas : gardé en réserve, il bloque tout seul la prochaine Fury reçue.
 import { initializeGame, shuffleDeck, endTurn } from './skyjoEngine.js';
 
 export const FURY_TYPES = {
@@ -12,7 +13,7 @@ export const FURY_TYPES = {
     fog: { title: 'Brouillard', text: 'Recache 2 cartes adverses', bubble: 'Pouf !', target: 'player' },
     tornado: { title: 'Tornade', text: 'Mélange les cartes adverses', bubble: 'Whoosh !', target: 'player' },
     freeze: { title: 'Gel', text: 'Gèle une colonne adverse 2 tours', bubble: 'Crac !', target: 'column' },
-    shield: { title: 'Bouclier', text: 'Annule la prochaine Fury reçue', bubble: 'Bloqué !', target: 'self' },
+    shield: { title: 'Bouclier', text: 'Bloque tout seul la prochaine Fury reçue', bubble: 'Bloqué !', target: 'self' },
 };
 export const FURY_ORDER = ['quake', 'curse', 'fog', 'tornado', 'freeze', 'shield'];
 export const FURY_RESERVE_MAX = 3;
@@ -59,10 +60,14 @@ export function collectFuryFromPile(state) {
     return { state: replacePlayer({ ...state, drawPile }, index, { ...player, fury }), gained };
 }
 
+export const hasShield = fury => Boolean(fury && (fury.shield || fury.reserve?.some(c => c.furyType === 'shield')));
+
+// Au dernier tour, plus de Fury : recacher les cartes du joueur qui a tout retourné terminerait la manche
+// avec des cartes cachées, sans qu'on comprenne pourquoi.
 export function canPlayFury(state, playerIndex) {
     const fury = state.players[playerIndex]?.fury;
     return Boolean(state.isFuryMode && fury && state.currentPlayerIndex === playerIndex && state.turnPhase === 'DRAW'
-        && (state.phase === 'PLAYING' || state.phase === 'FINAL_ROUND') && fury.reserve.length > 0 && fury.used < FURY_USES_PER_ROUND);
+        && state.phase === 'PLAYING' && fury.reserve.some(c => c.furyType !== 'shield') && fury.used < FURY_USES_PER_ROUND);
 }
 
 // Cibles valides d'une carte, pour l'interface et l'IA.
@@ -128,6 +133,7 @@ export function playFury(state, reserveIndex, targetIndex, target = null) {
     const card = player.fury.reserve[reserveIndex];
     if (!card) throw new Error('Carte Fury introuvable.');
     const type = card.furyType;
+    if (type === 'shield') throw new Error('Le Bouclier se déclenche tout seul quand on vous attaque.');
     const reserve = player.fury.reserve.filter((_, i) => i !== reserveIndex);
     let next = replacePlayer(state, me, { ...player, fury: { ...player.fury, reserve, used: player.fury.used + 1, shield: type === 'shield' ? true : player.fury.shield } });
     let result = { type, by: me, targetIndex: type === 'shield' ? me : targetIndex, blocked: false, cards: [] };
@@ -143,9 +149,10 @@ export function playFury(state, reserveIndex, targetIndex, target = null) {
                 throw new Error(type === 'curse' ? 'Visez une carte déjà retournée.' : 'Cette colonne ne peut pas être visée.');
             }
         }
-        if (victim.fury?.shield) {
-            // Le bouclier encaisse l'attaque et disparaît.
-            next = replacePlayer(next, targetIndex, { ...victim, fury: { ...victim.fury, shield: false } });
+        if (hasShield(victim.fury)) {
+            // Le Bouclier (actif, ou simplement en réserve) encaisse l'attaque et disparaît.
+            const idx = victim.fury.shield ? -1 : victim.fury.reserve.findIndex(c => c.furyType === 'shield');
+            next = replacePlayer(next, targetIndex, { ...victim, fury: { ...victim.fury, shield: false, reserve: victim.fury.reserve.filter((_, i) => i !== idx) } });
             result = { ...result, blocked: true };
         } else {
             const applied = applyEffect(next, type, targetIndex, target);
@@ -170,11 +177,8 @@ export function scoreFuryMove(state, aiIndex, type, target) {
     // Plus l'adversaire est près de finir la manche, plus le ralentir compte.
     const urgency = hidden <= 1 ? 6 : hidden <= 3 ? 3 : hidden <= 5 ? 1 : 0;
     const colCards = col => columnIndices(col).map(i => hand[i]).filter(c => c && c.isRevealed && !c.isCursed);
-    if (type === 'shield') {
-        const threat = (opp.fury?.reserve.length || 0) > 0 && (opp.fury?.used || 0) < FURY_USES_PER_ROUND;
-        return state.players[aiIndex].fury.shield || !threat ? -1 : 5 + (opp.fury.reserve.length - 1) * 2;
-    }
-    if (opp.fury?.shield) return 1; // l'attaque finira sur le bouclier : seulement pour le retirer
+    if (type === 'shield') return -1; // se déclenche tout seul
+    if (hasShield(opp.fury)) return 1; // l'attaque finira sur le bouclier : seulement pour le retirer
     if (type === 'quake') {
         const cards = colCards(target);
         const gain = cards.reduce((s, c) => s + (HIDDEN_EV - c.value), 0);

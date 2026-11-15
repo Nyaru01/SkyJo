@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Activity, CloudFog, Shield, Skull, Snowflake, Tornado, X, Flame } from 'lucide-react';
-import { FURY_TYPES, FURY_USES_PER_ROUND, FURY_RESERVE_MAX, FURY_ORDER as FURY_ORDER_UI } from '../../lib/furyEngine';
+import { FURY_TYPES, FURY_USES_PER_ROUND, FURY_RESERVE_MAX, FURY_ORDER as FURY_ORDER_UI, hasShield } from '../../lib/furyEngine';
 import '../../styles/Fury.css';
 
 const FURY_ICONS = { quake: Activity, curse: Skull, fog: CloudFog, tornado: Tornado, freeze: Snowflake, shield: Shield };
@@ -12,13 +12,13 @@ const plural = n => (n > 1 ? 's' : '');
 const FuryFX3D = lazy(() => import('./FuryFX3D'));
 
 // Panneaux Fury écrits en clair : « Fury de l'IA » (au-dessus de la pioche) et « Vos cartes Fury » (en dessous).
-export function FuryRail({ part, me, opponent, opponentName, canPlay, selected, onSelect }) {
+export function FuryRail({ part, me, opponent, opponentName, canPlay, selected, onSelect, finalRound = false }) {
     if (part === 'opponent') {
         const reserve = opponent?.fury?.reserve || [];
         const left = FURY_USES_PER_ROUND - (opponent?.fury?.used || 0);
         const status = [
             reserve.length ? `${reserve.length} carte${plural(reserve.length)} en main` : 'Aucune carte pour l’instant',
-            opponent?.fury?.shield ? 'Bouclier actif' : null,
+            hasShield(opponent?.fury) ? 'protégée par un Bouclier' : null,
             reserve.length && left < reserve.length ? `${left} jouable${plural(left)} cette manche` : null,
         ].filter(Boolean).join(' · ');
         return <div className="fury-panel fury-panel--opp">
@@ -30,17 +30,22 @@ export function FuryRail({ part, me, opponent, opponentName, canPlay, selected, 
     }
     const reserve = me?.fury?.reserve || [];
     const left = FURY_USES_PER_ROUND - (me?.fury?.used || 0);
+    const attacks = reserve.filter(c => c.furyType !== 'shield').length;
     const status = reserve.length === 0 ? 'Cachées dans la pioche : piochez pour en gagner'
+        : finalRound ? 'Dernier tour : plus de Fury jouable'
+        : attacks === 0 ? 'Votre Bouclier bloquera tout seul la prochaine attaque'
         : left <= 0 ? 'Plus de Fury jouable cette manche'
         : canPlay ? 'Touchez-en une à la place de piocher'
         : 'Jouables au début de votre tour';
     return <div className="fury-panel fury-panel--me">
         <div className="fury-panel-head">
-            <strong>Vos cartes Fury{me?.fury?.shield ? ' · Bouclier actif' : ''}</strong>
+            <strong>Vos cartes Fury{hasShield(me?.fury) ? ' · protégé' : ''}</strong>
             <small>{status}</small>
         </div>
         {reserve.length > 0 && <div className="fury-panel-cards">
-            {reserve.map((card, i) => <button key={card.id} type="button" disabled={!canPlay} onClick={() => onSelect(i)}
+            {reserve.map((card, i) => card.furyType === 'shield' ? <span key={card.id} className="fury-chip-card fury-chip-card--passive" title="Le Bouclier se déclenche tout seul quand on vous attaque" aria-label="Bouclier : bloque tout seul la prochaine Fury reçue">
+                <FuryCard type="shield" size="mini" />
+            </span> : <button key={card.id} type="button" disabled={!canPlay} onClick={() => onSelect(i)}
                 className={`fury-chip-card${selected === i ? ' is-selected' : ''}`} aria-pressed={selected === i}
                 aria-label={`${FURY_TYPES[card.furyType].title} : ${FURY_TYPES[card.furyType].text}`}>
                 <FuryCard type={card.furyType} size="mini" />
@@ -217,8 +222,9 @@ export function FuryRulesModal({ open, onClose, first = false }) {
             <ol className="fury-rules-steps">
                 <li><b>1</b><span><strong>Piochez-les.</strong> 12 cartes Fury sont cachées dans la pioche. Celle que vous tirez file dans votre réserve (3 au plus), puis vous piochez normalement.</span></li>
                 <li><b>2</b><span><strong>Jouez-les à la place de piocher.</strong> Touchez la carte, puis la cible chez l’adversaire. Votre tour s’arrête là.</span></li>
-                <li><b>3</b><span><strong>Trois par manche.</strong> Le Bouclier annule la prochaine attaque reçue.</span></li>
-                <li><b>4</b><span><strong>Colonne nettoyée : −3 points.</strong> Trois cartes identiques dans une colonne disparaissent et vous rapportent −3 en fin de manche.</span></li>
+                <li><b>3</b><span><strong>Trois par manche, jamais au dernier tour.</strong> Une fois qu’un joueur a tout retourné, plus personne ne joue de Fury.</span></li>
+                <li><b>4</b><span><strong>Le Bouclier se déclenche tout seul.</strong> Gardé dans votre réserve, il bloque la prochaine Fury reçue, puis disparaît.</span></li>
+                <li><b>5</b><span><strong>Colonne nettoyée : −3 points.</strong> Trois cartes identiques dans une colonne disparaissent et vous rapportent −3 en fin de manche.</span></li>
             </ol>
             <div className="fury-rules-grid">{FURY_ORDER_UI.map(type => <FuryCard key={type} type={type} />)}</div>
             <button type="button" className="skyjo-pause-resume" onClick={onClose}>{first ? 'Au combat' : 'Compris'}</button>

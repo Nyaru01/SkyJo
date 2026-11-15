@@ -262,7 +262,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     const isMyTurn = !isInitialReveal && activeGameState?.currentPlayerIndex === myPlayerIndex;
     // Mode Fury (contre l'IA uniquement pour l'instant)
     const furyOn = Boolean(aiMode && activeGameState?.isFuryMode);
-    const furyCanPlay = furyOn && isMyTurn && activeGameState?.turnPhase === 'DRAW' && (activeGameState?.players[myPlayerIndex]?.fury?.used || 0) < 3;
+    const furyCanPlay = furyOn && isMyTurn && activeGameState?.phase === 'PLAYING' && activeGameState?.turnPhase === 'DRAW' && (activeGameState?.players[myPlayerIndex]?.fury?.used || 0) < 3;
     const furyActiveType = furyCanPlay && furySelect !== null ? activeGameState.players[myPlayerIndex].fury.reserve[furySelect]?.furyType || null : null;
     const isOpponentTurn = !isInitialReveal && activeGameState?.currentPlayerIndex === opponentIndex;
 
@@ -2867,7 +2867,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                         </div>
                     </div>
                 )}
-                {furyOn && !isInitialReveal && <FuryRail part="me" me={activeGameState.players[myPlayerIndex]} canPlay={furyCanPlay} selected={furyActiveType ? furySelect : null} onSelect={i => setFurySelect(prev => (prev === i ? null : i))} />}
+                {furyOn && !isInitialReveal && <FuryRail part="me" me={activeGameState.players[myPlayerIndex]} canPlay={furyCanPlay} finalRound={activeGameState.phase === 'FINAL_ROUND'} selected={furyActiveType ? furySelect : null} onSelect={i => setFurySelect(prev => (prev === i ? null : i))} />}
             </div>
 
             {/* Instruction Banner - BELOW the PIOCHER button */}
