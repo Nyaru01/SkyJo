@@ -318,3 +318,4 @@ body.fury-mode .skyjo-action-area > .flex.justify-center.px-4 { padding-left: 64
 .fury-rail .fury-card--mini .fury-card-emblem { width: 18px; height: 18px; }
 
 body.fury-mode .skyjo-draw-button span { white-space: normal; text-align: center; }
+body.fury-mode .fury-rail .fury-card--mini, body.fury-mode .fury-rail-card { width: 38px; height: 32px; }

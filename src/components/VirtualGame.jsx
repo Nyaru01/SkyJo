@@ -2568,7 +2568,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                         animate={{ y: 0, opacity: 1 }}
                         className="flex justify-center px-4 w-full"
                     >
-                        <div className="glass-premium px-8 py-2.5 rounded-[2rem] flex items-center gap-8 shadow-2xl border-white/20 relative overflow-hidden group max-h-[52px]">
+                        <div className="skyjo-reveal-pill glass-premium px-8 py-2.5 rounded-[2rem] flex items-center gap-8 shadow-2xl border-white/20 relative overflow-hidden group max-h-[52px]">
                             {/* Shimmer top border line */}
                             <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
