@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowUpRight, Check, Play, BookOpen } from 'lucide-react';
 import { NormalIcon, HardIcon, TourmentIcon, FuryIcon } from './ModeIcons';
 import { AI_DIFFICULTY } from '../../lib/skyjoAI';
 import RobotAvatar from './RobotAvatar';
+import IslandSpin from './IslandSpin';
 import '../../styles/AISetup.css';
 
 const MODES = [
@@ -37,7 +38,7 @@ export default function AISetupScreen({ difficulty, onDifficultyChange, onStart,
                 <div className="ai-rival-grid" aria-hidden="true" />
                 <div className="ai-rival-orbit" aria-hidden="true" />
                 <div className="ai-rival-platform" aria-hidden="true" />
-                <div className="ai-rival-island" aria-hidden="true" />
+                <IslandSpin />
                 <RobotAvatar size="hero" difficulty={mode.id} rival className="ai-rival-avatar" />
             </div>
             <div className="ai-rival-dialogue" aria-live="polite" aria-atomic="true">
