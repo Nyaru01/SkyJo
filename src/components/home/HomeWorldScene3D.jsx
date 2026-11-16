@@ -344,8 +344,11 @@ const cardPos = i => [-2.05 + (i % 4) * 0.8, -0.95 + Math.floor(i / 4) * 1.04];
 const neighbours = i => [i - 4, i + 4, i % 4 ? i - 1 : -1, i % 4 < 3 ? i + 1 : -1].filter(n => n >= 0 && n < 12);
 const BOT_SCALE = 0.27;
 const BOT_FEET = 0.47;
+// Un des 4 robots rivaux (Normal, Difficile, Tourment, Fury), tiré au hasard à chaque visite
+const ISLAND_BOTS = ['hard', 'hardcore', 'bonus', 'fury'];
 function IslandBot({ still, clock, flippers, botAtRef }) {
     const ref = useRef();
+    const [botMode] = useState(() => ISLAND_BOTS[Math.floor(Math.random() * ISLAND_BOTS.length)]);
     const [poke, setPoke] = useState(0);
     const hop = useRef({ from: 5, to: 5, start: 0, next: 4.6, yaw: 0, landed: true, bounceAt: 0 });
     useFrame((_, delta) => {
@@ -385,7 +388,7 @@ function IslandBot({ still, clock, flippers, botAtRef }) {
     return <group ref={ref} scale={0.0001}
         onClick={e => { e.stopPropagation(); setPoke(n => n + 1); }}
         onPointerOver={() => setPointer(true)} onPointerOut={() => setPointer(false)}>
-        <MascotBot difficulty="normal" poke={poke} still={still} shadow={false} />
+        <MascotBot difficulty={botMode} poke={poke} still={still} shadow={false} />
     </group>;
 }
 

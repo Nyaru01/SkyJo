@@ -408,9 +408,12 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
             playerName: savedPseudo,
             playerAvatarId: savedAvatarId,
             aiCount: 1,
-            difficulty: AI_DIFFICULTY.HARD,
+            // Dernier mode choisi par le joueur (retenu d’une visite à l’autre)
+            difficulty: [AI_DIFFICULTY.HARD, AI_DIFFICULTY.HARDCORE, AI_DIFFICULTY.BONUS, AI_DIFFICULTY.FURY].includes(localStorage.getItem('skyjo_last_ai_mode'))
+                ? localStorage.getItem('skyjo_last_ai_mode') : AI_DIFFICULTY.HARD,
         };
     });
+    useEffect(() => { try { localStorage.setItem('skyjo_last_ai_mode', aiConfig.difficulty); } catch { /* stockage indisponible */ } }, [aiConfig.difficulty]);
 
     // Cards shaking state (for invalid actions)
     const [shakingCard, setShakingCard] = useState(null);

@@ -395,7 +395,7 @@ html body .modal-surface.confirm-night .modal-close-button:hover { background: #
 body.fury-mode .skyjo-scan { --scan-accent: #f0a27a; }
 .skyjo-scan--down { transform: scaleY(-1); }
 /* Voile : dépasse de la profondeur de l'arc sous le plateau ; son bord avant est creusé en arc (masque elliptique adouci). */
-.skyjo-scan-cover { position: absolute; inset: 0 0 calc(-1 * var(--arc)); background-color: #1d2031;
+.skyjo-scan-cover { position: absolute; inset: 0 0 calc(-1 * var(--arc)); background-color: #1d2031; opacity: .78; /* voile un peu transparent : on devine les cartes dessous */
     -webkit-mask: radial-gradient(ellipse 50% var(--arc) at 50% 100%, transparent 62%, #000 100%); mask: radial-gradient(ellipse 50% var(--arc) at 50% 100%, transparent 62%, #000 100%);
     animation: skyjo-scan-cover var(--scan-dur) var(--scan-ease) var(--scan-delay) both; }
 @keyframes skyjo-scan-cover { from { transform: translateY(0); } to { transform: translateY(-100%); } }

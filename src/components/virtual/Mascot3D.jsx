@@ -89,7 +89,7 @@ const NO_POINTER = { current: { x: 0, y: 0 } };
 const ACTS = ['look', 'tilt', 'happy', 'wave', 'scan', 'talk', 'look', 'dance', 'sleepy', 'tilt'];
 // Rival (écran du duel) : un compétiteur concentré — il observe et analyse, sans danser ni saluer.
 const RIVAL_ACTS = ['look', 'scan', 'look', 'tilt'];
-const RIVAL_RANGE = 1.15;
+const RIVAL_RANGE = 2.2;
 const ACT_DURATION = { dance: 2.6, sleepy: 3.2 };
 // Bulles d'émotion au-dessus de la tête : ♥ content, ! repère, ? curieux, ♪ danse, z sieste.
 const EMOTE = { happy: '♥', scan: '!', look: '?', tilt: '?', dance: '♪', sleepy: 'z' };
@@ -129,7 +129,7 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, riva
     const torso = useRef();
     const emote = useRef();
     const emoteTextures = useMemo(() => Object.fromEntries([...new Set(Object.values(EMOTE))].map(g => [g, emoteTexture(g)])), []);
-    const anim = useRef({ t: 0, hop: 0, spin: 0, wave: 0, blinkAt: 2.2, act: null, actAt: 0, nextAct: 3.2, look: { x: 0, y: 0 }, prevYaw: 0, spring: 0, springV: 0, x: 0, tx: 0, v: 0, walkAt: 2 });
+    const anim = useRef({ t: 0, hop: 0, spin: 0, wave: 0, blinkAt: 2.2, act: null, actAt: 0, nextAct: 3.2, look: { x: 0, y: 0 }, prevYaw: 0, spring: 0, springV: 0, x: 0, tx: 0, v: 0, walkAt: 1.2, y: 0, ty: 0, z: 0, tz: 0 });
     const shadow = useMemo(() => radialTexture([[0, 'rgba(94,75,124,0.38)'], [1, 'rgba(94,75,124,0)']]), []);
     const glow = useMemo(() => radialTexture([[0, 'rgba(255,255,255,1)'], [0.4, 'rgba(255,255,255,0.35)'], [1, 'rgba(255,255,255,0)']]), []);
     const glare = useMemo(() => glareTexture(), []);
@@ -165,16 +165,19 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, riva
                 let tx = a.x;
                 for (let i = 0; i < 6 && Math.abs(tx - a.x) < 0.7; i++) tx = (Math.random() * 2 - 1) * RIVAL_RANGE;
                 a.tx = Math.abs(tx - a.x) >= 0.7 ? tx : 0;
+                // et change un peu d’altitude et de profondeur, pour occuper toute sa boîte
+                a.ty = Math.random() * 0.4 - 0.2; a.tz = -Math.random() * 1.1 + 0.2;
                 a.walkAt = Infinity;
             }
             const dx = a.tx - a.x;
             // Vitesse lissée : démarre et freine en douceur, comme un drone.
-            a.v = MathUtils.damp(a.v, MathUtils.clamp(dx * 2.2, -0.9, 0.9), 2.6, dt);
+            a.v = MathUtils.damp(a.v, MathUtils.clamp(dx * 2.4, -1.4, 1.4), 3, dt);
+            a.y = MathUtils.damp(a.y, a.ty, 1.6, dt); a.z = MathUtils.damp(a.z, a.tz, 1.4, dt);
             a.x += a.v * dt;
             if (Math.abs(dx) > 0.03 || Math.abs(a.v) > 0.04) a.act = null;
             else if (a.walkAt === Infinity) {
                 a.x = a.tx; a.v = 0;
-                a.walkAt = t + 2.8 + Math.random() * 3.2;
+                a.walkAt = t + 1.2 + Math.random() * 2;
                 a.act = Math.random() < 0.5 ? 'scan' : 'look'; a.actAt = t; a.nextAct = t + 2.4;
                 a.look = { x: -a.x * 0.15, y: 0 };
             }
@@ -184,8 +187,9 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, riva
         const hopY = Math.sin((1 - a.hop) * Math.PI) * (a.hop > 0 ? 0.5 : 0);
         const bob = still ? 0 : rival ? Math.sin(t * 1.6) * 0.06 : act === 'sleepy' ? Math.sin(t * 0.9) * 0.04 - 0.05 : act === 'dance' ? Math.abs(Math.sin(t * 7)) * 0.16 : Math.sin(t * 1.8) * 0.07;
         if (root.current) {
-            root.current.position.y = bob + hopY;
+            root.current.position.y = bob + hopY + (rival ? a.y : 0);
             root.current.position.x = a.x;
+            if (rival) root.current.position.z = a.z;
             root.current.rotation.y = MathUtils.damp(root.current.rotation.y, a.spin + (rival ? a.v * 0.28 : 0), 5, dt);
             root.current.rotation.z = MathUtils.damp(root.current.rotation.z, act === 'dance' ? Math.sin(t * 7) * 0.14 : rival ? -a.v * 0.13 : 0, 8, dt);
             const squash = a.hop > 0 ? 1 + Math.sin(a.hop * Math.PI) * 0.08 : 1;
@@ -196,6 +200,7 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, riva
             shadowRef.current.scale.set(2.3 * k, 0.55 * k, 1);
             shadowRef.current.material.opacity = Math.max(0.3, k);
             shadowRef.current.position.x = a.x;
+            if (rival) shadowRef.current.position.z = a.z;
         }
         if (head.current && !still) {
             const scanYaw = act === 'scan' ? Math.sin(actK * Math.PI * 2) * 0.55 : 0;
@@ -347,7 +352,7 @@ export default function Mascot3D({ difficulty = 'normal', poke = 0, rival = fals
         addEventListener('pointermove', onMove, { passive: true });
         return () => removeEventListener('pointermove', onMove);
     }, []);
-    return <Canvas flat dpr={[1, 2]} gl={{ antialias: true, alpha: true }} camera={{ position: [0, 0.08, 6.9], fov: 32 }} style={{ pointerEvents: 'none' }}>
+    return <Canvas flat dpr={[1, rival ? 1.5 : 2]} gl={{ antialias: true, alpha: true }} camera={{ position: [0, 0.08, 6.9], fov: 32 }} style={{ pointerEvents: 'none' }}>
         <ambientLight intensity={0.9} />
         <hemisphereLight args={['#fff4ea', '#5e4b7c', 0.8]} />
         <directionalLight position={[-2, 6, 5]} intensity={1.5} color="#fff7ee" />

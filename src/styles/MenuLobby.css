@@ -1606,5 +1606,73 @@ body.fury-mode .skyjo-action-area > .flex.justify-center.px-4 { padding-left: 54
 html body.lobby-theme.fury-mode :is(.menu-lobby, .game-lobby) .skyjo-draw-button span[class][class] { font-size: 13.5px !important; line-height: 1.15 !important; word-break: normal !important; overflow-wrap: normal !important; hyphens: none !important; }
 html body.fury-mode .skyjo-draw-button { height: auto !important; min-height: 52px; padding: 6px 8px !important; }
 /* Duel IA : la 3D du robot couvre toute la largeur de la scène pour qu’il puisse s’y déplacer ; pas de flottement CSS (le robot ne danse pas) */
-html body .menu-lobby .ai-rival-stage { margin-top: 10px; }
+html body .menu-lobby .ai-rival-stage { margin-top: 0; }
 html body .menu-lobby .ai-rival-stage .ai-rival-avatar { width: 100%; animation: none; }
+/* Duel IA : un ciel par mode derrière le robot (plus de grille), nuages qui dérivent lentement */
+html body .menu-lobby .ai-rival-stage { overflow: hidden; isolation: isolate; }
+html body .menu-lobby .ai-rival-grid, html body .menu-lobby .ai-rival-orbit, html body .menu-lobby .ai-rival-platform { display: none; }
+html body .menu-lobby .ai-rival-stage::after { content: ''; position: absolute; inset: 0 -50%; z-index: -1; pointer-events: none;
+    background: radial-gradient(ellipse 14% 7% at 20% 62%, var(--cloud), transparent 70%), radial-gradient(ellipse 18% 6% at 48% 70%, var(--cloud), transparent 70%),
+        radial-gradient(ellipse 12% 5% at 72% 58%, var(--cloud), transparent 70%), radial-gradient(ellipse 16% 6% at 90% 68%, var(--cloud), transparent 70%);
+    animation: ai-sky-drift 70s linear infinite; }
+@keyframes ai-sky-drift { from { transform: translateX(0); } to { transform: translateX(-33.33%); } }
+html body .menu-lobby .ai-rival:has(.ai-rival-stage--hard) { --cloud: #ffe6dc55;
+    background: radial-gradient(ellipse 60% 40% at 72% 88%, #ffd2a8aa, transparent 70%), linear-gradient(180deg, #3d3b66 0%, #7d6b9c 42%, #cf9aa3 72%, #f1b896 100%); }
+html body .menu-lobby .ai-rival:has(.ai-rival-stage--hardcore) { --cloud: #7c8cc433;
+    background: radial-gradient(1px 1px at 12% 18%, #fff, transparent), radial-gradient(1px 1px at 33% 9%, #dfe6ff, transparent), radial-gradient(1.5px 1.5px at 58% 22%, #fff, transparent),
+        radial-gradient(1px 1px at 76% 12%, #cfd8ff, transparent), radial-gradient(1px 1px at 88% 30%, #fff, transparent), radial-gradient(1.2px 1.2px at 22% 36%, #dfe6ff, transparent),
+        radial-gradient(1px 1px at 46% 40%, #fff, transparent), radial-gradient(1px 1px at 66% 34%, #cfd8ff, transparent),
+        radial-gradient(circle at 80% 22%, #e9eeff 0 7px, #9fb0ff44 9px, transparent 26px),
+        linear-gradient(180deg, #04060f 0%, #0b1230 55%, #1e2850 100%); }
+html body .menu-lobby .ai-rival:has(.ai-rival-stage--bonus) { --cloud: #ffb3d040;
+    background: radial-gradient(1px 1px at 18% 14%, #fff, transparent), radial-gradient(1px 1px at 52% 10%, #ffe6f2, transparent), radial-gradient(1px 1px at 84% 20%, #fff, transparent),
+        radial-gradient(ellipse 55% 35% at 50% 100%, #ff9bb8aa, transparent 70%), linear-gradient(180deg, #170b28 0%, #45204f 46%, #a3487c 80%, #e07a96 100%); }
+html body .menu-lobby .ai-rival:has(.ai-rival-stage--fury) { --cloud: #2a0a0666;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L0 38 L30 30 L52 40 L80 18 L104 34 L128 26 L150 42 L182 22 L200 10 L222 28 L248 20 L272 36 L300 24 L326 38 L352 28 L378 40 L400 32 L400 60 Z' fill='%23160504'/%3E%3C/svg%3E") bottom / 100% 34% no-repeat, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L0 44 L40 34 L70 46 L110 30 L140 42 L176 34 L210 46 L250 30 L290 44 L330 32 L370 46 L400 38 L400 60 Z' fill='%23360b05'/%3E%3C/svg%3E") bottom / 100% 42% no-repeat,
+        radial-gradient(ellipse 42% 30% at 50% 78%, #ffb04acc, transparent 70%),
+        radial-gradient(ellipse 70% 40% at 20% 10%, #00000080, transparent 70%), radial-gradient(ellipse 60% 35% at 85% 18%, #00000066, transparent 70%),
+        linear-gradient(180deg, #0b0202 0%, #2c0905 40%, #7a240c 70%, #d4581c 86%, #ff8a3a 100%); }
+/* Fury : braises qui montent (calque déplacé par transform, peu coûteux) */
+html body .menu-lobby .ai-rival-stage--fury::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 200%; z-index: 0; pointer-events: none;
+    background-image: radial-gradient(1.6px 1.6px at 12% 20%, #ffb36a, transparent), radial-gradient(1.2px 1.2px at 28% 64%, #ff7a2a, transparent),
+        radial-gradient(2px 2px at 44% 36%, #ffd08a, transparent), radial-gradient(1.2px 1.2px at 63% 82%, #ff8a3a, transparent),
+        radial-gradient(1.6px 1.6px at 78% 48%, #ffb36a, transparent), radial-gradient(1.2px 1.2px at 91% 14%, #ff7a2a, transparent),
+        radial-gradient(1.4px 1.4px at 54% 6%, #ffc07a, transparent), radial-gradient(1.2px 1.2px at 6% 88%, #ff9a4a, transparent);
+    background-size: 100% 50%; animation: ai-embers 9s linear infinite; opacity: .9; }
+@keyframes ai-embers { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+@media (prefers-reduced-motion: reduce) { html body .menu-lobby .ai-rival-stage--fury::before { animation: none; } }
+@media (prefers-reduced-motion: reduce) { html body .menu-lobby .ai-rival-stage::after { animation: none; } }
+/* Île de l’accueil au loin (image pré-rendue : aucun coût 3D), qui flotte et dérive doucement */
+html body .menu-lobby .ai-rival-island { position: absolute; z-index: 0; left: 6%; top: 20%; width: 21%; aspect-ratio: 412 / 482; pointer-events: none;
+    background: url('/rival/island.webp') center / contain no-repeat; opacity: .74; filter: saturate(.8);
+    animation: ai-island-float 9s ease-in-out infinite alternate; will-change: transform; }
+@keyframes ai-island-float { 0% { transform: translate(0, 0) rotate(-1deg); } 50% { transform: translate(10px, -7px) rotate(.5deg); } 100% { transform: translate(18px, 3px) rotate(1.5deg); } }
+html body .menu-lobby .ai-rival-stage--hardcore .ai-rival-island { opacity: .62; filter: saturate(.6) brightness(.65) hue-rotate(10deg); }
+html body .menu-lobby .ai-rival-stage--bonus .ai-rival-island { filter: saturate(.85) brightness(.9) sepia(.15) hue-rotate(-20deg); }
+html body .menu-lobby .ai-rival-stage--fury .ai-rival-island { opacity: .75; filter: saturate(.9) brightness(.8) sepia(.35) hue-rotate(-25deg); }
+html body .menu-lobby .ai-rival-stage .ai-rival-avatar { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: reduce) { html body .menu-lobby .ai-rival-island { animation: none; } }
+/* Le ciel remplit toute la carte du rival : plus de bandes sombres en haut et en bas */
+/* Cadre : liseré fin à la couleur du mode, reflet intérieur et halo doux — la carte devient une fenêtre */
+html body .menu-lobby .ai-rival:has(.ai-rival-stage) { border: 0; box-shadow: 0 0 0 1px rgba(var(--rival-rgb), .5), inset 0 0 0 1px #ffffff1f, inset 0 1px 0 #ffffff33, 0 0 26px -8px rgba(var(--rival-rgb), .55), 0 18px 34px -20px #000c; }
+html body .menu-lobby .ai-rival .ai-rival-stage { height: 196px; }
+html body .menu-lobby .ai-rival .ai-rival-dialogue { position: relative; z-index: 1; margin-top: -26px; padding: 0 12px 12px; }
+html body .menu-lobby .ai-rival .ai-rival-mode { padding: 3px 10px; border-radius: 999px; background: #0d0b1a55; color: #fff4ea; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+
+/* Retouches finales des ciels du duel IA */
+/* Normal : soleil couchant et son halo à l’horizon */
+html body .menu-lobby .ai-rival-stage--hard::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(circle at 80% 76%, #fff3df 0 13px, #ffd9b0aa 15px, #ffc39a44 34px, transparent 70px),
+        radial-gradient(ellipse 60% 16% at 80% 80%, #ffd2a866, transparent 70%); }
+/* Difficile : voie lactée en diagonale + étoiles qui scintillent */
+html body .menu-lobby .ai-rival-stage--hardcore::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(1.4px 1.4px at 8% 52%, #fff, transparent), radial-gradient(1px 1px at 38% 58%, #e6ecff, transparent), radial-gradient(1.3px 1.3px at 62% 50%, #fff, transparent),
+        radial-gradient(1px 1px at 94% 60%, #dfe6ff, transparent), radial-gradient(1.2px 1.2px at 50% 26%, #fff, transparent), radial-gradient(1px 1px at 70% 8%, #fff, transparent),
+        linear-gradient(155deg, transparent 30%, #8da0ff1c 42%, #c9d2ff26 48%, #8da0ff1c 54%, transparent 66%);
+    animation: ai-twinkle 3.6s ease-in-out infinite alternate; }
+@keyframes ai-twinkle { from { opacity: .55; } to { opacity: 1; } }
+/* Tourment : cartes du jeu qui flottent dans le ciel */
+html body .menu-lobby .ai-rival-stage--bonus::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Cg opacity='.55'%3E%3Crect x='300' y='30' width='22' height='31' rx='4' fill='%23e9b93c' transform='rotate(18 311 45)'/%3E%3Crect x='250' y='70' width='16' height='23' rx='3' fill='%234b7fd6' transform='rotate(-14 258 81)'/%3E%3Crect x='345' y='92' width='14' height='20' rx='3' fill='%234fb38a' transform='rotate(26 352 102)'/%3E%3Crect x='190' y='22' width='12' height='17' rx='2' fill='%23d9505c' transform='rotate(-24 196 30)'/%3E%3Crect x='60' y='16' width='13' height='18' rx='2' fill='%238b6fd6' transform='rotate(12 66 25)'/%3E%3C/g%3E%3C/svg%3E") center / cover no-repeat; animation: ai-cards-float 7s ease-in-out infinite alternate; }
+@keyframes ai-cards-float { from { transform: translateY(4px) rotate(-.6deg); } to { transform: translateY(-6px) rotate(.6deg); } }
+@media (prefers-reduced-motion: reduce) { html body .menu-lobby .ai-rival-stage--hardcore::before, html body .menu-lobby .ai-rival-stage--bonus::before { animation: none; } }
