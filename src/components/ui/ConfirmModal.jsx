@@ -11,7 +11,8 @@ export default function ConfirmModal({
     message = "Êtes-vous sûr ?",
     confirmText = "Confirmer",
     cancelText = "Annuler",
-    variant = "danger"
+    variant = "danger",
+    className
 }) {
     return (
         <ModalShell
@@ -21,6 +22,7 @@ export default function ConfirmModal({
             describedBy="confirm-modal-message"
             maxWidth="max-w-sm"
             zIndex="z-[100]"
+            className={className}
         >
                         {/* Ambient Glow Background */}
                         <div className={cn(

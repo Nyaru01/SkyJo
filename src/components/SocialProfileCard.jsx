@@ -12,7 +12,7 @@ export default function SocialProfileCard({ profile, isEditing, name, onNameChan
                     <input autoFocus aria-label="Votre pseudo" value={name} onChange={event => onNameChange(event.target.value)} onBlur={onSave} onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); onCancel(); } }} />
                     <button type="submit" aria-label="Enregistrer mon pseudo" onMouseDown={event => event.preventDefault()}><Check size={20} aria-hidden="true" /></button>
                 </form> : <h2><button type="button" onClick={onEdit} aria-label="Modifier mon pseudo"><span>{profile.name || 'Votre profil'}</span><Edit2 size={16} aria-hidden="true" /></button></h2>}
-                <div className="social-profile-id"><span>SkyID</span><code>{profile.vibeId || 'En attente'}</code><button type="button" onClick={onCopy} disabled={!profile.vibeId} aria-label={copied ? 'SkyID copié' : 'Copier mon SkyID'}>{copied ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}</button><span className="sr-only" role="status">{copied ? 'SkyID copié' : ''}</span></div>
+                <div className="social-profile-id"><span>Vesper ID</span><code>{profile.vibeId || 'En attente'}</code><button type="button" onClick={onCopy} disabled={!profile.vibeId} aria-label={copied ? 'Vesper ID copié' : 'Copier mon Vesper ID'}>{copied ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}</button><span className="sr-only" role="status">{copied ? 'Vesper ID copié' : ''}</span></div>
             </div>
         </div>
         <div className="social-account">

@@ -57,7 +57,7 @@ html body .menu-lobby :is(.play-menu, .profile-hub, .profile-hub-links, .social-
    P = html body.lobby-theme :is(.menu-lobby, .game-lobby, <dialog du lobby>)
    Les fenêtres (ModalShell, plan de carrière, guide) ne sont repeintes que si
    l'accueil ou un menu est affiché : en partie, elles gardent leur thème sombre. */
-html body.lobby-theme :is(.modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) {
+html body.lobby-theme :is(.modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) {
     --ml-ink: #38364e; --ml-ink-strong: #2f2c44; --ml-muted: #676177; --ml-soft: #7d7088;
     --ml-line: #77718b38; --ml-line-strong: #77718b55;
     --ml-paper: #fff7eb8c; --ml-paper-strong: #fff8efcc; --ml-paper-hover: #fffaf2b8;
@@ -67,7 +67,7 @@ html body.lobby-theme :is(.modal-surface:not(.daily-challenge-dialog, .harvest-g
     color: var(--ml-ink);
 }
 /* Panneau des fenêtres */
-html body.lobby-theme :is(.modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog > .relative) {
+html body.lobby-theme :is(.modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog > .relative) {
     background: linear-gradient(170deg, #fbf3ec 0%, #f1e6ea 55%, #e6e2ef 100%) !important;
     border: 1px solid #fff6e9 !important;
     box-shadow: 0 24px 48px -20px #4a3d5c88, inset 0 1px 0 #fffaf2 !important;
@@ -83,7 +83,7 @@ html body .menu-lobby .fixed > .absolute.inset-0:first-child {
 html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface, .career-dialog, .lobby-dialog) .modal-close-button { color: var(--ml-soft) !important; }
 
 /* ---------- Surfaces génériques (Tailwind sombre → papier pastel) ---------- */
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is(.glass-premium, .glass-dark) {
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is(.glass-premium, .glass-dark) {
     color: var(--ml-ink) !important;
     background: var(--ml-paper) !important;
     border-color: #fff6e9a6 !important;
@@ -94,25 +94,25 @@ html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-ch
 }
 html body .menu-lobby :is(.glass-premium, .glass-dark):hover { box-shadow: var(--ml-shadow-hover) !important; }
 
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is(
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is(
     [class^="bg-slate-7"], [class*=" bg-slate-7"], [class^="bg-slate-8"], [class*=" bg-slate-8"],
     [class^="bg-slate-9"], [class*=" bg-slate-9"], [class~="bg-[#0f172a]"], [class~="bg-black/50"],
     [class~="bg-emerald-950"], [class~="bg-fuchsia-950"], [class~="dark:bg-slate-800"], [class~="dark:bg-slate-900"],
     [class~="bg-white"], [class~="bg-slate-50"], [class~="bg-slate-100"], [class~="bg-sky-50"], [class~="bg-emerald-50"], [class~="bg-amber-50"]
 ):not(.absolute.inset-0) { background-color: var(--ml-paper-strong) !important; }
 
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is(
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is(
     [class~="bg-white/5"], [class~="bg-white/[0.02]"], [class~="bg-white/[0.03]"], [class~="bg-white/10"], [class~="bg-white/20"],
     [class~="bg-white/30"], [class~="bg-white/50"], [class~="bg-white/80"], [class~="bg-white/90"]
 ) { background-color: var(--ml-paper) !important; }
 
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class~="hover:bg-white/5"], [class~="hover:bg-white/10"], [class~="hover:bg-white/[0.04]"], [class~="hover:bg-slate-700/60"]):hover {
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class~="hover:bg-white/5"], [class~="hover:bg-white/10"], [class~="hover:bg-white/[0.04]"], [class~="hover:bg-slate-700/60"]):hover {
     background-color: var(--ml-paper-hover) !important;
 }
 
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) [class*="bg-"][class*="-900/"] { background-color: #fff4ea99 !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) [class*="bg-"][class*="-900/"] { background-color: #fff4ea99 !important; }
 
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class*="from-slate-8"], [class*="from-slate-9"], [class*="to-slate-9"], [class*="from-fuchsia-950"]):not(.absolute) {
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class*="from-slate-8"], [class*="from-slate-9"], [class*="to-slate-9"], [class*="from-fuchsia-950"]):not(.absolute) {
     background-image: linear-gradient(135deg, #fff8efcc, #ece2eecc);
 }
 /* Dégradés sombres posés sur une image (ex. « Prêt à jouer ? ») : voile lavande */
@@ -121,7 +121,7 @@ html body.lobby-theme :is(.menu-lobby, .game-lobby, .lobby-dialog, .modal-surfac
     --tw-gradient-to: #5b4d6e00 var(--tw-gradient-to-position);
 }
 
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is(
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is(
     [class~="border-white/5"], [class~="border-white/10"], [class~="border-white/20"], [class~="border-white/30"],
     [class~="border-slate-200"], [class~="border-slate-300"],
     [class~="border-slate-700"], [class~="border-slate-800"], [class~="border-slate-900"],
@@ -130,17 +130,17 @@ html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-ch
 html body .menu-lobby [class~="hover:border-white/10"]:hover { border-color: var(--ml-line-strong) !important; }
 
 /* ---------- Typo : encre douce ---------- */
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is(
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is(
     [class~="text-white"], [class~="text-white/90"], [class~="text-slate-100"], [class~="text-slate-200"],
     [class~="dark:text-slate-100"], [class~="dark:text-slate-200"], [class~="dark:text-white"], [class~="text-sky-100"],
     [class~="text-amber-100"], [class~="text-emerald-100"], [class~="text-indigo-100/90"]
 ) { color: var(--ml-ink) !important; }
 
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is(
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is(
     [class~="text-slate-300"], [class~="dark:text-slate-300"], [class~="text-white/70"], [class~="text-white/60"]
 ) { color: #5a5269 !important; }
 
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is(
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is(
     [class~="text-slate-400"], [class~="text-slate-500"], [class~="dark:text-slate-400"], [class~="dark:text-slate-500"],
     [class~="text-white/40"], [class~="text-white/20"], [class~="text-sky-200/60"]
 ) { color: var(--ml-muted) !important; }
@@ -148,40 +148,40 @@ html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-ch
 html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface, .career-dialog, .lobby-dialog) [class~="hover:text-white"]:hover { color: var(--ml-ink-strong) !important; }
 
 /* Accents lisibles sur fond clair */
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class*="text-amber-3"], [class*="text-amber-4"], [class*="text-amber-5"], [class*="text-yellow-3"], [class*="text-yellow-5"], [class~="dark:text-amber-400"]) { color: #94652c !important; }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class*="text-emerald-3"], [class*="text-emerald-4"], [class*="text-emerald-5"], [class*="text-green-4"], [class*="text-green-5"], [class~="dark:text-emerald-400"]) { color: #3f7563 !important; }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class*="text-red-3"], [class*="text-red-4"], [class*="text-rose-3"], [class*="text-rose-4"], [class*="text-pink-3"]) { color: #a24f5f !important; }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class*="text-purple-3"], [class*="text-purple-4"], [class*="text-fuchsia-3"], [class*="text-fuchsia-4"], [class~="dark:text-purple-400"]) { color: #7a5793 !important; }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class*="text-sky-3"], [class*="text-sky-4"], [class*="text-indigo-3"], [class*="text-indigo-4"], [class*="text-blue-4"], [class*="text-cyan-3"], [class~="dark:text-blue-400"], [class~="text-skyjo-blue"]) { color: #5c5480 !important; }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class*="text-orange-3"], [class*="text-orange-5"]) { color: #a05d36 !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class*="text-amber-3"], [class*="text-amber-4"], [class*="text-amber-5"], [class*="text-yellow-3"], [class*="text-yellow-5"], [class~="dark:text-amber-400"]) { color: #94652c !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class*="text-emerald-3"], [class*="text-emerald-4"], [class*="text-emerald-5"], [class*="text-green-4"], [class*="text-green-5"], [class~="dark:text-emerald-400"]) { color: #3f7563 !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class*="text-red-3"], [class*="text-red-4"], [class*="text-rose-3"], [class*="text-rose-4"], [class*="text-pink-3"]) { color: #a24f5f !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class*="text-purple-3"], [class*="text-purple-4"], [class*="text-fuchsia-3"], [class*="text-fuchsia-4"], [class~="dark:text-purple-400"]) { color: #7a5793 !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class*="text-sky-3"], [class*="text-sky-4"], [class*="text-indigo-3"], [class*="text-indigo-4"], [class*="text-blue-4"], [class*="text-cyan-3"], [class~="dark:text-blue-400"], [class~="text-skyjo-blue"]) { color: #5c5480 !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class*="text-orange-3"], [class*="text-orange-5"]) { color: #a05d36 !important; }
 
 /* index.css force toutes les teintes text-slate-* en clair (!important) : on les ramène à l'encre */
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class~="text-slate-700"], [class~="text-slate-800"], [class~="text-slate-900"], [class~="text-slate-950"]) { color: var(--ml-ink) !important; }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) [class~="text-slate-600"] { color: var(--ml-muted) !important; }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class*="text-pink-1"], [class*="text-pink-2"], [class*="text-rose-1"], [class*="text-rose-2"], [class*="text-purple-1"], [class*="text-purple-2"], [class*="text-indigo-2"], [class*="text-amber-2"]) { color: #8a4e66 !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class~="text-slate-700"], [class~="text-slate-800"], [class~="text-slate-900"], [class~="text-slate-950"]) { color: var(--ml-ink) !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) [class~="text-slate-600"] { color: var(--ml-muted) !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class*="text-pink-1"], [class*="text-pink-2"], [class*="text-rose-1"], [class*="text-rose-2"], [class*="text-purple-1"], [class*="text-purple-2"], [class*="text-indigo-2"], [class*="text-amber-2"]) { color: #8a4e66 !important; }
 body.lobby-theme .career-dialog-backdrop { background: radial-gradient(ellipse at 30% 20%, #f7e2ce, transparent 60%), linear-gradient(180deg, #e9cfd1, #c6cce2) !important; }
 /* Calques décoratifs sombres (dégradés « nuit ») : inutiles sur papier, on les retire */
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) .absolute.pointer-events-none[class*="bg-gradient"]:is([class*="via-slate-9"], [class*="from-slate-9"], [class*="to-slate-9"], [class*="from-indigo-9"], [class*="from-purple-9"], [class*="from-fuchsia-9"], [class*="to-cyan-9"], [class*="via-black"], [class*="from-black"]) { opacity: 0 !important; }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class~="ring-white/5"], [class~="ring-white/10"]) { --tw-ring-color: #fff6e980; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) .absolute.pointer-events-none[class*="bg-gradient"]:is([class*="via-slate-9"], [class*="from-slate-9"], [class*="to-slate-9"], [class*="from-indigo-9"], [class*="from-purple-9"], [class*="from-fuchsia-9"], [class*="to-cyan-9"], [class*="via-black"], [class*="from-black"]) { opacity: 0 !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class~="ring-white/5"], [class~="ring-white/10"]) { --tw-ring-color: #fff6e980; }
 /* Boutons en dégradé violet/indigo → même lavande que « Entrer dans le jeu » */
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) [class][class]:is([class~="from-indigo-500"], [class~="from-indigo-600"], [class~="from-purple-500"], [class~="from-purple-600"], [class~="from-violet-500"], [class~="from-violet-600"]) {
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) [class][class]:is([class~="from-indigo-500"], [class~="from-indigo-600"], [class~="from-purple-500"], [class~="from-purple-600"], [class~="from-violet-500"], [class~="from-violet-600"]) {
     background: linear-gradient(125deg, #81708f, #655a7d) !important;
     border-color: #8c7d9d !important;
     box-shadow: 0 6px 0 #6a5c7a29, 0 13px 19px -13px #58466399, inset 0 1px 0 #fff7ed44 !important;
     color: #fff7ef !important;
 }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) [class][class]:is([class~="from-indigo-500"], [class~="from-indigo-600"], [class~="from-purple-500"], [class~="from-purple-600"], [class~="from-violet-500"], [class~="from-violet-600"]):hover { background: linear-gradient(125deg, #8c799a, #716188) !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) [class][class]:is([class~="from-indigo-500"], [class~="from-indigo-600"], [class~="from-purple-500"], [class~="from-purple-600"], [class~="from-violet-500"], [class~="from-violet-600"]):hover { background: linear-gradient(125deg, #8c799a, #716188) !important; }
 /* Pastilles sans couleur propre posées sur fond papier */
 html body.lobby-theme .menu-lobby [class~="bg-white/5"]:not([class*="text-"]) { color: #5a5269 !important; }
 /* Bleu Skyjo → lavande du bouton « Entrer dans le jeu » */
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) [class~="bg-skyjo-blue"] {
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) [class~="bg-skyjo-blue"] {
     background: linear-gradient(125deg, #81708f, #655a7d) !important;
     border-color: #8c7d9d;
     box-shadow: 0 6px 0 #6a5c7a29, 0 13px 19px -13px #58466399, inset 0 1px 0 #fff7ed44 !important;
     color: #fff7ef;
 }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) [class~="bg-skyjo-blue"]:hover { background: linear-gradient(125deg, #8c799a, #716188) !important; }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class~="bg-skyjo-blue/10"], [class~="bg-skyjo-blue/5"]) { background-color: #e9dfee !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) [class~="bg-skyjo-blue"]:hover { background: linear-gradient(125deg, #8c799a, #716188) !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class~="bg-skyjo-blue/10"], [class~="bg-skyjo-blue/5"]) { background-color: #e9dfee !important; }
 
 /* Pastilles / boutons saturés : on garde le texte blanc d'origine */
 html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface, .career-dialog, .lobby-dialog) :is(
@@ -278,9 +278,9 @@ html body .menu-lobby .career-summary .career-progress-button { background: tran
 html body .menu-lobby .career-progress-track > * { background: linear-gradient(90deg, #e2a983, #c08497, #8a77a6) !important; box-shadow: 0 0 8px #c0849766; }
 
 /* ---------- Typographie : graisses de l'accueil (500–650), pas de « font-black » criard ---------- */
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) .font-black { font-weight: 650; }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) .font-extrabold { font-weight: 600; }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is(h1, h2) { font-weight: 550; letter-spacing: -.02em; color: #46415a; text-shadow: none; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) .font-black { font-weight: 650; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) .font-extrabold { font-weight: 600; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is(h1, h2) { font-weight: 550; letter-spacing: -.02em; color: #46415a; text-shadow: none; }
 html body .menu-lobby :is(h1, h2):is(.uppercase, [class*="text-4xl"], [class*="text-5xl"]) { font-weight: 500; letter-spacing: .14em; filter: none; }
 html body .menu-lobby :is(h1, h2):is([class*="text-4xl"], [class*="text-5xl"]) { font-size: clamp(28px, 8vw, 34px); }
 html body .menu-lobby [class*="drop-shadow"] { filter: none; }
@@ -617,7 +617,7 @@ html body.lobby-theme .daily-challenge-footer > button:focus-visible { outline-c
 html body.lobby-theme .daily-challenge-dialog .modal-close-button { color: #7d7088; background: #fff7eb8c; border-radius: 50%; }
 
 /* =====================================================================
-   DÉFI DE SAISON — guide plein écran (.harvest-guide / .seasonal-rules)
+   DÉFI DE SAISON — guide plein écran (.harvest-guide / .seasonal-rules, .confirm-night)
    ===================================================================== */
 html body.lobby-theme .fixed:has(> .seasonal-rules-fullscreen) {
     background: radial-gradient(ellipse at 0 30%, #f7e2ce, transparent 60%), linear-gradient(180deg, #f5d7c7 0%, #e9cfd1 34%, #d5cce0 68%, #c6cce2 100%) !important;
@@ -637,7 +637,7 @@ html body.lobby-theme .harvest-footnotes svg { color: #a0703c; }
 html body.lobby-theme .harvest-footer { background: #f3e8ecd9; border-color: #77718b26; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 html body.lobby-theme .harvest-footer button { background: linear-gradient(125deg, #e6b98a, #cf9762); color: #4a3220; box-shadow: 0 6px 0 #a3704429, 0 13px 19px -13px #8f5e3599, inset 0 1px 0 #ffffff55; }
 html body.lobby-theme .harvest-footer button:disabled { background: #e7dde6; color: #7d7088; box-shadow: none; }
-html body.lobby-theme :is(.harvest-guide, .seasonal-rules) .modal-close-button { color: #7d7088; background: #fff7eb8c; border: 1px solid #fff6e9a6; border-radius: 50%; }
+html body.lobby-theme :is(.harvest-guide, .seasonal-rules, .confirm-night) .modal-close-button { color: #7d7088; background: #fff7eb8c; border: 1px solid #fff6e9a6; border-radius: 50%; }
 /* Survols sombres → papier clair */
 html body.lobby-theme :is(.menu-lobby, .game-lobby, .lobby-dialog, .modal-surface) :is([class~="hover:bg-slate-700"], [class~="hover:bg-slate-800"], [class~="hover:bg-slate-900"], [class~="dark:hover:bg-slate-700"], [class~="dark:hover:bg-slate-800"], [class~="dark:hover:bg-slate-900"], [class~="hover:bg-slate-800/50"], [class~="dark:hover:bg-slate-800/50"]):hover {
     background-color: #fffaf2d9 !important;
@@ -744,10 +744,10 @@ html body.lobby-theme .game-lobby .fixed.inset-0 [role="dialog"]:is([class*="fro
     box-shadow: 0 34px 60px -24px #2a2038cc, 0 10px 20px -12px #2a203877, inset 0 1px 0 #fffaf2 !important;
 }
 /* Teintes claires (-200 / -300) prévues pour fond sombre : versions foncées lisibles sur fond clair. */
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class*="text-sky-2"], [class*="text-cyan-2"], [class*="text-blue-2"]) { color: #24658f !important; }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class*="text-emerald-2"], [class*="text-green-2"], [class*="text-teal-2"]) { color: #24704f !important; }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) :is([class*="text-violet-2"], [class*="text-violet-3"], [class*="text-violet-1"]) { color: #5b3f8c !important; }
-html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules), .career-dialog, .lobby-dialog) [role="dialog"] [class*="text-amber-2"] { color: #8a5a12 !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class*="text-sky-2"], [class*="text-cyan-2"], [class*="text-blue-2"]) { color: #24658f !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class*="text-emerald-2"], [class*="text-green-2"], [class*="text-teal-2"]) { color: #24704f !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) :is([class*="text-violet-2"], [class*="text-violet-3"], [class*="text-violet-1"]) { color: #5b3f8c !important; }
+html body.lobby-theme :is(.menu-lobby, .game-lobby, .modal-surface:not(.daily-challenge-dialog, .harvest-guide, .seasonal-rules, .confirm-night), .career-dialog, .lobby-dialog) [role="dialog"] [class*="text-amber-2"] { color: #8a5a12 !important; }
 
 /* =====================================================================
    FOND DE JEU « CIEL FRAIS » (fond « Original »)

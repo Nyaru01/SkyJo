@@ -9,7 +9,7 @@ const FURY_ICONS = { quake: Activity, curse: Skull, fog: CloudFog, tornado: Torn
 
 const plural = n => (n > 1 ? 's' : '');
 // Durée du bandeau de Fury reçue.
-const NOTICE_MS = 4500;
+const NOTICE_MS = 2500;
 // Effets three.js, chargés seulement quand une Fury est jouée.
 const FuryFX3D = lazy(() => import('./FuryFX3D'));
 
@@ -99,8 +99,11 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names, onGainSeen }) 
     const [gainEvent, setGainEvent] = useState(null);
     if (lastFury?.at && lastFury.at !== furyEvent?.at) setFuryEvent(lastFury);
     if (lastGain?.at && lastGain.at !== gainEvent?.at) setGainEvent(lastGain);
+    // Événements déjà là à l'affichage (reprise d'une partie, retour de pause) : déjà vus, on ne les rejoue pas.
+    const [past] = useState(() => ({ fury: lastFury?.at, gain: lastGain?.at }));
+    useEffect(() => { if (past.gain) onGainSeen?.(past.gain); }, [past, onGainSeen]);
     useEffect(() => {
-        if (!furyEvent?.at) return undefined;
+        if (!furyEvent?.at || furyEvent.at === past.fury) return undefined;
         const t0 = setTimeout(() => setShown(furyEvent), 0);
         const target = furyEvent.targetIndex === myIndex ? '.skyjo-hand:not(.skyjo-hand--opponent)' : '.skyjo-hand--opponent';
         const el = document.querySelector(target);
@@ -109,7 +112,11 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names, onGainSeen }) 
         // Fury adverse : après l’onomatopée, un bandeau compact dit ce qu’on a reçu, puis s’efface seul.
         const theirs = furyEvent.by !== myIndex;
         const t1 = setTimeout(() => setShown(null), theirs ? 1000 : 1700);
-        const t2 = theirs ? setTimeout(() => setAnnounce(furyEvent), 900) : null;
+        // Le bandeau se pose au milieu de la zone Pioche / Défausse (position mesurée à l'affichage).
+        const t2 = theirs ? setTimeout(() => {
+            const pile = document.querySelector('.skyjo-pile-zone')?.getBoundingClientRect();
+            setAnnounce({ ...furyEvent, top: pile && pile.height ? Math.round(pile.top + pile.height / 2) : null });
+        }, 900) : null;
         const t5 = theirs ? setTimeout(() => setAnnounce(cur => (cur?.at === furyEvent.at ? null : cur)), 900 + NOTICE_MS) : null;
         // Votre Fury : l'effet 3D éclate sur le plateau visé.
         let t3 = null, t4 = null;
@@ -120,9 +127,9 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names, onGainSeen }) 
             t4 = setTimeout(() => setBoardFx(null), 2500);
         }
         return () => { clearTimeout(t0); clearTimeout(t1); if (t2) clearTimeout(t2); if (t3) clearTimeout(t3); if (t4) clearTimeout(t4); if (t5) clearTimeout(t5); };
-    }, [furyEvent, myIndex, reduce]);
+    }, [furyEvent, myIndex, reduce, past]);
     useEffect(() => {
-        if (!gainEvent?.at) return undefined;
+        if (!gainEvent?.at || gainEvent.at === past.gain) return undefined;
         const mine = gainEvent.by === myIndex;
         // Votre Fury s’affiche d’abord ; la carte piochée n’apparaît qu’après « Continuer » (voir VirtualGame).
         const t0 = setTimeout(() => setGain(gainEvent), 0);
@@ -130,7 +137,7 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names, onGainSeen }) 
         const t1 = mine ? null : setTimeout(() => setGain(null), 2400);
         if (mine) { try { navigator.vibrate?.([30, 40, 30]); } catch { /* indisponible */ } }
         return () => { clearTimeout(t0); if (t1) clearTimeout(t1); };
-    }, [gainEvent, myIndex]);
+    }, [gainEvent, myIndex, past]);
     const closeGain = () => { onGainSeen?.(gain?.at ?? null); setGain(null); };
     const word = shown ? (shown.blocked ? 'Bloqué !' : FURY_TYPES[shown.type].bubble) : '';
     const by = shown ? names[shown.by] : '';
@@ -152,7 +159,7 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names, onGainSeen }) 
                 const byName = names[announce.by] === 'IA' ? 'l’IA' : names[announce.by];
                 const where = announce.type === 'shield' ? 'Sur son plateau' : announce.blocked ? 'Attaque bloquée' : 'Sur votre plateau';
                 // Bandeau compact : ce qu’on a reçu, sans fond plein écran ni bouton. Toucher le ferme plus tôt.
-                return <Motion.button type="button" key={`announce-${announce.at}`} className={`fury-notice fury-card--${fx}`} role="status" aria-live="polite"
+                return <Motion.button type="button" key={`announce-${announce.at}`} className={`fury-notice fury-card--${fx}`} role="status" aria-live="polite" style={announce.top ? { top: announce.top } : undefined}
                     aria-label={`Fury de ${byName} : ${FURY_TYPES[announce.type].title}. ${furyExplain(announce, names[announce.by])}`} onClick={() => setAnnounce(null)}
                     initial={reduce ? { opacity: 0 } : { opacity: 0, y: -16, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={reduce ? { opacity: 0 } : { opacity: 0, y: -12, transition: { duration: 0.25 } }} transition={{ duration: 0.35, ease: [0.2, 0.8, 0.25, 1] }}>

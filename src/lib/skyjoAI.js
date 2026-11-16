@@ -740,11 +740,24 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
         }
     }
 
+    // --- URGENT REPLACEMENTS (High Priority) ---
+    // A visible 10-12 goes before any *potential* grouping below: placing a 0 on a 2 to start a pair
+    // while keeping a 12 made no sense. Immediate profitable clears were already taken above.
+    if (highest.index !== -1 && highest.value >= 10 && cardValue !== 20 && Number(cardValue) < highest.value) {
+        const lockedHigh = hand[highest.index]?.lockCount > 0;
+        if (!lockedHigh) return highest.index;
+    }
+
     // Check for column completion opportunities first
     for (const idx of [...revealedIndices, ...hiddenIndices]) {
         if (hand[idx] === null) continue;
         // RULE: Never replace a locked card
         if (hand[idx].lockCount > 0) continue;
+        // A merely potential pair is not worth sacrificing a visible card when a much worse one
+        // (6+ points higher) could take the drawn card instead.
+        if (hand[idx].isRevealed && highest.index !== -1 && highest.index !== idx
+            && Number(highest.value) - Number(hand[idx].value) >= 6 && Number(cardValue) < Number(highest.value)
+            && !completesColumnImmediately(hand, idx, cardValue, difficulty)) continue;
         // CRITICAL FIX: Never replace a card with the same value (waste of turn)
         if (hand[idx].isRevealed && hand[idx].value === cardValue) continue;
 

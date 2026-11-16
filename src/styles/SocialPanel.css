@@ -80,3 +80,46 @@
 .social-leaderboard-empty p { font-size: 13px; line-height: 1.5; color: #b8c6d9; }
 @media (max-width: 359px) { .social-profile-panel { padding: 16px; } .social-profile-avatar { width: 60px; height: 60px; border-radius: 20px; } .social-profile-name h2 { font-size: 23px; } .social-podium-panel { padding-left: 8px; padding-right: 8px; } .social-podium { gap: 6px; } .social-podium-player--1 .career-frame { width: 76px; height: 76px; } .social-podium-portrait .career-frame { max-width: 76px; } .social-podium .career-badge { font-size: 8px; } .social-podium-name { font-size: 13px; } .social-ranking-row { gap: 7px; padding-left: 10px; padding-right: 10px; } }
 @media (prefers-reduced-motion: reduce) { .social-leaderboard .career-frame img, .social-leaderboard .career-frame::before, .social-leaderboard .career-frame::after { animation: none; } }
+
+/* ===== Podium vivant : marches or / argent / bronze, entrée en cascade, couronne et halo du premier ===== */
+.social-podium-player { --medal: #c9d3e0; --medal-deep: #8e9aab; position: relative; padding-bottom: 0 !important; animation: podium-in .6s cubic-bezier(.2, .8, .25, 1) both; }
+.social-podium-player--1 { --medal: #f0cf8e; --medal-deep: #b98a3e; animation-delay: .35s; background: none !important; }
+.social-podium-player--2 { animation-delay: .15s; }
+.social-podium-player--3 { --medal: #e0ad84; --medal-deep: #a46a43; animation-delay: .5s; }
+@keyframes podium-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+html body .social-podium-panel .social-podium-portrait .career-frame { border: 2px solid var(--medal) !important; box-shadow: 0 0 0 4px color-mix(in srgb, var(--medal) 18%, transparent), 0 10px 22px -10px #000; }
+html body .social-podium-panel .social-podium-player--1 .career-frame { box-shadow: 0 0 0 5px color-mix(in srgb, var(--medal) 22%, transparent), 0 0 28px -4px color-mix(in srgb, var(--medal) 70%, transparent), 0 12px 26px -10px #000; }
+.social-podium-portrait { margin-bottom: 12px !important; }
+html body .social-podium-panel .social-podium-player--1 .social-podium-name { color: var(--medal) !important; }
+/* Couronne qui flotte, halo tournant, étincelles */
+.social-podium-crown { position: absolute; top: -24px; left: 50%; z-index: 2; translate: -50% 0; color: #f0cf8e; filter: drop-shadow(0 2px 6px #b98a3e99); animation: podium-crown 2.8s ease-in-out infinite; }
+@keyframes podium-crown { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-4px) rotate(4deg); } }
+.social-podium-rays { position: absolute; inset: -34%; z-index: -1; border-radius: 50%; opacity: .55; pointer-events: none;
+    background: repeating-conic-gradient(from 0deg, #f0cf8e33 0deg 10deg, transparent 10deg 30deg); -webkit-mask: radial-gradient(circle, #000 30%, transparent 70%); mask: radial-gradient(circle, #000 30%, transparent 70%);
+    animation: podium-rays 14s linear infinite; }
+@keyframes podium-rays { to { transform: rotate(360deg); } }
+.social-podium-spark { position: absolute; z-index: 1; width: 5px; height: 5px; border-radius: 50%; background: #fff6dc; box-shadow: 0 0 8px 2px #f0cf8eaa; opacity: 0; animation: podium-spark 3.6s ease-in-out infinite; pointer-events: none; }
+@keyframes podium-spark { 0%, 70%, 100% { opacity: 0; transform: scale(.4); } 80% { opacity: 1; transform: scale(1); } 90% { opacity: .2; transform: scale(.6); } }
+/* Marches : hauteur selon la place, teinte de la médaille, numéro gravé */
+.social-podium-step { align-self: stretch; display: grid; place-items: center; margin-top: 10px; border-radius: 12px 12px 4px 4px; transform-origin: bottom;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--medal) 34%, #1d2133), color-mix(in srgb, var(--medal-deep) 18%, #151827));
+    border: 1px solid color-mix(in srgb, var(--medal) 45%, transparent); border-bottom: 0;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--medal) 55%, transparent), inset 0 -14px 20px -14px #00000080;
+    animation: podium-step .7s cubic-bezier(.2, .8, .25, 1) both; animation-delay: inherit; }
+.social-podium-player--1 .social-podium-step { height: 62px; }
+.social-podium-player--2 .social-podium-step { height: 44px; }
+.social-podium-player--3 .social-podium-step { height: 30px; }
+@keyframes podium-step { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.social-podium-step span { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; font-weight: 600; line-height: 1; color: var(--medal); text-shadow: 0 1px 0 #0000004d; }
+.social-podium-player--3 .social-podium-step span { font-size: 19px; }
+.social-podium { gap: 6px !important; }
+@media (prefers-reduced-motion: reduce) {
+    .social-podium-player, .social-podium-step, .social-podium-crown, .social-podium-rays, .social-podium-spark { animation: none !important; }
+    .social-podium-spark { display: none; }
+}
+/* Retouches : marches posées sur le bas du cadre, teintes plus franches, chiffres lisibles */
+html body .social-podium-panel { padding-bottom: 0 !important; overflow: hidden; }
+.social-podium-step { margin-top: 12px; background: linear-gradient(180deg, color-mix(in srgb, var(--medal) 58%, #1d2133), color-mix(in srgb, var(--medal-deep) 30%, #151827) 85%); }
+.social-podium-step span { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif !important; font-weight: 900 !important; font-size: 22px !important; color: #fffaf0 !important; text-shadow: 0 2px 0 color-mix(in srgb, var(--medal-deep) 80%, #000), 0 0 14px color-mix(in srgb, var(--medal) 60%, transparent) !important; }
+.social-podium-player--3 .social-podium-step span { font-size: 18px !important; }
+.social-podium.is-settled :is(.social-podium-player, .social-podium-step) { animation: none !important; }

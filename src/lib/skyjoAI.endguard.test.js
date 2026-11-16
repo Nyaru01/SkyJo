@@ -17,3 +17,16 @@ test("l'IA ne retourne pas sa dernière carte cachée quand elle perd nettement 
         assert.equal(decision.action, 'REPLACE', difficulty);
     }
 });
+
+test("l'IA remplace son 12 visible plutôt qu'un 2 pour amorcer une paire de 0", () => {
+    const X = () => H(5, false);
+    // index = colonne * 3 + rangée ; colonne 4 : 2, ?, 0 — poser le 0 sur le 2 ferait une paire de 0.
+    const ai = [H(6), X(), H(-1), H(3), H(12), X(), H(0), X(), X(), H(2), X(), H(0)];
+    const me = [H(-1), H(0), H(5), H(12), X(), X(), X(), X(), X(), H(-1), H(0), H(2)];
+    for (const turnPhase of ['REPLACE_OR_DISCARD', 'MUST_REPLACE']) {
+        const state = { phase: 'PLAYING', turnPhase, currentPlayerIndex: 1, drawnCard: H(0), isFuryMode: true,
+            drawPile: Array.from({ length: 80 }, () => X()), discardPile: [H(2)],
+            players: [{ id: 'human-1', hand: me }, { id: 'ai-1', hand: ai }] };
+        assert.deepEqual(decideCardAction(state, 'hard'), { action: 'REPLACE', cardIndex: 4 }, turnPhase);
+    }
+});

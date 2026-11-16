@@ -1756,8 +1756,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                             }} />
                         <span className="ol-ready"><i aria-hidden="true" />Prêt à jouer</span>
                     </div>
-                    <button type="button" className="ol-skyid" onClick={() => { if (userProfile?.vibeId) { navigator.clipboard?.writeText(userProfile.vibeId); toast.success('SkyID copié'); } }} aria-label={`Copier mon SkyID ${userProfile?.vibeId || ''}`}>
-                        <small>SkyID</small><b>{userProfile?.vibeId || '—'}</b><Copy size={12} aria-hidden="true" />
+                    <button type="button" className="ol-skyid" onClick={() => { if (userProfile?.vibeId) { navigator.clipboard?.writeText(userProfile.vibeId); toast.success('Vesper ID copié'); } }} aria-label={`Copier mon Vesper ID ${userProfile?.vibeId || ''}`}>
+                        <small>Vesper ID</small><b>{userProfile?.vibeId || '—'}</b><Copy size={12} aria-hidden="true" />
                     </button>
                 </section>
 
@@ -1972,6 +1972,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                         onClose={() => setShowExitConfirm(false)}
                         onConfirm={confirmExit}
                         title="Quitter la partie ?"
+                        className="confirm-night"
                         message="Êtes-vous sûr de vouloir quitter ? Vous serez déconnecté de la partie en cours."
                         confirmText="Quitter"
                         variant="danger"
@@ -2151,6 +2152,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                     onClose={() => setShowExitConfirm(false)}
                     onConfirm={confirmExit}
                     title="Quitter la partie ?"
+                    className="confirm-night"
                     message="Êtes-vous sûr de vouloir quitter ? Vous serez déconnecté de la partie en cours."
                     confirmText="Quitter"
                     variant="danger"
@@ -2893,6 +2895,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                 onClose={() => setShowExitConfirm(false)}
                 onConfirm={confirmExit}
                 title="Quitter la partie ?"
+                className="confirm-night"
                 message="Êtes-vous sûr de vouloir quitter ? Vous serez déconnecté de la partie en cours."
                 confirmText="Quitter"
                 variant="danger"
@@ -2922,11 +2925,13 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                                 <Play size={18} fill="currentColor" aria-hidden="true" />Reprendre
                             </button>
                             <p className="skyjo-pause-label">Règles</p>
-                            <div className="skyjo-pause-rules">
-                                <button type="button" onClick={() => setShowRulesModal(true)}><BookOpen size={16} aria-hidden="true" />Classique</button>
+                            {/* Seulement les règles du mode en cours */}
+                            <div className="skyjo-pause-rules skyjo-pause-rules--single">
                                 {furyOn
-                                    ? <button type="button" onClick={() => setFuryRulesOpen(true)}><Flame size={16} aria-hidden="true" />Fury</button>
-                                    : <button type="button" onClick={() => setShowBonusRules(true)}><Swords size={16} aria-hidden="true" />Tourment</button>}
+                                    ? <button type="button" onClick={() => setFuryRulesOpen(true)}><Flame size={16} aria-hidden="true" />Règles du mode Fury</button>
+                                    : effectiveIsBonusMode
+                                        ? <button type="button" onClick={() => setShowBonusRules(true)}><Swords size={16} aria-hidden="true" />Règles du mode Tourment</button>
+                                        : <button type="button" onClick={() => setShowRulesModal(true)}><BookOpen size={16} aria-hidden="true" />Règles classiques</button>}
                             </div>
                             <button type="button" onClick={() => confirmExit()} className="skyjo-pause-quit">Quitter la partie</button>
                             <p className="skyjo-pause-note"><Bot size={13} aria-hidden="true" />Votre progression est sauvegardée</p>

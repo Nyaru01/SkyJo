@@ -255,22 +255,16 @@ export default function SocialDashboard(props) {
                 </button>
             </div>
 
-            <AnimatePresence mode="wait">
-                {activeTab === 'friends' ? (
-                    <motion.div
-                        key="friends"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="space-y-6"
-                    >
+            {/* Les deux onglets restent montés : on bascule sans les recréer (sinon la page se vide un instant
+                et le podium rejoue son entrée, d'où un clignotement). */}
+            <div className="space-y-6" hidden={activeTab !== 'friends'}>
                         {/* Search Bar */}
                         <form onSubmit={handleSearch} className="relative group">
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Rechercher un SkyID ou un nom..."
+                                placeholder="Rechercher un Vesper ID ou un nom..."
                                 className="w-full bg-slate-800/50 border border-white/10 rounded-2xl pl-4 pr-4 py-4 text-white focus:outline-none focus:ring-2 focus:ring-skyjo-blue/30 transition-all backdrop-blur-md"
                             />
                             {isSearching && (
@@ -341,7 +335,7 @@ export default function SocialDashboard(props) {
                                         <div className="flex flex-col items-center gap-2">
                                             <Users className="w-8 h-8 text-slate-600 mb-2" />
                                             <p className="text-sm text-slate-400 font-medium">Pas encore d'amis à afficher.</p>
-                                            <p className="text-[10px] text-slate-600 uppercase">Partagez votre SkyID pour commencer !</p>
+                                            <p className="text-[10px] text-slate-600 uppercase">Partagez votre Vesper ID pour commencer !</p>
                                         </div>
                                     </Card>
                                 ) : (
@@ -467,21 +461,13 @@ export default function SocialDashboard(props) {
                                 )}
                             </div>
                         </div>
-                    </motion.div>
-                ) : (
-                    <motion.div
-                        key="leaderboard"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                    >
-                        <Leaderboard
-                            data={globalLeaderboard}
-                            currentUserId={userProfile.id}
-                        />
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            </div>
+            <div hidden={activeTab !== 'leaderboard'}>
+                <Leaderboard
+                    data={globalLeaderboard}
+                    currentUserId={userProfile.id}
+                />
+            </div>
 
             <AvatarSelector
                 isOpen={isAvatarSelectorOpen}
