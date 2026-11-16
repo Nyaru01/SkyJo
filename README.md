@@ -1,16 +1,87 @@
-# React + Vite
+# Vesper
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Jeu de cartes inspiré du Skyjo, en application web installable (PWA) : contre l'IA, en ligne entre amis, avec des modes
+spéciaux (Tourment, Fury), une carrière, des défis et un classement. Anciennement « Skyjo Score ».
 
-Currently, two official plugins are available:
+- Production : https://skyjo-scoring-production.up.railway.app
+- Dépôt : https://github.com/Nyaru01/SkyJo (branche `master`, **public**)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Documentation
 
-## React Compiler
+Vue d'ensemble de l'architecture (navigateur, serveur Railway, services externes) :
+[diagramme dans docs/SERVEUR.md](docs/SERVEUR.md#architecture).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Document | Contenu |
+| --- | --- |
+| [docs/JEU.md](docs/JEU.md) | Fonctionnement du jeu : règles, modes, IA, Fury, progression, défis, interface |
+| [docs/SERVEUR.md](docs/SERVEUR.md) | Serveur : API, temps réel (Socket.io), base de données, variables, déploiement, PWA |
+| [docs/AUTHENTIFICATION.md](docs/AUTHENTIFICATION.md) | Identité des joueurs et liaison du compte Google (Firebase) |
+| [docs/MODE_TOURMENT.md](docs/MODE_TOURMENT.md) | Cartes spéciales du mode Tourment |
+| [docs/AI_LOGIC.md](docs/AI_LOGIC.md) | Stratégies de l'IA |
+| [docs/security_plan.md](docs/security_plan.md) | Audit de sécurité et plan d'action |
+| [docs/vibrations.md](docs/vibrations.md) | Retours haptiques |
+| `docs/reference/` | Règles officielles du Skyjo (texte et PDF) |
+| `docs/archive/` | Anciens rapports, notes et candidats de logo (historique, plus maintenu) |
 
-## Expanding the ESLint configuration
+## Démarrer en local
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Prérequis : Node.js 20 ou plus (le serveur de production tourne en Node 20).
+
+```bash
+npm ci
+```
+
+```bash
+cp .env.example .env
+```
+
+Remplissez `.env` (voir [docs/SERVEUR.md](docs/SERVEUR.md#variables-denvironnement)). Il faut au minimum `DATABASE_URL`.
+Sans base locale, utilisez l'URL **publique** de la base Railway : vous travaillez alors sur les données de production.
+
+```bash
+npm run dev
+```
+
+- Front (Vite) : http://localhost:5173 ; il relaie `/api` et `/socket.io` vers le serveur.
+- Serveur (Express + Socket.io) : port 3000, relancé automatiquement à chaque modification (`node --watch`).
+
+## Scripts
+
+| Commande | Rôle |
+| --- | --- |
+| `npm run dev` | Serveur + front en parallèle |
+| `npm run build` | Build de production dans `dist/` (avec le service worker) |
+| `npm start` | Serveur seul, qui sert aussi `dist/` |
+| `npm test` | Tests (`node --test`) : moteur, IA, Fury, carrière, défis, serveur |
+| `npm run lint` | ESLint (des erreurs anciennes subsistent dans quelques gros fichiers) |
+
+## Arborescence
+
+```
+src/
+  components/      Écrans et composants React (VirtualGame.jsx = la partie)
+    virtual/       Plateau, cartes, pioche, Fury, IA
+    home/ ui/      Accueil (scène 3D), composants génériques
+  store/           État (Zustand) : profil, partie contre l'IA, partie en ligne, social
+  lib/             Logique pure et testée : moteur, IA, Fury, carrière, défis…
+  styles/          CSS par zone (Tabletop, Fury, GameOver, MenuLobby…)
+  sw.js            Service worker (cache, mises à jour, notifications)
+server/
+  index.js         Express + Socket.io + création de la base
+  routes/          API REST : social, feedback/admin, push
+  middleware/      Authentification admin, limitation de débit, validation
+public/            Fichiers statiques (manifest.json, icônes /brand, avatars, sons, musiques)
+scripts/           Outils (génération des dos de cartes)
+docs/              Documentation
+```
+
+## Publier une version
+
+Un push sur `master` déclenche le déploiement Railway (build Nixpacks : `npm ci`, `npm run build`, `npm start`).
+
+1. Augmentez la version : `npm version patch --no-git-tag-version` (la version s'affiche dans le jeu et sert au contrôle des mises à jour).
+2. Message de commit au format `vX.Y.Z — résumé des changements`.
+3. `git push origin master`, puis vérifiez `https://…/api/version`.
+
+À savoir pour la PWA : changer une icône impose de **changer son adresse** (`?v=…`), sinon Android ne la met pas à jour
+(détails dans [docs/SERVEUR.md](docs/SERVEUR.md#pwa-manifeste-icônes-et-mises-à-jour)).

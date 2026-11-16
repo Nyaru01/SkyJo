@@ -36,3 +36,7 @@ task.md
 implementation_plan.md
 walkthrough.md
 
+
+# Rapports générés localement
+build_*.txt
+lint_report.txt

@@ -7,9 +7,9 @@ Ce document détaille l'architecture et les stratégies de l'IA Skyjo "Brain V2"
 ## 🏗️ Architecture Technique
 
 Le système est découplé en trois couches :
-1.  **[skyjoAI.js](file:///d:/VibeCoding/SkyJo-master/src/lib/skyjoAI.js)** : Le **Cerveau**. Contient les fonctions de décision pures (heuristiques, probabilités, blocking).
-2.  **[virtualGameStore.js](file:///d:/VibeCoding/SkyJo-master/src/store/virtualGameStore.js)** : L'**Orchestrateur**. Gère le cycle de vie du tour IA et le timing.
-3.  **[VirtualGame.jsx](file:///d:/VibeCoding/SkyJo-master/src/components/VirtualGame.jsx)** : L'**Interface**. Traduit les décisions logiques en animations visuelles.
+1.  **[skyjoAI.js](../src/lib/skyjoAI.js)** : Le **Cerveau**. Contient les fonctions de décision pures (heuristiques, probabilités, blocking).
+2.  **[virtualGameStore.js](../src/store/virtualGameStore.js)** : L'**Orchestrateur**. Gère le cycle de vie du tour IA et le timing.
+3.  **[VirtualGame.jsx](../src/components/VirtualGame.jsx)** : L'**Interface**. Traduit les décisions logiques en animations visuelles.
 
 ---
 
