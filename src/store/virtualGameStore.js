@@ -1033,9 +1033,9 @@ export const useVirtualGameStore = create(
                             // The seasonal reward was granted atomically during final scoring.
                             xpAwardedValue = challenge.rewardXP;
                         } else if (isDaily && isDailyAvailable) {
-                            // XP depends on difficulty for daily challenge
-                            const difficulty = get().aiDifficulty;
-                            xpAwardedValue = difficulty === 'bonus' ? 6 : 3;
+                            // Défi quotidien : Tourment 3 XP, Fury 6 XP
+                            const difficulty = get().isFuryMode ? 'fury' : get().aiDifficulty;
+                            xpAwardedValue = get().isFuryMode ? 6 : 3;
 
                             useGameStore.getState().addXP(xpAwardedValue);
                             useGameStore.getState().markDailyWin();

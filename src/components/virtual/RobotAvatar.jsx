@@ -33,7 +33,7 @@ const frames = Array.from({ length: FRAME_COUNT }, (_, frame) => ({
 }));
 frames.push({ backgroundPosition: position(0), offset: 1 });
 
-export default function RobotAvatar({ className = '', difficulty = 'normal', size = 'md' }) {
+export default function RobotAvatar({ className = '', difficulty = 'normal', size = 'md', rival = false }) {
     const spriteRef = useRef(null);
     const animationRef = useRef(null);
     const requestRef = useRef(0);
@@ -90,7 +90,7 @@ export default function RobotAvatar({ className = '', difficulty = 'normal', siz
             className={`block shrink-0 rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 ${SIZES[size] || SIZES.md} ${className}`}
         >
             {webgl
-                ? <MascotBoundary fallback={sprite}><Suspense fallback={<span className="robot-avatar-loading" aria-hidden="true" />}><Mascot3D difficulty={difficulty} poke={poke} /></Suspense></MascotBoundary>
+                ? <MascotBoundary fallback={sprite}><Suspense fallback={<span className="robot-avatar-loading" aria-hidden="true" />}><Mascot3D difficulty={difficulty} poke={poke} rival={rival} /></Suspense></MascotBoundary>
                 : sprite}
         </button>
     );

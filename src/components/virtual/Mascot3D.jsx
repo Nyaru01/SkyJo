@@ -87,6 +87,9 @@ function Arm({ side, accent, armRef, foreRef }) {
 const NO_POINTER = { current: { x: 0, y: 0 } };
 // Petites scènes de vie jouées au hasard quand on ne la touche pas.
 const ACTS = ['look', 'tilt', 'happy', 'wave', 'scan', 'talk', 'look', 'dance', 'sleepy', 'tilt'];
+// Rival (écran du duel) : un compétiteur concentré — il observe et analyse, sans danser ni saluer.
+const RIVAL_ACTS = ['look', 'scan', 'look', 'tilt'];
+const RIVAL_RANGE = 1.15;
 const ACT_DURATION = { dance: 2.6, sleepy: 3.2 };
 // Bulles d'émotion au-dessus de la tête : ♥ content, ! repère, ? curieux, ♪ danse, z sieste.
 const EMOTE = { happy: '♥', scan: '!', look: '?', tilt: '?', dance: '♪', sleepy: 'z' };
@@ -106,7 +109,7 @@ function emoteTexture(glyph) {
     return t;
 }
 
-export function MascotBot({ difficulty = 'normal', poke = 0, still = false, pointer = NO_POINTER, shadow: showShadow = true }) {
+export function MascotBot({ difficulty = 'normal', poke = 0, still = false, rival = false, pointer = NO_POINTER, shadow: showShadow = true }) {
     const mood = MOODS[difficulty] || MOODS.normal;
     const { accent, deep, eye: eyeColor } = mood;
     const root = useRef();
@@ -126,7 +129,7 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, poin
     const torso = useRef();
     const emote = useRef();
     const emoteTextures = useMemo(() => Object.fromEntries([...new Set(Object.values(EMOTE))].map(g => [g, emoteTexture(g)])), []);
-    const anim = useRef({ t: 0, hop: 0, spin: 0, wave: 0, blinkAt: 2.2, act: null, actAt: 0, nextAct: 3.2, look: { x: 0, y: 0 }, prevYaw: 0, spring: 0, springV: 0 });
+    const anim = useRef({ t: 0, hop: 0, spin: 0, wave: 0, blinkAt: 2.2, act: null, actAt: 0, nextAct: 3.2, look: { x: 0, y: 0 }, prevYaw: 0, spring: 0, springV: 0, x: 0, tx: 0, v: 0, walkAt: 2 });
     const shadow = useMemo(() => radialTexture([[0, 'rgba(94,75,124,0.38)'], [1, 'rgba(94,75,124,0)']]), []);
     const glow = useMemo(() => radialTexture([[0, 'rgba(255,255,255,1)'], [0.4, 'rgba(255,255,255,0.35)'], [1, 'rgba(255,255,255,0)']]), []);
     const glare = useMemo(() => glareTexture(), []);
@@ -135,8 +138,8 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, poin
     const ledOff = useMemo(() => new Color(deep), [deep]);
 
     // Un tap (ou un changement de difficulté) : saut, tour sur soi-même et salut.
-    useEffect(() => { if (poke > 0) { const a = anim.current; a.hop = 1; a.spin += Math.PI * 2; a.wave = 1.6; a.act = 'happy'; a.actAt = a.t; a.nextAct = a.t + 3; } }, [poke]);
-    useEffect(() => { anim.current.hop = Math.max(anim.current.hop, 0.6); anim.current.wave = 1.2; }, [difficulty]);
+    useEffect(() => { if (poke > 0 && rival) { const a = anim.current; a.act = 'scan'; a.actAt = a.t; a.nextAct = a.t + 3; return; } if (poke > 0) { const a = anim.current; a.hop = 1; a.spin += Math.PI * 2; a.wave = 1.6; a.act = 'happy'; a.actAt = a.t; a.nextAct = a.t + 3; } }, [poke, rival]);
+    useEffect(() => { if (rival) return; anim.current.hop = Math.max(anim.current.hop, 0.6); anim.current.wave = 1.2; }, [difficulty, rival]);
 
     useFrame((_, delta) => {
         const a = anim.current;
@@ -147,7 +150,8 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, poin
         a.wave = Math.max(0, a.wave - dt);
         // Scène de vie : une action toutes les 3 à 6 s, chacune dure environ 1,8 s.
         if (!still && t > a.nextAct) {
-            a.act = ACTS[Math.floor(Math.random() * ACTS.length)];
+            const pool = rival ? RIVAL_ACTS : ACTS;
+            a.act = pool[Math.floor(Math.random() * pool.length)];
             a.actAt = t; a.nextAct = t + 3 + Math.random() * 3;
             if (a.act === 'look') a.look = { x: (Math.random() * 2 - 1) * 0.6, y: (Math.random() * 2 - 1) * 0.25 };
             if (a.act === 'wave') a.wave = 1.6;
@@ -155,14 +159,35 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, poin
         }
         const actK = a.act ? (t - a.actAt) / (ACT_DURATION[a.act] || 1.8) : 1;
         if (actK >= 1) a.act = null;
+        // Rival : il glisse en lévitation (pas de jambes), s’arrête, observe, puis repart.
+        if (rival && !still) {
+            if (t > a.walkAt && Math.abs(a.tx - a.x) < 0.02) {
+                let tx = a.x;
+                for (let i = 0; i < 6 && Math.abs(tx - a.x) < 0.7; i++) tx = (Math.random() * 2 - 1) * RIVAL_RANGE;
+                a.tx = Math.abs(tx - a.x) >= 0.7 ? tx : 0;
+                a.walkAt = Infinity;
+            }
+            const dx = a.tx - a.x;
+            // Vitesse lissée : démarre et freine en douceur, comme un drone.
+            a.v = MathUtils.damp(a.v, MathUtils.clamp(dx * 2.2, -0.9, 0.9), 2.6, dt);
+            a.x += a.v * dt;
+            if (Math.abs(dx) > 0.03 || Math.abs(a.v) > 0.04) a.act = null;
+            else if (a.walkAt === Infinity) {
+                a.x = a.tx; a.v = 0;
+                a.walkAt = t + 2.8 + Math.random() * 3.2;
+                a.act = Math.random() < 0.5 ? 'scan' : 'look'; a.actAt = t; a.nextAct = t + 2.4;
+                a.look = { x: -a.x * 0.15, y: 0 };
+            }
+        }
         const act = a.act;
         const ptr = pointer.current;
         const hopY = Math.sin((1 - a.hop) * Math.PI) * (a.hop > 0 ? 0.5 : 0);
-        const bob = still ? 0 : act === 'sleepy' ? Math.sin(t * 0.9) * 0.04 - 0.05 : act === 'dance' ? Math.abs(Math.sin(t * 7)) * 0.16 : Math.sin(t * 1.8) * 0.07;
+        const bob = still ? 0 : rival ? Math.sin(t * 1.6) * 0.06 : act === 'sleepy' ? Math.sin(t * 0.9) * 0.04 - 0.05 : act === 'dance' ? Math.abs(Math.sin(t * 7)) * 0.16 : Math.sin(t * 1.8) * 0.07;
         if (root.current) {
             root.current.position.y = bob + hopY;
-            root.current.rotation.y = MathUtils.damp(root.current.rotation.y, a.spin, 5, dt);
-            root.current.rotation.z = MathUtils.damp(root.current.rotation.z, act === 'dance' ? Math.sin(t * 7) * 0.14 : 0, 8, dt);
+            root.current.position.x = a.x;
+            root.current.rotation.y = MathUtils.damp(root.current.rotation.y, a.spin + (rival ? a.v * 0.28 : 0), 5, dt);
+            root.current.rotation.z = MathUtils.damp(root.current.rotation.z, act === 'dance' ? Math.sin(t * 7) * 0.14 : rival ? -a.v * 0.13 : 0, 8, dt);
             const squash = a.hop > 0 ? 1 + Math.sin(a.hop * Math.PI) * 0.08 : 1;
             root.current.scale.set(2 - squash, squash, 2 - squash);
         }
@@ -170,6 +195,7 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, poin
             const k = 1 - (bob + hopY) * 0.5;
             shadowRef.current.scale.set(2.3 * k, 0.55 * k, 1);
             shadowRef.current.material.opacity = Math.max(0.3, k);
+            shadowRef.current.position.x = a.x;
         }
         if (head.current && !still) {
             const scanYaw = act === 'scan' ? Math.sin(actK * Math.PI * 2) * 0.55 : 0;
@@ -207,7 +233,7 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, poin
             mouth.current.scale.x = MathUtils.damp(mouth.current.scale.x, act === 'happy' ? 1.2 : 1, 12, dt);
         }
         if (emote.current) {
-            const glyph = act ? EMOTE[act] : null;
+            const glyph = act && !rival ? EMOTE[act] : null;
             const k = act ? Math.min(1, actK * 6, (1 - actK) * 5) : 0;
             if (glyph && emote.current.userData.glyph !== glyph) { emote.current.material.map = emoteTextures[glyph]; emote.current.material.needsUpdate = true; emote.current.userData.glyph = glyph; }
             emote.current.material.opacity = glyph ? k : 0;
@@ -313,7 +339,7 @@ export function MascotBot({ difficulty = 'normal', poke = 0, still = false, poin
     </group>;
 }
 
-export default function Mascot3D({ difficulty = 'normal', poke = 0 }) {
+export default function Mascot3D({ difficulty = 'normal', poke = 0, rival = false }) {
     const still = useMemo(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false, []);
     const pointer = useRef({ x: 0, y: 0 });
     useEffect(() => {
@@ -326,6 +352,6 @@ export default function Mascot3D({ difficulty = 'normal', poke = 0 }) {
         <hemisphereLight args={['#fff4ea', '#5e4b7c', 0.8]} />
         <directionalLight position={[-2, 6, 5]} intensity={1.5} color="#fff7ee" />
         <directionalLight position={[3, 2, -4]} intensity={1.1} color={(MOODS[(difficulty || 'normal').toLowerCase()] || MOODS.normal).accent} />
-        <MascotBot difficulty={(difficulty || 'normal').toLowerCase()} poke={poke} still={still} pointer={pointer} />
+        <MascotBot difficulty={(difficulty || 'normal').toLowerCase()} poke={poke} still={still} rival={rival} pointer={pointer} />
     </Canvas>;
 }

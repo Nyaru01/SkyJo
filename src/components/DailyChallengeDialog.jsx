@@ -1,22 +1,21 @@
 import { useId } from 'react';
 import { Check, Trophy, ArrowRight } from 'lucide-react';
-import { NormalIcon, TourmentIcon } from './virtual/ModeIcons';
+import { TourmentIcon, FuryIcon } from './virtual/ModeIcons';
 import ModalShell, { ModalCloseButton } from './ui/ModalShell';
 import RobotAvatar from './virtual/RobotAvatar';
 import { AI_DIFFICULTY } from '../lib/skyjoAI';
 import '../styles/DailyChallenge.css';
 
 const MODES = [
-    { id: AI_DIFFICULTY.HARD, title: 'Normal', reward: 3, description: 'Un duel stratégique', icon: NormalIcon },
-    { id: AI_DIFFICULTY.BONUS, title: 'Tourment', reward: 6, description: 'Les cartes spéciales entrent en jeu', icon: TourmentIcon },
+    { id: AI_DIFFICULTY.BONUS, title: 'Tourment', reward: 3, description: 'Les cartes spéciales entrent en jeu', icon: TourmentIcon },
+    { id: AI_DIFFICULTY.FURY, title: 'Fury', reward: 6, description: 'Les cartes de sabotage se déchaînent', icon: FuryIcon },
 ];
 
 export default function DailyChallengeDialog({ isOpen, onClose, difficulty, onDifficultyChange, onStart }) {
     const titleId = useId();
     const radioName = useId();
     const mode = MODES.find(item => item.id === difficulty);
-    const tourment = difficulty === AI_DIFFICULTY.BONUS;
-    return <ModalShell isOpen={isOpen} onClose={onClose} labelledBy={titleId} maxWidth="max-w-md" className={`daily-challenge-dialog ${tourment ? 'daily-challenge-dialog--tourment' : ''}`}>
+    return <ModalShell isOpen={isOpen} onClose={onClose} labelledBy={titleId} maxWidth="max-w-md" className={`daily-challenge-dialog ${difficulty === AI_DIFFICULTY.BONUS ? 'daily-challenge-dialog--tourment' : difficulty === AI_DIFFICULTY.FURY ? 'daily-challenge-dialog--fury' : ''}`}>
         <header className="daily-challenge-header">
             <div><p>LE RENDEZ-VOUS DU JOUR</p><h2 id={titleId}>Défi quotidien</h2></div>
             <ModalCloseButton onClick={onClose} label="Fermer le défi quotidien" />

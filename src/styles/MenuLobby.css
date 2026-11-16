@@ -601,6 +601,7 @@ html body.lobby-theme .modal-surface.daily-challenge-dialog {
     border-color: #fff6e9 !important; box-shadow: 0 24px 48px -20px #4a3d5c88, inset 0 1px 0 #fffaf2 !important; color: #38364e;
 }
 html body.lobby-theme .modal-surface.daily-challenge-dialog--tourment { --daily-accent: #b05a4a; --daily-rgb: 176,90,74; }
+html body.lobby-theme .modal-surface.daily-challenge-dialog--fury { --daily-accent: #c4552b; --daily-rgb: 196,85,43; }
 html body.lobby-theme .daily-challenge-header h2 { color: #46415a; font-weight: 600; }
 html body.lobby-theme .daily-challenge-scene .daily-challenge-robot { filter: drop-shadow(0 8px 10px #6e5d7f55); animation: ml-float 4.5s ease-in-out infinite; }
 html body.lobby-theme :is(.daily-challenge-reward p, .daily-challenge-intro, .daily-challenge-choice > small, .daily-challenge-condition) { color: #676177; }
@@ -1604,3 +1605,6 @@ body.fury-mode .skyjo-action-area > .flex.justify-center.px-4 { padding-left: 54
 .fury-rail-uses i { width: 5px; height: 5px; }
 html body.lobby-theme.fury-mode :is(.menu-lobby, .game-lobby) .skyjo-draw-button span[class][class] { font-size: 13.5px !important; line-height: 1.15 !important; word-break: normal !important; overflow-wrap: normal !important; hyphens: none !important; }
 html body.fury-mode .skyjo-draw-button { height: auto !important; min-height: 52px; padding: 6px 8px !important; }
+/* Duel IA : la 3D du robot couvre toute la largeur de la scène pour qu’il puisse s’y déplacer ; pas de flottement CSS (le robot ne danse pas) */
+html body .menu-lobby .ai-rival-stage { margin-top: 10px; }
+html body .menu-lobby .ai-rival-stage .ai-rival-avatar { width: 100%; animation: none; }

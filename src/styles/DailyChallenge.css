@@ -1,5 +1,6 @@
 .modal-surface.daily-challenge-dialog { --daily-accent: #f4cd85; --daily-rgb: 244,205,133; background: #101e2d; border: 1px solid #b8c6d940; border-radius: 26px; overflow-y: auto; }
 .modal-surface.daily-challenge-dialog--tourment { --daily-accent: #ffac9b; --daily-rgb: 255,172,155; }
+.modal-surface.daily-challenge-dialog--fury { --daily-accent: #ff8a55; --daily-rgb: 255,138,85; }
 .daily-challenge-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 22px 20px 8px; }
 .daily-challenge-header p { font-size: 10px; font-weight: 800; letter-spacing: .12em; color: var(--daily-accent); }
 .daily-challenge-header h2 { color: #f4f8ff; font-size: 27px; line-height: 1.15; font-weight: 800; letter-spacing: -.035em; margin-top: 6px; }

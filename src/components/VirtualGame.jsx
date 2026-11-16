@@ -1244,9 +1244,10 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                         // CRITICAL: We only award XP here if it wasn't already awarded (e.g. if endRound hasn't been called)
                         // In Daily Challenge, we often quit from the results screen, so this is where 5 XP is awarded.
                         if (isDaily && isDailyAvailable) {
-                            addXP(5);
+                            // Défi quotidien : Tourment 3 XP, Fury 6 XP
+                            addXP(useVirtualGameStore.getState().isFuryMode ? 6 : 3);
                             useGameStore.getState().markDailyWin();
-                            console.log("[VG] Daily Challenge Won (on quit)! 5 XP Awarded.");
+                            console.log("[VG] Daily Challenge Won (on quit)!");
                         } else {
                             addXP(1);
                             console.log("[VG] Round Won (on quit)! 1 XP Awarded.");

@@ -29,20 +29,18 @@ export default function AISetupScreen({ difficulty, onDifficultyChange, onStart,
     return <main className={`ai-setup ai-setup--${mode.theme}`}>
         <header className="ai-setup-header">
             <button type="button" onClick={onBack} className="ai-setup-back" aria-label="Retour au menu Jouer"><ArrowLeft size={20} aria-hidden="true" /></button>
-            <div><p>LE DUEL SOLO</p><h1>Rencontrez votre rival.</h1></div>
+            <div><p>FACE À L’IA</p><h1>Rencontrez votre rival.</h1></div>
         </header>
 
         <section className="ai-rival" aria-label="Votre adversaire IA">
-            <div className="ai-rival-topline"><span><i aria-hidden="true" />Adversaire prêt</span></div>
             <div className="ai-rival-stage">
                 <div className="ai-rival-grid" aria-hidden="true" />
                 <div className="ai-rival-orbit" aria-hidden="true" />
                 <div className="ai-rival-platform" aria-hidden="true" />
-                <RobotAvatar size="hero" difficulty={mode.id} className="ai-rival-avatar" />
+                <RobotAvatar size="hero" difficulty={mode.id} rival className="ai-rival-avatar" />
             </div>
             <div className="ai-rival-dialogue" aria-live="polite" aria-atomic="true">
                 <span className="ai-rival-mode">{mode.title}</span>
-                <p>« {mode.line} »</p>
             </div>
         </section>
 
