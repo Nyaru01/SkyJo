@@ -1805,10 +1805,18 @@ export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
     const others = gameState.players.filter((_, i) => i !== gameState.currentPlayerIndex);
     const bestOpp = Math.min(...others.map(p => p.hand.reduce((t, c) => t + value(c), 0)));
     if (myEnd <= bestOpp + 3) return decision;
+    // Poser un 10, 11 ou 12 visible pour gagner un tour se voit et ne paie pas : l'IA finit alors la manche.
+    // (Sinon elle empilait 8 → 10 → 11 → 12 sur la même case, tour après tour.)
+    if (drawn >= 10) return decision;
     // Pire carte visible remplaçable (pas verrouillée), pour continuer la manche
     const candidates = hand.map((c, i) => ({ c, i })).filter(({ c }) => c && c.isRevealed && !(c.lockCount > 0) && typeof c.value === 'number');
     if (!candidates.length) return decision;
-    const worst = candidates.reduce((a, b) => (b.c.value > a.c.value ? b : a));
+    // On évite de casser une paire de la colonne quand une autre carte fait l'affaire.
+    const inPair = ({ c, i }) => [0, 1, 2].map(r => Math.floor(i / 3) * 3 + r).some(k => k !== i && hand[k]?.isRevealed && hand[k].value === c.value);
+    const pool = candidates.filter(x => !inPair(x));
+    const pick = list => list.reduce((a, b) => (b.c.value > a.c.value ? b : a));
+    const loose = pool.length ? pick(pool) : null;
+    const worst = loose && drawn - loose.c.value <= 6 ? loose : pick(candidates);
     const cost = drawn - worst.c.value; // points ajoutés en gardant la carte piochée
     if (cost > 6) return decision;
     return { action: 'REPLACE', cardIndex: worst.i };

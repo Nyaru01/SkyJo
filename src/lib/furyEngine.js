@@ -19,6 +19,8 @@ export const FURY_ORDER = ['quake', 'curse', 'fog', 'tornado', 'freeze', 'shield
 export const FURY_RESERVE_MAX = 3;
 export const FURY_USES_PER_ROUND = 3;
 export const FURY_COPIES = 2;
+// Les Fury sont réparties dans les N cartes du dessus de la pioche.
+export const FURY_SPREAD_DEPTH = 48;
 
 const furyCard = (type, n) => ({ id: `fury-${type}-${n}`, value: 0, specialType: 'F', furyType: type, color: 'fury', isRevealed: false });
 const emptyFury = () => ({ reserve: [], used: 0, shield: false });
@@ -34,16 +36,19 @@ export function initializeFuryGame(players, options = {}) {
     };
 }
 
-// Répartit les Fury régulièrement dans la pioche (une par tranche), jamais deux à la suite ni tout en haut.
+// Répartit les Fury régulièrement dans le haut de la pioche (une par tranche), jamais deux à la suite ni tout en haut.
+// Une manche n'utilise qu'une partie de la pioche : réparties sur toute la pioche, on en tirait trop peu.
 // La fin du tableau est le dessus de la pioche.
 function spreadFuries(pile, furies) {
     const cards = [...pile];
-    const usable = Math.max(0, cards.length - 4);
-    const slice = usable / furies.length;
+    const top = Math.max(0, cards.length - 4);
+    const zone = Math.min(top, FURY_SPREAD_DEPTH);
+    const start = top - zone;
+    const slice = zone / furies.length;
     // On insère de la plus haute tranche à la plus basse pour que les index restent valables.
     for (let k = furies.length - 1; k >= 0; k--) {
-        const at = Math.floor(k * slice + 1 + Math.random() * Math.max(1, slice - 2));
-        cards.splice(Math.min(at, usable), 0, furies[k]);
+        const at = start + Math.floor(k * slice + 1 + Math.random() * Math.max(1, slice - 2));
+        cards.splice(Math.min(at, top), 0, furies[k]);
     }
     return cards;
 }
@@ -68,6 +73,8 @@ export function collectFuryFromPile(state) {
     const gained = [];
     const buried = [];
     if (fury.reserve.length < FURY_RESERVE_MAX) { fury.reserve.push(card); gained.push(card); } else buried.push(card);
+    // Piocher une Fury, c'est avoir choisi de piocher : plus de Fury jouable avant la fin de ce tour.
+    fury.collectedThisTurn = true;
     const extra = [];
     while (drawPile.length && drawPile[drawPile.length - 1].specialType === 'F') extra.push(drawPile.pop());
     extra.forEach(f => drawPile.splice(Math.floor(Math.random() * Math.max(1, drawPile.length - 6)), 0, f));
@@ -81,7 +88,7 @@ export const hasShield = fury => Boolean(fury && (fury.shield || fury.reserve?.s
 // avec des cartes cachées, sans qu'on comprenne pourquoi.
 export function canPlayFury(state, playerIndex) {
     const fury = state.players[playerIndex]?.fury;
-    return Boolean(state.isFuryMode && fury && state.currentPlayerIndex === playerIndex && state.turnPhase === 'DRAW'
+    return Boolean(state.isFuryMode && fury && !fury.collectedThisTurn && state.currentPlayerIndex === playerIndex && state.turnPhase === 'DRAW'
         && state.phase === 'PLAYING' && fury.reserve.some(c => c.furyType !== 'shield') && fury.used < FURY_USES_PER_ROUND);
 }
 

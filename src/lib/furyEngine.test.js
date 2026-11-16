@@ -122,3 +122,18 @@ test('une seule Fury par pioche, et jamais deux Fury collées au départ', () =>
     assert.notEqual(after.drawPile[after.drawPile.length - 1].specialType, 'F');
     assert.equal(after.drawPile.filter(c => c.specialType === 'F').length, 2);
 });
+
+test('une Fury piochée ne se joue pas dans le même tour (IA comprise)', () => {
+    const g = ready(['quake']);
+    const top = { id: 'f-y', specialType: 'F', furyType: 'fog', value: 0 };
+    const { state } = collectFuryFromPile({ ...g, drawPile: [...g.drawPile.filter(c => c.specialType !== 'F'), top] });
+    assert.equal(canPlayFury(state, 0), false);
+    assert.equal(decideFuryAction(state, 0), null);
+});
+
+test('les Fury sont réparties dans le haut de la pioche', () => {
+    const g = initializeFuryGame(players);
+    const depths = g.drawPile.map((c, i) => (c.specialType === 'F' ? g.drawPile.length - 1 - i : -1)).filter(d => d >= 0);
+    assert.ok(Math.max(...depths) < 64, `Fury trop profonde : ${Math.max(...depths)}`);
+    assert.ok(Math.min(...depths) >= 1);
+});

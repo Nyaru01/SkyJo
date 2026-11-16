@@ -597,7 +597,9 @@ export const endTurn = (gameState) => {
     });
 
     newState.players = [...newState.players];
-    newState.players[newState.currentPlayerIndex] = { ...currentPlayer, hand: updatedHand };
+    // Mode Fury : la Fury piochée pendant ce tour redevient jouable au tour suivant.
+    const fury = currentPlayer.fury?.collectedThisTurn ? { ...currentPlayer.fury, collectedThisTurn: false } : currentPlayer.fury;
+    newState.players[newState.currentPlayerIndex] = { ...currentPlayer, hand: updatedHand, ...(fury ? { fury } : {}) };
 
     // Check if current player has revealed all cards
     // const currentPlayer = newState.players[newState.currentPlayerIndex]; // REMOVED (already declared above)

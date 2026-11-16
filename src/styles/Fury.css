@@ -139,7 +139,7 @@ body.fury-mode .skyjo-game-container { --skyjo-card-h: clamp(2.8rem, calc((100dv
 .fury-rail { margin-top: 6px; }
 .fury-opponent { margin-bottom: 4px; }
 /* Annonce des Fury piochées : en haut, sous la barre, pour ne rien cacher */
-.fury-gain { top: calc(96px + env(safe-area-inset-top, 0px)); }
+.fury-gain { top: calc(78px + env(safe-area-inset-top, 0px)); }
 /* v3.5.2 — cartes plus grandes : la ligne adverse se pose sur le haut de la dalle (entre « Pioche » et « Défausse »),
    la réserve est plus basse, et les cartes s'élargissent (les plateaux ont de la place en largeur). */
 body.fury-mode .fury-opponent { position: relative; z-index: 3; margin: 0 0 -17px; translate: 0 12px; font-size: 10.5px; gap: 4px; pointer-events: none; }
@@ -148,7 +148,7 @@ body.fury-mode .fury-rail { margin-top: 4px; }
 body.fury-mode .fury-card--mini { height: 46px; }
 body.fury-mode .fury-card--mini .fury-card-emblem { width: 22px; height: 22px; }
 body.fury-mode .skyjo-game-container {
-    --skyjo-card-h: clamp(2.8rem, calc((100dvh - 405px) / 7), 4.4rem);
+    --skyjo-card-h: clamp(2.8rem, calc((100dvh - 387px) / 7), 4.4rem);
     --skyjo-card-w: min(3.7rem, calc(var(--skyjo-card-h) * 0.76));
 }
 /* Réserve : 3 emplacements visibles + consigne, pour comprendre où vont les cartes Fury */
@@ -319,3 +319,18 @@ body.fury-mode .skyjo-action-area > .flex.justify-center.px-4 { padding-left: 64
 
 body.fury-mode .skyjo-draw-button span { white-space: normal; text-align: center; }
 body.fury-mode .fury-rail .fury-card--mini, body.fury-mode .fury-rail-card { width: 38px; height: 32px; }
+/* ===== Fury reçue : bandeau compact au centre de l’écran (remplace la grande annonce avec « Compris ») ===== */
+.fury-notice { position: absolute; top: 50%; left: 50%; translate: -50% -50%; z-index: 9000; pointer-events: auto;
+    width: min(calc(100vw - 32px), 380px); display: flex; align-items: center; gap: 12px; padding: 10px 14px 12px 10px; overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--fc) 50%, transparent); border-radius: 16px; text-align: left; font: inherit; color: #fff1e8; cursor: pointer;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--fc) 22%, #1d1216) 0%, #120b0ef2 100%);
+    box-shadow: 0 16px 34px -14px #000, 0 0 26px -8px color-mix(in srgb, var(--fc) 70%, transparent), inset 0 1px 0 #ffffff14; backdrop-filter: blur(8px); }
+.fury-notice-card { flex: none; }
+.fury-notice-card .fury-card--mini { width: 52px; height: 58px; }
+.fury-notice-copy { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.fury-notice-kicker { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--fc) 70%, #fff); }
+.fury-notice-text { font-size: 13.5px; line-height: 1.35; font-weight: 600; }
+.fury-notice-where { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #e8cfc3b3; }
+.fury-notice-timer { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; transform-origin: left; background: var(--fc); opacity: .8; animation: fury-notice-timer linear forwards; }
+@keyframes fury-notice-timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.fury-notice:focus-visible { outline: 2px solid #ffd2b8; outline-offset: 3px; }

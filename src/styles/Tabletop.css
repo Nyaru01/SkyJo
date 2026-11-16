@@ -119,7 +119,7 @@
    (2 plateaux de 3 rangées + la pioche) et environ 390 px de barre, marges et bandeaux.
    ===================================================================== */
 .skyjo-game-container {
-    --skyjo-card-h: clamp(2.6rem, calc((100dvh - 390px) / 7), 4.2rem);
+    --skyjo-card-h: clamp(2.6rem, calc((100dvh - 372px) / 7), 4.2rem);
     --skyjo-card-w: min(clamp(2.5rem, 7vw, 3.5rem), calc(var(--skyjo-card-h) * 0.7));
     min-height: 0 !important;
     height: calc(100dvh - 20px);
@@ -271,6 +271,14 @@ html body .tourment-goal .tourment-goal-title { color: #fbf6ee !important; font-
 .skyjo-game-container .skyjo-game-header button { height: 38px !important; min-height: 38px !important; padding-top: 0 !important; padding-bottom: 0 !important; }
 .skyjo-game-container .skyjo-game-header > div { padding: 2px !important; }
 .skyjo-game-container .skyjo-game-header > div > div.h-9 { height: 32px !important; width: 32px !important; font-size: 20px !important; }
+/* Barre encore plus basse (62 → 44 px) : les 18 px gagnés vont aux cartes des deux plateaux (voir --skyjo-card-h). */
+.skyjo-game-container .skyjo-game-header.skyjo-game-header { padding: 3px 6px !important; gap: 8px !important; }
+.skyjo-game-container .skyjo-game-header.skyjo-game-header > div,
+.skyjo-game-container .skyjo-game-header.skyjo-game-header > div > div:not(.h-9) { height: 34px !important; padding-top: 0 !important; padding-bottom: 0 !important; }
+.skyjo-game-container .skyjo-game-header.skyjo-game-header button { height: 32px !important; min-height: 32px !important; }
+.skyjo-game-container .skyjo-game-header.skyjo-game-header button.w-9 { width: 32px !important; }
+.skyjo-game-container .skyjo-game-header.skyjo-game-header > div > div.h-9 { height: 28px !important; width: 28px !important; font-size: 17px !important; }
+.skyjo-game-container .skyjo-game-header.skyjo-game-header button svg { width: 20px !important; height: 20px !important; }
 /* Fin de manche : le plateau final reste visible, puis s'assombrit avant le bilan */
 .round-end-veil { position: fixed; inset: 0; z-index: 79; pointer-events: auto; animation: round-end-veil 1.3s ease-in both; }
 @keyframes round-end-veil { 0%, 35% { background-color: #09122000; backdrop-filter: blur(0); } 100% { background-color: #091220b3; backdrop-filter: blur(6px); } }

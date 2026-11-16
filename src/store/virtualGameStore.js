@@ -666,7 +666,8 @@ export const useVirtualGameStore = create(
                 // Fury : les cartes Fury du dessus partent dans la réserve avant la pioche.
                 const { state: collected, gained } = collectFuryFromPile(gameState);
                 const newState = drawFromPile(collected);
-                set({ gameState: gained.length ? { ...newState, lastFuryGain: { cards: gained, by: gameState.currentPlayerIndex, at: Date.now() } } : newState, drawnCardSource: 'pile' });
+                // drawnId : la carte piochée avec cette Fury, montrée seulement une fois la Fury révélée.
+                set({ gameState: gained.length ? { ...newState, lastFuryGain: { cards: gained, by: gameState.currentPlayerIndex, at: Date.now(), drawnId: newState.drawnCard?.id } } : newState, drawnCardSource: 'pile' });
             },
 
             // Fury : jouer une carte de la réserve (remplace la pioche, le tour se termine).

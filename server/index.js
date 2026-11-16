@@ -463,7 +463,7 @@ io.on('connection', (socket) => {
                     // Fury : la carte Fury du dessus file d'abord dans la réserve du joueur.
                     const { state: collected, gained } = collectFuryFromPile(newState);
                     newState = drawFromPile(collected);
-                    if (gained.length) newState.lastFuryGain = { cards: gained, by: newState.currentPlayerIndex, at: Date.now() };
+                    if (gained.length) newState.lastFuryGain = { cards: gained, by: newState.currentPlayerIndex, at: Date.now(), drawnId: newState.drawnCard?.id };
                     lastAction.card = newState.drawnCard;
                     break;
                 }
