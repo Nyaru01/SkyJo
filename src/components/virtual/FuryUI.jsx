@@ -64,13 +64,18 @@ export function FuryTargetBanner({ type, onPlay, onCancel }) {
     if (!type) return null;
     const info = FURY_TYPES[type];
     const Icon = FURY_ICONS[type];
-    const hint = info.target === 'column' ? 'Touchez une colonne adverse' : info.target === 'card' ? 'Touchez une carte adverse retournée' : info.target === 'self' ? 'Protège votre plateau' : 'Vise le plateau adverse';
+    const hint = info.target === 'column' ? 'Touchez une colonne adverse' : info.target === 'card' ? 'Touchez une carte adverse retournée' : null;
     const direct = info.target === 'player' || info.target === 'self';
-    return <div className="fury-target" role="status" aria-live="polite">
-        <span className="fury-target-icon" aria-hidden="true"><Icon size={18} /></span>
-        <span className="fury-target-copy"><strong>{info.title}</strong><small>{hint}</small></span>
-        {direct && <button type="button" className="fury-target-play" onClick={onPlay}>Lancer</button>}
-        <button type="button" className="fury-target-cancel" onClick={onCancel} aria-label="Annuler"><X size={16} aria-hidden="true" /></button>
+    // Chaque carte Fury a sa couleur et son emblème en filigrane
+    return <div className={`fury-target fury-target--${type}`} role="status" aria-live="polite">
+        <Icon className="fury-target-watermark" aria-hidden="true" />
+        <button type="button" className="fury-target-cancel" onClick={onCancel} aria-label="Annuler"><X size={15} strokeWidth={2.4} aria-hidden="true" /></button>
+        <div className="fury-target-head">
+            <span className="fury-target-icon" aria-hidden="true"><Icon size={20} /></span>
+            <strong className="fury-target-title">{info.title}</strong>
+        </div>
+        {hint && <p className="fury-target-hint">{hint}</p>}
+        {direct && <button type="button" className="fury-target-play" onClick={onPlay}><Icon size={19} aria-hidden="true" />Lancer</button>}
     </div>;
 }
 

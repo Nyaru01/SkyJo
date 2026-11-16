@@ -123,9 +123,10 @@ body:has(.home-lobby) .mobile-nav-item:focus-visible { outline-color: #715d88; }
 .lobby-brand-mark i:nth-child(3) { background: linear-gradient(150deg, #ff8174, #e0344a); rotate: 22deg; }
 
 /* L'accueil occupe toute la hauteur : la scène absorbe l'espace libre */
-.home-lobby { min-height: calc(100dvh - 104px - env(safe-area-inset-bottom)); }
-.lobby-hero { flex: 1 1 auto; }
-.home-lobby--virtual .lobby-hero { min-height: 300px; }
+/* Hauteur exacte de l’écran (marges de la page : 12px en haut, 108px en bas) : l’île prend la place restante, sans défilement */
+.home-lobby { min-height: calc(100dvh - 120px - env(safe-area-inset-bottom)); }
+.lobby-hero { flex: 1 1 0; }
+.home-lobby--virtual .lobby-hero { min-height: 140px; }
 
 .lobby-footer { gap: 8px; padding-bottom: 2px; }
 .lobby-footer > button { min-height: 36px; padding: 6px 12px; border-radius: 999px; background: #fffaf466; border: 1px solid #ffffffa6; color: var(--lobby-ink-2); font-weight: 600; }
@@ -263,7 +264,7 @@ body:has(.home-lobby) .mobile-nav-item--active { background: #5e4b7c; color: #ff
 .lobby-menu-item { min-height: 56px; padding: 7px 8px 8px; }
 .lobby-menu-title { font-size: 25px; }
 .lobby-menu-item--first .lobby-menu-title { font-size: 29px; }
-.home-lobby--virtual .lobby-hero:has(.s3d) { min-height: 300px; }
+.home-lobby--virtual .lobby-hero:has(.s3d) { min-height: 140px; }
 
 /* Sélecteur Réel / Virtuel allégé : du texte, un losange sous l'option active */
 .lobby-mode-switch { background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; gap: 0; padding: 0; margin: 0 40px; }

@@ -90,6 +90,11 @@ body.fury-mode .skyjo-game-container { --skyjo-card-h: clamp(2.5rem, calc((100dv
 .fury-target.fury-target { position: relative; top: auto; left: auto; translate: none; width: 100%; min-height: 128px; padding: 16px; border-radius: 14px; flex-wrap: wrap; align-content: center; }
 .fury-target.fury-target .fury-target-copy strong { font-size: 24px; }
 .fury-target.fury-target .fury-target-copy small { font-size: 13.5px; }
+/* Cartes à lancer directement : titre en haut, grand bouton sur toute la largeur en dessous */
+.fury-target.fury-target:has(.fury-target-play) { row-gap: 12px; }
+.fury-target.fury-target .fury-target-play { order: 3; flex: 1 0 100%; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; border-radius: 14px; font-size: 16px; letter-spacing: .02em; color: #2a130c; background: linear-gradient(160deg, #ffb08a, #e2643a); box-shadow: inset 0 1px 0 #ffffff66, 0 10px 22px -10px #ff5a2acc; transition: transform .12s ease; }
+.fury-target.fury-target .fury-target-play:active { transform: scale(.97); }
+.fury-target.fury-target .fury-target-cancel { order: 2; align-self: flex-start; }
 
 /* Cartes Fury dessinées */
 .fury-card {
@@ -346,3 +351,22 @@ body.fury-mode .fury-rail .fury-card--mini, body.fury-mode .fury-rail-card { wid
 .draw-fury figcaption, .draw-main figcaption { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #c9bfd0; }
 .draw-fury figcaption { color: #ffb08a; }
 .draw-fury-note { max-width: 250px; margin: -4px 0 0; text-align: center; font-size: 11px; line-height: 1.35; color: #c9a596; }
+
+/* Bandeau de ciblage v2 : une ambiance par carte Fury, contenu centré */
+.fury-target--quake { --fc: #ff7a3a; --fc-deep: #3d1d14; } .fury-target--curse { --fc: #e0455c; --fc-deep: #3a141e; }
+.fury-target--fog { --fc: #b7b1cf; --fc-deep: #26243a; } .fury-target--tornado { --fc: #6fcfbf; --fc-deep: #13302e; }
+.fury-target--freeze { --fc: #8cc8f0; --fc-deep: #142a3e; } .fury-target--shield { --fc: #9fcab6; --fc-deep: #17302a; }
+.fury-target.fury-target { flex-direction: column; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 8px; overflow: hidden; text-align: center; padding: 14px 16px;
+    color: #fff4ec; border: 1px solid color-mix(in srgb, var(--fc) 45%, transparent);
+    background: radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--fc) 30%, transparent), transparent 62%), linear-gradient(170deg, color-mix(in srgb, var(--fc-deep) 92%, #fff 4%), #17121a);
+    box-shadow: inset 0 1px 0 #ffffff1f, 0 0 26px -6px color-mix(in srgb, var(--fc) 55%, transparent), 0 20px 40px -18px #000; }
+.fury-target-watermark { position: absolute; right: -18px; bottom: -26px; width: 120px; height: 120px; color: var(--fc); opacity: .1; rotate: -14deg; pointer-events: none; }
+.fury-target-head { position: relative; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.fury-target.fury-target .fury-target-icon { width: 36px; height: 36px; border-radius: 50%; color: var(--fc); background: #0000004d; box-shadow: 0 0 16px color-mix(in srgb, var(--fc) 50%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--fc) 60%, transparent); }
+.fury-target-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 28px; font-weight: 600; line-height: 1; letter-spacing: .01em; color: #fff8f0; text-shadow: 0 0 18px color-mix(in srgb, var(--fc) 45%, transparent); }
+.fury-target-hint { position: relative; margin: 0; max-width: 240px; font-size: 13.5px; line-height: 1.35; color: color-mix(in srgb, var(--fc) 35%, #f3e6de); }
+.fury-target.fury-target .fury-target-cancel { position: absolute; top: 9px; right: 9px; z-index: 1; order: 0; width: 30px; height: 30px; border-radius: 50%; color: #fff4ec; background: #ffffff14; border: 1px solid #ffffff2e; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); transition: background-color .15s, transform .12s; }
+.fury-target.fury-target .fury-target-cancel:hover { background: #ffffff26; }
+.fury-target.fury-target .fury-target-cancel:active { transform: scale(.92); }
+.fury-target.fury-target .fury-target-play { position: relative; order: 0; flex: 0 0 auto; width: 100%; min-height: 48px; margin-top: 2px; color: #1a1014;
+    background: linear-gradient(160deg, color-mix(in srgb, var(--fc) 70%, #fff), var(--fc)); box-shadow: inset 0 1px 0 #ffffff80, 0 10px 22px -10px color-mix(in srgb, var(--fc) 80%, transparent); }

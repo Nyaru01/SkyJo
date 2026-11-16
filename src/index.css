@@ -92,10 +92,18 @@ input {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* PWA specific: Prevent selection by default */
+/* Pas de sélection de texte dans toute l’appli (navigateur et PWA), sauf dans les champs de saisie */
+body,
 body.pwa {
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+input,
+textarea,
+[contenteditable="true"] {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* Allow selection explicitly where needed */

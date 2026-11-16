@@ -110,7 +110,7 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                                 <div className="dd-cards">
                                     {furyCards.map((c, i) => (
                                         <motion.figure key={c.id} className="dd-fury"
-                                            initial={{ opacity: 0, y: 10, rotate: -8 }} animate={{ opacity: 1, y: 0, rotate: -5 }}
+                                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.4, delay: 0.05 + i * 0.1, ease: [0.2, 0.8, 0.25, 1] }}>
                                             <FuryCard type={c.furyType} size="mini" />
                                             <figcaption><Flame className="w-3 h-3" aria-hidden="true" />Réserve</figcaption>

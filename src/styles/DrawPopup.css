@@ -6,12 +6,13 @@
 /* Titre en haut, cartes au centre, boutons en dessous */
 .dd-side { display: contents; }
 .dd-title { order: 0; } .dd-cards { order: 1; } .dd-note { order: 2; } .dd-actions { order: 3; }
-.dd-cards { display: flex; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+.dd-cards { display: flex; align-items: flex-end; gap: 22px; flex-shrink: 0; }
 .dd-main, .dd-fury { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .dd-main figcaption, .dd-fury figcaption { display: inline-flex; align-items: center; gap: 3px; font-size: 9.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #c9c0cf; }
 .dd-fury figcaption { color: #ffb08a; }
-/* La Fury : une petite carte penchée à côté de la carte à jouer */
-.dd-panel .dd-fury .fury-card--mini { width: 52px; height: 72px; border-radius: 9px; gap: 4px; }
+/* La Fury : droite et à la même taille que la carte à jouer */
+.dd-panel .dd-fury .fury-card--mini { box-sizing: border-box; width: 56px; height: 80px; padding: 0 3px; border-radius: 10px; gap: 5px; }
+.dd-panel .dd-main > .skyjo-card { width: 56px !important; height: 80px !important; }
 .dd-panel .dd-fury .fury-card--mini .fury-card-emblem { width: 26px; height: 26px; }
 .dd-panel .dd-fury .fury-card--mini .fury-card-title { font-size: 8px; max-width: 48px; }
 .dd-title { margin: 0; padding: 0 26px; text-align: center; display: flex; justify-content: center; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 19px; font-weight: 600; line-height: 1.1; color: #fbf6ee; }
