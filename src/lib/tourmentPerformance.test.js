@@ -26,3 +26,16 @@ test('refuse les scores invalides', () => {
     assert.equal(getTourmentPerformance(undefined), null);
     assert.equal(getTourmentPerformance('invalide'), null);
 });
+
+test('mode Fury : rangs selon le score final du gagnant', async () => {
+    const { getFuryPerformance } = await import('./tourmentPerformance.js');
+    assert.equal(getFuryPerformance(61).id, 'survival');
+    assert.equal(getFuryPerformance(120).id, 'survival');
+    assert.equal(getFuryPerformance(60).id, 'progress');
+    assert.equal(getFuryPerformance(36).id, 'progress');
+    assert.equal(getFuryPerformance(35).id, 'mastery');
+    assert.equal(getFuryPerformance(11).id, 'mastery');
+    assert.equal(getFuryPerformance(10).id, 'absolute');
+    assert.equal(getFuryPerformance(-4).id, 'absolute');
+    assert.equal(getFuryPerformance('x'), null);
+});

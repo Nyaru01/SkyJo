@@ -2,7 +2,10 @@
 // (ou réduit) les cartes pour la remplir, sans jamais faire défiler l'écran.
 // S'utilise comme ref de rappel sur .skyjo-game-container (React 19 : la fonction renvoie le nettoyage).
 const MIN_H = 40;
-const MAX_H = 78;
+const MAX_H = 88;
+// Les rails Fury sont sur les bords, les badges « IA » / « VOUS » au centre : les rails peuvent déborder
+// de la zone centrale de quelques pixels en haut et en bas, sans rien chevaucher. Cette marge revient aux cartes.
+const RAIL_OVERFLOW = 20;
 
 function fit(el) {
     const area = el.querySelector('.skyjo-action-area');
@@ -24,7 +27,7 @@ function fit(el) {
         }
         if (top === Infinity) return;
         // Place libre dans la zone centrale, moins ce qui dépasse du conteneur.
-        const slack = box.height - Math.max(bottom - top, rails + 4) - 12 - Math.max(0, el.scrollHeight - el.clientHeight);
+        const slack = box.height - Math.max(bottom - top, rails + 4 - 2 * RAIL_OVERFLOW) - 4 - Math.max(0, el.scrollHeight - el.clientHeight);
         if (Math.abs(slack) < 6) return;
         const next = Math.max(MIN_H, Math.min(MAX_H, h + slack / rows));
         if (Math.abs(next - h) < 1) return;

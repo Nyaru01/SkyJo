@@ -57,6 +57,7 @@ export const useGameStore = create(
             hasSeenMasterCareerAnnouncementV1: false,
             hasSeenTourmentPerformanceGoalV1: false,
             hasSeenFuryIntroV1: false,
+            hasSeenFuryPerformanceGoalV1: false,
             migratedToV2: false, // Flag for LocalStorage -> DB migration
             isRehydrated: false, // Flag to track when store is ready
             profileLoadedFromBackend: false, // Prevent early sync from overwriting DB
@@ -131,6 +132,7 @@ export const useGameStore = create(
 
             setHasSeenTourmentPerformanceGoal: (seen) => set({ hasSeenTourmentPerformanceGoalV1: seen }),
             setHasSeenFuryIntro: (seen) => set({ hasSeenFuryIntroV1: seen }),
+            setHasSeenFuryPerformanceGoal: (seen) => set({ hasSeenFuryPerformanceGoalV1: seen }),
 
             setIsAdminOpen: (open) => set({ isAdminOpen: open }),
 

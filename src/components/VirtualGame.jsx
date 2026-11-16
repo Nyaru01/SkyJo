@@ -42,7 +42,7 @@ import { cn } from '../lib/utils';
 import { getCardSkinRequiredLevel } from '../lib/skinUtils';
 import { getActiveWeeklyChallenge, getGameChallenge, getWeeklyChallengeById, hasChallengeObjective, hasBestRoundScore } from '../lib/weeklyChallenge';
 import { SeasonalResult } from './ui/SeasonalChallengeButton';
-import { getTourmentPerformance } from '../lib/tourmentPerformance';
+import { getTourmentPerformance, getFuryPerformance } from '../lib/tourmentPerformance';
 
 import { AVATARS, getAvatarPath } from '../lib/avatars';
 import AvatarSelector from './AvatarSelector';
@@ -218,6 +218,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     const playerCardSkin = useGameStore(s => s.cardSkin);
     const hasSeenTourmentPerformanceGoal = useGameStore(s => s.hasSeenTourmentPerformanceGoalV1);
     const setHasSeenTourmentPerformanceGoal = useGameStore(s => s.setHasSeenTourmentPerformanceGoal);
+    const hasSeenFuryPerformanceGoal = useGameStore(s => s.hasSeenFuryPerformanceGoalV1);
+    const setHasSeenFuryPerformanceGoal = useGameStore(s => s.setHasSeenFuryPerformanceGoal);
 
     // --- GAME LOGIC CONSOLIDATION (PRE-RENDER) ---
     // Moved here to satisfy Rules of Hooks (must be before any early returns)
@@ -236,6 +238,22 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
         && !!activeGameState
         && effectiveIsBonusMode
         && !hasSeenTourmentPerformanceGoal;
+    // Fury : même principe de rang de performance, présenté une fois, après les règles Fury.
+    const showFuryPerformanceGoal = screen === 'game'
+        && !!activeGameState?.isFuryMode
+        && hasSeenFuryIntro
+        && !hasSeenFuryPerformanceGoal;
+    const performanceGoal = showTourmentPerformanceGoal ? {
+        key: 'tourment', title: 'Objectif Tourment',
+        text: 'Les règles restent identiques. À chaque victoire longue, votre score final détermine maintenant votre rang de performance.',
+        tiles: [['amber', 'Score positif', 'Victoire de justesse'], ['sky', '0 à −49', 'Bon début'], ['sage', '−50 à −99', 'Maîtrise du Tourment'], ['violet', '−100 ou moins', 'Domination absolue']],
+        close: () => setHasSeenTourmentPerformanceGoal(true),
+    } : showFuryPerformanceGoal ? {
+        key: 'fury', title: 'Objectif Fury',
+        text: 'À chaque victoire longue (jusqu’à 100 points), votre score final détermine votre rang de performance.',
+        tiles: [['amber', 'Plus de 60', 'Victoire de justesse'], ['sky', '36 à 60', 'Belle victoire'], ['sage', '11 à 35', 'Maîtrise de la Fury'], ['violet', '10 ou moins', 'Domination absolue']],
+        close: () => setHasSeenFuryPerformanceGoal(true),
+    } : null;
 
     // 2. Calculate the local player's index in the game state
     // In online mode, try to find by socket.id first, then fallback to dbId (for reconnects)
@@ -1957,11 +1975,10 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
         // If game is already over (endRound was called), show final results
         if (isGameOverState && activeGameWinner) {
             const isUserWinner = activeGameWinner?.id === activeGameState?.players?.[myPlayerIndex]?.id;
-            const tourmentPerformance = effectiveIsBonusMode
-                && !isDailyChallenge
-                && reachesScoreLimit
-                && isUserWinner
-                ? getTourmentPerformance(activeGameWinner.score)
+            const rankedWin = !isDailyChallenge && reachesScoreLimit && isUserWinner;
+            const performanceMode = effectiveIsBonusMode ? 'Tourment' : activeGameState?.isFuryMode ? 'Fury' : null;
+            const tourmentPerformance = rankedWin && performanceMode
+                ? (performanceMode === 'Fury' ? getFuryPerformance : getTourmentPerformance)(activeGameWinner.score)
                 : null;
 
             return (
@@ -2049,7 +2066,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                                                     ? "border-sky-300/20 bg-sky-500/10 text-sky-100"
                                                     : "border-amber-300/20 bg-amber-500/10 text-amber-100",
                                     )}>
-                                        <span className="block text-[9px] font-black uppercase tracking-[0.2em] opacity-70">Performance Tourment</span>
+                                        <span className="block text-[9px] font-black uppercase tracking-[0.2em] opacity-70">Performance {performanceMode}</span>
                                         <strong className="mt-0.5 block text-sm uppercase tracking-wide">{tourmentPerformance.label}</strong>
                                         <span className="mt-0.5 block text-[10px] opacity-75">{tourmentPerformance.description}</span>
                                     </div>
@@ -2328,8 +2345,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
 
             {activeGameState?.isSeasonalPreview && <button className="text-xs text-amber-200 underline py-1" onClick={() => useVirtualGameStore.getState().exitSeasonalPreview()}>Quitter l’aperçu · Retour admin</button>}
             <AnimatePresence>
-                {showTourmentPerformanceGoal && (
+                {performanceGoal && (
                     <motion.div
+                        key={performanceGoal.key}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -2346,30 +2364,20 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                         >
                             <span className="skyjo-pause-emblem tourment-goal-emblem" aria-hidden="true"><Flame size={24} strokeWidth={1.8} /></span>
                             <h2 id="tourment-performance-goal-title" className="tourment-goal-title">
-                                Objectif Tourment
+                                {performanceGoal.title}
                             </h2>
                             <p className="skyjo-pause-text tourment-goal-text">
-                                Les règles restent identiques. À chaque victoire longue, votre score final détermine maintenant votre rang de performance.
+                                {performanceGoal.text}
                             </p>
                             <div className="tourment-goal-grid">
-                                <div className="tourment-goal-tile tourment-goal-tile--amber">
-                                    <div className="tourment-goal-score">Score positif</div>
-                                    <div className="tourment-goal-rank">Victoire de justesse</div>
-                                </div>
-                                <div className="tourment-goal-tile tourment-goal-tile--sky">
-                                    <div className="tourment-goal-score">0 à −49</div>
-                                    <div className="tourment-goal-rank">Bon début</div>
-                                </div>
-                                <div className="tourment-goal-tile tourment-goal-tile--sage">
-                                    <div className="tourment-goal-score">−50 à −99</div>
-                                    <div className="tourment-goal-rank">Maîtrise du Tourment</div>
-                                </div>
-                                <div className="tourment-goal-tile tourment-goal-tile--violet">
-                                    <div className="tourment-goal-score">−100 ou moins</div>
-                                    <div className="tourment-goal-rank">Domination absolue</div>
-                                </div>
+                                {performanceGoal.tiles.map(([tone, score, rank]) => (
+                                    <div key={rank} className={`tourment-goal-tile tourment-goal-tile--${tone}`}>
+                                        <div className="tourment-goal-score">{score}</div>
+                                        <div className="tourment-goal-rank">{rank}</div>
+                                    </div>
+                                ))}
                             </div>
-                            <button type="button" onClick={() => setHasSeenTourmentPerformanceGoal(true)} className="skyjo-pause-resume">J’ai compris</button>
+                            <button type="button" onClick={performanceGoal.close} className="skyjo-pause-resume">J’ai compris</button>
                         </motion.div>
                     </motion.div>
                 )}
