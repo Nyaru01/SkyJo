@@ -50,9 +50,18 @@ const PlayerHand = memo(function PlayerHand({
         if (!hand || !cover) return;
         const bg = getComputedStyle(hand);
         // Fond du plateau assombri : un voile trop clair se voyait comme une plaque blanchâtre.
-        const shade = 'linear-gradient(rgba(8, 7, 14, 0.42), rgba(8, 7, 14, 0.42))';
+        // Par-dessus : une fine poussière d'étoiles (deux trames décalées), pour que le voile ne soit pas un simple aplat.
+        const shade = 'linear-gradient(rgba(8, 7, 14, 0.46), rgba(8, 7, 14, 0.46))';
+        const dust = 'radial-gradient(circle, rgba(232, 210, 168, 0.13) 0 0.9px, transparent 1.5px)';
+        const hasBoard = bg.backgroundImage && bg.backgroundImage !== 'none';
+        const glint = 'radial-gradient(circle, rgba(240, 214, 160, 0.24) 0 1.1px, transparent 1.9px)';
+        // Trois trames de tailles premières entre elles : la poussière paraît éparse, pas en grille.
+        const layers = [[dust, '37px 41px', '0 0', 'repeat'], [dust, '59px 53px', '19px 23px', 'repeat'], [glint, '97px 89px', '43px 11px', 'repeat'], [shade, 'auto', '0 0', 'no-repeat']];
         cover.style.backgroundColor = bg.backgroundColor;
-        cover.style.backgroundImage = bg.backgroundImage && bg.backgroundImage !== 'none' ? `${shade}, ${bg.backgroundImage}` : shade;
+        cover.style.backgroundImage = [...layers.map(l => l[0]), ...(hasBoard ? [bg.backgroundImage] : [])].join(', ');
+        cover.style.backgroundSize = [...layers.map(l => l[1]), ...(hasBoard ? [bg.backgroundSize] : [])].join(', ');
+        cover.style.backgroundPosition = [...layers.map(l => l[2]), ...(hasBoard ? [bg.backgroundPosition] : [])].join(', ');
+        cover.style.backgroundRepeat = [...layers.map(l => l[3]), ...(hasBoard ? [bg.backgroundRepeat] : [])].join(', ');
     }, []);
 
     // Safety check for undefined player (e.g. during state transitions or sync issues)
