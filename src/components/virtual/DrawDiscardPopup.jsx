@@ -1,7 +1,8 @@
 import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Skull, RefreshCw, Eraser, Sparkles, Orbit } from 'lucide-react';
+import { X, Skull, RefreshCw, Eraser, Sparkles, Orbit, Flame } from 'lucide-react';
 import SkyjoCard from './SkyjoCard';
+import { FuryCard } from './FuryUI';
 import { cn } from '../../lib/utils';
 
 // Simple haptic feedback function
@@ -33,7 +34,10 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
     onUseAction,
     isBonusMode = false,
     isLoading = false,
+    // Mode Fury : carte(s) Fury tirée(s) avec cette pioche, montrées dans la même fenêtre que la carte piochée.
+    furyCards = [],
 }) {
+    const withFury = furyCards.length > 0;
     // Draw a card but DON'T close popup - let user decide to discard or place on grid
     const handleDrawClick = () => {
         triggerHaptic(40);
@@ -123,6 +127,11 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                                             <Orbit className="w-5 h-5 animate-spin-slow" />
                                             TROU NOIR !
                                         </span>
+                                    ) : withFury ? (
+                                        <span className="flex items-center justify-center gap-2 text-[#ffcbb0]">
+                                            <Flame className="w-5 h-5 text-[#ff8a55]" />
+                                            Deux cartes piochées
+                                        </span>
                                     ) : (
                                         "Carte en main"
                                     )}
@@ -146,13 +155,28 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                                 )}
 
                                 {/* Drawn card + Discard history side by side */}
-                                <div className="flex items-center gap-6 mb-4">
+                                <div className={cn("flex items-end gap-6 mb-4", withFury && "draw-with-fury")}>
+                                    {/* Fury piochée avec cette carte : elle file dans la réserve */}
+                                    {furyCards.map((c, i) => (
+                                        <motion.figure key={c.id} className="draw-fury"
+                                            initial={{ opacity: 0, y: 14, rotate: -6 }} animate={{ opacity: 1, y: 0, rotate: -3 }}
+                                            transition={{ duration: 0.45, delay: 0.05 + i * 0.1, ease: [0.2, 0.8, 0.25, 1] }}>
+                                            <FuryCard type={c.furyType} />
+                                            <figcaption><Flame className="w-3 h-3" aria-hidden="true" />Réserve Fury</figcaption>
+                                        </motion.figure>
+                                    ))}
                                     {/* Main drawn card */}
-                                    <div className="relative">
-                                        <div className="absolute inset-0 bg-amber-400/30 rounded-xl blur-md" />
-                                        <SkyjoCard card={drawnCard} size="lg" isHighlighted />
-                                    </div>
+                                    <motion.figure className="draw-main"
+                                        initial={withFury ? { opacity: 0, y: 14 } : false} animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.45, delay: withFury ? 0.2 : 0, ease: [0.2, 0.8, 0.25, 1] }}>
+                                        <div className="relative">
+                                            <div className="absolute inset-0 bg-amber-400/30 rounded-xl blur-md" />
+                                            <SkyjoCard card={drawnCard} size="lg" isHighlighted />
+                                        </div>
+                                        {withFury && <figcaption>À jouer</figcaption>}
+                                    </motion.figure>
                                 </div>
+                                {withFury && <p className="draw-fury-note">La Fury rejoint votre réserve : jouez-la au début d’un prochain tour, à la place de piocher.</p>}
 
                                 {/* Two clear action buttons */}
                                 <div className={cn(

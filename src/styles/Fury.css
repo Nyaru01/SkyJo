@@ -334,3 +334,15 @@ body.fury-mode .fury-rail .fury-card--mini, body.fury-mode .fury-rail-card { wid
 .fury-notice-timer { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; transform-origin: left; background: var(--fc); opacity: .8; animation: fury-notice-timer linear forwards; }
 @keyframes fury-notice-timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 .fury-notice:focus-visible { outline: 2px solid #ffd2b8; outline-offset: 3px; }
+/* ===== Pioche avec Fury : une seule fenêtre, la Fury (vers la réserve) à côté de la carte à jouer ===== */
+.draw-with-fury { gap: 18px !important; }
+.draw-fury, .draw-main { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.draw-fury .fury-card--full { width: 84px; min-height: 0; height: clamp(5.25rem, 13.5vh, 6.75rem); padding: 8px 5px 6px; gap: 2px;
+    box-shadow: 0 0 0 1.5px var(--fc), 0 0 22px color-mix(in srgb, var(--fc) 55%, transparent), 0 12px 22px -10px #000; }
+.draw-fury .fury-card--full .fury-card-emblem { width: 30px; height: 30px; margin: 4px 0 3px; }
+.draw-fury .fury-card--full .fury-card-emblem svg { width: 16px; height: 16px; }
+.draw-fury .fury-card--full .fury-card-title { font-size: 12px; }
+.draw-fury .fury-card--full .fury-card-text { font-size: 9px; line-height: 1.2; padding: 3px 4px; }
+.draw-fury figcaption, .draw-main figcaption { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #c9bfd0; }
+.draw-fury figcaption { color: #ffb08a; }
+.draw-fury-note { max-width: 250px; margin: -4px 0 0; text-align: center; font-size: 11px; line-height: 1.35; color: #c9a596; }

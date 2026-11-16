@@ -88,7 +88,7 @@ function furyExplain(f, byName) {
 }
 
 // Effets : onomatopée façon BD, secousse du plateau visé, et annonce des Fury piochées.
-export function FuryEffects({ lastFury, lastGain, myIndex, names, onGainSeen }) {
+export function FuryEffects({ lastFury, lastGain, myIndex, names }) {
     const reduce = useReducedMotion();
     const [shown, setShown] = useState(null);
     const [gain, setGain] = useState(null);
@@ -101,7 +101,6 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names, onGainSeen }) 
     if (lastGain?.at && lastGain.at !== gainEvent?.at) setGainEvent(lastGain);
     // Événements déjà là à l'affichage (reprise d'une partie, retour de pause) : déjà vus, on ne les rejoue pas.
     const [past] = useState(() => ({ fury: lastFury?.at, gain: lastGain?.at }));
-    useEffect(() => { if (past.gain) onGainSeen?.(past.gain); }, [past, onGainSeen]);
     useEffect(() => {
         if (!furyEvent?.at || furyEvent.at === past.fury) return undefined;
         const t0 = setTimeout(() => setShown(furyEvent), 0);
@@ -130,15 +129,13 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names, onGainSeen }) 
     }, [furyEvent, myIndex, reduce, past]);
     useEffect(() => {
         if (!gainEvent?.at || gainEvent.at === past.gain) return undefined;
-        const mine = gainEvent.by === myIndex;
-        // Votre Fury s’affiche d’abord ; la carte piochée n’apparaît qu’après « Continuer » (voir VirtualGame).
+        // Votre Fury s'affiche dans la fenêtre de pioche, à côté de la carte piochée (DrawDiscardPopup).
+        if (gainEvent.by === myIndex) { try { navigator.vibrate?.([30, 40, 30]); } catch { /* indisponible */ } return undefined; }
+        // Celle de l'adversaire : une annonce courte qui s'efface seule.
         const t0 = setTimeout(() => setGain(gainEvent), 0);
-        // La carte du joueur reste affichée jusqu’à « OK » ; celle de l’adversaire s’efface seule.
-        const t1 = mine ? null : setTimeout(() => setGain(null), 2400);
-        if (mine) { try { navigator.vibrate?.([30, 40, 30]); } catch { /* indisponible */ } }
-        return () => { clearTimeout(t0); if (t1) clearTimeout(t1); };
+        const t1 = setTimeout(() => setGain(null), 2400);
+        return () => { clearTimeout(t0); clearTimeout(t1); };
     }, [gainEvent, myIndex, past]);
-    const closeGain = () => { onGainSeen?.(gain?.at ?? null); setGain(null); };
     const word = shown ? (shown.blocked ? 'Bloqué !' : FURY_TYPES[shown.type].bubble) : '';
     const by = shown ? names[shown.by] : '';
     return createPortal(<div className="fury-fx-layer">
@@ -174,21 +171,6 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names, onGainSeen }) 
             })()}
         </AnimatePresence>
         <AnimatePresence>
-            {gain && gain.by === myIndex && <Motion.div key={`reveal-${gain.at}`} className="fury-reveal" role="status"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.35 } }} transition={{ duration: 0.6, ease: 'easeOut' }}>
-                {!reduce && <Suspense fallback={null}><FuryFX3D type={gain.cards[0].furyType} loop className="fury-announce-fx" /></Suspense>}
-                <Motion.p className="fury-reveal-title" initial={reduce ? false : { y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
-                    <Flame size={18} aria-hidden="true" />Carte Fury !
-                </Motion.p>
-                <div className="fury-reveal-cards">
-                    {gain.cards.map((c, i) => <Motion.div key={c.id} initial={reduce ? false : { opacity: 0, y: 28, scale: 0.88, rotateY: 35 }} animate={{ opacity: 1, y: 0, scale: 1, rotateY: 0 }}
-                        transition={{ duration: 0.75, delay: 0.3 + i * 0.12, ease: [0.16, 1, 0.3, 1] }}>
-                        <FuryCard type={c.furyType} />
-                    </Motion.div>)}
-                </div>
-                <Motion.p className="fury-reveal-sub" initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.6 }}>Rangée dans votre réserve, sous la pioche. Jouez-la au début d’un prochain tour, à la place de piocher.</Motion.p>
-                <Motion.button type="button" className="fury-reveal-ok" onClick={closeGain} autoFocus initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.7 }}>Continuer</Motion.button>
-            </Motion.div>}
             {gain && gain.by !== myIndex && <Motion.div key={gain.at} className="fury-gain" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
                 <Flame size={16} aria-hidden="true" />
                 {gain.by === myIndex ? 'Carte Fury : ' : `${names[gain.by]} récupère : `}{gain.cards.map(c => FURY_TYPES[c.furyType].title).join(', ')}

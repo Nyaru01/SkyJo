@@ -373,8 +373,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     const [hasPlayedVictory, setHasPlayedVictory] = useState(false);
     const [showRulesModal, setShowRulesModal] = useState(false);
     const [showDrawDiscardPopup, setShowDrawDiscardPopup] = useState(false);
-    // Fury piochée : sa révélation passe d'abord, la carte piochée ne s'ouvre qu'après « Continuer ».
-    const [furyGainSeenAt, setFuryGainSeenAt] = useState(null);
     const [isNextRoundPending, setIsNextRoundPending] = useState(false);
     const [showBonusTutorial, setShowBonusTutorial] = useState(false);
     const [lobbyCountdown, setLobbyCountdown] = useState(null); // null, 3, 2, 1, 'GO'
@@ -2520,7 +2518,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                     <FuryAmbience />
                     <FuryRulesModal open={!hasSeenFuryIntro || furyRulesOpen} first={!hasSeenFuryIntro}
                         onClose={() => { setHasSeenFuryIntro(true); setFuryRulesOpen(false); }} />
-                    <FuryEffects lastFury={activeGameState.lastFury} lastGain={activeGameState.lastFuryGain} myIndex={myPlayerIndex} onGainSeen={setFuryGainSeenAt}
+                    <FuryEffects lastFury={activeGameState.lastFury} lastGain={activeGameState.lastFuryGain} myIndex={myPlayerIndex}
                         names={activeGameState.players.map((p, i) => (i === myPlayerIndex ? 'Vous' : p.name))} />
                 </>}
                 {furyOn && !isInitialReveal && <FuryRail part="opponent" opponent={activeGameState.players[opponentIndex]} opponentName={activeGameState.players[opponentIndex]?.name} />}
@@ -2784,8 +2782,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
 
             {/* Draw/Discard Popup Modal */}
             <DrawDiscardPopup
-                isOpen={showDrawDiscardPopup && !(activeGameState?.drawnCard?.id && activeGameState.lastFuryGain?.drawnId === activeGameState.drawnCard.id
-                    && activeGameState.lastFuryGain.by === myPlayerIndex && activeGameState.lastFuryGain.at !== furyGainSeenAt)}
+                isOpen={showDrawDiscardPopup}
+                furyCards={activeGameState?.drawnCard?.id && activeGameState.lastFuryGain?.drawnId === activeGameState.drawnCard.id
+                    && activeGameState.lastFuryGain.by === myPlayerIndex ? activeGameState.lastFuryGain.cards : undefined}
                 onClose={() => {
                     // Check if we need to undo "Take from Discard" action
                     // Logic: If we are in 'MUST_REPLACE' phase (meaning we took from discard)
