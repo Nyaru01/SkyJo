@@ -89,7 +89,7 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                     {/* Modal content - vertically centered */}
                     <motion.div
                         initial={{ scale: 0.9, opacity: 0, y: 30 }}
-                        animate={{ scale: 1, opacity: 1, y: drawnCard ? 64 : 50 }}
+                        animate={{ scale: 1, opacity: 1, y: drawnCard ? 26 : 50 }}
                         exit={{ scale: 0.9, opacity: 0, y: 30 }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                         className={cn("relative z-10 w-full mx-3 flex flex-col items-center justify-center overflow-hidden", drawnCard ? "dd-panel" : "p-6 rounded-[2.5rem] max-w-sm")}
