@@ -1,0 +1,111 @@
+/* ===== Écran de fin de partie : panneau nuit, gagnant en vedette, rang de performance, classement vers 100 points ===== */
+html body .go-panel {
+    --go-accent: #f0cf8e;
+    position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 16px; padding: 22px 18px 18px;
+    border-radius: 26px; border: 1px solid #ffffff1c; color: #e9e2d6; text-align: center;
+    background: linear-gradient(180deg, #2b2e45, #1d2031 60%, #181a28);
+    box-shadow: 0 30px 60px -26px #000000e6, inset 0 1px 0 #ffffff14;
+    animation: go-rise .55s cubic-bezier(.2, .8, .25, 1) both;
+}
+html body .go-panel--loss { --go-accent: #c9d3e0; }
+.go-glow { position: absolute; inset: -40% -20% auto; height: 70%; pointer-events: none; background: radial-gradient(ellipse at 50% 100%, color-mix(in srgb, var(--go-accent) 26%, transparent), transparent 65%); }
+@keyframes go-rise { from { opacity: 0; transform: translateY(24px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes go-pop { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
+@keyframes go-fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes go-spin { to { transform: rotate(360deg); } }
+@keyframes go-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes go-meter { from { transform: scaleX(0); } to { transform: none; } }
+
+.go-head { position: relative; }
+html body .go-panel .go-kicker { margin: 0; font-size: 10.5px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: #a9a3b8 !important; }
+html body .go-panel .go-outcome {
+    margin: 6px 0 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; font-weight: 600; line-height: 1;
+    color: var(--go-accent) !important; text-shadow: 0 0 28px color-mix(in srgb, var(--go-accent) 45%, transparent);
+    animation: go-pop .6s cubic-bezier(.2, .9, .3, 1.25) .15s both;
+}
+
+/* Gagnant */
+.go-hero { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; animation: go-fade .5s ease .3s both; }
+.go-avatar {
+    position: relative; width: 84px; height: 84px; margin: 14px 0 8px; display: grid; place-items: center; border-radius: 50%;
+    background: #2a2e45; border: 2px solid var(--go-accent);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--go-accent) 18%, transparent), 0 0 30px -4px color-mix(in srgb, var(--go-accent) 65%, transparent);
+}
+.go-avatar img { position: relative; z-index: 1; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.go-avatar-emoji { position: relative; z-index: 1; font-size: 40px; }
+.go-rays {
+    position: absolute; inset: -46%; z-index: 0; border-radius: 50%; opacity: .5; pointer-events: none;
+    background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--go-accent) 30%, transparent) 0deg 9deg, transparent 9deg 26deg);
+    -webkit-mask: radial-gradient(circle, #000 32%, transparent 70%); mask: radial-gradient(circle, #000 32%, transparent 70%);
+    animation: go-spin 16s linear infinite;
+}
+.go-crown {
+    position: absolute; top: -22px; left: 50%; z-index: 2; translate: -50% 0; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%;
+    color: #2a1c08; background: linear-gradient(180deg, color-mix(in srgb, var(--go-accent) 80%, #fff), var(--go-accent)); box-shadow: 0 6px 14px -6px #000;
+    animation: go-bob 2.8s ease-in-out infinite;
+}
+html body .go-panel .go-winner { margin: 0; font-size: 19px; font-weight: 800; color: #fbf6ee !important; }
+html body .go-panel .go-score { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #a9a3b8 !important; }
+html body .go-panel .go-score b { font-size: 22px; letter-spacing: 0; color: var(--go-accent) !important; }
+
+/* Rang de performance : teinte du rang + jauge à 4 crans */
+.go-rank {
+    --tier: #f0cf8e; position: relative; display: flex; flex-direction: column; gap: 9px; padding: 13px 14px; border-radius: 16px; text-align: left;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--tier) 14%, #23263a), #1d2031); border: 1px solid color-mix(in srgb, var(--tier) 40%, transparent);
+    animation: go-fade .5s ease .45s both;
+}
+.go-rank--progress { --tier: #9cc7f0; }
+.go-rank--mastery { --tier: #9fd6b4; }
+.go-rank--absolute { --tier: #c9a8f5; }
+.go-rank-top { display: flex; align-items: center; gap: 10px; }
+.go-rank-top > svg { flex: none; color: var(--tier); }
+html body .go-panel .go-rank-kicker { display: block; font-size: 9.5px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: #a9a3b8 !important; }
+html body .go-panel .go-rank-label { display: block; font-size: 16px; font-weight: 800; color: var(--tier) !important; }
+.go-rank-meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.go-rank-meter i { height: 5px; border-radius: 99px; background: #ffffff14; transform-origin: left; }
+.go-rank-meter i.is-on { background: var(--tier); box-shadow: 0 0 10px -2px var(--tier); animation: go-meter .4s ease both; }
+.go-rank-meter i:nth-child(1) { animation-delay: .5s; }
+.go-rank-meter i:nth-child(2) { animation-delay: .6s; }
+.go-rank-meter i:nth-child(3) { animation-delay: .7s; }
+.go-rank-meter i:nth-child(4) { animation-delay: .8s; }
+html body .go-panel .go-rank-text { margin: 0; font-size: 12px; line-height: 1.35; color: #c9c0cf !important; }
+
+/* Classement */
+.go-board { display: flex; flex-direction: column; gap: 7px; text-align: left; }
+html body .go-panel .go-board-title { margin: 0 0 2px; font-size: 10.5px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: #a9a3b8 !important; }
+.go-row {
+    display: grid; grid-template-columns: 26px 30px 1fr auto; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 14px;
+    background: #ffffff08; border: 1px solid #ffffff12; animation: go-fade .45s ease both; animation-delay: calc(.55s + var(--i, 0) * .08s);
+}
+.go-row--first { background: linear-gradient(90deg, color-mix(in srgb, var(--go-accent) 16%, transparent), #ffffff06); border-color: color-mix(in srgb, var(--go-accent) 38%, transparent); }
+.go-row-pos { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-size: 13px; font-weight: 900; color: #e9e2d6; background: #ffffff12; }
+.go-row--first .go-row-pos { color: #2a1c08; background: var(--go-accent); }
+.go-row-avatar { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; object-fit: cover; background: #2a2e45; }
+.go-row-main { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+html body .go-panel .go-row-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 700; color: #fbf6ee !important; }
+html body .go-panel .go-row-name em {
+    margin-left: 6px; padding: 1px 6px; border-radius: 99px; font-style: normal; font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+    vertical-align: 2px; color: #1b1e2e !important; background: #e3cfa8;
+}
+.go-row-bar { position: relative; height: 4px; border-radius: 99px; background: #ffffff12; overflow: hidden; }
+.go-row-bar i {
+    position: absolute; inset: 0 auto 0 0; border-radius: inherit; transform-origin: left;
+    background: linear-gradient(90deg, #9fd6b4, #f0cf8e 60%, #e8846f); background-size: 300px 100%;
+    animation: go-meter .7s cubic-bezier(.2, .8, .25, 1) both; animation-delay: calc(.7s + var(--i, 0) * .08s);
+}
+html body .go-panel .go-row-total { font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; color: #fbf6ee !important; }
+html body .go-panel .go-row-total small { font-size: 11px; font-weight: 700; color: #a9a3b8 !important; }
+html body .go-panel .go-row-total.is-out { color: #ef8f7d !important; }
+
+/* Actions */
+.go-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; animation: go-fade .45s ease .8s both; }
+.go-btn { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; min-height: 52px; border-radius: 15px; font-size: 15px; font-weight: 800; letter-spacing: .02em; transition: transform .15s ease; }
+.go-btn:active { transform: scale(.98); }
+.go-btn:focus-visible { outline: 2px solid var(--go-accent); outline-offset: 3px; }
+.go-btn:disabled { opacity: .4; }
+html body .go-panel .go-btn--main { color: #24273a !important; background: #ece4d6; box-shadow: 0 14px 26px -16px #000000cc; }
+html body .go-panel .go-btn--ghost { color: #e9e2d6 !important; background: #ffffff0d; border: 1px solid #ffffff1f; }
+
+@media (prefers-reduced-motion: reduce) {
+    .go-panel, .go-outcome, .go-hero, .go-rank, .go-row, .go-actions, .go-rank-meter i, .go-row-bar i, .go-rays, .go-crown { animation: none !important; }
+}

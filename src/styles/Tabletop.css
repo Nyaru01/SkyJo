@@ -385,3 +385,49 @@ html body .modal-surface.confirm-night button[class*="from-rose-400"] { backgrou
 html body .modal-surface.confirm-night button[class*="uppercase"] { color: #b3acbd !important; }
 html body .modal-surface.confirm-night .modal-close-button { background: #ffffff0d !important; border: 1px solid #ffffff1a !important; box-shadow: none !important; }
 html body .modal-surface.confirm-night .modal-close-button:hover { background: #ffffff1a !important; color: #e9e2d6 !important; }
+/* ===== Arrivée en partie : un voile couvre les cartes, une ligne de lumière le balaie depuis la pioche =====
+   Synchro sur les deux plateaux (même départ, même durée) : vers le haut chez l'adversaire, vers le bas chez vous.
+   Les cartes ne bougent pas (trop lourdes à animer à 24) : seuls le voile (scaleY), la ligne (translateY) et un éclat
+   (opacité) bougent. Voile et ligne partagent la même courbe : le bord du voile suit exactement la ligne. */
+.skyjo-deal { position: relative; }
+.skyjo-scan { --scan-accent: #e3cfa8; --scan-delay: .35s; --scan-dur: .9s; --scan-ease: cubic-bezier(.45, .05, .25, 1);
+    position: absolute; inset: -6px; z-index: 6; overflow: hidden; border-radius: 12px; pointer-events: none; }
+body.fury-mode .skyjo-scan { --scan-accent: #ff9a6a; }
+.skyjo-scan-cover { position: absolute; inset: 0; background-color: #1d2031; animation: skyjo-scan-cover var(--scan-dur) var(--scan-ease) var(--scan-delay) both; }
+.skyjo-scan--up .skyjo-scan-cover { transform-origin: top; }
+.skyjo-scan--down .skyjo-scan-cover { transform-origin: bottom; }
+@keyframes skyjo-scan-cover { from { transform: scaleY(1); } to { transform: scaleY(0); } }
+.skyjo-scan-line { position: absolute; inset: 0; animation: skyjo-scan-to-top var(--scan-dur) var(--scan-ease) var(--scan-delay) both; }
+.skyjo-scan--down .skyjo-scan-line { animation-name: skyjo-scan-to-bottom; }
+@keyframes skyjo-scan-to-top { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes skyjo-scan-to-bottom { from { transform: translateY(0); } to { transform: translateY(100%); } }
+/* Le trait lumineux, posé sur le bord du voile, et sa traînée (côté déjà révélé) */
+.skyjo-scan-line i { position: absolute; left: 3%; right: 3%; top: -1px; height: 2px; border-radius: 2px;
+    background: linear-gradient(90deg, transparent, var(--scan-accent) 18%, #fff8ec 50%, var(--scan-accent) 82%, transparent);
+    box-shadow: 0 0 12px 2px color-mix(in srgb, var(--scan-accent) 75%, transparent), 0 0 36px 9px color-mix(in srgb, var(--scan-accent) 30%, transparent);
+    animation: skyjo-scan-fade var(--scan-dur) ease var(--scan-delay) both; }
+.skyjo-scan-line i::before { content: ''; position: absolute; left: 6%; right: 6%; height: 46px; border-radius: 50%; opacity: .55;
+    background: radial-gradient(ellipse at 50% 100%, color-mix(in srgb, var(--scan-accent) 55%, transparent), transparent 70%); }
+.skyjo-scan--up .skyjo-scan-line i::before { top: 2px; transform: scaleY(-1); }   /* traînée sous la ligne qui monte */
+.skyjo-scan--down .skyjo-scan-line i::before { bottom: 2px; }                     /* traînée au-dessus de la ligne qui descend */
+@keyframes skyjo-scan-fade { 0% { opacity: 0; } 10% { opacity: 1; } 86% { opacity: 1; } 100% { opacity: 0; } }
+/* Étincelles portées par la ligne */
+.skyjo-scan-line b { position: absolute; top: -2px; width: 4px; height: 4px; border-radius: 50%; background: #fff6e4;
+    box-shadow: 0 0 8px 2px var(--scan-accent); opacity: 0; animation: skyjo-scan-spark var(--scan-dur) ease var(--scan-delay) both; }
+.skyjo-scan-line b:nth-of-type(1) { left: 18%; animation-delay: calc(var(--scan-delay) + .05s); }
+.skyjo-scan-line b:nth-of-type(2) { left: 41%; animation-delay: calc(var(--scan-delay) + .2s); }
+.skyjo-scan-line b:nth-of-type(3) { left: 63%; animation-delay: calc(var(--scan-delay) + .1s); }
+.skyjo-scan-line b:nth-of-type(4) { left: 84%; animation-delay: calc(var(--scan-delay) + .28s); }
+@keyframes skyjo-scan-spark { 0%, 100% { opacity: 0; transform: translateY(0) scale(.5); } 30% { opacity: 1; transform: translateY(-3px) scale(1); } 60% { opacity: .2; transform: translateY(2px) scale(.7); } 75% { opacity: .9; } }
+/* Éclat final : le cadre du plateau s'illumine brièvement à la fin du balayage */
+.skyjo-scan-flash { position: absolute; inset: 0; border-radius: inherit; opacity: 0;
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--scan-accent) 85%, transparent), inset 0 0 26px color-mix(in srgb, var(--scan-accent) 32%, transparent);
+    animation: skyjo-scan-flash .45s ease-out calc(var(--scan-delay) + var(--scan-dur) - .08s) both; }
+@keyframes skyjo-scan-flash { 0% { opacity: 0; } 35% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .skyjo-scan { display: none; } }
+/* Plateaux : glissement CSS (sur le GPU), sans ressort ni changement d'échelle (la texture du plateau n'est pas recalculée). */
+.skyjo-board-in { animation: skyjo-board-in .45s cubic-bezier(.2, .8, .25, 1) .05s both; }
+.skyjo-board-in--top { --board-from: -24px; }
+.skyjo-board-in--bottom { --board-from: 24px; }
+@keyframes skyjo-board-in { from { opacity: 0; transform: translateY(var(--board-from, 0)); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .skyjo-board-in { animation: none; } }

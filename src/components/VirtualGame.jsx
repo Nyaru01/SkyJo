@@ -11,6 +11,7 @@ import confetti from 'canvas-confetti';
 // Removed custom Toast import to avoid confusion
 import ConfirmModal from './ui/ConfirmModal';
 import PlayerHand from './virtual/PlayerHand';
+import { DEAL_TOTAL_MS } from '../lib/dealTiming';
 import DrawDiscard from './virtual/DrawDiscard';
 import DrawDiscardPopup from './virtual/DrawDiscardPopup';
 import DrawDiscardTrigger from './virtual/DrawDiscardTrigger';
@@ -51,6 +52,7 @@ import BonusTutorial from './BonusTutorial';
 import Tutorial from './Tutorial';
 import SkyjoLoader from './SkyjoLoader';
 import '../styles/OnlineLobby.css';
+import '../styles/GameOver.css';
 import { PremiumTiltButton } from './ui/PremiumTiltButton';
 
 // Player colors for avatars
@@ -918,7 +920,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                     const cardsToReveal = chooseInitialCardsToReveal(aiPlayer.hand, aiDifficulty);
                     revealInitial(firstAIToReveal, cardsToReveal);
                     setAIThinking(false);
-                }, 800);
+                }, DEAL_TOTAL_MS); // après la distribution : l'IA retourne des cartes posées, pas des cartes en vol
                 return () => clearTimeout(timer);
             }
             return;
@@ -2008,152 +2010,87 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                         pendingAnimation={onlineGameStarted ? onlinePendingAnimation : virtualPendingAnimation}
                         onClear={onlineGameStarted ? clearOnlinePendingAnimation : clearVirtualPendingAnimation}
                     />
-                    <Card className="glass-premium shadow-xl overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 to-orange-900/20" />
-                        <CardHeader className="text-center relative">
-                            <div className="relative py-4">
-                            </div>
-                            <CardTitle className={cn(
-                                "text-2xl",
-                                isDailyChallenge
-                                    ? (isUserWinner ? "text-amber-300 font-black tracking-tighter" : "text-rose-400 font-black tracking-tighter")
-                                    : "text-amber-400"
-                            )}>
-                                {isDailyChallenge
-                                    ? (isUserWinner ? "Défi Quotidien Réussi !" : "Défi Quotidien Échoué")
-                                    : "Fin de partie !"}
-                            </CardTitle>
-                            <p className="text-slate-400 text-sm mt-1">
-                                Après {roundNumber} manche{roundNumber > 1 ? 's' : ''}
-                            </p>
-                        </CardHeader>
-                        <CardContent className="relative space-y-4">
-                            {/* Winner announcement */}
-                            <motion.div
-                                initial={{ scale: 0.8, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                className={cn(
-                                    "text-center p-4 rounded-xl relative overflow-hidden",
-                                    isDailyChallenge
-                                        ? "bg-gradient-to-r from-amber-500/30 via-yellow-500/40 to-amber-500/30 border border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.2)]"
-                                        : "bg-gradient-to-r from-amber-900/50 to-yellow-900/50"
-                                )}
-                            >
-                                {isDailyChallenge && (
-                                    <motion.div
-                                        animate={{ x: ['-100%', '200%'] }}
-                                        transition={{ duration: 3, repeat: Infinity }}
-                                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-20deg]"
-                                    />
-                                )}
-                                <span className="text-4xl block mb-2">{activeGameWinner.emoji}</span>
-                                <span className="text-xl font-bold text-amber-200">
-                                    {activeGameWinner.name} gagne !
-                                </span>
-                                <span className="text-sm text-amber-400 block mt-1">
-                                    Score final : {activeGameWinner.score} pts
-                                </span>
+                    {(() => {
+                        // Écran de fin : panneau nuit, gagnant en vedette, rang de performance, classement vers les 100 points.
+                        const ranked = activeGameState.players
+                            .map(p => ({ ...p, total: activeTotalScores[String(p.id)] || 0 }))
+                            .sort((a, b) => a.total - b.total);
+                        const winnerPlayer = activeGameState.players.find(p => p.id === activeGameWinner.id);
+                        const winnerAvatar = getAvatarPath(winnerPlayer?.avatarId || activeGameWinner.emoji);
+                        const tiers = ['survival', 'progress', 'mastery', 'absolute'];
+                        const tierIndex = tourmentPerformance ? tiers.indexOf(tourmentPerformance.id) : -1;
+                        const outcome = isDailyChallenge
+                            ? (isUserWinner ? 'Défi quotidien réussi' : 'Défi quotidien échoué')
+                            : (isUserWinner ? 'Victoire' : 'Défaite');
+                        return (
+                            <section className={cn('go-panel', isUserWinner ? 'go-panel--win' : 'go-panel--loss')} aria-labelledby="go-title">
+                                <span className="go-glow" aria-hidden="true" />
+                                <header className="go-head">
+                                    <p className="go-kicker">Fin de partie · {roundNumber} manche{roundNumber > 1 ? 's' : ''}</p>
+                                    <h2 id="go-title" className="go-outcome">{outcome}</h2>
+                                </header>
+
+                                <div className="go-hero">
+                                    <div className="go-avatar">
+                                        <span className="go-rays" aria-hidden="true" />
+                                        <span className="go-crown" aria-hidden="true"><Trophy size={18} strokeWidth={2} /></span>
+                                        {winnerAvatar
+                                            ? <img src={winnerAvatar} alt="" width="76" height="76" />
+                                            : <span className="go-avatar-emoji">{activeGameWinner.emoji || '👤'}</span>}
+                                    </div>
+                                    <p className="go-winner">{activeGameWinner.name} gagne&nbsp;!</p>
+                                    <p className="go-score"><b>{activeGameWinner.score}</b> pts</p>
+                                </div>
+
                                 {tourmentPerformance && (
-                                    <div className={cn(
-                                        "mt-3 rounded-xl border px-3 py-2",
-                                        tourmentPerformance.id === 'absolute'
-                                            ? "border-violet-300/30 bg-violet-500/15 text-violet-100"
-                                            : tourmentPerformance.id === 'mastery'
-                                                ? "border-emerald-300/25 bg-emerald-500/10 text-emerald-100"
-                                                : tourmentPerformance.id === 'progress'
-                                                    ? "border-sky-300/20 bg-sky-500/10 text-sky-100"
-                                                    : "border-amber-300/20 bg-amber-500/10 text-amber-100",
-                                    )}>
-                                        <span className="block text-[9px] font-black uppercase tracking-[0.2em] opacity-70">Performance {performanceMode}</span>
-                                        <strong className="mt-0.5 block text-sm uppercase tracking-wide">{tourmentPerformance.label}</strong>
-                                        <span className="mt-0.5 block text-[10px] opacity-75">{tourmentPerformance.description}</span>
+                                    <div className={`go-rank go-rank--${tourmentPerformance.id}`}>
+                                        <div className="go-rank-top">
+                                            <Award size={18} aria-hidden="true" />
+                                            <div>
+                                                <span className="go-rank-kicker">Performance {performanceMode}</span>
+                                                <strong className="go-rank-label">{tourmentPerformance.label}</strong>
+                                            </div>
+                                        </div>
+                                        <div className="go-rank-meter" aria-hidden="true">
+                                            {tiers.map((t, i) => <i key={t} className={i <= tierIndex ? 'is-on' : ''} />)}
+                                        </div>
+                                        <p className="go-rank-text">{tourmentPerformance.description}</p>
                                     </div>
                                 )}
-                            </motion.div>
 
-                            {/* All players final scores */}
-                            <div className="space-y-2">
-                                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                                    Classement final
-                                </h3>
-                                {activeGameState.players
-                                    .map(p => ({ ...p, total: activeTotalScores[String(p.id)] || 0 }))
-                                    .sort((a, b) => a.total - b.total)
-                                    .map((player, index) => (
-                                        <div
-                                            key={player.id}
-                                            className={cn(
-                                                "flex items-center justify-between p-2 rounded-lg",
-                                                index === 0 ? "bg-amber-900/30" : "bg-white/5"
-                                            )}
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-bold text-slate-400">#{index + 1}</span>
-                                                {getAvatarPath(player.avatarId || player.emoji) ? (
-                                                    <img
-                                                        src={getAvatarPath(player.avatarId || player.emoji)}
-                                                        alt="Avatar"
-                                                        className="w-5 h-5 object-contain rounded-full"
-                                                    />
-                                                ) : (
-                                                    <span>{player.emoji || '👤'}</span>
-                                                )}
-                                                <span className="font-medium text-slate-300">{player.name}</span>
+                                <div className="go-board">
+                                    <h3 className="go-board-title">Classement final</h3>
+                                    {ranked.map((player, index) => {
+                                        const avatar = getAvatarPath(player.avatarId || player.emoji);
+                                        const isMe = player.id === activeGameState.players[myPlayerIndex]?.id;
+                                        return (
+                                            <div key={player.id} className={cn('go-row', index === 0 && 'go-row--first', isMe && 'go-row--me')} style={{ '--i': index }}>
+                                                <span className="go-row-pos">{index + 1}</span>
+                                                {avatar ? <img className="go-row-avatar" src={avatar} alt="" width="30" height="30" /> : <span className="go-row-avatar">{player.emoji || '👤'}</span>}
+                                                <div className="go-row-main">
+                                                    <span className="go-row-name">{player.name}{isMe && <em>Vous</em>}</span>
+                                                    <span className="go-row-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, Math.max(3, player.total))}%` }} /></span>
+                                                </div>
+                                                <span className={cn('go-row-total', player.total >= 100 && 'is-out')}>{player.total}<small> pts</small></span>
                                             </div>
-                                            <span className={cn(
-                                                "font-bold",
-                                                player.total >= 100 ? "text-red-500" : "text-slate-300"
-                                            )}>
-                                                {player.total} pts
-                                            </span>
-                                        </div>
-                                    ))}
-                            </div>
+                                        );
+                                    })}
+                                </div>
 
-                            {/* Daily Challenge Retry Button */}
-                            {isDailyChallenge && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="pt-2"
-                                >
-                                    <Button
-                                        onClick={rematch}
-                                        disabled={isUserWinner}
-                                        className={cn(
-                                            "w-full h-12 rounded-xl text-white font-black shadow-lg flex items-center justify-center gap-2 border-b-4 transition-all",
-                                            isUserWinner
-                                                ? "bg-slate-700/50 border-slate-800 text-slate-500 cursor-not-allowed opacity-50 shadow-none border-b-0 translate-y-1"
-                                                : "bg-gradient-to-r from-rose-500 to-pink-600 shadow-rose-500/20 border-rose-800 active:border-b-0 active:translate-y-1"
-                                        )}
-                                    >
-                                        <RefreshCw className={cn("w-5 h-5", !isUserWinner && "animate-spin-slow")} />
-                                        REJOUER LE DÉFI
-                                    </Button>
-                                </motion.div>
-                            )}
-
-                            <motion.div 
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.5, type: "spring", stiffness: 100 }}
-                                className="p-1.5 bg-black/30 backdrop-blur-xl rounded-[2rem] border border-white/10 shadow-2xl mt-6 group/tray"
-                            >
-                                <PremiumTiltButton
-                                    className="w-full"
-                                    gradientFrom={isUserWinner ? "from-amber-400" : "from-slate-600"}
-                                    gradientTo={isUserWinner ? "to-orange-600" : "to-slate-800"}
-                                    shadowColor={isUserWinner ? "shadow-amber-500/40" : "shadow-slate-500/20"}
-                                    onClick={() => handleBackToMenu(isDailyChallenge)}
-                                >
-                                    {isDailyChallenge
-                                        ? <CheckCircle className="h-5 w-5" />
-                                        : <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />}
-                                    {isDailyChallenge ? "TERMINER" : "REVENIR AU MENU"}
-                                </PremiumTiltButton>
-                            </motion.div>
-                        </CardContent>
-                    </Card>
+                                <div className="go-actions">
+                                    {isDailyChallenge && (
+                                        <button type="button" onClick={rematch} disabled={isUserWinner} className="go-btn go-btn--ghost">
+                                            <RefreshCw size={17} aria-hidden="true" />Rejouer le défi
+                                        </button>
+                                    )}
+                                    <button type="button" onClick={() => handleBackToMenu(isDailyChallenge)} className="go-btn go-btn--main">
+                                        {isDailyChallenge ? <CheckCircle size={18} aria-hidden="true" /> : <ArrowLeft size={18} aria-hidden="true" />}
+                                        {isDailyChallenge ? 'Terminer' : 'Revenir au menu'}
+                                    </button>
+                                </div>
+                            </section>
+                        );
+                    })()}
                 </div>
             );
         }
@@ -2477,16 +2414,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
             {/* Opponent at TOP for thumb zone optimization */}
             {activeGameState.players[opponentIndex] && (
                 <motion.div
-                    initial={{ y: -60, opacity: 0, scale: 0.98 }}
-                    animate={{ y: 0, opacity: 1, scale: 1 }}
-                    transition={{
-                        type: "spring",
-                        stiffness: 90,
-                        damping: 20,
-                        delay: 0.1
-                    }}
-                    style={{ willChange: "transform, opacity" }}
-                    className="relative rounded-2xl"
+                    className="relative rounded-2xl skyjo-board-in skyjo-board-in--top"
                 >
                     <PlayerHand
                         hideAutoRevealed={isFinished}
@@ -2656,16 +2584,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
             {/* Local Player at BOTTOM for thumb zone optimization */}
             {activeGameState.players[myPlayerIndex] && (
                 <motion.div
-                    initial={{ y: 60, opacity: 0, scale: 0.98 }}
-                    animate={{ y: 0, opacity: 1, scale: 1 }}
-                    transition={{
-                        type: "spring",
-                        stiffness: 90,
-                        damping: 20,
-                        delay: 0.1
-                    }}
-                    style={{ willChange: "transform, opacity" }}
-                    className="relative rounded-2xl"
+                    className="relative rounded-2xl skyjo-board-in skyjo-board-in--bottom"
                 >
                     <PlayerHand
                         hideAutoRevealed={isFinished}

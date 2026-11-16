@@ -12,7 +12,9 @@ function fit(el) {
     const card = el.querySelector('.skyjo-hand [style*="skyjo-card-h"]');
     if (!area || !card) return;
     const rows = el.querySelectorAll('.skyjo-hand').length * 3 + 1;
-    let h = card.getBoundingClientRect().height;
+    // Hauteur réelle (offsetHeight), pas celle déformée par une animation en cours (distribution : scale .72),
+    // sinon on croit avoir de la place, on réécrit la taille et toute la table est recalculée en pleine animation.
+    let h = card.offsetHeight;
     for (let pass = 0; pass < 3; pass++) {
         const box = area.getBoundingClientRect();
         let top = Infinity, bottom = -Infinity, rails = 0;
@@ -30,7 +32,8 @@ function fit(el) {
         const slack = box.height - Math.max(bottom - top, rails + 4 - 2 * RAIL_OVERFLOW) - 4 - Math.max(0, el.scrollHeight - el.clientHeight);
         if (Math.abs(slack) < 6) return;
         const next = Math.max(MIN_H, Math.min(MAX_H, h + slack / rows));
-        if (Math.abs(next - h) < 1) return;
+        // Écart de moins de 2 px : on ne touche à rien (chaque retouche recalcule toute la table).
+        if (Math.abs(next - h) < 2) return;
         h = next;
         el.style.setProperty('--skyjo-card-h', `${h.toFixed(1)}px`);
         el.style.setProperty('--skyjo-card-w', `${Math.min(h * 0.74, 62).toFixed(1)}px`);
@@ -40,6 +43,9 @@ function fit(el) {
 export function fitCardsRef(el) {
     if (!el) return undefined;
     let frame = 0;
+    // Premier ajustement tout de suite, avant le premier affichage : la taille est juste dès l'arrivée des plateaux,
+    // au lieu d'être retouchée en pleine animation de distribution (ce qui saccadait au lancement).
+    fit(el);
     const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => fit(el)); };
     const timers = [0, 300, 1200].map(ms => setTimeout(schedule, ms));
     const resize = new ResizeObserver(schedule);

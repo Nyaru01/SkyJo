@@ -1,10 +1,11 @@
-import { memo, useState, useRef, useEffect } from 'react';
+import { memo, useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { motion as Motion, useReducedMotion } from 'framer-motion';
 import { Bot, HelpCircle } from 'lucide-react';
 import SkyjoCard from './SkyjoCard';
 import { cn } from '../../lib/utils';
 import { getAvatarPath } from '../../lib/avatars';
 import ColumnBeam from './ColumnBeam';
+import { DEAL_TOTAL_MS } from '../../lib/dealTiming';
 
 /**
  * Player Hand Component
@@ -34,18 +35,25 @@ const PlayerHand = memo(function PlayerHand({
     // Layout: column-first (0,1,2 = col1, 3,4,5 = col2, etc.)
     const getCardIndex = (row, col) => col * 3 + row;
 
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: { staggerChildren: reducedMotion ? 0 : 0.035 },
-        },
-    };
-
-    const cardVariants = {
-        hidden: { opacity: 0, y: reducedMotion ? 0 : -20, scale: reducedMotion ? 1 : 0.92 },
-        visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 320, damping: 26 } },
-    };
+    // Révélation en début de manche : les cartes ne bougent pas (elles sont lourdes à animer). Un voile de la couleur
+    // du plateau les couvre, et une ligne de lumière le balaie depuis la pioche, en même temps sur les deux plateaux :
+    // vers le haut chez l'adversaire, vers le bas chez vous.
+    // Seuls le voile et la ligne bougent (transform), d'où une animation fluide même sur téléphone.
+    const dealGridRef = useRef(null);
+    const [scanning, setScanning] = useState(!reducedMotion);
+    useEffect(() => { const t = setTimeout(() => setScanning(false), DEAL_TOTAL_MS); return () => clearTimeout(t); }, []);
+    useLayoutEffect(() => {
+        // Le voile prend le fond du plateau, pour se fondre dedans.
+        const grid = dealGridRef.current;
+        const hand = grid?.closest('.skyjo-hand');
+        const cover = grid?.querySelector('.skyjo-scan-cover');
+        if (!hand || !cover) return;
+        const bg = getComputedStyle(hand);
+        // Fond du plateau assombri : un voile trop clair se voyait comme une plaque blanchâtre.
+        const shade = 'linear-gradient(rgba(8, 7, 14, 0.42), rgba(8, 7, 14, 0.42))';
+        cover.style.backgroundColor = bg.backgroundColor;
+        cover.style.backgroundImage = bg.backgroundImage && bg.backgroundImage !== 'none' ? `${shade}, ${bg.backgroundImage}` : shade;
+    }, []);
 
     // Safety check for undefined player (e.g. during state transitions or sync issues)
 
@@ -280,10 +288,14 @@ const PlayerHand = memo(function PlayerHand({
                     marginTop: '2px', // Minimal margin since padding handles badge space
                     justifyItems: 'center',
                 }}
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
+                className="skyjo-deal"
+                ref={dealGridRef}
             >
+                {scanning && <span className={cn('skyjo-scan', isOpponent ? 'skyjo-scan--up' : 'skyjo-scan--down')} aria-hidden="true">
+                    <span className="skyjo-scan-cover" />
+                    <span className="skyjo-scan-line"><i /><b /><b /><b /><b /></span>
+                    <span className="skyjo-scan-flash" />
+                </span>}
                 {[0, 1, 2].map((row) =>
                     [0, 1, 2, 3].map((col) => {
                         const cardIndex = getCardIndex(row, col);
@@ -302,7 +314,6 @@ const PlayerHand = memo(function PlayerHand({
                         return (
                             <Motion.div
                                 key={`${row}-${col}`}
-                                variants={cardVariants}
                                 style={{ position: 'relative', zIndex: 1 }}
                                 id={`card-${player.id}-${cardIndex}`}
                             >
