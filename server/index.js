@@ -51,7 +51,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../dist'), {
     setHeaders: (res, filePath) => {
         const fileName = path.basename(filePath);
-        if (['sw.js', 'index.html', 'manifest.webmanifest'].includes(fileName)) {
+        if (['sw.js', 'index.html', 'manifest.webmanifest', 'manifest.json'].includes(fileName)) {
             res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
             res.setHeader('Pragma', 'no-cache');
             res.setHeader('Expires', '0');

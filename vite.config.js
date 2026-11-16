@@ -31,24 +31,11 @@ export default defineConfig({
         'Music/*.mp3',   // Background music
         '*.mp4'          // Intro Videos
       ],
-      manifest: {
-        id: '/',
-        name: 'Vesper',
-        short_name: 'Vesper',
-        description: 'Vesper, le jeu de cartes au crépuscule : contre l’IA, en ligne entre amis, et le mode Fury.',
-        version,
-        theme_color: '#1f2233',
-        background_color: '#171a2e',
-        display: 'standalone',
-        orientation: 'portrait',
-        // Chemins stables : un horodatage changeant ferait croire à Android que l'icône change à chaque version.
-        icons: [
-          { src: '/brand/vesper-v-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/brand/vesper-v-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: '/brand/vesper-v-maskable-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
-          { src: '/brand/vesper-v-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
-        ]
-      }
+      // Un seul manifeste : public/manifest.json (déclaré dans index.html, c'est lui que Chrome lit).
+      // Le plugin en générait un second (manifest.webmanifest) que Chrome ignorait.
+      // Icônes : changer leur adresse (?v=…) est le seul moyen pour qu'Android mette à jour l'icône installée
+      // (depuis Chrome 144, une adresse inchangée = icône inchangée, l'image n'est plus retéléchargée).
+      manifest: false,
     })
   ],
   server: {
