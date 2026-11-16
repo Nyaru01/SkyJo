@@ -4,6 +4,7 @@ import { X, Skull, RefreshCw, Eraser, Sparkles, Orbit, Flame } from 'lucide-reac
 import SkyjoCard from './SkyjoCard';
 import { FuryCard } from './FuryUI';
 import { cn } from '../../lib/utils';
+import '../../styles/DrawPopup.css';
 
 // Simple haptic feedback function
 const triggerHaptic = (pattern = 30) => {
@@ -78,7 +79,7 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                 >
                     {/* Blur backdrop - darkened for better contrast while keeping low blur */}
                     <div
-                        className="absolute inset-0 bg-black/45"
+                        className={cn("absolute inset-0", drawnCard ? "bg-black/20" : "bg-black/45")}
                         style={{
                             backdropFilter: 'blur(1.5px)',
                             WebkitBackdropFilter: 'blur(1.5px)',
@@ -88,155 +89,70 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                     {/* Modal content - vertically centered */}
                     <motion.div
                         initial={{ scale: 0.9, opacity: 0, y: 30 }}
-                        animate={{ scale: 1, opacity: 1, y: 50 }}
+                        animate={{ scale: 1, opacity: 1, y: drawnCard ? 64 : 50 }}
                         exit={{ scale: 0.9, opacity: 0, y: 30 }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                        className="relative z-10 p-6 rounded-[2.5rem] max-w-sm w-full mx-4 flex flex-col items-center justify-center overflow-hidden"
-                        style={{
+                        className={cn("relative z-10 w-full mx-3 flex flex-col items-center justify-center overflow-hidden", drawnCard ? "dd-panel" : "p-6 rounded-[2.5rem] max-w-sm")}
+                        style={drawnCard ? undefined : {
                             backgroundColor: 'rgba(15, 23, 42, 0.9)',
                             backdropFilter: 'blur(20px)',
                             WebkitBackdropFilter: 'blur(20px)',
                             border: '1px solid rgba(255, 255, 255, 0.1)',
                             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-                            minHeight: drawnCard ? '260px' : '300px',
+                            minHeight: '300px',
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* DRAWN CARD VIEW - Clean, centered layout */}
                         {drawnCard ? (
-                            <div className="flex flex-col items-center justify-center">
-                                {/* Header */}
-                                <h3 className="text-lg font-bold text-white mb-2 text-center">
-                                    {isBonusMode && drawnCard?.value === 20 ? (
-                                        <span className="text-red-500 animate-pulse flex items-center justify-center gap-2">
-                                            <Skull className="w-5 h-5" />
-                                            OBLIGÉ DE POSER !
-                                        </span>
-                                    ) : (drawnCard.specialType === 'S') ? (
-                                        <span className="text-indigo-400 flex items-center justify-center gap-2">
-                                            <RefreshCw className="w-5 h-5" />
-                                            ÉCHANGE POSSIBLE !
-                                        </span>
-                                    ) : (drawnCard.specialType === 'C') ? (
-                                        <span className="text-emerald-400 flex items-center justify-center gap-2">
-                                            <Sparkles className="w-5 h-5" />
-                                            JOKER NETTOYAGE !
-                                        </span>
-                                    ) : (drawnCard.specialType === 'H') ? (
-                                        <span className="text-slate-200 flex items-center justify-center gap-2">
-                                            <Orbit className="w-5 h-5 animate-spin-slow" />
-                                            TROU NOIR !
-                                        </span>
-                                    ) : withFury ? (
-                                        <span className="flex items-center justify-center gap-2 text-[#ffcbb0]">
-                                            <Flame className="w-5 h-5 text-[#ff8a55]" />
-                                            Deux cartes piochées
-                                        </span>
-                                    ) : (
-                                        "Carte en main"
-                                    )}
-                                </h3>
-
-                                {/* Extra info for S/C card */}
-                                {(drawnCard.specialType === 'S') && (
-                                    <p className="text-[10px] text-indigo-300/80 font-medium text-center mb-4 max-w-[200px] leading-tight">
-                                        Cette carte vous permet d'échanger n'importe quelle carte avec un adversaire.
-                                    </p>
-                                )}
-                                {(drawnCard.specialType === 'C') && (
-                                    <p className="text-[10px] text-emerald-300/80 font-medium text-center mb-4 max-w-[200px] leading-tight">
-                                        Cette carte s'adapte à votre colonne : elle prend la valeur qu'il vous manque pour supprimer une série de 3 cartes.
-                                    </p>
-                                )}
-                                {(drawnCard.specialType === 'H') && (
-                                    <p className="text-[10px] text-slate-400 font-medium text-center mb-4 max-w-[200px] leading-tight">
-                                        Cette carte aspire toutes les cartes de la défausse et les remet sous la pioche.
-                                    </p>
-                                )}
-
-                                {/* Drawn card + Discard history side by side */}
-                                <div className={cn("flex items-end gap-6 mb-4", withFury && "draw-with-fury")}>
-                                    {/* Fury piochée avec cette carte : elle file dans la réserve */}
+                            <div className={cn("dd-compact", withFury && "dd-compact--fury")}>
+                                {/* Cartes : la Fury (vers la réserve) puis la carte à jouer */}
+                                <div className="dd-cards">
                                     {furyCards.map((c, i) => (
-                                        <motion.figure key={c.id} className="draw-fury"
-                                            initial={{ opacity: 0, y: 14, rotate: -6 }} animate={{ opacity: 1, y: 0, rotate: -3 }}
-                                            transition={{ duration: 0.45, delay: 0.05 + i * 0.1, ease: [0.2, 0.8, 0.25, 1] }}>
-                                            <FuryCard type={c.furyType} />
-                                            <figcaption><Flame className="w-3 h-3" aria-hidden="true" />Réserve Fury</figcaption>
+                                        <motion.figure key={c.id} className="dd-fury"
+                                            initial={{ opacity: 0, y: 10, rotate: -8 }} animate={{ opacity: 1, y: 0, rotate: -5 }}
+                                            transition={{ duration: 0.4, delay: 0.05 + i * 0.1, ease: [0.2, 0.8, 0.25, 1] }}>
+                                            <FuryCard type={c.furyType} size="mini" />
+                                            <figcaption><Flame className="w-3 h-3" aria-hidden="true" />Réserve</figcaption>
                                         </motion.figure>
                                     ))}
-                                    {/* Main drawn card */}
-                                    <motion.figure className="draw-main"
-                                        initial={withFury ? { opacity: 0, y: 14 } : false} animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.45, delay: withFury ? 0.2 : 0, ease: [0.2, 0.8, 0.25, 1] }}>
-                                        <div className="relative">
-                                            <div className="absolute inset-0 bg-amber-400/30 rounded-xl blur-md" />
-                                            <SkyjoCard card={drawnCard} size="lg" isHighlighted />
-                                        </div>
+                                    <motion.figure className="dd-main"
+                                        initial={withFury ? { opacity: 0, y: 10 } : false} animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.4, delay: withFury ? 0.18 : 0, ease: [0.2, 0.8, 0.25, 1] }}>
+                                        <SkyjoCard card={drawnCard} size="md" isHighlighted />
                                         {withFury && <figcaption>À jouer</figcaption>}
                                     </motion.figure>
                                 </div>
-                                {withFury && <p className="draw-fury-note">La Fury rejoint votre réserve : jouez-la au début d’un prochain tour, à la place de piocher.</p>}
 
-                                {/* Two clear action buttons */}
-                                <div className={cn(
-                                    "grid gap-3 mt-6 w-full px-2",
-                                    (drawnCard.specialType === 'S' || drawnCard.specialType === 'H') ? "grid-cols-1" : (canDiscardDrawn ? "grid-cols-2" : "grid-cols-1")
-                                )}>
-                                    {drawnCard.specialType === 'S' ? (
-                                        <motion.button
-                                            onClick={onUseAction}
-                                            className="w-full px-2 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-2xl transition-all shadow-[0_4px_0_0_#4f46e5] active:shadow-none active:translate-y-1 border border-white/10 text-xs sm:text-sm uppercase tracking-widest whitespace-nowrap text-center"
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                        >
-                                            <span className="flex items-center justify-center gap-2">
-                                                <RefreshCw className="w-5 h-5 animate-spin-slow" />
-                                                ÉCHANGER
-                                            </span>
-                                        </motion.button>
-                                    ) : (drawnCard.specialType === 'H') ? (
-                                        <motion.button
-                                            onClick={onUseAction}
-                                            className="w-full px-2 py-4 bg-slate-100 hover:bg-white text-slate-900 font-black rounded-2xl transition-all shadow-[0_4px_0_0_#cbd5e1] active:shadow-none active:translate-y-1 border border-white/90 text-xs sm:text-sm uppercase tracking-widest whitespace-nowrap text-center"
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                        >
-                                            <span className="flex items-center justify-center gap-2">
-                                                <Orbit className="w-5 h-5 animate-spin-slow" />
-                                                ASPIRER LA DÉFAUSSE
-                                            </span>
-                                        </motion.button>
-                                    ) : (
-                                        /* Default buttons for other cards */
-                                        <>
-                                            <motion.button
-                                                onClick={handleConfirmPlacement}
-                                                className="w-full px-2 py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-2xl transition-all shadow-[0_4px_0_0_#059669] active:shadow-none active:translate-y-1 border border-white/10 text-xs sm:text-sm uppercase tracking-widest whitespace-nowrap text-center"
-                                                whileHover={{ scale: 1.02 }}
-                                                whileTap={{ scale: 0.98 }}
-                                            >
-                                                Placer
-                                            </motion.button>
+                                <div className="dd-side">
+                                    <h3 className="dd-title">
+                                        {(isBonusMode && drawnCard?.value === 20) ? (
+                                            <span className="text-red-400 flex items-center gap-1.5"><Skull className="w-4 h-4" />Obligé de poser</span>
+                                        ) : (drawnCard.specialType === 'S') ? (
+                                            <span className="text-indigo-300 flex items-center gap-1.5"><RefreshCw className="w-4 h-4" />Échange possible</span>
+                                        ) : (drawnCard.specialType === 'C') ? (
+                                            <span className="text-emerald-300 flex items-center gap-1.5"><Sparkles className="w-4 h-4" />Joker nettoyage</span>
+                                        ) : (drawnCard.specialType === 'H') ? (
+                                            <span className="text-slate-200 flex items-center gap-1.5"><Orbit className="w-4 h-4" />Trou noir</span>
+                                        ) : withFury ? (
+                                            <span className="flex items-center gap-1.5 text-[#ffcbb0]"><Flame className="w-4 h-4 text-[#ff8a55]" />Deux cartes</span>
+                                        ) : 'Carte en main'}
+                                    </h3>
+                                    {drawnCard.specialType === 'S' && <p className="dd-note">Échangez une de vos cartes avec un adversaire.</p>}
+                                    {drawnCard.specialType === 'C' && <p className="dd-note">Complète une colonne pour la supprimer.</p>}
+                                    {drawnCard.specialType === 'H' && <p className="dd-note">Aspire la défausse sous la pioche.</p>}
+                                    {withFury && <p className="dd-note">La Fury va dans votre réserve.</p>}
 
-                                            {/* Only allow discarding if permitted (e.g. drawn from pile, not taken from discard) */}
-                                            {canDiscardDrawn && (
-                                                <motion.button
-                                                    onClick={handleDiscardDrawnCard}
-                                                    className={cn(
-                                                        "w-full px-2 py-4 font-black rounded-2xl transition-all shadow-lg active:shadow-none active:translate-y-1 border text-xs sm:text-sm uppercase tracking-widest whitespace-nowrap text-center",
-                                                        (isBonusMode && drawnCard?.value === 20)
-                                                            ? "bg-slate-800 text-slate-500 border-white/5 cursor-not-allowed opacity-50 grayscale"
-                                                            : "bg-orange-600 hover:bg-orange-500 text-white shadow-[0_4px_0_0_#9a3412] border-white/10"
-                                                    )}
-                                                    whileHover={(isBonusMode && drawnCard?.value === 20) ? {} : { scale: 1.02 }}
-                                                    whileTap={(isBonusMode && drawnCard?.value === 20) ? {} : { scale: 0.98 }}
-                                                >
-                                                    Défausser
-                                                </motion.button>
-                                            )}
-                                        </>
-                                    )}
+                                    <div className="dd-actions">
+                                        {drawnCard.specialType === 'S' ? (
+                                            <button type="button" onClick={onUseAction} className="dd-btn dd-btn--swap"><RefreshCw className="w-4 h-4" />Échanger</button>
+                                        ) : drawnCard.specialType === 'H' ? (
+                                            <button type="button" onClick={onUseAction} className="dd-btn dd-btn--hole"><Orbit className="w-4 h-4" />Aspirer</button>
+                                        ) : <>
+                                            <button type="button" onClick={handleConfirmPlacement} className="dd-btn dd-btn--place">Placer</button>
+                                            {canDiscardDrawn && <button type="button" onClick={handleDiscardDrawnCard} disabled={(isBonusMode && drawnCard?.value === 20)} className="dd-btn dd-btn--discard">Défausser</button>}
+                                        </>}
+                                    </div>
                                 </div>
                             </div>
                         ) : (
@@ -361,7 +277,7 @@ const DrawDiscardPopup = memo(function DrawDiscardPopup({
                         {!(isBonusMode && drawnCard?.value === 20) && (
                             <button
                                 onClick={onClose}
-                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-white transition-colors"
+                                className={cn("absolute flex items-center justify-center rounded-full bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-white transition-colors", drawnCard ? "top-2 right-2 w-7 h-7 text-xs" : "top-3 right-3 w-8 h-8")}
                             >
                                 ✕
                             </button>
