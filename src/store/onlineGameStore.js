@@ -255,7 +255,18 @@ export const useOnlineGameStore = create((set, get) => ({
                         cardToAnimate = lastAction.card || { value: cardValue, isRevealed: true };
                     }
 
-                    if (sourceId && targetId) {
+                    // Carte à animer : celle envoyée par le serveur, sinon la vraie carte de l'état reçu.
+                    // Une carte « de secours » sans couleur ni valeur s'affichait verte et vide, parfois figée sur le plateau.
+                    if (!cardToAnimate || cardToAnimate.value === undefined || cardToAnimate.value === null || cardToAnimate.value === '?') {
+                        const owner = gameState?.players?.find(p => p.id === playerId);
+                        const idx = type === 'reveal_initial' ? lastAction?.cardIndices?.[0] : cardIndex;
+                        const fromState = type === 'draw_pile' || type === 'draw_discard' ? gameState?.drawnCard
+                            : (type === 'replace_card' || type === 'reveal_hidden' || type === 'reveal_initial') ? owner?.hand?.[idx]
+                                : gameState?.discardPile?.[gameState.discardPile.length - 1];
+                        cardToAnimate = fromState && fromState.value !== undefined && fromState.value !== null ? { ...fromState, isRevealed: true } : null;
+                    }
+
+                    if (sourceId && targetId && cardToAnimate) {
                         set({
                             pendingAnimation: {
                                 sourceId,

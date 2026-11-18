@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion as Motion } from 'framer-motion';
 import SkyjoCard from './SkyjoCard';
@@ -48,13 +48,24 @@ export default function CardAnimationLayer({ pendingAnimation, onClear }) {
         }
     }, [pendingAnimation, onClear]);
 
+    const doneRef = useRef(false);
     const handleAnimationComplete = () => {
+        if (doneRef.current) return;
+        doneRef.current = true;
         if (animationState?.onComplete) {
             animationState.onComplete();
         }
         setAnimationState(null);
         onClear();
     };
+    // Filet de sécurité : si l'animation est interrompue (appli en arrière-plan, mises à jour rapprochées),
+    // la carte volante ne doit jamais rester figée sur le plateau ni bloquer l'état de la partie.
+    useEffect(() => {
+        if (!animationState) return undefined;
+        doneRef.current = false;
+        const t = setTimeout(handleAnimationComplete, 1500);
+        return () => clearTimeout(t);
+    }, [animationState]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (!animationState) return null;
 

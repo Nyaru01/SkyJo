@@ -386,6 +386,14 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
         }
     }, [onlineGameState?.phase]);
 
+    // Filet de sécurité : si le serveur ignore une action (hors tour, en double), aucune mise à jour n'arrive :
+    // on libère le verrou au bout de 3 s pour ne jamais bloquer le joueur.
+    useEffect(() => {
+        if (!isActionPending) return undefined;
+        const t = setTimeout(() => setIsActionPending(false), 3000);
+        return () => clearTimeout(t);
+    }, [isActionPending]);
+
     // Reset action pending when game state or last action updates
     useEffect(() => {
         if (isActionPending) {
@@ -1112,13 +1120,15 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
 
         // In online mode, we just emit actions
         if (isOnline) {
-            if (activeState.turnPhase === 'REPLACE_OR_DISCARD') {
-                playCardPlace();
-                emitGameAction('replace_card', { cardIndex });
-            } else if (activeState.turnPhase === 'MUST_REPLACE') {
+            // Une seule action à la fois : l'état du serveur n'arrive qu'après l'animation (~0,6 s),
+            // et un 2e appui envoyait la même action une seconde fois.
+            if (activeState.turnPhase === 'REPLACE_OR_DISCARD' || activeState.turnPhase === 'MUST_REPLACE') {
+                setIsActionPending(true);
                 playCardPlace();
                 emitGameAction('replace_card', { cardIndex });
             } else if (activeState.turnPhase === 'MUST_REVEAL') {
+                if (activeState.players[targetPlayerIndex]?.hand?.[cardIndex]?.isRevealed) return;
+                setIsActionPending(true);
                 playCardFlip();
                 emitGameAction('reveal_hidden', { cardIndex });
             }

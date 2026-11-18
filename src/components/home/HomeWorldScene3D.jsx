@@ -1,6 +1,6 @@
 import { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, extend, useFrame, useThree } from '@react-three/fiber';
-import { AdditiveBlending, RepeatWrapping, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, CatmullRomCurve3, Color, MathUtils, PlaneGeometry, SRGBColorSpace, Vector3 } from 'three';
+import { AdditiveBlending, RepeatWrapping, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, CatmullRomCurve3, Color, DataTexture, LinearFilter, LinearMipmapLinearFilter, MathUtils, RGBAFormat, PlaneGeometry, SRGBColorSpace, Vector3 } from 'three';
 import { backTexture, pastelFaceTexture } from './cardTextures';
 import { useGameStore } from '../../store/gameStore';
 import { getCardSkinPath } from '../../lib/skinUtils';
@@ -22,21 +22,24 @@ extend({ RoundedBoxGeometry });
 const StoneContext = createContext(null);
 
 // One shared, deterministic mineral grain for the architecture; no image request.
+// Built as a DataTexture (pixels kept in JS memory) rather than a 2D canvas: on Android, Chrome may clear
+// canvases while the app is in the background, and the re-uploaded texture then turned the whole island black.
 function makeStoneTexture() {
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = 256;
-    const ctx = canvas.getContext('2d');
-    const pixels = ctx.createImageData(256, 256);
+    const size = 256;
+    const data = new Uint8Array(size * size * 4);
     let seed = 37;
-    for (let i = 0; i < pixels.data.length; i += 4) {
+    for (let i = 0; i < data.length; i += 4) {
         seed = (seed * 16807) % 2147483647;
         const shade = 224 + Math.floor(seed / 2147483647 * 30);
-        pixels.data.set([shade, shade, shade, 255], i);
+        data[i] = shade; data[i + 1] = shade; data[i + 2] = shade; data[i + 3] = 255;
     }
-    ctx.putImageData(pixels, 0, 0);
-    const texture = new CanvasTexture(canvas);
+    const texture = new DataTexture(data, size, size, RGBAFormat);
     texture.colorSpace = SRGBColorSpace;
+    texture.magFilter = LinearFilter;
+    texture.minFilter = LinearMipmapLinearFilter;
+    texture.generateMipmaps = true;
     texture.anisotropy = 4;
+    texture.needsUpdate = true;
     return texture;
 }
 

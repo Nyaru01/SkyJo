@@ -19,6 +19,7 @@ import pushRoutes from './routes/push.js';
 import socialRoutes from './routes/social.js';
 
 import { sendInvitationNotification } from './utils/pushNotifications.js';
+import { rejectGameAction } from './utils/actionGuard.js';
 
 // Import game engine functions
 import {
@@ -446,6 +447,9 @@ io.on('connection', (socket) => {
         const myId = socket.dbId || socket.id;
         const pIdx = room.gameState.players.findIndex(p => p.id === myId);
         if (pIdx === -1) return;
+        // Action hors tour ou en double (ex. 2e « retourner » pendant l'animation) : ignorée sans bruit.
+        const rejected = rejectGameAction(room.gameState, pIdx, action, payload || {});
+        if (rejected) { console.warn(`[GAME] ${roomCode} action ${action} ignorée : ${rejected}`); return; }
 
         try {
             let newState = JSON.parse(JSON.stringify(room.gameState));
@@ -454,8 +458,8 @@ io.on('connection', (socket) => {
             switch (action) {
                 case 'reveal_initial':
                     newState = revealInitialCards(newState, pIdx, payload.cardIndices);
-                    // For animation, take the last revealed card
-                    const initialCard = newState.players[pIdx].hand[payload.cardIndices[1]];
+                    // Pour l'animation : la carte que le client fait pivoter (la première révélée)
+                    const initialCard = newState.players[pIdx].hand[payload.cardIndices?.[0]];
                     lastAction.card = initialCard;
                     lastAction.cardValue = initialCard ? initialCard.value : null;
                     break;
