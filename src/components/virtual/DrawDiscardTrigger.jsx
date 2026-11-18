@@ -134,6 +134,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
     isAIThinking = false,
     drawnCardSource = null,
     recapText = '', // Dernier coup de l'IA, en clair
+    drawnCardInPopup = false, // La fenêtre de pioche montre déjà la carte : on la masque ici (sinon deux cartes à l'écran)
 }) {
     const cardSkin = useGameStore(s => (s && s.cardSkin) ? s.cardSkin : 'classic');
     const gameMode = useGameStore(s => (s && s.gameMode) ? s.gameMode : 'normal');
@@ -254,6 +255,8 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                 whileHover={canInteract ? { scale: 1.05 } : undefined}
                                 whileTap={canInteract ? { scale: 0.95 } : undefined}
                                 id="drawn-card-slot"
+                                style={drawnCardInPopup ? { visibility: 'hidden' } : undefined}
+                                aria-hidden={drawnCardInPopup || undefined}
                             >
                                 <SkyjoCard
                                     card={{ ...drawnCard, isRevealed: true }}

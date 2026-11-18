@@ -2518,6 +2518,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                             <DrawDiscardTrigger
                                 onClick={() => setShowDrawDiscardPopup(true)} // Default open
                                 drawnCardSource={activeDrawnCardSource}
+                                drawnCardInPopup={showDrawDiscardPopup}
                                 onDrawAction={() => {
                                     // Direct draw action
                                     if (activeGameState.turnPhase === 'DRAW') {
