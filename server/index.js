@@ -315,6 +315,33 @@ const getPublicRooms = () => {
     return publicRooms;
 };
 
+// --- Reconnexion en partie ---
+// Un téléphone verrouillé ou un réseau qui change coupe la connexion : le joueur garde sa place
+// pendant RECONNECT_GRACE_MS. S'il revient (même compte), il est rattaché à sa partie et resynchronisé.
+const RECONNECT_GRACE_MS = 3 * 60 * 1000;
+const graceTimers = new Map(); // `${roomCode}:${playerId}` -> timer
+
+function rejoinStartedGames(socket) {
+    if (!socket.dbId) return;
+    for (const [code, room] of rooms.entries()) {
+        if (!room.gameStarted) continue;
+        const player = room.players.find(p => p.dbId && String(p.dbId) === socket.dbId);
+        if (!player || player.socketId === socket.id) continue;
+        const wasDisconnected = !!player.disconnected;
+        player.socketId = socket.id;
+        player.disconnected = false;
+        const key = `${code}:${player.id}`;
+        if (graceTimers.has(key)) { clearTimeout(graceTimers.get(key)); graceTimers.delete(key); }
+        socket.join(code);
+        socket.emit('game_resync', {
+            roomCode: code, gameState: room.gameState, totalScores: room.totalScores, roundNumber: room.roundNumber || 1,
+            gameMode: room.gameMode, isPaused: !!room.isPaused, players: room.players,
+        });
+        if (wasDisconnected) io.to(code).emit('player_connection', { playerId: player.id, playerName: player.name, connected: true });
+        console.log(`[ROOM] ${player.name} rattaché à ${code} (socket ${socket.id})`);
+    }
+}
+
 io.on('connection', (socket) => {
     socket.emit('room_list_update', getPublicRooms());
 
@@ -330,6 +357,7 @@ io.on('connection', (socket) => {
         userMetadata.set(socket.dbId, { name: name || 'Joueur', avatarId: avatarId || null, vibeId: vibeId || null });
         io.emit('user_presence_update', { userId: socket.dbId, status: 'ONLINE' });
         console.log(`[USER] Registered: ${name} (${socket.dbId}) | Socket: ${socket.id} | Total Sockets: ${userStatus.get(socket.dbId).size}`);
+        rejoinStartedGames(socket);
     });
 
     // Joueurs connectés (amis ou non), avec leur statut : disponible, dans un salon, en partie.
@@ -449,7 +477,12 @@ io.on('connection', (socket) => {
         if (pIdx === -1) return;
         // Action hors tour ou en double (ex. 2e « retourner » pendant l'animation) : ignorée sans bruit.
         const rejected = rejectGameAction(room.gameState, pIdx, action, payload || {});
-        if (rejected) { console.warn(`[GAME] ${roomCode} action ${action} ignorée : ${rejected}`); return; }
+        if (rejected) {
+            console.warn(`[GAME] ${roomCode} action ${action} ignorée : ${rejected}`);
+            // Le téléphone était peut-être désynchronisé (reconnexion, animation) : on lui renvoie l'état réel.
+            socket.emit('game_update', { gameState: room.gameState, lastAction: null });
+            return;
+        }
 
         try {
             let newState = JSON.parse(JSON.stringify(room.gameState));
@@ -736,8 +769,23 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         // Find which room this socket was in and clean up
         for (const [code, room] of rooms.entries()) {
-            const isMember = room.players.some(p => p.socketId === socket.id);
-            if (isMember) {
+            const player = room.players.find(p => p.socketId === socket.id);
+            if (!player) continue;
+            if (room.gameStarted && player.dbId) {
+                // Déconnexion involontaire probable (écran verrouillé, réseau) : la partie l'attend.
+                player.disconnected = true;
+                player.socketId = null;
+                io.to(code).emit('player_connection', { playerId: player.id, playerName: player.name, connected: false, graceSeconds: RECONNECT_GRACE_MS / 1000 });
+                const key = `${code}:${player.id}`;
+                if (graceTimers.has(key)) clearTimeout(graceTimers.get(key));
+                graceTimers.set(key, setTimeout(() => {
+                    graceTimers.delete(key);
+                    const r = rooms.get(code);
+                    const p = r?.players.find(x => x.id === player.id);
+                    if (r && p?.disconnected) handlePlayerLeft({ dbId: p.dbId, id: p.id }, code);
+                }, RECONNECT_GRACE_MS));
+                console.log(`[ROOM] ${player.name} déconnecté de ${code} : place gardée ${RECONNECT_GRACE_MS / 1000} s`);
+            } else {
                 handlePlayerLeft(socket, code);
             }
         }

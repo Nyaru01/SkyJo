@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { create } from 'zustand';
 import { io } from 'socket.io-client';
 import { AVATARS } from '../lib/avatars';
@@ -318,6 +319,20 @@ export const useOnlineGameStore = create((set, get) => ({
                 if (me && newHost === me.name) {
                     set({ isHost: true });
                 }
+            });
+
+            // Retour après une coupure (écran verrouillé, réseau) : le serveur renvoie toute la partie.
+            socket.on('game_resync', ({ roomCode, gameState, totalScores, roundNumber, gameMode, isPaused, players }) => {
+                set({
+                    roomCode, gameState, activeState: gameState, totalScores, roundNumber,
+                    players: players || get().players, gameStarted: true, onlineStarted: true,
+                    isPaused: !!isPaused, gameMode: gameMode || get().gameMode, pendingAnimation: null, selectedCardIndex: null,
+                });
+            });
+            // L'adversaire a perdu la connexion / est revenu
+            socket.on('player_connection', ({ playerName, connected, graceSeconds }) => {
+                if (connected) toast.success(`${playerName} est de retour`, { id: 'player-connection' });
+                else toast(`${playerName} s'est déconnecté·e. La partie l'attend ${Math.round((graceSeconds || 180) / 60)} min.`, { id: 'player-connection', duration: 8000, icon: '⏳' });
             });
 
             socket.on('game_cancelled', ({ reason }) => {
