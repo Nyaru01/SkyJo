@@ -748,8 +748,16 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
         if (!lockedHigh) return highest.index;
     }
 
-    // Check for column completion opportunities first
-    for (const idx of [...revealedIndices, ...hiddenIndices]) {
+    // Check for column completion opportunities first.
+    // Columns that already hold the same value come first: a 4 must join the other 4 rather than
+    // « start » a column that is still entirely hidden just because that slot comes earlier in the hand.
+    const sameValueInColumn = idx => {
+        const colStart = Math.floor(idx / 3) * 3;
+        return [colStart, colStart + 1, colStart + 2].filter(i => i !== idx && hand[i] && hand[i].isRevealed
+            && (hand[i].specialType === 'C' || hand[i].value === 'C' || cardValue === 'C' || Number(hand[i].value) === Number(cardValue))).length;
+    };
+    const columnOrder = [...revealedIndices, ...hiddenIndices].sort((a, b) => sameValueInColumn(b) - sameValueInColumn(a));
+    for (const idx of columnOrder) {
         if (hand[idx] === null) continue;
         // RULE: Never replace a locked card
         if (hand[idx].lockCount > 0) continue;
