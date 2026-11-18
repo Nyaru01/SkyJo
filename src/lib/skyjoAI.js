@@ -1206,6 +1206,16 @@ export const decideDrawSource = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
             return 'DISCARD_PILE';
         }
 
+        // A profitable immediate clear beats everything else, whatever the card replaced in the column:
+        // with 11 · 1 · 11 visible, taking the 11 from the discard and putting it on the 1 removes 23 points.
+        // (The « protect a good card » rules below used to forbid sacrificing the 1, so the clear was missed.)
+        for (let i = 0; i < currentPlayer.hand.length; i++) {
+            const card = currentPlayer.hand[i];
+            if (!card || card.lockCount > 0) continue;
+            if (card.isRevealed && Number(card.value) === Number(discardValue)) continue;
+            if (completesColumnImmediately(currentPlayer.hand, i, discardValue, difficulty)) return 'DISCARD_PILE';
+        }
+
         // Hardcore/Bonus: Take from discard if it's excellent (<= 2)
         // OR if it completes a column. Otherwise, prefer drawing from the deck.
         if (discardValue <= 2) {
@@ -1261,9 +1271,10 @@ export const decideDrawSource = (gameState, difficulty = AI_DIFFICULTY.NORMAL) =
         // IMPROVED (Point 2): Memory-based denial
         // If opponent has been collecting a specific value, block it even if
         // the standard wouldHelpOpponent check didn't trigger
-        if (isAdvancedLevel(difficulty) && isOpponentCollecting(gameState, discardValue)) {
+        // Same ceiling as the denial above: taking a 10-12 « to block » mostly hurts the AI itself.
+        if (isAdvancedLevel(difficulty) && discardValue <= 5 && isOpponentCollecting(gameState, discardValue)) {
             const myHighest = findHighestRevealedCard(currentPlayer.hand);
-            if (myHighest.value >= discardValue) {
+            if (myHighest.value > discardValue + 2) {
                 aiLog(difficulty, `Memory-based block: opponent collects ${discardValue}, taking from discard`);
                 return 'DISCARD_PILE';
             }
