@@ -1679,3 +1679,22 @@ html body .menu-lobby .ai-rival-stage--bonus::before { content: ''; position: ab
         radial-gradient(1px 1px at 60% 12%, #fff, transparent), radial-gradient(1.3px 1.3px at 88% 34%, #ffe6f2, transparent), radial-gradient(1px 1px at 38% 20%, #fff, transparent);
     animation: ai-twinkle 4s ease-in-out infinite alternate; }
 @media (prefers-reduced-motion: reduce) { html body .menu-lobby .ai-rival-stage--hardcore::before, html body .menu-lobby .ai-rival-stage--bonus::before, html body .menu-lobby .ai-rival-island { animation: none; } }
+/* Duel IA : plus de nom du mode dans la scène ; mer de nuages au pied du décor (profondeur, le robot plane au-dessus) */
+html body .menu-lobby .ai-rival .ai-rival-stage { height: 172px; }
+html body .menu-lobby .ai-rival .ai-rival-stage .ai-rival-avatar { height: 168px; }
+html body .menu-lobby .ai-rival-sea { position: absolute; left: 0; right: 0; bottom: 0; height: 38%; z-index: 0; pointer-events: none; overflow: hidden;
+    -webkit-mask-image: linear-gradient(0deg, #000 55%, transparent); mask-image: linear-gradient(0deg, #000 55%, transparent); }
+html body .menu-lobby .ai-rival-sea::before, html body .menu-lobby .ai-rival-sea::after { content: ''; position: absolute; left: 0; bottom: -6px; width: 200%; height: 100%;
+    background: radial-gradient(ellipse 9% 46% at 6% 78%, var(--sea) 0, transparent 100%), radial-gradient(ellipse 12% 56% at 22% 86%, var(--sea) 0, transparent 100%),
+        radial-gradient(ellipse 8% 40% at 36% 74%, var(--sea) 0, transparent 100%), radial-gradient(ellipse 13% 60% at 50% 90%, var(--sea) 0, transparent 100%),
+        radial-gradient(ellipse 10% 48% at 66% 80%, var(--sea) 0, transparent 100%), radial-gradient(ellipse 12% 54% at 84% 88%, var(--sea) 0, transparent 100%),
+        linear-gradient(0deg, var(--sea) 18%, transparent 60%);
+    background-size: 50% 100%; background-repeat: repeat-x; animation: ai-sea 70s linear infinite; }
+html body .menu-lobby .ai-rival-sea::after { bottom: -18px; opacity: .75; filter: brightness(1.08); animation-duration: 46s; animation-direction: reverse; background-position: 25% 0; }
+@keyframes ai-sea { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+html body .menu-lobby .ai-rival-stage--hard { --sea: #f6dcd6e6; }
+html body .menu-lobby .ai-rival-stage--hardcore { --sea: #26305ce0; }
+html body .menu-lobby .ai-rival-stage--bonus { --sea: #e9a7c4d9; }
+html body .menu-lobby .ai-rival-stage--fury { --sea: #2a0c06e6; }
+html body .menu-lobby .ai-rival-stage--fury .ai-rival-sea::after { filter: none; background-color: transparent; opacity: .55; }
+@media (prefers-reduced-motion: reduce) { html body .menu-lobby .ai-rival-sea::before, html body .menu-lobby .ai-rival-sea::after { animation: none; } }

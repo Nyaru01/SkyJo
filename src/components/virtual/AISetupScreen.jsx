@@ -39,10 +39,8 @@ export default function AISetupScreen({ difficulty, onDifficultyChange, onStart,
                 <div className="ai-rival-orbit" aria-hidden="true" />
                 <div className="ai-rival-platform" aria-hidden="true" />
                 <IslandSpin />
+                <div className="ai-rival-sea" aria-hidden="true" />
                 <RobotAvatar size="hero" difficulty={mode.id} rival className="ai-rival-avatar" />
-            </div>
-            <div className="ai-rival-dialogue" aria-live="polite" aria-atomic="true">
-                <span className="ai-rival-mode">{mode.title}</span>
             </div>
         </section>
 
