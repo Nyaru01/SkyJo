@@ -39,7 +39,7 @@ export const useOnlineGameStore = create((set, get) => ({
     gameWinner: null,
     readyStatus: { readyCount: 0, totalPlayers: 0 }, // Track ready players for next round
     timeoutExpired: false, // True when 10s timeout has passed and host can force-start
-    gameMode: null, // 'classic' or 'bonus' (must be chosen by host)
+    gameMode: null, // 'bonus' (Tourment) ou 'fury' (must be chosen by host)
     isPaused: false, // Online game pause state
 
     // Redirection State (when host leaves)

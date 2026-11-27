@@ -25,7 +25,7 @@ import GameMessageBanner from './virtual/GameMessageBanner';
 import DrawReactionBubble from './virtual/DrawReactionBubble';
 import SwapReveal from './virtual/SwapReveal';
 import { FuryRail, FuryTargetBanner, FuryEffects, FuryAmbience, FuryRulesModal } from './virtual/FuryUI';
-import { NormalIcon, TourmentIcon, FuryIcon } from './virtual/ModeIcons';
+import { TourmentIcon, FuryIcon } from './virtual/ModeIcons';
 import { FURY_TYPES } from '../lib/furyEngine';
 import { fitCardsRef } from '../lib/fitCards';
 import ExperienceBar from './ExperienceBar';
@@ -417,8 +417,8 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
             playerAvatarId: savedAvatarId,
             aiCount: 1,
             // Dernier mode choisi par le joueur (retenu d’une visite à l’autre)
-            difficulty: [AI_DIFFICULTY.HARD, AI_DIFFICULTY.HARDCORE, AI_DIFFICULTY.BONUS, AI_DIFFICULTY.FURY].includes(localStorage.getItem('skyjo_last_ai_mode'))
-                ? localStorage.getItem('skyjo_last_ai_mode') : AI_DIFFICULTY.HARD,
+            difficulty: [AI_DIFFICULTY.BONUS, AI_DIFFICULTY.FURY].includes(localStorage.getItem('skyjo_last_ai_mode'))
+                ? localStorage.getItem('skyjo_last_ai_mode') : AI_DIFFICULTY.BONUS,
         };
     });
     useEffect(() => { try { localStorage.setItem('skyjo_last_ai_mode', aiConfig.difficulty); } catch { /* stockage indisponible */ } }, [aiConfig.difficulty]);
@@ -1661,12 +1661,11 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                             </div>
                         </div>
 
-                        {/* Mode de jeu du salon : Classique, Tourment ou Fury (choisi par l'hôte) */}
+                        {/* Mode de jeu du salon : Tourment ou Fury (choisi par l'hôte) */}
                         <div className="ol-modes">
                             <h3 className="ol-modes-title">Mode de jeu{!onlineIsHost && <small>choisi par l’hôte</small>}</h3>
                             <div className="ol-modes-grid" role="radiogroup" aria-label="Mode de jeu">
                                 {[
-                                    { id: 'classic', title: 'Classique', text: 'Les règles de Vesper', Icon: NormalIcon, tone: 'amber' },
                                     { id: 'bonus', title: 'Tourment', text: 'Cartes spéciales', Icon: TourmentIcon, tone: 'coral', rules: () => setShowBonusRules(true) },
                                     { id: 'fury', title: 'Fury', text: 'Cartes de sabotage', Icon: FuryIcon, tone: 'ember', rules: () => setFuryRulesOpen(true) },
                                 ].map(m => {
@@ -1682,12 +1681,11 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                                 })}
                                 {!onlineIsHost && !onlineGameMode && <div className="ol-mode-wait" role="status">
                                     <span className="ol-mode-wait-icons" aria-hidden="true">
-                                        <span className="ol-mode-icon ol-mode--amber"><NormalIcon width={20} height={20} /></span>
                                         <span className="ol-mode-icon ol-mode--coral"><TourmentIcon width={20} height={20} /></span>
                                         <span className="ol-mode-icon ol-mode--ember"><FuryIcon width={20} height={20} /></span>
                                     </span>
                                     <strong>L’hôte choisit le mode<span className="ol-dots" aria-hidden="true"><i /><i /><i /></span></strong>
-                                    <small>Classique, Tourment ou Fury : la partie commencera dès qu’il aura lancé.</small>
+                                    <small>Tourment ou Fury : la partie commencera dès qu’il aura lancé.</small>
                                 </div>}
                             </div>
                         </div>

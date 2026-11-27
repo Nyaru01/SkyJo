@@ -22,7 +22,7 @@ export default function DailyChallengeDialog({ isOpen, onClose, difficulty, onDi
         </header>
         <div className="daily-challenge-scene">
             <div className="daily-challenge-light" aria-hidden="true" />
-            <RobotAvatar size="hero" difficulty={difficulty || AI_DIFFICULTY.HARD} className="daily-challenge-robot" />
+            <RobotAvatar size="hero" difficulty={difficulty || AI_DIFFICULTY.BONUS} className="daily-challenge-robot" />
             <div className="daily-challenge-reward" aria-live="polite" aria-atomic="true">
                 <Trophy size={21} aria-hidden="true" />
                 <span>BONUS DE VICTOIRE</span>

@@ -41,7 +41,7 @@ import { initializeFuryGame, collectFuryFromPile, playFury } from '../src/lib/fu
 // Nouvelle manche selon le mode du salon : Classique, Tourment (bonus) ou Fury.
 const newRoundState = (room, gamePlayers) => (room.gameMode === 'fury'
     ? initializeFuryGame(gamePlayers)
-    : initializeGame(gamePlayers, { isBonusMode: room.gameMode === 'bonus' }));
+    : initializeGame(gamePlayers, { isBonusMode: true }));
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -307,7 +307,7 @@ const getPublicRooms = () => {
                 hostName: room.players.find(p => p.isHost)?.name || 'Inconnu',
                 playerCount: room.players.length,
                 emoji: room.players.find(p => p.isHost)?.emoji || '🎮',
-                gameMode: room.gameMode || 'classic',
+                gameMode: room.gameMode || 'bonus',
                 isPaused: !!room.isPaused
             });
         }
@@ -436,8 +436,9 @@ io.on('connection', (socket) => {
     socket.on('change_mode', ({ roomCode, mode, dbId }) => {
         const room = rooms.get(roomCode?.toUpperCase());
         if (!room) return;
-        room.gameMode = mode;
-        io.to(roomCode.toUpperCase()).emit('mode_changed', mode);
+        // Plus de mode Classique : tout ce qui n'est pas Fury devient Tourment (y compris les anciens clients).
+        room.gameMode = mode === 'fury' ? 'fury' : 'bonus';
+        io.to(roomCode.toUpperCase()).emit('mode_changed', room.gameMode);
         io.emit('room_list_update', getPublicRooms());
         console.log(`[ROOM] ${roomCode} mode changed to: ${mode} by ${dbId}`);
     });

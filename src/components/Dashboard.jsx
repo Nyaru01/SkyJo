@@ -388,7 +388,7 @@ export default function Dashboard() {
                                         const virtual = useVirtualGameStore.getState();
                                         if (!virtual.gameState) {
                                             const profile = useGameStore.getState().userProfile;
-                                            const started = virtual.startAIGame({ name: profile.name, avatarId: profile.avatarId }, 1, AI_DIFFICULTY.HARD);
+                                            const started = virtual.startAIGame({ name: profile.name, avatarId: profile.avatarId }, 1, localStorage.getItem('skyjo_last_ai_mode') === AI_DIFFICULTY.FURY ? AI_DIFFICULTY.FURY : AI_DIFFICULTY.BONUS, { isBonusMode: localStorage.getItem('skyjo_last_ai_mode') !== AI_DIFFICULTY.FURY });
                                             if (started === false) return;
                                         }
                                         screen = 'game';

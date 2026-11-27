@@ -1,20 +1,18 @@
 import { useId, useLayoutEffect, useRef } from 'react';
 import { ArrowLeft, ArrowUpRight, Check, Play, BookOpen } from 'lucide-react';
-import { NormalIcon, HardIcon, TourmentIcon, FuryIcon } from './ModeIcons';
+import { TourmentIcon, FuryIcon } from './ModeIcons';
 import { AI_DIFFICULTY } from '../../lib/skyjoAI';
 import RobotAvatar from './RobotAvatar';
 import IslandSpin from './IslandSpin';
 import '../../styles/AISetup.css';
 
 const MODES = [
-    { id: AI_DIFFICULTY.HARD, title: 'Normal', description: 'Un duel équilibré', icon: NormalIcon, theme: 'amber', line: 'À vous de me surprendre.', detail: 'Le bon niveau pour une partie posée : l’IA joue juste, sans vous écraser.' },
-    { id: AI_DIFFICULTY.HARDCORE, title: 'Difficile', description: 'Ne laissez rien au hasard', icon: HardIcon, theme: 'violet', line: 'Je ne vous ferai aucun cadeau.', detail: 'Une IA impitoyable et des règles spéciales. Consultez-les avant le duel.', rules: 'hardcore' },
     { id: AI_DIFFICULTY.BONUS, title: 'Tourment', description: 'Osez les cartes spéciales', icon: TourmentIcon, theme: 'coral', line: 'Prêt à jouer avec le feu ?', detail: 'Cartes spéciales et bonus de colonnes : découvrez une autre façon de jouer.', rules: 'tourment' },
     { id: AI_DIFFICULTY.FURY, title: 'Fury', description: 'Détruisez le jeu adverse', icon: FuryIcon, theme: 'ember', line: 'Je vais tout casser.', detail: '12 cartes de sabotage cachées dans la pioche : séisme, malédiction, tornade… Trois au plus par manche.', rules: 'fury' },
 ];
 
 export default function AISetupScreen({ difficulty, onDifficultyChange, onStart, onBack, onRules }) {
-    const mode = MODES.find(item => item.id === difficulty) || MODES.find(item => item.id === AI_DIFFICULTY.HARD);
+    const mode = MODES.find(item => item.id === difficulty) || MODES[0];
     const radioName = useId();
     const dockRef = useRef(null);
     useLayoutEffect(() => {
@@ -45,7 +43,7 @@ export default function AISetupScreen({ difficulty, onDifficultyChange, onStart,
         </section>
 
         <fieldset className="ai-difficulties">
-            <legend>Choisissez votre défi<span>4 façons de jouer</span></legend>
+            <legend>Choisissez votre défi<span>2 façons de jouer</span></legend>
             <div className="ai-difficulty-grid">
                 {MODES.map(({ id, title, description, icon: Icon, theme }) => <label key={id} className={`ai-difficulty ai-difficulty--${theme}`}>
                     <input type="radio" name={radioName} value={id} checked={difficulty === id} onChange={() => onDifficultyChange(id)} />
