@@ -7,20 +7,6 @@
 .ai-setup-header > div { flex: 1; min-width: 0; }
 .ai-setup-header p { font-size: 10px; letter-spacing: .16em; font-weight: 800; color: var(--rival-accent); margin-bottom: 4px; }
 .ai-setup-header h1 { font-size: clamp(19px, 5.3vw, 25px); line-height: 1.1; font-weight: 800; letter-spacing: -.035em; }
-.ai-rival { position: relative; isolation: isolate; overflow: hidden; border: 1px solid rgba(var(--rival-rgb), .3); border-radius: 26px; background: radial-gradient(ellipse at 50% 35%, rgba(var(--rival-rgb),.13), transparent 65%), #101e2d; box-shadow: 0 16px 40px #0003, inset 0 1px 0 #ffffff0a; }
-.ai-rival-topline { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 0; font-size: 10px; color: #b8c6d9; font-weight: 600; letter-spacing: .04em; }
-.ai-rival-topline > span:first-child { display: flex; align-items: center; gap: 6px; }
-.ai-rival-topline i { width: 5px; height: 5px; background: var(--rival-accent); border-radius: 50%; }
-.ai-rival-topline b { color: #62758b; padding: 0 4px; }
-.ai-rival-stage { position: relative; display: grid; place-items: center; height: 166px; }
-.ai-rival-grid { position: absolute; inset: 0; background-image: linear-gradient(#b8c6d909 1px, transparent 1px), linear-gradient(90deg, #b8c6d909 1px, transparent 1px); background-size: 28px 28px; mask-image: radial-gradient(ellipse, #000 10%, transparent 70%); pointer-events: none; }
-.ai-rival-orbit { position: absolute; width: 182px; height: 182px; border: 1px solid rgba(var(--rival-rgb),.12); border-radius: 50%; pointer-events: none; }
-.ai-rival-orbit::before { content: ''; position: absolute; inset: 12px; border: 1px dashed rgba(var(--rival-rgb),.1); border-radius: 50%; }
-.ai-rival-platform { position: absolute; bottom: 2px; width: 150px; height: 25px; border: 1px solid rgba(var(--rival-rgb),.3); border-radius: 50%; background: radial-gradient(ellipse, rgba(var(--rival-rgb),.2), transparent 65%); box-shadow: 0 0 30px rgba(var(--rival-rgb),.07); }
-.ai-rival-stage .ai-rival-avatar { position: relative; width: 200px; height: 200px; z-index: 1; filter: drop-shadow(0 6px 12px #0005); }
-.ai-rival-dialogue { position: relative; padding: 10px 12px 14px; text-align: center; min-height: 60px; }
-.ai-rival-mode { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; text-transform: uppercase; font-weight: 800; letter-spacing: .16em; color: var(--rival-accent); }
-.ai-rival-dialogue p { font-size: 16px; font-weight: 600; line-height: 1.35; margin-top: 4px; letter-spacing: -.015em; }
 .ai-difficulties { min-width: 0; margin-top: 20px; }
 .ai-difficulties legend { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; width: 100%; font-size: 16px; font-weight: 700; margin-bottom: 10px; }
 .ai-difficulties legend > span { font-size: 11px; font-weight: 500; color: #b8c6d9; }
@@ -54,10 +40,6 @@
 @media (max-height: 850px) {
     .ai-setup { padding-top: 10px; }
     .ai-setup-header { margin-bottom: 12px; }
-    .ai-rival-stage { height: 148px; }
-    .ai-rival-stage .ai-rival-avatar { width: 164px; height: 164px; }
-    .ai-rival-orbit { width: 150px; height: 150px; }
-    .ai-rival-dialogue { min-height: 54px; padding-top: 6px; padding-bottom: 10px; }
     .ai-difficulties { margin-top: 16px; }
     .ai-difficulty-body { min-height: 80px; padding-top: 12px; padding-bottom: 12px; }
     .ai-mode-detail { margin: 10px 0 0; min-height: 0; display: flex; align-items: center; gap: 12px; }
@@ -68,3 +50,276 @@
 /* Mascotte en cours de chargement : halo discret au lieu de l'ancien robot */
 .robot-avatar-loading { display: block; width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(closest-side, #ffffff14, transparent 70%); animation: robot-loading 1.4s ease-in-out infinite; }
 @keyframes robot-loading { 50% { opacity: .4; } }
+
+.ai-rival {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid rgba(var(--rival-rgb), .52);
+    border-radius: 26px;
+    background: #231928;
+    box-shadow: 0 2px 0 #ffffff0b, 0 1px 12px #0e0d18a0 inset;
+    transition: border-color 400ms ease;
+}
+
+.ai-rival::after {
+    content: '';
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: inset 0 1px 0 #fff2e770, inset 0 -12px 22px -10px #130d1ed9;
+    background: linear-gradient(110deg, #ffeddb19, transparent 45%) top / 100% 14px no-repeat;
+}
+
+.ai-rival-stage {
+    --scene-fade: 400ms;
+    --scene-height: clamp(158px, calc(50svh - 147px), 266px);
+    --thruster: #ffadd1;
+    --thruster-core: #fff2e6;
+    position: relative;
+    height: var(--scene-height);
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.ai-rival-stage--fury {
+    --thruster: #ff874a;
+    --thruster-core: #fff3cc;
+}
+
+.ai-rival-landscapes,
+.ai-rival-landscape {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.ai-rival-landscape {
+    isolation: isolate;
+    overflow: hidden;
+    background: #382337;
+    --fog: url('/rival/tourment-clouds.webp');
+    --drift: -6%;
+}
+
+.ai-rival-landscape--bonus {
+    --horizon: url('/rival/tourment-horizon.webp');
+}
+
+.ai-rival-landscape--bonus[data-active='false'] {
+    visibility: hidden;
+    transition: visibility 0s var(--scene-fade);
+}
+
+.ai-rival-landscape--fury {
+    --horizon: url('/rival/fury-horizon.webp');
+    --fog: url('/rival/fury-clouds.webp');
+    --drift: 6%;
+    background: #301c1c;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--scene-fade) ease-in-out, visibility 0s var(--scene-fade);
+}
+
+.ai-rival-landscape--fury[data-active='true'] {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.ai-rival-horizon {
+    position: absolute;
+    inset: -3% -5%;
+    background: var(--horizon) center 62% / cover no-repeat;
+    animation: ai-rival-sky 58s ease-in-out infinite alternate;
+}
+
+.ai-rival-island {
+    position: absolute;
+    top: 34%;
+    left: 15%;
+    width: 16%;
+    max-width: 70px;
+    aspect-ratio: 140 / 154;
+    background: url('/rival/island-spin.webp') 0 0 / 1200% 1000% no-repeat;
+    opacity: .75;
+    filter: saturate(.6) sepia(.25) hue-rotate(305deg);
+}
+
+.ai-rival-landscape--fury .ai-rival-island {
+    top: 41%;
+    left: auto;
+    right: 13%;
+    width: 13%;
+    opacity: .6;
+    filter: saturate(.5) sepia(.36) brightness(.8);
+}
+
+.ai-rival-mist,
+.ai-rival-foreground {
+    position: absolute;
+    background: var(--fog) center bottom / 100% 100% no-repeat;
+}
+
+.ai-rival-mist {
+    inset: auto -15% 3%;
+    height: 38%;
+    opacity: .68;
+    mask-image: linear-gradient(to top, transparent, #000 42%);
+    animation: ai-rival-clouds 53s ease-in-out infinite alternate;
+}
+
+.ai-rival-foreground {
+    inset: auto -13% -15%;
+    height: 47%;
+    opacity: .9;
+    animation: ai-rival-clouds 39s ease-in-out infinite alternate-reverse;
+}
+
+.ai-rival-particles {
+    position: absolute;
+    inset: 13% 2% 14%;
+    opacity: .58;
+    background:
+        radial-gradient(1px 1px at 12% 21%, #ffeadd 65%, transparent),
+        radial-gradient(2px 2px at 32% 45%, #ffe3d9 40%, transparent),
+        radial-gradient(1px 1px at 66% 19%, #ffe9f5 70%, transparent),
+        radial-gradient(1px 1px at 81% 27%, #fff1de 65%, transparent),
+        radial-gradient(2px 2px at 87% 46%, #ffd3d7 40%, transparent),
+        radial-gradient(1px 1px at 23% 72%, #ffdac4 65%, transparent);
+    animation: ai-rival-motes 24s ease-in-out infinite alternate;
+}
+
+.ai-rival-landscape--fury .ai-rival-particles {
+    background:
+        radial-gradient(1.4px 1.8px at 13% 63%, #ffb278 54%, transparent),
+        radial-gradient(1.4px 1.8px at 29% 88%, #ff8d4c 54%, transparent),
+        radial-gradient(1.2px 1.6px at 73% 80%, #ffcd92 54%, transparent),
+        radial-gradient(1px 1.5px at 81% 50%, #ffae60 55%, transparent),
+        radial-gradient(1.4px 2px at 90% 75%, #ff9b5f 54%, transparent);
+    animation-name: ai-rival-embers;
+    animation-iteration-count: infinite;
+    animation-direction: normal;
+}
+
+.ai-rival-flight {
+    position: absolute;
+    inset: 0;
+    animation: ai-rival-flight 28s ease-in-out infinite;
+}
+
+.ai-rival-flight::before {
+    content: '';
+    position: absolute;
+    width: 41%;
+    height: 16%;
+    bottom: 6%;
+    left: 50%;
+    translate: -50%;
+    background:
+        radial-gradient(ellipse at 50% 46%, color-mix(in srgb, var(--thruster) 64%, transparent), transparent 43%),
+        radial-gradient(ellipse, #1b0d26a0, #1b0d2652 35%, transparent 68%);
+}
+
+.ai-rival-hover {
+    position: absolute;
+    inset: 10% 0 24%;
+    width: calc(var(--scene-height) * .37);
+    margin-inline: auto;
+    animation: ai-rival-hover 28s ease-in-out infinite;
+}
+
+.ai-rival-hover img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: opacity 220ms ease-in-out;
+}
+
+.ai-rival-hover img:last-child {
+    opacity: 0;
+}
+
+.ai-rival-stage--fury .ai-rival-hover img:first-of-type {
+    opacity: 0;
+}
+
+.ai-rival-stage--fury .ai-rival-hover img:last-child {
+    opacity: 1;
+}
+
+.ai-rival-thruster {
+    position: absolute;
+    top: 95%;
+    left: 50%;
+    translate: -50%;
+    width: 20%;
+    height: 20%;
+    background:
+        radial-gradient(ellipse 17% 46% at 50% 32%, var(--thruster-core), transparent 91%),
+        radial-gradient(ellipse 42% 66% at 50% 19%, var(--thruster), transparent 90%);
+    transform-origin: center top;
+    animation: ai-rival-thrust 2.8s ease-in-out infinite alternate;
+}
+
+.ai-rival-landscape[data-active='false'] > :is(.ai-rival-horizon, .ai-rival-mist, .ai-rival-particles, .ai-rival-foreground) {
+    animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ai-rival-landscape[data-active='true'] > :is(.ai-rival-horizon, .ai-rival-mist, .ai-rival-foreground) {
+        will-change: transform;
+    }
+}
+
+@keyframes ai-rival-sky {
+    from { transform: translateX(-2%); }
+    to { transform: translateX(2%); }
+}
+
+@keyframes ai-rival-clouds {
+    from { transform: translateX(calc(-1 * var(--drift))); }
+    to { transform: translateX(var(--drift)); }
+}
+
+@keyframes ai-rival-motes {
+    from { transform: translate(-2%, 2%); opacity: .4; }
+    to { transform: translate(2%, -5%); opacity: .82; }
+}
+
+@keyframes ai-rival-embers {
+    0% { transform: translateY(16%); opacity: 0; }
+    25%, 65% { opacity: .8; }
+    100% { transform: translateY(-20%); opacity: 0; }
+}
+
+@keyframes ai-rival-flight {
+    0%, 50%, 100% { transform: translateX(0); }
+    28% { transform: translateX(8%); }
+    78% { transform: translateX(-8%); }
+}
+
+@keyframes ai-rival-hover {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-4%) rotate(2deg); }
+    50% { transform: translateY(0) rotate(0deg); }
+    75% { transform: translateY(3%) rotate(-2deg); }
+}
+
+@keyframes ai-rival-thrust {
+    from { transform: scaleY(.7); opacity: .69; }
+    to { transform: scaleY(1.12); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ai-rival,
+    .ai-rival-stage .ai-rival-landscape,
+    .ai-rival-stage *,
+    .ai-rival-stage *::before {
+        animation: none;
+        transition: none;
+    }
+}
