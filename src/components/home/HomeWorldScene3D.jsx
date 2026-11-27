@@ -760,7 +760,7 @@ function Floaters({ still, season = 'autumn' }) {
 // ni écran de chargement, ni fenêtre « Nouveautés » par-dessus.
 // La brume ne se joue qu'une fois par lancement de l'app, pas à chaque retour sur l'accueil.
 const INTRO = { fogPlayed: false };
-const introBlocked = () => typeof document !== 'undefined' && !!document.querySelector('.studio-intro, .sl-root, .da-news');
+const introBlocked = () => typeof document !== 'undefined' && !!document.querySelector('.studio-intro:not([data-leaving]), .sl-root, .da-news');
 
 // Brume d'ouverture (au-dessus de la scène 3D) : un voile flou teinté du couchant, avec quelques nappes,
 // qui se dissipe en ~3 s. Une seule fois par lancement, et seulement une fois l'accueil visible.

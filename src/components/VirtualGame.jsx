@@ -45,7 +45,7 @@ import { getActiveWeeklyChallenge, getGameChallenge, getWeeklyChallengeById, has
 import { SeasonalResult } from './ui/SeasonalChallengeButton';
 import { getTourmentPerformance, getFuryPerformance } from '../lib/tourmentPerformance';
 
-import { AVATARS, getAvatarPath } from '../lib/avatars';
+import { AVATARS, getAvatarPath, handleAvatarError } from '../lib/avatars';
 import AvatarSelector from './AvatarSelector';
 import PseudoModal from './PseudoModal';
 import BonusTutorial from './BonusTutorial';
@@ -1483,7 +1483,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                                             src={getAvatarPath(player.avatarId)}
                                             alt="Avatar"
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                            onError={(e) => { e.target.src = '/avatars/cat.png' }}
+                                            onError={handleAvatarError}
                                         />
                                         {/* Glossy Overlay */}
                                         <div className="absolute inset-0 bg-gradient-to-tr from-black/0 via-white/20 to-white/0 opacity-50 pointer-events-none" />
@@ -1621,7 +1621,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                                                     src={getAvatarPath(p.emoji)}
                                                     alt="Avatar"
                                                     className="w-full h-full object-cover"
-                                                    onError={(e) => { e.target.src = '/avatars/cat.png' }}
+                                                    onError={handleAvatarError}
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-tr from-black/20 via-transparent to-white/10" />
                                             </div>
@@ -1772,7 +1772,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                 {/* Profil */}
                 <section className="ol-profile" aria-label="Votre profil">
                     <button type="button" className="ol-avatar" onClick={() => setOpenAvatarSelector('online-setup')} aria-label="Changer d’avatar">
-                        <img src={getAvatarPath(myAvatarId)} alt="" onError={(e) => { e.target.src = '/avatars/cat.png'; }} />
+                        <img src={getAvatarPath(myAvatarId)} alt="" onError={handleAvatarError} />
                         <span className="ol-avatar-edit" aria-hidden="true"><Palette size={13} /></span>
                         <i className="ol-online-dot" aria-hidden="true" />
                     </button>
@@ -1832,7 +1832,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                             const isFriend = friends.some(f => String(f.id) === String(p.id));
                             const busy = p.status !== 'AVAILABLE';
                             return <li key={p.id} className="ol-row ol-row--friend">
-                                <span className="ol-row-avatar is-online"><img src={getAvatarPath(p.avatarId)} alt="" onError={(e) => { e.target.src = '/avatars/cat.png'; }} /><i aria-hidden="true" /></span>
+                                <span className="ol-row-avatar is-online"><img src={getAvatarPath(p.avatarId)} alt="" onError={handleAvatarError} /><i aria-hidden="true" /></span>
                                 <span className="ol-row-main"><strong>{p.name}{isFriend && <em className="ol-tag">Ami</em>}</strong><small className={busy ? '' : 'is-online'}>{p.status === 'IN_GAME' ? 'En partie' : p.status === 'IN_ROOM' ? 'Dans un salon' : 'Disponible'}</small></span>
                                 <button type="button" className="ol-challenge" disabled={busy} onClick={() => {
                                     setPlayerInfo(myPseudo || 'Joueur', myAvatarId);

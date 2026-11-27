@@ -3,6 +3,9 @@ import { useGameStore } from '../store/gameStore';
 import { useVirtualGameStore } from '../store/virtualGameStore';
 import { useOnlineGameStore } from '../store/onlineGameStore';
 import { useBackgroundMusic } from '../hooks/useBackgroundMusic';
+import { createHomeMelody } from '../lib/homeMelody';
+
+let homeMelody = null;
 
 export const MusicPlayer = () => {
     // 1. Manual Game Status
@@ -30,6 +33,24 @@ export const MusicPlayer = () => {
 
     // Use the hook with the calculated state
     const { playRandomTrack } = useBackgroundMusic(shouldPlay);
+
+    // Mélodie douce des menus (synthétisée, hors ligne) : partout, sauf pendant une partie (playlist de jeu)
+    const musicEnabled = useGameStore(state => state.musicEnabled);
+    const playHomeMelody = musicEnabled && !shouldPlay;
+    useEffect(() => {
+        if (!homeMelody) homeMelody = createHomeMelody();
+        if (!playHomeMelody) { homeMelody.stop(); return undefined; }
+        homeMelody.start();
+        // Les navigateurs bloquent le son avant le premier geste : on relance au premier toucher.
+        const resume = () => homeMelody.start();
+        const onVisibility = () => (document.hidden ? homeMelody.stop() : homeMelody.start());
+        document.addEventListener('pointerdown', resume, { once: true });
+        document.addEventListener('visibilitychange', onVisibility);
+        return () => {
+            document.removeEventListener('pointerdown', resume);
+            document.removeEventListener('visibilitychange', onVisibility);
+        };
+    }, [playHomeMelody]);
 
     // Listen for manual shuffle triggers
     useEffect(() => {

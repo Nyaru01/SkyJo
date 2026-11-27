@@ -5,7 +5,7 @@ import { Input } from './ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { cn } from '../lib/utils';
 import { useFeedback } from '../hooks/useFeedback';
-import { getAvatarPath } from '../lib/avatars';
+import { getAvatarPath, handleAvatarError } from '../lib/avatars';
 import { useGameStore, selectFinisherPenalty } from '../store/gameStore';
 
 export default function ScoreInput({ players, onSave, onCancel: _onCancel, isEmbedded = false, rounds = [] }) {
@@ -117,7 +117,7 @@ export default function ScoreInput({ players, onSave, onCancel: _onCancel, isEmb
                                                         src={getAvatarPath(p.avatarId)}
                                                         alt="Avatar"
                                                         className="w-full h-full object-cover"
-                                                        onError={(e) => { e.target.src = '/avatars/cat.png' }}
+                                                        onError={handleAvatarError}
                                                     />
                                                 ) : (
                                                     <span className="text-xl">{p.emoji || '👤'}</span>

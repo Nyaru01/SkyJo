@@ -5,7 +5,7 @@ export default function SocialProfileCard({ profile, isEditing, name, onNameChan
     return <section className="social-profile-panel social-profile-panel--compact" aria-label="Votre profil social">
         <div className="social-profile-identity">
             <button type="button" onClick={onAvatar} className="social-profile-avatar" aria-label="Modifier mon avatar">
-                <img src={getAvatarPath(profile.avatarId) || '/avatars/cat.png'} alt="" width="56" height="56" /><span><Edit2 size={13} aria-hidden="true" /></span>
+                <img src={getAvatarPath(profile.avatarId)} alt="" width="56" height="56" /><span><Edit2 size={13} aria-hidden="true" /></span>
             </button>
             <div className="social-profile-name"><p>VOTRE PROFIL</p>
                 {isEditing ? <form onSubmit={event => { event.preventDefault(); onSave(); }}>

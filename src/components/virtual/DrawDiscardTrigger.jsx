@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Sparkles, HelpCircle } from 'lucide-react';
+import { motion as Motion } from 'framer-motion';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import SkyjoCard from './SkyjoCard';
 import { useGameStore } from '../../store/gameStore';
@@ -13,105 +13,6 @@ const triggerHaptic = (duration = 50) => {
         navigator.vibrate(duration);
     }
 };
-
-// Mosaic color schemes for each card color (same as SkyjoCard)
-const MOSAIC_COLORS = {
-    indigo: {
-        primary: '#4338ca',
-        secondary: '#6366f1',
-        tertiary: '#818cf8',
-        light: '#a5b4fc',
-        lines: 'rgba(255,255,255,0.3)',
-    },
-    blue: {
-        primary: '#2563eb',
-        secondary: '#3b82f6',
-        tertiary: '#60a5fa',
-        light: '#93c5fd',
-        lines: 'rgba(255,255,255,0.3)',
-    },
-    cyan: {
-        primary: '#0891b2',
-        secondary: '#06b6d4',
-        tertiary: '#22d3ee',
-        light: '#67e8f9',
-        lines: 'rgba(255,255,255,0.3)',
-    },
-    green: {
-        primary: '#059669',
-        secondary: '#10b981',
-        tertiary: '#34d399',
-        light: '#6ee7b7',
-        lines: 'rgba(255,255,255,0.25)',
-    },
-    yellow: {
-        primary: '#ca8a04',
-        secondary: '#eab308',
-        tertiary: '#facc15',
-        light: '#fde047',
-        lines: 'rgba(255,255,255,0.2)',
-    },
-    orange: {
-        primary: '#ea580c',
-        secondary: '#f97316',
-        tertiary: '#fb923c',
-        light: '#fdba74',
-        lines: 'rgba(255,255,255,0.25)',
-    },
-    red: {
-        primary: '#dc2626',
-        secondary: '#ef4444',
-        tertiary: '#f87171',
-        light: '#fca5a5',
-        lines: 'rgba(255,255,255,0.25)',
-    },
-    violet: {
-        primary: '#7c3aed',
-        secondary: '#8b5cf6',
-        tertiary: '#a78bfa',
-        light: '#c4b5fd',
-        lines: 'rgba(255,255,255,0.3)',
-    },
-    darkred: {
-        primary: '#7f1d1d',
-        secondary: '#991b1b',
-        tertiary: '#b91c1c',
-        light: '#dc2626',
-        lines: 'rgba(255,255,255,0.4)',
-    },
-    special: {
-        primary: '#1e1b4b',
-        secondary: '#312e81',
-        tertiary: '#4338ca',
-        light: '#818cf8',
-        lines: 'rgba(255,255,255,0.4)',
-    },
-    gold: {
-        primary: '#78350f',
-        secondary: '#d97706',
-        tertiary: '#f59e0b',
-        light: '#fcd34d',
-        lines: 'rgba(255,255,255,0.5)',
-    },
-};
-
-// Mini mosaic pattern for discard preview
-const MiniMosaicPattern = ({ colors, id }) => (
-    <svg width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0, borderRadius: '6px' }}>
-        <defs>
-            <pattern id={`mini-mosaic-${id}`} patternUnits="userSpaceOnUse" width="20" height="20">
-                <rect width="20" height="20" fill={colors.secondary} />
-                <polygon points="0,0 10,3 7,10 0,8" fill={colors.primary} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="10,3 20,0 20,7 13,10 7,10" fill={colors.tertiary} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="0,8 7,10 4,20 0,20" fill={colors.tertiary} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="7,10 13,10 10,20 4,20" fill={colors.light} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="13,10 20,7 20,17 17,20 10,20" fill={colors.secondary} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="20,17 20,20 17,20" fill={colors.primary} stroke={colors.lines} strokeWidth="0.5" />
-            </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill={`url(#mini-mosaic-${id})`} />
-    </svg>
-);
 
 /**
  * Compact trigger button for Draw/Discard popup
@@ -130,22 +31,17 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
     turnPhase,
     instructionText = '', // Instruction text to display
     activeActionSource, // 'deck-pile' or 'discard-pile' when an animation is starting from here
-    isDrawing = false,
     isAIThinking = false,
     drawnCardSource = null,
     recapText = '', // Dernier coup de l'IA, en clair
     drawnCardInPopup = false, // La fenêtre de pioche montre déjà la carte : on la masque ici (sinon deux cartes à l'écran)
 }) {
     const cardSkin = useGameStore(s => (s && s.cardSkin) ? s.cardSkin : 'classic');
-    const gameMode = useGameStore(s => (s && s.gameMode) ? s.gameMode : 'normal');
 
     const hasDrawnCard = !!drawnCard;
     // Logique Visibilité Défausse (Mode H included)
     // Permet l'affichage pour Normal, Difficile ET H
     const showDiscardPreview = discardTop && !hasDrawnCard;
-
-    // Disable interaction if drawing
-    const effectiveCanInteract = canInteract && !isDrawing;
 
     // Long-press state for discard history
     const [showHistory, setShowHistory] = useState(false);
@@ -181,20 +77,6 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
     // À votre tour de piocher, les deux piles parlent d'elles-mêmes : pas de bouton « Piochez ou prenez la défausse ».
     // On garde le bouton pour « L’IA réfléchit » et le dernier tour.
     const hideDrawLabel = isDrawPhase && canInteract && !/dernier tour/i.test(instructionText || '');
-    const isReplacePhase = turnPhase === 'REPLACE_OR_DISCARD' || turnPhase === 'MUST_REPLACE';
-
-    // Mini card preview for discard - use mosaic colors
-    let mosaicColors = null;
-    if (discardTop) {
-        const numericValue = parseInt(discardTop.value);
-        if (numericValue === 20) mosaicColors = MOSAIC_COLORS.darkred;
-        else if (numericValue === -10) mosaicColors = MOSAIC_COLORS.violet;
-        else if (discardTop.specialType === 'S' || numericValue === 15) mosaicColors = MOSAIC_COLORS.special;
-        else if (discardTop.specialType === 'C' || (numericValue === 0 && discardTop.color === 'special')) mosaicColors = MOSAIC_COLORS.special;
-        else if (discardTop.specialType === 'CH' || discardTop.value === 'CH' || discardTop.color === 'gold') mosaicColors = MOSAIC_COLORS.gold;
-        else mosaicColors = MOSAIC_COLORS[discardTop.color] || MOSAIC_COLORS.green;
-    }
-    const patternId = discardTop ? `discard-${discardTop.color}` : 'discard-default';
 
     return (
         <>
@@ -203,7 +85,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                     {/* Draw pile section */}
                     <div className="skyjo-pile-group skyjo-pile-group--draw relative flex flex-col items-center gap-1.5 shrink-0">
                         <span className="skyjo-pile-label">Pioche</span>
-                        <motion.div
+                        <Motion.div
                             className={cn(
                                 "skyjo-draw-pile w-10 h-14 rounded-lg flex items-center justify-center relative",
                                 canInteract ? "cursor-pointer" : "cursor-not-allowed opacity-80"
@@ -237,7 +119,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                 alt="Deck"
                                 className="w-full h-full object-cover"
                             />
-                        </motion.div>
+                        </Motion.div>
                         <span aria-label={`${drawPileCount} cartes dans la pioche`} className="skyjo-pile-count text-[11px] font-black text-white/90 bg-slate-900/60 px-2 py-0.5 rounded-md border border-white/10 backdrop-blur-sm min-w-[20px] text-center shadow-lg uppercase tracking-widest">
                             {drawPileCount}
                         </span>
@@ -246,7 +128,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                     {hasDrawnCard ? (
                         // Show the actual drawn card in the center
                         <div className="flex flex-col items-center gap-1.5">
-                            <motion.div
+                            <Motion.div
                                 className={cn(
                                     "relative z-10",
                                     canInteract ? "cursor-pointer" : "cursor-default"
@@ -263,11 +145,11 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                     size="md"
                                     isHighlighted={canInteract}
                                 />
-                            </motion.div>
+                            </Motion.div>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0 max-w-[240px]">
-                            {!hideDrawLabel && <motion.button
+                            {!hideDrawLabel && <Motion.button
                                 onClick={onClick}
                                 disabled={!canInteract}
                                 className={cn(
@@ -286,7 +168,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                 whileTap={canInteract ? { scale: 0.98 } : undefined}
                             >
                                 {/* Premium Shimmer Overlay */}
-                                <motion.div
+                                <Motion.div
                                     className="absolute inset-0 z-0 pointer-events-none"
                                     initial={{ x: '-100%' }}
                                     animate={{ x: '250%' }}
@@ -303,7 +185,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
 
                                 {/* Left Arrow - pointing to draw pile */}
                                 {isDrawPhase && canInteract && (
-                                    <motion.div
+                                    <Motion.div
                                         className="text-emerald-400 font-black flex items-center relative z-20"
                                         animate={{
                                             x: [-2, 2, -2],
@@ -313,7 +195,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                         transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                                     >
                                         <ArrowLeft strokeWidth={2.5} className="h-5 w-5" />
-                                    </motion.div>
+                                    </Motion.div>
                                 )}
 
                                 {/* Label area */}
@@ -333,7 +215,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
 
                                 {/* Right Arrow - pointing to discard pile */}
                                 {isDrawPhase && canInteract && (
-                                    <motion.div
+                                    <Motion.div
                                         className="text-amber-400 font-black flex items-center relative z-20"
                                         animate={{
                                             x: [2, -2, 2],
@@ -343,9 +225,9 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                         transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                                     >
                                         <ArrowRight strokeWidth={2.5} className="h-5 w-5" />
-                                    </motion.div>
+                                    </Motion.div>
                                 )}
-                            </motion.button>}
+                            </Motion.button>}
                             {/* Dernier coup de l’IA, sous le bouton (hors du cadre, pour ne pas être rogné) */}
                             {hideDrawLabel && <div className="skyjo-turn-cue" role="status" aria-label="À vous : piochez ou prenez la défausse"><i className="skyjo-cue-arrow skyjo-cue-arrow--l" aria-hidden="true" /><span><small>Votre tour</small>À vous</span><i className="skyjo-cue-arrow skyjo-cue-arrow--r" aria-hidden="true" /></div>}
                             {recapText && <p className="skyjo-ai-recap">{recapText}</p>}
@@ -357,22 +239,17 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                         <span className="skyjo-pile-label">Défausse</span>
                         <div className="w-10 h-14 flex items-center justify-center relative">
                             {showDiscardPreview ? (
-                                <motion.div
+                                <Motion.div
                                     className={cn(
                                         "w-full h-full rounded-lg flex items-center justify-center relative overflow-hidden",
                                         canInteract ? "cursor-pointer" : "cursor-default"
                                     )}
                                     style={{
-                                        fontSize: '16px',
-                                        fontWeight: 'bold',
                                         boxShadow: activeActionSource === 'discard-pile'
                                             ? '0 0 20px 5px rgba(245, 158, 11, 0.7)' // Amber Glow
                                             : '0 4px 12px rgba(0,0,0,0.5)',
-                                        border: activeActionSource === 'discard-pile'
-                                            ? '2px solid #f59e0b' // Amber border
-                                            : '2px solid rgba(255,255,255,0.5)',
-                                        background: mosaicColors.secondary,
-                                        transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
+                                        outline: activeActionSource === 'discard-pile' ? '2px solid #f59e0b' : undefined,
+                                        transition: 'box-shadow 0.3s ease',
                                         userSelect: 'none',
                                         WebkitUserSelect: 'none',
                                         WebkitTouchCallout: 'none',
@@ -389,23 +266,8 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                     transition={{ duration: 0.8, repeat: Infinity }}
                                     id="discard-pile"
                                 >
-                                    <MiniMosaicPattern colors={mosaicColors} id={patternId} />
-                                    <span
-                                        className="relative z-10"
-                                        style={{
-                                            color: '#ffffff',
-                                            textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
-                                        }}
-                                    >
-                                        {discardTop.specialType === 'S' || discardTop.value === 15
-                                            ? 'S'
-                                            : (discardTop.specialType === 'C' || (discardTop.value === 0 && discardTop.color === 'special'))
-                                                ? <Sparkles className="w-5 h-5 text-white" strokeWidth={3} />
-                                                : (discardTop.specialType === 'CH' || discardTop.value === 'CH' || discardTop.color === 'gold')
-                                                    ? <HelpCircle className="w-5 h-5 text-white" strokeWidth={3} />
-                                                    : discardTop.value}
-                                    </span>
-                                </motion.div>
+                                    <SkyjoCard card={{ ...discardTop, isRevealed: true }} size="xs" style={{ width: "100%", height: "100%" }} />
+                                </Motion.div>
                             ) : (
                                 <div className="skyjo-empty-pile w-full h-full rounded-lg border-2 border-dashed border-slate-700/50 flex items-center justify-center" />
                             )}

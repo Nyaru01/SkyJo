@@ -1,8 +1,106 @@
+@font-face {
+    font-family: 'Vesper Nunito';
+    src: url('/fonts/nunito-latin-900.woff2') format('woff2');
+    font-weight: 900;
+    font-display: swap;
+}
+
 .skyjo-card { isolation: isolate; outline: none; touch-action: manipulation; }
 .skyjo-card--selected::after, .skyjo-card:focus-visible::after {
     content: ''; position: absolute; inset: -4px; border: 1px solid #fde7ae;
     border-radius: 14px; box-shadow: 0 0 18px #f6cd7438; pointer-events: none;
 }
+.skyjo-card--target:not(.skyjo-card--selected, :focus-visible)::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border: 2px dashed var(--card-accent);
+    border-radius: 12px;
+    pointer-events: none;
+}
+.vesper-card-face {
+    container-type: size;
+    display: grid;
+    place-items: center;
+    color: #131427;
+    border: 1px solid #e5c49c;
+    border-top-color: #fff7df;
+    border-left-color: #f7dfb9;
+    border-bottom-color: #8e614e;
+    border-radius: 10px;
+    background: radial-gradient(ellipse 110% 47% at 26% 0%, #fffcf0a6, transparent 75%),
+        radial-gradient(ellipse 82% 40% at 60% 56%, #fff2d233, transparent 90%),
+        linear-gradient(162deg, var(--vesper-sky) 9%, var(--vesper-horizon) 100%);
+    box-shadow: 0 2px 0 #37232b, 0 5px 9px #090b1675,
+        inset 0 1px #fff9edcd, inset 0 -2px #4f233451;
+    font-family: 'Vesper Nunito', system-ui, sans-serif;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+.vesper-card-face::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border: 1px solid #fff6d961;
+    border-bottom-color: #764b5240;
+    border-radius: 7px;
+    box-shadow: inset 0 1px #fff8e94d, 0 1px 0 #fff5cc26;
+    pointer-events: none;
+}
+.vesper-card-face--action {
+    background: radial-gradient(ellipse 120% 78% at 18% -12%, #d4eaff70, transparent 78%),
+        radial-gradient(ellipse 70% 58% at 51% 49%, #1a203a73, transparent 87%),
+        linear-gradient(165deg, var(--vesper-sky), var(--vesper-horizon));
+}
+.vesper-card-face--action::before {
+    border-color: #eed8af78;
+    border-bottom-color: #bc9a7747;
+}
+.vesper-card-face--hot {
+    --vesper-sun: #ffd087;
+    border-color: #ffa683;
+    border-top-color: #ffdbb2;
+    border-bottom-color: #8f3a36;
+    background: radial-gradient(ellipse 96% 48% at 17% 0%, #ffe4aa28, transparent 75%),
+        radial-gradient(ellipse 90% 38% at 70% 105%, #47102138, transparent 90%),
+        linear-gradient(154deg, var(--vesper-sky) 6%, var(--vesper-horizon) 100%);
+    box-shadow: 0 2px 0 #412029, 0 5px 10px #170b1680,
+        inset 0 1px #ffd6948c, inset 0 -2px #50183355;
+}
+.vesper-card-face--hot::before { border-color: #ffd4925c; border-bottom-color: #6f263f60; }
+.vesper-card-face--dark {
+    --vesper-sun: #f29454;
+    color: #fff2de;
+}
+.vesper-card-face--dark .vesper-card-value { text-shadow: 0 1px #52172b, 0 2px 3px #310c23c0; }
+.vesper-card-face--dark .vesper-card-sky { color: #ffb28d; }
+.vesper-card-value, .vesper-card-corner { z-index: 1; line-height: 1; }
+.vesper-card-value {
+    transform: translateY(-34%);
+    font-size: min(var(--vesper-number-size), 63cqi, 45cqb);
+    letter-spacing: -.045em;
+    text-shadow: 0 1px #fff7e1d4, 0 2px 3px #55274236;
+}
+.vesper-card-face--wide .vesper-card-value {
+    font-size: min(var(--vesper-number-size), 56cqi, 45cqb);
+    letter-spacing: -.065em;
+}
+.vesper-card-corner { position: absolute; font-size: min(var(--vesper-corner-size), 22cqi, 16cqb); }
+.vesper-card-corner--top { top: 7%; left: 9%; }
+.vesper-card-corner--bottom { bottom: 4%; right: 7%; transform: rotate(180deg); }
+.vesper-card-sky { position: absolute; bottom: 7%; width: 100%; height: 40%; color: #292042; }
+.vesper-card-sky--sun { bottom: 6%; width: 84%; height: 40%; }
+.vesper-card-sky--constellation { color: #624218; width: 96%; }
+.vesper-card-sky--eclipse, .vesper-card-sky--curse { bottom: 8%; height: 41%; }
+.vesper-card-action { width: min(64%, 68cqb); height: auto; color: var(--vesper-face-accent); }
+.vesper-card-curse-lock {
+    top: 8%; right: 8%; display: grid; place-items: center;
+    width: min(16px, 26cqi); aspect-ratio: 1; border-radius: 50%;
+    background: #592839; border: 1px solid #ffe2a3cc; color: #ffe2a3;
+}
+.vesper-card-curse-lock > div { display: grid; place-items: center; width: 100%; height: 100%; }
+.vesper-card-curse-lock svg { width: 66%; height: 66%; }
+
 .skyjo-card-slot { background: #030a153d; border: 1px solid #ffffff09; box-shadow: inset 0 2px 5px #0003; }
 .skyjo-hand {
     --turn-accent: #7ee7cc;

@@ -122,7 +122,7 @@ export default function GameMenu({
                     <span className="play-menu-action-copy">
                         {!virtualGameState && <span className="play-menu-action-kicker">À VOTRE RYTHME</span>}
                         <span className="play-menu-action-title">Jouer contre l’IA</span>
-                        <span className="play-menu-action-description">Choisissez votre difficulté.</span>
+                        <span className="play-menu-action-description">Tourment ou Fury, à vous de choisir.</span>
                     </span>
                     <ChevronRight className="play-menu-arrow" aria-hidden="true" />
                 </button>
