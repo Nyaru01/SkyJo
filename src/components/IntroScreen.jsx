@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion as Motion, useIsPresent, useReducedMotion } from 'framer-motion';
 
 const HOME_FADE_SECONDS = 1.55;
@@ -112,29 +112,47 @@ function VesperIntro({ active, reduceMotion, onPrepareHome, onDone }) {
 
 export function IntroScreen({ onPrepareHome, onComplete }) {
     const [phase, setPhase] = useState('studio');
+    const [studioAudioBlocked, setStudioAudioBlocked] = useState(false);
     const completed = useRef(false);
     const studioVideo = useRef(null);
+    const audioAttempt = useRef(0);
     const reduceMotion = useReducedMotion();
     const isPresent = useIsPresent();
 
-    useEffect(() => {
-        const shuffleAudio = new Audio('/Sounds/shuffling.mp3');
-        shuffleAudio.volume = 0.4;
-        const playShuffle = () => shuffleAudio.play().catch(() => {});
-        playShuffle();
-        window.addEventListener('pointerdown', playShuffle, { once: true });
-        return () => {
-            window.removeEventListener('pointerdown', playShuffle);
-            shuffleAudio.pause();
-        };
-    }, []);
-
-    // Fin du logo Nyaru Studio : on passe à la vidéo Vesper
-    const finishIntro = () => {
+    const finishIntro = useCallback(() => {
         if (completed.current) return;
         completed.current = true;
         setPhase('vesper');
-    };
+    }, []);
+
+    const playStudioWithSound = useCallback(async () => {
+        const video = studioVideo.current;
+        if (!video || completed.current) return;
+        const attempt = ++audioAttempt.current;
+        video.muted = false;
+        try {
+            await video.play();
+            if (attempt === audioAttempt.current) setStudioAudioBlocked(false);
+        } catch {
+            if (attempt !== audioAttempt.current || completed.current) return;
+            // Si le navigateur impose un geste, l'intro démarre en muet et peut être réactivée.
+            video.muted = true;
+            setStudioAudioBlocked(true);
+            video.play().catch(() => {
+                if (attempt === audioAttempt.current) finishIntro();
+            });
+        }
+    }, [finishIntro]);
+
+    useEffect(() => {
+        const video = studioVideo.current;
+        const playbackFrame = requestAnimationFrame(playStudioWithSound);
+        return () => {
+            cancelAnimationFrame(playbackFrame);
+            audioAttempt.current += 1;
+            video?.pause();
+        };
+    }, [playStudioWithSound]);
 
     return (
         <Motion.div
@@ -151,11 +169,16 @@ export function IntroScreen({ onPrepareHome, onComplete }) {
                 <video
                     ref={studioVideo}
                     src={STUDIO_VIDEO}
-                    autoPlay muted playsInline preload="auto"
+                    playsInline preload="auto"
                     className="studio-intro-video" aria-label="Introduction Nyaru Studio"
                     onEnded={finishIntro}
                     onError={finishIntro}
                 />
+                {phase === 'studio' && studioAudioBlocked && (
+                    <button type="button" className="studio-intro-sound" onClick={playStudioWithSound}>
+                        Activer le son
+                    </button>
+                )}
             </div>
         </Motion.div>
     );
