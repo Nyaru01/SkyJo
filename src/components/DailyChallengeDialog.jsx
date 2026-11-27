@@ -33,7 +33,7 @@ export default function DailyChallengeDialog({ isOpen, onClose, difficulty, onDi
         <div className="daily-challenge-content">
             <p className="daily-challenge-intro">Un adversaire à battre.<br /><strong>Un bonus à décrocher.</strong></p>
             <fieldset className="daily-challenge-choices">
-                <legend>Choisissez votre difficulté</legend>
+                <legend>Choisissez votre mode</legend>
                 <div>{MODES.map(({ id, title, reward, description, icon: Icon }) => <label key={id}>
                     <input type="radio" name={radioName} value={id} checked={difficulty === id} onChange={() => onDifficultyChange(id)} />
                     <span className="daily-challenge-choice">

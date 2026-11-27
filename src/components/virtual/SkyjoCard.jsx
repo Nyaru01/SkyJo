@@ -1,5 +1,5 @@
 import { memo, useId } from 'react';
-import { Lock, RefreshCw, Sparkles, HelpCircle, Orbit } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { motion as Motion, useReducedMotion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import '../../styles/Tabletop.css';
@@ -13,161 +13,117 @@ const triggerHaptic = () => {
     }
 };
 
-/**
- * Skyjo Card Component - Skeuomorphic Design
- * Reproduces the physical Skyjo card appearance with mosaic texture
- */
-
-// Mosaic color schemes for each card color
-const MOSAIC_COLORS = {
-    indigo: {
-        primary: '#4338ca',
-        secondary: '#6366f1',
-        tertiary: '#818cf8',
-        light: '#a5b4fc',
-        lines: 'rgba(255,255,255,0.3)',
-    },
-    blue: {
-        primary: '#2563eb',
-        secondary: '#3b82f6',
-        tertiary: '#60a5fa',
-        light: '#93c5fd',
-        lines: 'rgba(255,255,255,0.3)',
-    },
-    cyan: {
-        primary: '#0891b2',
-        secondary: '#06b6d4',
-        tertiary: '#22d3ee',
-        light: '#67e8f9',
-        lines: 'rgba(255,255,255,0.3)',
-    },
-    green: {
-        primary: '#059669',
-        secondary: '#10b981',
-        tertiary: '#34d399',
-        light: '#6ee7b7',
-        lines: 'rgba(255,255,255,0.25)',
-    },
-    yellow: {
-        primary: '#ca8a04',
-        secondary: '#eab308',
-        tertiary: '#facc15',
-        light: '#fde047',
-        lines: 'rgba(255,255,255,0.2)',
-    },
-    orange: {
-        primary: '#ea580c',
-        secondary: '#f97316',
-        tertiary: '#fb923c',
-        light: '#fdba74',
-        lines: 'rgba(255,255,255,0.25)',
-    },
-    red: {
-        primary: '#dc2626',
-        secondary: '#ef4444',
-        tertiary: '#f87171',
-        light: '#fca5a5',
-        lines: 'rgba(255,255,255,0.25)',
-    },
-    violet: {
-        primary: '#7c3aed',
-        secondary: '#8b5cf6',
-        tertiary: '#a78bfa',
-        light: '#c4b5fd',
-        lines: 'rgba(255,255,255,0.3)',
-    },
-    darkred: {
-        primary: '#7f1d1d',
-        secondary: '#991b1b',
-        tertiary: '#b91c1c',
-        light: '#dc2626',
-        lines: 'rgba(255,255,255,0.4)',
-    },
-    special: {
-        primary: '#1e1b4b',
-        secondary: '#312e81',
-        tertiary: '#4338ca',
-        light: '#818cf8',
-        lines: 'rgba(255,255,255,0.4)',
-    },
-    gold: {
-        primary: '#78350f',
-        secondary: '#d97706',
-        tertiary: '#f59e0b',
-        light: '#fcd34d',
-        lines: 'rgba(255,255,255,0.5)',
-    },
-    black: {
-        primary: '#020617',
-        secondary: '#0f172a',
-        tertiary: '#1e293b',
-        light: '#334155',
-        lines: 'rgba(255,255,255,0.2)',
-    },
+const VALUE_STYLES = {
+    '-2': ['#c5cfff', '#8796e0', '#bbc8ff', 'stars'],
+    '-1': ['#a9ddff', '#57abe4', '#a4deff', 'stars'],
+    0: ['#a0f1f1', '#50c5ce', '#97ecf4', 'moon'],
+    1: ['#b0f4d6', '#63cfaa', '#a3efcd', 'sun', 'M4 24Q16 20 25 26T46 26Q54 22 60 25'],
+    2: ['#c9f1b3', '#86c667', '#b9eb9e', 'sun', 'M4 28Q13 16 21 21Q29 27 34 27Q45 17 60 26'],
+    3: ['#e5f09e', '#b9ca51', '#e4ed9a', 'sun', 'M4 29L15 17L26 28L35 23L43 28L51 18L60 26'],
+    4: ['#fff3b3', '#e9c85f', '#ffed9e', 'sun', 'M4 28H18Q25 17 32 20Q39 20 46 28H60'],
+    5: ['#ffe093', '#efa443', '#ffd977', 'sun', 'M4 17L13 18L20 24Q26 28 34 28L47 26L60 22'],
+    6: ['#ffd3a5', '#f5894f', '#ffc690', 'sun', 'M4 25Q17 31 27 27Q42 14 53 19L60 21'],
+    7: ['#ffbba5', '#ee7061', '#ffad92', 'sun', 'M4 26L14 24L20 27H33L39 23V18H52V23L60 26'],
+    8: ['#ffced0', '#ec8298', '#ffb6cd', 'sun', 'M4 28Q13 18 20 28Q29 19 36 28Q44 19 51 27L60 25'],
+    9: ['#f9b6dc', '#df68a1', '#f6a9de', 'sun', 'M4 28H11L16 18L21 28H39L47 22L52 12L60 26'],
+    10: ['#e7c2f8', '#ab79cb', '#e8bbfa', 'sun', 'M4 19L11 16L19 22L20 29H44L46 22L55 17L60 20'],
+    11: ['#f8a9ce', '#ca6198', '#f3a3cc', 'sun', 'M4 25L12 25L18 29L27 29L32 24L40 27L46 20L53 24L60 19'],
+    12: ['#ffada4', '#ce646a', '#ff998f', 'sun', 'M4 27H22L28 24L32 23L37 24L42 27H60'],
+    13: ['#f8bf92', '#e67b68', '#ffb887', 'curse'],
+    '-10': ['#d0c2fc', '#9273c9', '#e6c6ff', 'constellation'],
+    20: ['#ffd0bb', '#df736a', '#ffada3', 'eclipse'],
+    S: ['#517e94', '#183d56', '#c0fff0', 'exchange'],
+    C: ['#776ea7', '#332956', '#f2eaff', 'joker'],
+    CH: ['#71758c', '#30344a', '#ffdc9c', 'chest'],
+    H: ['#645781', '#22192e', '#ddcdfa', 'blackHole'],
 };
 
-// Generate mosaic SVG pattern with more complexity
-const MosaicPattern = ({ colors, id }) => (
-    <svg width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0 }}>
-        <defs>
-            <pattern id={`mosaic-${id}`} patternUnits="userSpaceOnUse" width="40" height="40">
-                {/* Gradient background */}
-                <rect width="40" height="40" fill={colors.secondary} />
+const ACTION_MARKS = {
+    exchange: (
+        <>
+            <path d="M3.5 10a8.7 8.7 0 0 1 15-3.8l1.2 1.2m-.1-4v4.2h-4.3M20.5 14a8.7 8.7 0 0 1-15 3.8l-1.2-1.2m.1 4v-4.2h4.3" />
+            <Star x={12} y={12} scale={.6} />
+        </>
+    ),
+    joker: (
+        <path d="M10.5 3q1.8 7.2 8.5 8.5-6.7 1.3-8.5 8.5Q8.7 12.8 2 11.5 8.7 10.2 10.5 3ZM19 3v5m-2.5-2.5h5m-2 10.5v4m-2-2h4" />
+    ),
+    chest: (
+        <>
+            <path d="M3 11V8q0-3 4-3h10q4 0 4 3v3M3 11v8h18v-8M3 11h6m6 0h6M7 5v3m10-3v3M7 16v3m10-3v3" />
+            <path d="M12 9.5l3 3-3 4-3-4Z" fill="#1c2438" />
+            <circle cx="12" cy="12.6" r=".8" fill="currentColor" stroke="none" />
+        </>
+    ),
+    blackHole: (
+        <>
+            <path d="M2 9C5 4 10 3 15 5c4 2 5 7 2 10M22 15c-3 5-8 6-13 4-4-2-5-7-2-10" stroke="#e19a7c" />
+            <path d="M3 15c1 3 3 5 6 6m12-12c-1-3-3-5-6-6" opacity=".85" />
+            <circle cx="12" cy="12" r="5.35" fill="#080914" stroke="#f6ad77" />
+            <path d="M7 10.2a5.35 5.35 0 0 1 7-3.25" stroke="#fff1bf" />
+        </>
+    ),
+};
 
-                {/* More complex irregular polygon cells */}
-                <polygon points="0,0 20,5 15,15 0,12" fill={colors.primary} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="20,5 40,0 40,15 25,20 15,15" fill={colors.tertiary} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="0,12 15,15 8,40 0,40" fill={colors.tertiary} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="15,15 25,20 20,40 8,40" fill={colors.light} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="25,20 40,15 40,35 32,40 20,40" fill={colors.secondary} stroke={colors.lines} strokeWidth="0.5" />
-                <polygon points="40,35 40,40 32,40" fill={colors.primary} stroke={colors.lines} strokeWidth="0.5" />
+const CONSTELLATION = [[8, 19], [14, 12], [22, 15], [29, 7], [37, 11], [44, 7], [53, 13], [61, 8], [64, 17], [55, 22]];
+const CONSTELLATION_LINE = CONSTELLATION.map(point => point.join(',')).join(' ');
 
-                {/* Additional micro-cells for richness */}
-                <circle cx="10" cy="8" r="1.5" fill={colors.light} opacity="0.3" />
-                <circle cx="30" cy="25" r="2" fill={colors.primary} opacity="0.2" />
-            </pattern>
+function Star({ x, y, scale }) {
+    return <path d="M0-5 Q.8-.8 5 0 Q.8.8 0 5 Q-.8.8-5 0 Q-.8-.8 0-5Z" fill="currentColor" stroke="none" transform={`translate(${x} ${y}) scale(${scale})`} />;
+}
 
-            {/* Gradient overlay for depth */}
-            <linearGradient id={`depth-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="rgba(255,255,255,0.25)" />
-                <stop offset="45%" stopColor="rgba(255,255,255,0.05)" />
-                <stop offset="55%" stopColor="rgba(0,0,0,0.05)" />
-                <stop offset="100%" stopColor="rgba(0,0,0,0.2)" />
-            </linearGradient>
+function CardSky({ value, motif, horizonProfile, horizonId }) {
+    if (motif === 'sun') {
+        const sunHeight = 8 + (value - 1) * 1.72;
+        return (
+            <svg className="vesper-card-sky vesper-card-sky--sun" viewBox="0 0 64 36" aria-hidden="true">
+                <defs><clipPath id={horizonId}><path d={`${horizonProfile} V-6H4Z`} /></clipPath></defs>
+                <g clipPath={`url(#${horizonId})`}>
+                    <circle cx="32" cy={sunHeight} r="11.5" fill="#fff4d2" opacity=".55" />
+                    <circle cx="32" cy={sunHeight} r="7.8" fill="#fff2bc" stroke="currentColor" strokeWidth="1.45" />
+                </g>
+                <path d={`${horizonProfile} V35H4Z`} fill="currentColor" opacity=".20" />
+                <path d={horizonProfile} fill="none" stroke="currentColor" strokeOpacity=".84" strokeWidth="1.55" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+        );
+    }
+    if (motif === 'eclipse') {
+        return (
+            <svg className="vesper-card-sky vesper-card-sky--eclipse" viewBox="0 0 70 32" aria-hidden="true">
+                <circle cx="35" cy="16" r="13.2" fill="#9b3749" opacity=".42" />
+                <path d="M18 16h-7m41 0h7M22 7l-5-3m31 3 5-3M23 25l-6 4m30-4 6 4" fill="none" stroke="#723447" strokeWidth="1.15" strokeLinecap="round" />
+                <circle cx="35" cy="16" r="10.1" fill="#1d1424" stroke="#ffe5a5" strokeWidth="1.6" />
+                <path d="M25 15a10 10 0 0 1 14-8" fill="none" stroke="#fff8df" strokeLinecap="round" strokeWidth="1.45" />
+            </svg>
+        );
+    }
+    if (motif === 'curse') {
+        return (
+            <svg className="vesper-card-sky vesper-card-sky--curse" viewBox="0 0 70 30" aria-hidden="true">
+                <path d="M35 2l11 7v11l-11 7-11-7V9Z" fill="#542339" stroke="#ffdb9c" strokeWidth="1.4" />
+                <path d="M35 18c-6-1-6-6-3-8l2 4c0-4 2-6 4-7-1 4 4 6 1 10-1 1-2 2-4 1Z" fill="#ffd196" />
+                <path d="M19 11l-7 4 8 4m31-8 7 4-8 4" fill="none" stroke="currentColor" strokeWidth="1.4" />
+            </svg>
+        );
+    }
 
-            {/* Texture Filter */}
-            <filter id={`noise-${id}`}>
-                <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
-                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0" />
-            </filter>
-        </defs>
-
-        <rect width="100%" height="100%" fill={`url(#mosaic-${id})`} />
-        <rect width="100%" height="100%" fill={`url(#depth-${id})`} />
-        <rect width="100%" height="100%" filter={`url(#noise-${id})`} opacity="0.4" />
-    </svg>
-);
-
-// Shimmer effect component
-const ShimmerOverlay = () => (
-    <Motion.div
-        className="absolute inset-0 z-10 pointer-events-none overflow-hidden"
-        initial={{ x: '-150%', skewX: -20 }}
-        animate={{
-            x: ['-150%', '250%'],
-        }}
-        transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            repeatDelay: 18.5,
-            ease: "easeInOut"
-        }}
-        style={{
-            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.0), rgba(255,255,255,0.4), rgba(255,255,255,0.0), transparent)',
-            width: '100%',
-        }}
-    />
-);
+    return (
+        <svg className={cn('vesper-card-sky', motif === 'constellation' && 'vesper-card-sky--constellation')} viewBox="0 0 70 25" aria-hidden="true">
+            {motif === 'moon' && <>
+                <path d="M39 2a10 10 0 1 0 6 15 9.4 9.4 0 0 1-6-15Z" fill="currentColor" />
+                <path d="M22 23q5-2 9 0t9 0m4-1h5" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" opacity=".65" />
+            </>}
+            {motif === 'stars' && (Number(value) === -2
+                ? <><Star x={25} y={16} scale={1.28} /><Star x={44} y={12} scale={1.28} /></>
+                : <Star x={35} y={15} scale={1.5} />)}
+            {motif === 'constellation' && <>
+                <path d="M6 23Q32 3 65 19" fill="none" stroke="#492f71" strokeWidth="1.1" opacity=".55" />
+                <polyline points={CONSTELLATION_LINE} fill="none" stroke="#573665" strokeWidth="1.15" />
+                {CONSTELLATION.map(([x, y], i) => <Star key={x} x={x} y={y} scale={i === 3 || i === 6 ? .9 : .54} />)}
+            </>}
+        </svg>
+    );
+}
 
 const SkyjoCard = memo(function SkyjoCard({
     card,
@@ -182,7 +138,7 @@ const SkyjoCard = memo(function SkyjoCard({
     style,
 }) {
     const reducedMotion = useReducedMotion();
-    const instanceId = useId().replace(/:/g, '');
+    const horizonId = 'vesper-horizon-' + useId();
     // Shake animation variants
     const shakeVariants = {
         shake: {
@@ -196,29 +152,25 @@ const SkyjoCard = memo(function SkyjoCard({
             width: 'clamp(2.25rem, 7vw, 3.25rem)',
             height: 'clamp(2.25rem, 7.5vh, 3.375rem)',
             fontSize: 'clamp(0.95rem, 2.8vw, 1.4rem)',
-            cornerSize: '0.45rem',
-            cornerFont: '0.38rem',
+            cornerFont: '0.46rem',
         },
         sm: {
             // En partie, la table fixe --skyjo-card-h / -w pour que tout tienne sans défilement.
             width: 'var(--skyjo-card-w, clamp(2.5rem, 7vw, 3.5rem))',
             height: 'var(--skyjo-card-h, clamp(3.2rem, 9vh, 4.2rem))',
             fontSize: 'clamp(1.25rem, 3.4vw, 1.7rem)',
-            cornerSize: '0.65rem',
             cornerFont: '0.5rem',
         },
         md: {
             width: 'clamp(2.7rem, 7.5vw, 3.8rem)',
             height: 'clamp(3.6rem, 10vh, 4.8rem)',
             fontSize: 'clamp(1.5rem, 4vw, 2.1rem)',
-            cornerSize: '0.8rem',
-            cornerFont: '0.55rem',
+            cornerFont: '0.62rem',
         },
         lg: {
             width: 'clamp(3.5rem, 9vw, 4.5rem)',
             height: 'clamp(5.25rem, 13.5vh, 6.75rem)',
             fontSize: 'clamp(2.1rem, 6vw, 3.2rem)',
-            cornerSize: '1.1rem',
             cornerFont: '0.75rem',
         },
     };
@@ -243,42 +195,16 @@ const SkyjoCard = memo(function SkyjoCard({
         );
     }
 
-    let mosaicColors = MOSAIC_COLORS[card.color];
-
-    // Force correct colors for special Bonus cards (20, -10, S, C)
-    const numericValue = parseInt(card.value);
-    const isS = card.specialType === 'S' || card.value === 'S';
-    const isC = card.specialType === 'C' || card.value === 'C';
-
-    if (numericValue === 20) {
-        mosaicColors = MOSAIC_COLORS.darkred;
-    } else if (numericValue === -10) {
-        mosaicColors = MOSAIC_COLORS.violet;
-    } else if (isS || (card.value === 0 && card.color === 'special' && !isC)) {
-        mosaicColors = MOSAIC_COLORS.special;
-    } else if (isC || (card.value === 0 && card.color === 'special')) {
-        mosaicColors = MOSAIC_COLORS.special;
-    } else if (card.specialType === 'CH' || card.value === 'CH' || card.color === 'gold') {
-        mosaicColors = MOSAIC_COLORS.gold;
-    } else if (card.specialType === 'H' || card.value === 'H' || card.color === 'black') {
-        mosaicColors = MOSAIC_COLORS.black;
-    }
-
-    // Final fallback if color is still missing
-    if (!mosaicColors) {
-        mosaicColors = MOSAIC_COLORS.green;
-    }
     const isRevealed = card.isRevealed;
-    const patternId = `${instanceId}-${card.id}-${card.color}`;
-
-    // Determine display content (Value or Icon for special types)
-    const displayValue = card.specialType || card.value;
-
-    const isCH = card.specialType === 'CH' || card.value === 'CH';
-    const isH = card.specialType === 'H' || card.value === 'H';
-    const isSpecial = isS || isC || isCH || isH;
-
-    const SpecialIcon = isSpecial ? (isS ? RefreshCw : (isC ? Sparkles : (isCH ? HelpCircle : Orbit))) : null;
+    const rawValue = card.specialType ?? card.value;
+    const hasKnownValue = Object.hasOwn(VALUE_STYLES, rawValue);
+    const value = hasKnownValue ? rawValue
+        : card.color === 'gold' ? 'CH' : card.color === 'black' ? 'H' : null;
+    const [sky, horizon, accent, motif, horizonProfile] = value === null ? VALUE_STYLES[0] : VALUE_STYLES[value];
+    const actionMark = ACTION_MARKS[motif];
+    const isCurse = motif === 'curse';
+    const displayValue = isCurse ? '+13' : String(value ?? rawValue ?? '—').replace(/^-/, '−');
+    const classicBack = cardSkin === 'classic';
 
     return (
         <Motion.div
@@ -290,13 +216,18 @@ const SkyjoCard = memo(function SkyjoCard({
                 className
             )}
             style={{
-                '--card-accent': mosaicColors.light,
+                '--card-accent': isRevealed ? accent : '#66e0bd',
+                '--vesper-face-accent': accent,
+                '--vesper-sky': sky,
+                '--vesper-horizon': horizon,
+                '--vesper-number-size': currentSize.fontSize,
+                '--vesper-corner-size': currentSize.cornerFont,
                 width: size === 'custom' ? undefined : currentSize.width,
                 height: size === 'custom' ? undefined : currentSize.height,
                 ...style // Allow overriding style
             }}
             onClick={isClickable ? () => { triggerHaptic(); onClick?.(); } : undefined}
-            role={isClickable ? 'button' : undefined}
+            role={isClickable ? 'button' : 'img'}
             tabIndex={isClickable ? 0 : undefined}
             aria-label={isRevealed ? `Carte ${displayValue}${isLocked ? ', verrouillée' : ''}` : 'Carte face cachée'}
             aria-pressed={isClickable ? isSelected : undefined}
@@ -331,139 +262,39 @@ const SkyjoCard = memo(function SkyjoCard({
                 transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                 initial={false}
             >
-                {/* FRONT FACE - Skeuomorphic card design */}
                 <div
                     aria-hidden={!isRevealed}
                     className={cn(
-                        "skyjo-card-face absolute inset-0 backface-hidden overflow-hidden transition-all duration-200",
-                        isSelected && "ring-2 ring-amber-400 ring-offset-1",
+                        "skyjo-card-face vesper-card-face absolute inset-0 backface-hidden overflow-hidden",
+                        actionMark && "vesper-card-face--action",
+                        (Number(value) === -10 || isCurse) && "vesper-card-face--wide",
                     )}
-                    style={{
-                        borderRadius: '10px',
-                        boxShadow: `
-                            0 4px 15px rgba(0, 0, 0, 0.5), 
-                            0 1px 3px rgba(0, 0, 0, 0.4), 
-                            inset 0 0 0 1px rgba(255,255,255,0.3),
-                            inset 0 1px 1px rgba(255,255,255,0.5),
-                            ${(isCH || isH || isSpecial || numericValue === 20 || numericValue === -10)
-                                ? `0 0 12px ${mosaicColors.tertiary}66`
-                                : ''}
-                        `,
-                        border: '2.5px solid #ffffff',
-                        background: mosaicColors.secondary,
-                    }}
                 >
-                    {/* Mosaic texture pattern */}
-                    <MosaicPattern colors={mosaicColors} id={patternId} />
-
-                    {/* Shimmer effect */}
-                    {isRevealed && isSpecial && !reducedMotion && <ShimmerOverlay />}
-
-                    {/* Top-left corner number */}
-                    <div
-                        className="absolute flex items-center justify-center"
-                        style={{
-                            top: '4px',
-                            left: '4px',
-                            width: currentSize.cornerSize,
-                            height: currentSize.cornerSize,
-                            background: 'rgba(255,255,255,0.9)',
-                            borderRadius: '50%',
-                            fontSize: currentSize.cornerFont,
-                            fontWeight: 'bold',
-                            color: mosaicColors.primary,
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                        }}
-                    >
-                        {isSpecial ? (
-                            <SpecialIcon style={{ width: '80%', height: '80%' }} strokeWidth={3} />
-                        ) : (
-                            displayValue
-                        )}
-                    </div>
-
-                    {/* Bottom-right corner number (rotated) */}
-                    <div
-                        className="absolute flex items-center justify-center"
-                        style={{
-                            bottom: '4px',
-                            right: '4px',
-                            width: currentSize.cornerSize,
-                            height: currentSize.cornerSize,
-                            background: 'rgba(255,255,255,0.9)',
-                            borderRadius: '50%',
-                            fontSize: currentSize.cornerFont,
-                            fontWeight: 'bold',
-                            color: mosaicColors.primary,
-                            transform: 'rotate(180deg)',
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                        }}
-                    >
-                        {isSpecial ? (
-                            <SpecialIcon style={{ width: '80%', height: '80%' }} strokeWidth={3} />
-                        ) : (
-                            displayValue
-                        )}
-                    </div>
-
-                    {/* Center number with strong relief effect */}
-                    <div
-                        className="absolute inset-0 flex items-center justify-center p-2"
-                        style={{ fontSize: currentSize.fontSize }}
-                    >
-                        <span
-                            style={{
-                                fontWeight: 900,
-                                color: '#ffffff',
-                                textShadow: '0 1px 1px rgba(0,0,0,0.3), 1px 1px 3px rgba(0,0,0,0.3)',
-                                letterSpacing: '-0.02em',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: '100%',
-                                height: '100%',
-                                filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.5))',
-                                position: 'relative'
-                            }}
-                        >
-                            {/* Inner highlight for "embossed" look */}
-                            <span
-                                className="absolute inset-0 flex items-center justify-center opacity-40 blur-[0.5px]"
-                                style={{ transform: 'translate(-1px, -1px)', color: 'rgba(255,255,255,0.8)' }}
-                            >
-                                {isSpecial ? (
-                                    <SpecialIcon className="w-[65%] h-[65%]" strokeWidth={4} />
-                                ) : (
-                                    displayValue
-                                )}
-                            </span>
-
-                            {isSpecial ? (
-                                <SpecialIcon className="w-[65%] h-[65%] relative z-10" strokeWidth={4} />
-                            ) : (
-                                <span className="relative z-10">{displayValue}</span>
-                            )}
-                        </span>
-                    </div>
-
-                    {/* Glossy overlay */}
-                    <div
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                            borderRadius: '8px',
-                            background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 30%, transparent 50%)',
-                        }}
-                    />
+                    {actionMark ? (
+                        <svg className="vesper-card-action" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            {actionMark}
+                        </svg>
+                    ) : (
+                        <>
+                            {value !== null && <CardSky value={value} motif={motif} horizonProfile={horizonProfile} horizonId={horizonId} />}
+                            <span className="vesper-card-corner vesper-card-corner--top" aria-hidden="true">{displayValue}</span>
+                            <span className="vesper-card-value" aria-hidden="true">{displayValue}</span>
+                            <span className="vesper-card-corner vesper-card-corner--bottom" aria-hidden="true">{displayValue}</span>
+                        </>
+                    )}
 
                     {/* Lock overlay */}
                     {isLocked && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[1px] z-20">
+                        <div className={cn(
+                            "absolute z-20",
+                            isCurse ? "vesper-card-curse-lock" : "inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[1px]",
+                        )}>
                             <Motion.div
                                 initial={{ scale: 0.5, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
-                                className="bg-slate-900/80 p-1.5 rounded-full border border-white/20 shadow-lg"
+                                className={isCurse ? undefined : "bg-slate-900/80 p-1.5 rounded-full border border-white/20 shadow-lg"}
                             >
-                                <Lock className="w-5 h-5 text-amber-400" />
+                                <Lock className={isCurse ? undefined : "w-5 h-5 text-amber-400"} aria-hidden="true" />
                             </Motion.div>
                         </div>
                     )}
@@ -483,14 +314,14 @@ const SkyjoCard = memo(function SkyjoCard({
                             : '0 4px 16px rgba(0, 0, 0, 0.4)',
                         border: isHighlighted
                             ? '2px solid rgba(52, 211, 153, 0.9)'
-                            : '2.5px solid rgba(100, 116, 139, 0.5)',
+                            : (classicBack ? '1px solid #bdab9f' : '2.5px solid rgba(100, 116, 139, 0.5)'),
                         backgroundColor: '#1e293b', // Fallback
                     }}
                 >
                     <img
                         src={getCardSkinPath(cardSkin)}
-                        alt="Card Back"
-                        className="w-full h-full object-cover"
+                        alt=""
+                        className={cn("w-full h-full", classicBack ? "object-fill" : "object-cover")}
                     />
                 </div>
             </Motion.div>

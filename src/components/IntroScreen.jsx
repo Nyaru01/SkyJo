@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion as Motion, useIsPresent, useReducedMotion } from 'framer-motion';
 
-// Deuxième temps de l'intro : la vidéo Vesper (île, robot, titre), en fondu après le logo Nyaru Studio.
-// Elle se termine en fondu sur l'accueil (géré par le fondu de sortie de l'intro).
-function VesperIntro({ active, onDone }) {
+const HOME_FADE_SECONDS = 1.55;
+const HOME_PREPARE_AT_SECONDS = 2;
+
+function VesperIntro({ active, reduceMotion, onPrepareHome, onDone }) {
     const videoRef = useRef(null);
     const bgRef = useRef(null);
     const done = useRef(false);
+    const prepared = useRef(false);
     const finish = () => { if (done.current) return; done.current = true; onDone(); };
     useEffect(() => {
         const v = videoRef.current;
@@ -25,22 +27,33 @@ function VesperIntro({ active, onDone }) {
                 const v = e.currentTarget;
                 const bg = bgRef.current;
                 if (bg && Math.abs(bg.currentTime - v.currentTime) > 0.3) bg.currentTime = v.currentTime;
-                // On quitte un peu avant la fin : le fondu de sortie (1 s) couvre la dernière seconde.
-                if (Number.isFinite(v.duration) && v.currentTime >= v.duration - 1.1) finish();
+                if (!active || !Number.isFinite(v.duration)) return;
+                if (!prepared.current && v.currentTime >= HOME_PREPARE_AT_SECONDS) {
+                    prepared.current = true;
+                    onPrepareHome();
+                }
+                const remaining = Math.max(0, v.duration - v.currentTime);
+                if (remaining <= HOME_FADE_SECONDS) {
+                    const gain = remaining / HOME_FADE_SECONDS;
+                    v.volume = gain * gain;
+                    if (!reduceMotion) finish();
+                }
             }}
             onEnded={finish}
-            onError={finish} />
+            onError={active ? finish : undefined} />
     </div>;
 }
 
-export function IntroScreen({ onComplete }) {
+export function IntroScreen({ onPrepareHome, onComplete }) {
     const [phase, setPhase] = useState('studio');
     const completed = useRef(false);
     const canvasRef = useRef(null);
     const animationFrame = useRef(null);
     const reduceMotion = useReducedMotion();
+    const isPresent = useIsPresent();
     const motionPreference = useRef(reduceMotion);
-    motionPreference.current = reduceMotion;
+
+    useEffect(() => { motionPreference.current = reduceMotion; }, [reduceMotion]);
 
     useEffect(() => {
         const shuffleAudio = new Audio('/Sounds/shuffling.mp3');
@@ -67,6 +80,46 @@ export function IntroScreen({ onComplete }) {
         canvas.height = video.videoHeight;
         context.imageSmoothingEnabled = true;
         context.imageSmoothingQuality = 'high';
+        // Calque intermédiaire : la vidéo réduite y est dessinée puis ses bords sont fondus en transparence,
+        // pour que son fond bleuté ne forme pas de bande nette sur le noir de l'écran.
+        const layer = document.createElement('canvas');
+        layer.width = canvas.width;
+        layer.height = canvas.height;
+        const layerContext = layer.getContext('2d');
+        layerContext.imageSmoothingEnabled = true;
+        layerContext.imageSmoothingQuality = 'high';
+        // Masque (aux dimensions de la vidéo) : bords fondus, sauf la bande du texte « Nyaru Studio »
+        // dont les lettres touchent les bords de la vidéo et ne doivent pas être estompées.
+        const W = canvas.width, H = canvas.height;
+        const mask = document.createElement('canvas');
+        mask.width = W;
+        mask.height = H;
+        const maskContext = mask.getContext('2d');
+        const fadeX = W * 0.08, fadeY = H * 0.06;
+        const horizontal = maskContext.createLinearGradient(0, 0, W, 0);
+        horizontal.addColorStop(0, 'rgba(0,0,0,0)');
+        horizontal.addColorStop(fadeX / W, '#000');
+        horizontal.addColorStop(1 - fadeX / W, '#000');
+        horizontal.addColorStop(1, 'rgba(0,0,0,0)');
+        maskContext.fillStyle = horizontal;
+        maskContext.fillRect(0, 0, W, H);
+        maskContext.globalCompositeOperation = 'destination-in';
+        const vertical = maskContext.createLinearGradient(0, 0, 0, H);
+        vertical.addColorStop(0, 'rgba(0,0,0,0)');
+        vertical.addColorStop(fadeY / H, '#000');
+        vertical.addColorStop(1 - fadeY / H, '#000');
+        vertical.addColorStop(1, 'rgba(0,0,0,0)');
+        maskContext.fillStyle = vertical;
+        maskContext.fillRect(0, 0, W, H);
+        maskContext.globalCompositeOperation = 'source-over';
+        const bandTop = H * 0.5, bandBottom = H * 0.64, ramp = H * 0.025;
+        const band = maskContext.createLinearGradient(0, bandTop - ramp, 0, bandBottom + ramp);
+        band.addColorStop(0, 'rgba(0,0,0,0)');
+        band.addColorStop(ramp / (bandBottom - bandTop + 2 * ramp), '#000');
+        band.addColorStop(1 - ramp / (bandBottom - bandTop + 2 * ramp), '#000');
+        band.addColorStop(1, 'rgba(0,0,0,0)');
+        maskContext.fillStyle = band;
+        maskContext.fillRect(0, bandTop - ramp, W, bandBottom - bandTop + 2 * ramp);
         let elapsed = video.currentTime;
         let previousTime;
         const draw = (now) => {
@@ -82,7 +135,16 @@ export function IntroScreen({ onComplete }) {
             const width = canvas.width * scale;
             const height = canvas.height * scale;
             if (video.readyState >= 2) {
-                context.drawImage(video, (canvas.width - width) * 0.5, (canvas.height - height) * 0.43, width, height);
+                const x = (canvas.width - width) * 0.5;
+                const y = (canvas.height - height) * 0.43;
+                layerContext.globalCompositeOperation = 'source-over';
+                layerContext.clearRect(0, 0, layer.width, layer.height);
+                layerContext.drawImage(video, x, y, width, height);
+                layerContext.globalCompositeOperation = 'destination-in';
+                layerContext.drawImage(mask, x, y, width, height);
+                context.fillStyle = '#000';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(layer, 0, 0);
             }
             animationFrame.current = requestAnimationFrame(draw);
         };
@@ -99,14 +161,15 @@ export function IntroScreen({ onComplete }) {
     };
 
     return (
-        <motion.div
+        <Motion.div
             initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: reduceMotion ? 0 : 1, ease: 'easeInOut' }}
+            transition={{ duration: reduceMotion ? 0 : HOME_FADE_SECONDS, ease: [0.42, 0, 0.22, 1] }}
+            data-leaving={isPresent ? undefined : ''}
             className="studio-intro fixed inset-0 z-[99999] flex items-center justify-center bg-black overflow-hidden"
         >
-            <VesperIntro active={phase === 'vesper'} onDone={onComplete} />
+            <VesperIntro active={phase === 'vesper'} reduceMotion={reduceMotion} onPrepareHome={onPrepareHome} onDone={onComplete} />
             <div className="studio-intro-layer" style={{ opacity: phase === 'studio' ? 1 : 0 }}>
             <video
                 src="/introv2.mp4"
@@ -131,6 +194,6 @@ export function IntroScreen({ onComplete }) {
                 }}
             />
             </div>
-        </motion.div>
+        </Motion.div>
     );
 }

@@ -6,16 +6,16 @@ import SkyjoCard from './virtual/SkyjoCard';
 import '../styles/TourmentRules.css';
 
 // Guide du mode Tourment (et règle « colonne −3 » du mode Difficile), dans la DA crépuscule du jeu.
-const card = (id, value, color, extra = {}) => ({ id, value, color, isRevealed: true, ...extra });
+const card = (id, value, extra = {}) => ({ id, value, isRevealed: true, ...extra });
 
 function Fan() {
     const reduce = useReducedMotion();
     const cards = [
-        card('fan-s', 0, 'special', { specialType: 'S' }),
-        card('fan-10', -10, 'violet'),
-        card('fan-ch', 0, 'gold', { specialType: 'CH' }),
-        card('fan-20', 20, 'darkred'),
-        card('fan-c', 0, 'special', { specialType: 'C' }),
+        card('fan-s', 0, { specialType: 'S' }),
+        card('fan-10', -10),
+        card('fan-ch', 0, { specialType: 'CH' }),
+        card('fan-20', 20),
+        card('fan-c', 0, { specialType: 'C' }),
     ];
     return <div className="tr-fan" aria-hidden="true">
         <span className="tr-fan-halo" />
@@ -51,40 +51,40 @@ const STEPS = [
     {
         id: 'column', title: 'Colonne nettoyée : −3', icon: Eraser, tone: 'sage',
         text: 'Trois cartes identiques dans une colonne disparaissent, et vous rapportent −3 points en fin de manche.',
-        content: <><Row>{[1, 2, 3].map(i => <SkyjoCard key={i} card={card(`col-${i}`, 8, 'orange')} size="xs" isClickable={false} />)}</Row><Tag tone="sage">Bonus −3 par colonne</Tag></>,
+        content: <><Row>{[1, 2, 3].map(i => <SkyjoCard key={i} card={card(`col-${i}`, 8)} size="xs" isClickable={false} />)}</Row><Tag tone="sage">Bonus −3 par colonne</Tag></>,
     },
     {
         id: 'minus10', title: 'La carte −10', icon: Gem, tone: 'plum',
         text: 'La meilleure carte du jeu, en six exemplaires seulement. Gardez-la précieusement.',
-        content: <><Row><Floating><SkyjoCard card={card('m10', -10, 'violet')} size="sm" isClickable={false} /></Floating></Row><Tag tone="plum">Votre meilleure alliée</Tag></>,
+        content: <><Row><Floating><SkyjoCard card={card('m10', -10)} size="sm" isClickable={false} /></Floating></Row><Tag tone="plum">Votre meilleure alliée</Tag></>,
     },
     {
         id: 'skull', title: 'Le Crâne maudit', icon: Skull, tone: 'coral',
         text: 'Il vaut 20 points (six exemplaires). Pioché, il doit être posé dans votre grille, puis il reste bloqué 3 tours.',
-        content: <><Row><Shaking><SkyjoCard card={card('skull', 20, 'darkred')} size="sm" isClickable={false} /></Shaking></Row><Tag tone="coral">Débarrassez-vous-en vite</Tag></>,
+        content: <><Row><Shaking><SkyjoCard card={card('skull', 20)} size="sm" isClickable={false} /></Shaking></Row><Tag tone="coral">Débarrassez-vous-en vite</Tag></>,
     },
     {
         id: 'swap', title: 'L’Échange', icon: RefreshCw, tone: 'sky',
         text: 'Quatre exemplaires. Échangez une de vos cartes, visible ou cachée, avec celle d’un adversaire.',
         content: <><Row>
-            <SkyjoCard card={card('sw-s', 0, 'special', { specialType: 'S' })} size="xs" isClickable={false} />
+            <SkyjoCard card={card('sw-s', 0, { specialType: 'S' })} size="xs" isClickable={false} />
             <span className="tr-arrow" aria-hidden="true">→</span>
-            <Swap a={<SkyjoCard card={card('sw-12', 12, 'red')} size="xs" isClickable={false} />} b={<SkyjoCard card={card('sw-m10', -10, 'violet')} size="xs" isClickable={false} />} />
+            <Swap a={<SkyjoCard card={card('sw-12', 12)} size="xs" isClickable={false} />} b={<SkyjoCard card={card('sw-m10', -10)} size="xs" isClickable={false} />} />
         </Row><Tag tone="sky">Votre pire carte contre sa meilleure</Tag></>,
     },
     {
         id: 'joker', title: 'L’Étoile', icon: Sparkles, tone: 'sage',
         text: 'Quatre exemplaires, valeur 0. Posée avec une paire dans une colonne, elle la complète : la colonne disparaît.',
         content: <><Row>
-            <SkyjoCard card={card('j1', 5, 'green')} size="xs" isClickable={false} />
-            <SkyjoCard card={card('j2', 5, 'green')} size="xs" isClickable={false} />
-            <Floating><SkyjoCard card={card('j3', 0, 'special', { specialType: 'C' })} size="xs" isClickable={false} /></Floating>
+            <SkyjoCard card={card('j1', 5)} size="xs" isClickable={false} />
+            <SkyjoCard card={card('j2', 5)} size="xs" isClickable={false} />
+            <Floating><SkyjoCard card={card('j3', 0, { specialType: 'C' })} size="xs" isClickable={false} /></Floating>
         </Row><Tag tone="sage">Faites place nette</Tag></>,
     },
     {
         id: 'chest', title: 'La carte Mystère', icon: HelpCircle, tone: 'gold',
         text: 'Quatre exemplaires. Sa valeur, −15 ou +15, n’est dévoilée qu’en fin de manche. Pour les colonnes, elle compte comme un 0.',
-        content: <><Row><Floating><SkyjoCard card={card('chest', 0, 'gold', { specialType: 'CH' })} size="sm" isClickable={false} /></Floating></Row>
+        content: <><Row><Floating><SkyjoCard card={card('chest', 0, { specialType: 'CH' })} size="sm" isClickable={false} /></Floating></Row>
             <div className="tr-stats tr-stats--small">
                 <div className="tr-stat tr-stat--sage"><strong>−15</strong><span>Trésor</span></div>
                 <div className="tr-stat tr-stat--coral"><strong>+15</strong><span>Piège</span></div>
@@ -94,9 +94,9 @@ const STEPS = [
         id: 'tip', title: 'Astuce', icon: Hand, tone: 'sky',
         text: 'Un doute sur les cartes jouées ? Appuyez longuement sur la défausse pour revoir les trois dernières.',
         content: <Row><div className="tr-history">
-            <SkyjoCard card={card('h1', 5, 'blue')} size="xs" isClickable={false} />
-            <SkyjoCard card={card('h2', -2, 'blue')} size="xs" isClickable={false} />
-            <SkyjoCard card={card('h3', 12, 'red')} size="xs" isClickable={false} />
+            <SkyjoCard card={card('h1', 5)} size="xs" isClickable={false} />
+            <SkyjoCard card={card('h2', -2)} size="xs" isClickable={false} />
+            <SkyjoCard card={card('h3', 12)} size="xs" isClickable={false} />
         </div></Row>,
     },
 ];

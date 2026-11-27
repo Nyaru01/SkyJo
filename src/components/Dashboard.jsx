@@ -66,7 +66,7 @@ const WALLPAPERS = [
     { id: 'skyjo-ascension', name: 'Ascension Vesper', url: '/master/wallpaper-skyjo-ascension.webp', color: 'bg-amber-950', level: 200 },
 ];
 
-export default function Dashboard() {
+export default function Dashboard({ introCovered = false }) {
     const players = useGameStore(selectPlayers);
     const rounds = useGameStore(selectRounds);
     const threshold = useGameStore(selectThreshold);
@@ -142,7 +142,7 @@ export default function Dashboard() {
         if (open) setAnnouncementShown(true);
     }, []);
     const previousGameStatusRef = useRef(gameStatus);
-    const isTutorialOpen = isTutorialManuallyOpen || (isRehydrated && !hasSeenTutorial);
+    const isTutorialOpen = !introCovered && (isTutorialManuallyOpen || (isRehydrated && !hasSeenTutorial));
     const hasUnreadNews = Number.parseInt(
         window.localStorage.getItem('skyjo_news_version') || '0',
         10
@@ -406,7 +406,7 @@ export default function Dashboard() {
                                 }}
                                 onOpenTutorial={() => setIsTutorialManuallyOpen(true)}
                                 showGuide={!hasSeenTutorial}
-                                allowAutoNews={hasSeenTutorial}
+                                allowAutoNews={!introCovered && hasSeenTutorial}
                                 onWhatsNewVisibilityChange={handleWhatsNewVisibility}
                             />
                         </Motion.div>
@@ -910,7 +910,8 @@ export default function Dashboard() {
 
             <NewOnlineModePopup
                 isOpen={
-                    isRehydrated
+                    !introCovered
+                    && isRehydrated
                     && hasSeenTutorial
                     && !hasUnreadNews
                     && !hasSeenNewOnlineModeAnnouncement
@@ -924,7 +925,8 @@ export default function Dashboard() {
             />
             <MasterCareerPopup
                 isOpen={
-                    isRehydrated
+                    !introCovered
+                    && isRehydrated
                     && hasSeenTutorial
                     && !hasUnreadNews
                     && !hasSeenMasterCareerAnnouncement

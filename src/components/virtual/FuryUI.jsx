@@ -1,11 +1,42 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { Activity, CloudFog, Shield, Skull, Snowflake, Tornado, X, Flame } from 'lucide-react';
+import { X, Flame } from 'lucide-react';
 import { FURY_TYPES, FURY_USES_PER_ROUND, FURY_RESERVE_MAX, FURY_ORDER as FURY_ORDER_UI, hasShield } from '../../lib/furyEngine';
 import '../../styles/Fury.css';
 
-const FURY_ICONS = { quake: Activity, curse: Skull, fog: CloudFog, tornado: Tornado, freeze: Snowflake, shield: Shield };
+const FURY_ART = {
+    quake: {
+        mark: 'M2 16l5-5 3 3 4-7 8 9M2 19h7l2-3 2 3h9M12 3l-2 3 2 2',
+        engraving: 'M2 42l12-9 10 4 12-15 12 10 13-16 17 13M5 48l18-5 8 3 9-7 15 8 22-6M25 15l-4-8m36 6 5-9',
+    },
+    curse: {
+        mark: 'M3 11q9-11 18 0-9 11-18 0Zm9-4 2 4-2 4-2-4ZM12 1v3m0 14v4M5 3l2 2m10 0 2-2',
+        engraving: 'M2 31q38-36 76 0M5 38q35 25 70 0M9 11l6 8m50 0 6-8M29 49l11 5 11-5',
+    },
+    fog: {
+        mark: 'M3 9c2-3 5-3 7-1 2-5 8-5 11 0M2 13q4-2 8 0t8 0h4M4 17h5q3 0 5 2t6 0',
+        engraving: 'M0 18Q11 7 22 14T48 15T80 7M0 29q11-6 24-1t27 0 29 2M6 45q14-13 25-4t43-2',
+    },
+    tornado: {
+        mark: 'M21 5C12 0 2 5 3 8c1 3 15 0 16 3 1 3-12 3-12 6 0 2 6 1 7 3M3 3l3 1m12 12 3-1',
+        engraving: 'M2 21Q20 5 45 11T78 16M7 39q14 5 28 0t38-8M17 48q18-5 31-1l18 5',
+    },
+    freeze: {
+        mark: 'M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7M9 4l3 3 3-3m-6 16 3-3 3 3M3 10l4-1-1-4m12 14-1-4 4-1m-18 0 4 1-1 4m12-14-1 4 4 1',
+        engraving: 'M6 30l9-13 9 13-9 14Zm50 0 9-13 9 13-9 14ZM22 6l6 6-6 6-6-6Zm36 0 6 6-6 6-6-6ZM10 51l8-5m44 0 8 5',
+    },
+    shield: {
+        mark: 'M12 2c3 2 6 3 9 3v5c0 6-4 9-9 12-5-3-9-6-9-12V5c3 0 6-1 9-3ZM12 7l1.3 3.7L17 12l-3.7 1.3L12 17l-1.3-3.7L7 12l3.7-1.3Z',
+        engraving: 'M3 12q37-21 74 0M5 21q5 22 35 32 30-10 35-32M12 25q7 14 17 17m22 0q10-3 17-17',
+    },
+};
+
+function FuryMark({ type, size = 24, className }) {
+    return <svg className={className} viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.55" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d={FURY_ART[type].mark} />
+    </svg>;
+}
 
 const plural = n => (n > 1 ? 's' : '');
 // Durée du bandeau de Fury reçue.
@@ -63,19 +94,18 @@ export function FuryRail({ part, me, opponent, opponentName, canPlay, selected, 
 export function FuryTargetBanner({ type, onPlay, onCancel }) {
     if (!type) return null;
     const info = FURY_TYPES[type];
-    const Icon = FURY_ICONS[type];
     const hint = info.target === 'column' ? 'Touchez une colonne adverse' : info.target === 'card' ? 'Touchez une carte adverse retournée' : null;
     const direct = info.target === 'player' || info.target === 'self';
     // Chaque carte Fury a sa couleur et son emblème en filigrane
     return <div className={`fury-target fury-target--${type}`} role="status" aria-live="polite">
-        <Icon className="fury-target-watermark" aria-hidden="true" />
+        <FuryMark type={type} className="fury-target-watermark" />
         <button type="button" className="fury-target-cancel" onClick={onCancel} aria-label="Annuler"><X size={15} strokeWidth={2.4} aria-hidden="true" /></button>
         <div className="fury-target-head">
-            <span className="fury-target-icon" aria-hidden="true"><Icon size={20} /></span>
+            <span className="fury-target-icon" aria-hidden="true"><FuryMark type={type} size={20} /></span>
             <strong className="fury-target-title">{info.title}</strong>
         </div>
         {hint && <p className="fury-target-hint">{hint}</p>}
-        {direct && <button type="button" className="fury-target-play" onClick={onPlay}><Icon size={19} aria-hidden="true" />Lancer</button>}
+        {direct && <button type="button" className="fury-target-play" onClick={onPlay}><FuryMark type={type} size={19} />Lancer</button>}
     </div>;
 }
 
@@ -157,7 +187,6 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names }) {
         <AnimatePresence>
             {announce && (() => {
                 const fx = announce.blocked ? 'shield' : announce.type;
-                const Icon = FURY_ICONS[fx];
                 const byName = names[announce.by] === 'IA' ? 'l’IA' : names[announce.by];
                 const where = announce.type === 'shield' ? 'Sur son plateau' : announce.blocked ? 'Attaque bloquée' : 'Sur votre plateau';
                 // Bandeau compact : ce qu’on a reçu, sans fond plein écran ni bouton. Toucher le ferme plus tôt.
@@ -165,11 +194,11 @@ export function FuryEffects({ lastFury, lastGain, myIndex, names }) {
                     aria-label={`Fury de ${byName} : ${FURY_TYPES[announce.type].title}. ${furyExplain(announce, names[announce.by])}`} onClick={() => setAnnounce(null)}
                     initial={reduce ? { opacity: 0 } : { opacity: 0, y: -16, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={reduce ? { opacity: 0 } : { opacity: 0, y: -12, transition: { duration: 0.25 } }} transition={{ duration: 0.35, ease: [0.2, 0.8, 0.25, 1] }}>
-                    <span className="fury-notice-card" aria-hidden="true"><FuryCard type={announce.type} size="mini" /></span>
+                    <span className="fury-notice-card" aria-hidden="true"><FuryCard type={fx} size="mini" /></span>
                     <span className="fury-notice-copy">
                         <span className="fury-notice-kicker"><Flame size={11} aria-hidden="true" />Fury de {byName} · {FURY_TYPES[announce.type].title}</span>
                         <span className="fury-notice-text">{furyExplain(announce, names[announce.by])}</span>
-                        <span className="fury-notice-where"><Icon size={11} aria-hidden="true" />{where}</span>
+                        <span className="fury-notice-where"><FuryMark type={fx} size={11} />{where}</span>
                     </span>
                     {!reduce && <span className="fury-notice-timer" style={{ animationDuration: `${NOTICE_MS}ms` }} aria-hidden="true" />}
                 </Motion.button>;
@@ -200,15 +229,27 @@ export function FuryAmbience() {
     </div>, document.body);
 }
 
-// Carte Fury dessinée : fond de lave, liseré braise, pictogramme, nom (et effet en grand format).
+const FURY_RULES_SUMMARIES = {
+    quake: 'Remet une colonne adverse à zéro.',
+    curse: 'Pose un +13 verrouillé 3 tours.',
+    fog: 'Recache 2 cartes adverses.',
+    tornado: 'Mélange les cartes adverses.',
+    freeze: 'Gèle une colonne adverse 2 tours.',
+    shield: 'Bloque d’office la prochaine Fury, puis disparaît.',
+};
+
+// Cartes de réserve et cartes détaillées utilisent le même sceau.
 export function FuryCard({ type, size = 'full' }) {
-    const Icon = FURY_ICONS[type];
     const info = FURY_TYPES[type];
+    const detailed = size !== 'mini';
     return <span className={`fury-card fury-card--${size} fury-card--${type}`}>
+        {detailed && <svg className="fury-card-engraving" viewBox="0 0 80 54" fill="none" stroke="currentColor" strokeWidth=".8" strokeLinecap="round" aria-hidden="true">
+            <path d={FURY_ART[type].engraving} />
+        </svg>}
         <span className="fury-card-corner" aria-hidden="true"><Flame size={size === 'mini' ? 8 : 10} /></span>
-        <span className="fury-card-emblem" aria-hidden="true"><Icon size={size === 'mini' ? 18 : 26} strokeWidth={1.8} /></span>
+        <span className="fury-card-emblem" aria-hidden="true"><FuryMark type={type} size={size === 'mini' ? 18 : 26} /></span>
         <span className="fury-card-title">{info.title}</span>
-        {size === 'full' && <span className="fury-card-text">{info.text}</span>}
+        {detailed && <span className="fury-card-text">{size === 'rules' ? FURY_RULES_SUMMARIES[type] : info.text}</span>}
     </span>;
 }
 
@@ -217,17 +258,17 @@ export function FuryRulesModal({ open, onClose, first = false }) {
     if (!open) return null;
     return createPortal(<div className="skyjo-pause fury-rules-layer" onClick={onClose}>
         <div className="skyjo-pause-panel fury-rules" role="dialog" aria-modal="true" aria-labelledby="fury-rules-title" onClick={e => e.stopPropagation()}>
-            <span className="skyjo-pause-emblem fury-rules-emblem" aria-hidden="true"><Flame size={24} strokeWidth={1.8} /></span>
-            <h2 id="fury-rules-title" className="fury-rules-title">Mode Fury</h2>
-            <p className="skyjo-pause-text">Les règles de Vesper, plus six cartes pour saboter le jeu adverse.</p>
-            <ol className="fury-rules-steps">
-                <li><b>1</b><span><strong>Piochez-les.</strong> 12 cartes Fury sont cachées dans la pioche. Celle que vous tirez file dans votre réserve (3 au plus), puis vous piochez normalement.</span></li>
-                <li><b>2</b><span><strong>Jouez-les à la place de piocher.</strong> Touchez la carte, puis la cible chez l’adversaire. Votre tour s’arrête là.</span></li>
-                <li><b>3</b><span><strong>Trois par manche, jamais au dernier tour.</strong> Une fois qu’un joueur a tout retourné, plus personne ne joue de Fury.</span></li>
-                <li><b>4</b><span><strong>Le Bouclier se déclenche tout seul.</strong> Gardé dans votre réserve, il bloque la prochaine Fury reçue, puis disparaît.</span></li>
-                <li><b>5</b><span><strong>Colonne nettoyée : −3 points.</strong> Trois cartes identiques dans une colonne disparaissent et vous rapportent −3 en fin de manche.</span></li>
-            </ol>
-            <div className="fury-rules-grid">{FURY_ORDER_UI.map(type => <FuryCard key={type} type={type} />)}</div>
+            <div className="fury-rules-copy">
+                <h2 id="fury-rules-title" className="fury-rules-title">
+                    <Flame size={21} strokeWidth={1.8} aria-hidden="true" /> Mode Fury
+                </h2>
+                <ul className="fury-rules-steps">
+                    <li><strong>Pioche.</strong> 12 Fury sont cachées dans la pioche. La Fury tirée va en réserve (3 max), puis vous repiochez.</li>
+                    <li><strong>Attaque.</strong> Jouez une Fury au lieu de piocher et visez si besoin. Votre tour se termine. 3 par manche, jamais au dernier tour.</li>
+                    <li><strong>Colonne.</strong> Trois cartes identiques retirées d’une colonne valent −3 points en fin de manche.</li>
+                </ul>
+            </div>
+            <div className="fury-rules-grid" aria-label="Les six cartes Fury">{FURY_ORDER_UI.map(type => <FuryCard key={type} type={type} size="rules" />)}</div>
             <button type="button" className="skyjo-pause-resume" onClick={onClose}>{first ? 'Au combat' : 'Compris'}</button>
         </div>
     </div>, document.body);

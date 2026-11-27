@@ -128,15 +128,26 @@ body.fury-mode .skyjo-game-container { --skyjo-card-h: clamp(2.5rem, calc((100dv
 body.fury-mode .skyjo-game-container { --skyjo-card-h: clamp(2.5rem, calc((100dvh - 500px) / 7), 4.2rem); }
 
 /* Fenêtre de règles Fury */
-.fury-rules-layer { z-index: 10001; }
-.fury-rules { max-width: 380px; max-height: calc(100dvh - 32px); overflow-y: auto; }
-.fury-rules-emblem { color: #ff8a55; background: #ff7a451a; }
-html body .fury-rules .fury-rules-title { color: #fbf6ee !important; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; font-weight: 500; line-height: 1.1; }
-.fury-rules-steps { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 8px; text-align: left; width: 100%; }
-.fury-rules-steps li { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.42; color: #c9c0cf; }
-.fury-rules-steps b { flex-shrink: 0; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #ff7a4526; color: #ff9a6a; font-size: 12px; }
-.fury-rules-steps strong { color: #fbf6ee; }
-.fury-rules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; margin-bottom: 16px; }
+.fury-rules-layer {
+    z-index: 10001; place-items: safe center; overflow: auto; overscroll-behavior: contain;
+    padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+}
+html:has(.fury-rules-layer) { overflow: hidden; }
+.skyjo-pause-panel.fury-rules {
+    display: grid; grid-template-areas: 'copy' 'cards' 'action'; gap: 14px;
+    max-width: 460px; padding: 16px; border-radius: 20px;
+}
+.fury-rules-copy { grid-area: copy; min-width: 0; }
+html body .fury-rules .fury-rules-copy .fury-rules-title {
+    display: flex; align-items: center; gap: 8px; margin: 0 0 9px;
+    font-size: 30px; text-align: left;
+}
+.fury-rules-title svg { color: #ff976b; flex: none; }
+.fury-rules-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; text-align: left; }
+.fury-rules-steps li { border-left: 2px solid #ff9b6d55; padding-left: 8px; font-size: .79rem; line-height: 1.35; color: #d9d1df; }
+.fury-rules-steps strong { color: #ffdbc5; }
+.fury-rules-grid { grid-area: cards; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.fury-rules > .skyjo-pause-resume { grid-area: action; min-height: 44px; border-radius: 10px; }
 /* Fury : on ne réserve que la place réelle de la réserve (≈ 70 px), les cartes gardent leur taille normale */
 body.fury-mode .skyjo-game-container { --skyjo-card-h: clamp(2.8rem, calc((100dvh - 445px) / 7), 4.2rem); }
 .fury-card--mini { height: 56px; }
@@ -213,33 +224,36 @@ body.fury-mode .skyjo-badge-aside .fury-opponent { margin: 0 !important; width: 
 .fury-reveal-ok:active { transform: scale(.96); }
 .fury-reveal-ok:focus-visible { outline: 2px solid #ffd2b8; outline-offset: 3px; }
 
-/* ===== Cartes Fury v2 : fond teinté par type, double cadre, emblème en losange, reflet ===== */
+/* Cartes Fury : émail sombre, gravure et sceau propres à chaque effet. */
 .fury-card--quake { --fc2: #8a2a0c; } .fury-card--curse { --fc2: #6e0f22; } .fury-card--fog { --fc2: #3e3a58; }
 .fury-card--tornado { --fc2: #0f5a52; } .fury-card--freeze { --fc2: #17476e; } .fury-card--shield { --fc2: #24563f; }
 .fury-card {
     isolation: isolate;
     background:
-        radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--fc) 42%, transparent), transparent 58%),
-        repeating-linear-gradient(135deg, #ffffff07 0 1px, transparent 1px 6px),
-        linear-gradient(172deg, var(--fc2, #3a2226) 0%, #1c1317 62%, #110b0e 100%);
-    border: 1.5px solid color-mix(in srgb, var(--fc) 85%, #fff 15%);
-    box-shadow: inset 0 1px 0 #ffffff26, inset 0 0 0 2px #120c0f, 0 0 0 1px #000a, 0 8px 16px -8px #000;
+        radial-gradient(ellipse 92% 46% at 22% 0%, color-mix(in srgb, var(--fc) 49%, transparent), transparent 85%),
+        linear-gradient(155deg, var(--fc2, #3a2226), #20151d 84%);
+    border: 1px solid color-mix(in srgb, var(--fc) 78%, #ffe5b8);
+    border-top-color: color-mix(in srgb, var(--fc) 53%, #fff3d0);
+    border-bottom-color: color-mix(in srgb, var(--fc) 54%, #271622);
+    box-shadow: inset 0 1px #fff4de80, inset 0 -2px #120c0f, 0 2px #211419, 0 7px 13px -7px #000;
 }
-.fury-card::before { content: ''; position: absolute; inset: 3px; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--fc) 40%, transparent); pointer-events: none; z-index: -1; }
-.fury-card-emblem { background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--fc) 55%, #fff 10%), var(--fc2, #3a2226) 75%); color: #fff6ee; box-shadow: 0 0 16px color-mix(in srgb, var(--fc) 55%, transparent), inset 0 0 0 1px #ffffff40, inset 0 -4px 8px #0006; }
-.fury-card-emblem svg { filter: drop-shadow(0 1px 1px #0008); }
+.fury-card::before { content: ''; position: absolute; inset: 3px; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--fc) 48%, transparent); pointer-events: none; z-index: -1; }
+.fury-card-engraving { position: absolute; inset: 2px 4% auto; width: 92%; height: 65%; color: var(--fc); opacity: .46; z-index: -1; pointer-events: none; }
+.fury-card-emblem {
+    flex-shrink: 0;
+    border-radius: 32%;
+    color: color-mix(in srgb, var(--fc) 45%, #fff8e8);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--fc2) 60%, #292333), #19121b);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fc) 66%, transparent), inset 0 1px #ffeddc55, 0 2px 6px #160f18a6;
+}
 .fury-card-title { color: #fff1e8; text-shadow: 0 1px 2px #000c; }
-/* Grand format : losange, titre gravé, effet sur un bandeau, reflet qui passe */
-.fury-card--full .fury-card-emblem { border-radius: 10px; transform: rotate(45deg); margin: 6px 0 4px; }
-.fury-card--full .fury-card-emblem svg { transform: rotate(-45deg); }
+/* Grand format : sceau serti et texte de l'effet. */
+.fury-card--full .fury-card-emblem { margin: 4px 0 2px; }
 .fury-card--full .fury-card-title { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; }
 .fury-card--full .fury-card-text { align-self: stretch; margin: 2px 2px 0; padding: 5px 6px; border-radius: 5px; background: #0000004d; border-top: 1px solid color-mix(in srgb, var(--fc) 35%, transparent); color: #f0dcd2; }
 .fury-card--full .fury-card-corner { top: 6px; left: 7px; }
-.fury-card--full::after { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, #ffffff2e 48%, transparent 60%); transform: translateX(-120%); animation: fury-card-shine 4.5s ease-in-out infinite; pointer-events: none; }
-@keyframes fury-card-shine { 0%, 70% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
 .fury-reveal-cards .fury-card--full .fury-card-emblem { width: 58px; height: 58px; margin: 12px 0 8px; }
 .fury-reveal-cards .fury-card--full .fury-card-title { font-size: 18px; letter-spacing: .03em; }
-@media (prefers-reduced-motion: reduce) { .fury-card--full::after { animation: none; } }
 /* Annonce d'une Fury adverse */
 .fury-announce-effect { max-width: 300px; margin: 0; padding: 10px 14px; border-radius: 12px; text-align: center; font-size: 14.5px; line-height: 1.4; font-weight: 600; color: #fff1e8; background: #00000059; border: 1px solid #ff8a5566; }
 .fury-announce-effect.is-blocked { border-color: #9fcab699; color: #dff3ea; }
@@ -247,6 +261,48 @@ body.fury-mode .skyjo-badge-aside .fury-opponent { margin: 0 !important; width: 
 .fury-card--full { container-type: inline-size; }
 .fury-card--full .fury-card-title { font-size: min(15px, 11.5cqi); letter-spacing: .03em; max-width: 100%; }
 .fury-reveal-cards .fury-card--full .fury-card-title { font-size: min(19px, 12cqi); }
+
+.fury-card--rules {
+    display: grid; grid-template-rows: auto auto 1fr; align-items: start; justify-items: center;
+    gap: 5px; min-width: 0; padding: 8px 6px; container-type: inline-size;
+}
+.fury-card--rules .fury-card-corner { display: none; }
+.fury-card--rules .fury-card-emblem { width: 34px; height: 34px; }
+.fury-card--rules .fury-card-title {
+    max-width: 100%; font: 900 min(.8rem, 13.2cqi)/1.1 'Vesper Nunito', system-ui, sans-serif;
+    color: color-mix(in srgb, var(--fc) 30%, #fff8ee);
+}
+.fury-card--rules .fury-card-text { align-self: start; color: #f5e7e2; font-size: .69rem; line-height: 1.2; }
+
+@media (max-height: 660px) {
+    .skyjo-pause-panel.fury-rules { gap: 9px; padding: 12px; }
+    html body .fury-rules .fury-rules-copy .fury-rules-title { font-size: 26px; margin-bottom: 7px; }
+    .fury-rules-steps { gap: 4px; }
+    .fury-card--rules { gap: 4px; padding: 6px 4px; }
+    .fury-card--rules .fury-card-emblem { width: 29px; height: 29px; }
+    .fury-card--rules .fury-card-emblem svg { width: 21px; height: 21px; }
+}
+@media (max-height: 590px) {
+    .skyjo-pause-panel.fury-rules { gap: 8px; padding: 10px; }
+    .fury-rules-steps li { font-size: .75rem; }
+    .fury-rules-grid { gap: 5px; }
+    .fury-card--rules {
+        grid-template: 'emblem title' auto 'text text' 1fr / auto minmax(0, 1fr);
+        align-items: center; column-gap: 3px;
+    }
+    .fury-card--rules .fury-card-emblem { grid-area: emblem; width: 20px; height: 20px; }
+    .fury-card--rules .fury-card-emblem svg { width: 15px; height: 15px; }
+    .fury-card--rules .fury-card-title { grid-area: title; font-size: min(.75rem, 12.5cqi); }
+    .fury-card--rules .fury-card-text { grid-area: text; }
+}
+@media (orientation: landscape) and (max-height: 540px) and (min-width: 600px) {
+    .skyjo-pause-panel.fury-rules {
+        max-width: 720px; grid-template: 'copy cards' 1fr 'action cards' auto / minmax(0, 2fr) minmax(0, 3fr);
+        column-gap: 14px; align-items: start;
+    }
+    .fury-rules-grid { align-self: center; }
+    .fury-rules > .skyjo-pause-resume { align-self: end; }
+}
 
 /* ===== Annonce d'une Fury adverse v2 : scène teintée par la carte + effet three.js ===== */
 .fury-fx3d { position: absolute; inset: 0; pointer-events: none; }

@@ -4,9 +4,7 @@ import { X, ChevronRight, ChevronLeft, Sparkles, Target, LayoutGrid, Columns3, H
 import SkyjoCard from './virtual/SkyjoCard';
 import '../styles/Guide.css';
 
-// Couleur d'une carte selon sa valeur (même répartition que le moteur de jeu).
-const colorOf = n => (n === -2 ? 'indigo' : n < 0 ? 'blue' : n === 0 ? 'cyan' : n <= 4 ? 'green' : n <= 8 ? 'yellow' : n <= 11 ? 'orange' : 'red');
-const face = (id, n) => ({ id, value: n, color: colorOf(n), isRevealed: true });
+const face = (id, value) => ({ id, value, isRevealed: true });
 
 // Petite île isométrique dessinée, dans le style de l'accueil (aucune image chargée).
 function Prism({ x, y, w, h, top, left, right }) {

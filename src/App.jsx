@@ -16,11 +16,13 @@ import { usePushNotifications } from './hooks/usePushNotifications';
 function App() {
   // Global background push notification/FCM management
   usePushNotifications();
-  const [showIntro, setShowIntro] = useState(() => {
+  const [introPhase, setIntroPhase] = useState(() => {
     // Skip intro if we are invited to a room
     const params = new URLSearchParams(window.location.search);
-    return !params.has('room');
+    return params.has('room') ? 'done' : 'playing';
   });
+  const [homePrepared, setHomePrepared] = useState(false);
+  const introCovered = introPhase !== 'done';
 
   // Handle Deep Links Global Listener
   useEffect(() => {
@@ -31,7 +33,7 @@ function App() {
         if (event.data.url) {
           window.history.replaceState({}, document.title, event.data.url);
         }
-        setShowIntro(false);
+        setIntroPhase('done');
       }
 
 
@@ -54,13 +56,6 @@ function App() {
     console.log('🎯 [APP] Écouteur de navigation installé');
     navigator.serviceWorker?.addEventListener('message', handleSWMessage);
 
-    // Initial check for 'room' param again just in case (e.g. cold start)
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('room')) {
-      console.log('🚀 [APP] Room detected in URL, skipping intro');
-      setShowIntro(false);
-    }
-
     return () => {
       navigator.serviceWorker?.removeEventListener('message', handleSWMessage);
     };
@@ -79,15 +74,21 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <AnimatePresence>
-        {showIntro && <IntroScreen key="intro" onComplete={() => setShowIntro(false)} />}
+      <AnimatePresence onExitComplete={() => setIntroPhase(current => current === 'leaving' ? 'done' : current)}>
+        {introPhase === 'playing' && (
+          <IntroScreen
+            key="intro"
+            onPrepareHome={() => setHomePrepared(true)}
+            onComplete={() => setIntroPhase(current => current === 'playing' ? 'leaving' : current)}
+          />
+        )}
       </AnimatePresence>
 
-      {!showIntro && (
-        <div>
+      {(homePrepared || introPhase !== 'playing') && (
+        <div inert={introCovered}>
           <UpdateProvider>
             <SocketProvider>
-              <MusicPlayer />
+              {!introCovered && <MusicPlayer />}
               <Toaster
                 position="bottom-center"
                 reverseOrder={false}
@@ -120,7 +121,7 @@ function App() {
 
               <div className="min-h-screen font-sans text-slate-900 dark:text-slate-100 selection:bg-emerald-100 dark:selection:bg-emerald-900">
                 <ImagePreloader>
-                  <Dashboard />
+                  <Dashboard introCovered={introCovered} />
                 </ImagePreloader>
               </div>
             </SocketProvider>
