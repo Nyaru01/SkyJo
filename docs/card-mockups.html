@@ -56,7 +56,7 @@ section { padding: 1.2rem 0; border-top: 1px solid #f9d9bd26; }
 .simulation .pairs { gap: .4rem; grid-template-columns: repeat(auto-fit, minmax(clamp(2.25rem, 7vw, 3.25rem), max-content)); }
 .simulation:has(input:checked) .card { filter: url(#deuteranopia); }
 .card {
-    --ink: #fff3df;
+    --ink: #131427;
     --w: clamp(2.7rem, 7.5vw, 3.8rem);
     --h: clamp(3.6rem, 10vh, 4.8rem);
     --number: clamp(1.5rem, 4vw, 2.1rem);
@@ -68,12 +68,12 @@ section { padding: 1.2rem 0; border-top: 1px solid #f9d9bd26; }
     display: grid;
     place-items: center;
     color: var(--ink);
-    border: 1px solid #f9dbb7a8;
-    border-top-color: #ffe8c9e6;
-    border-bottom-color: #a98a79;
+    border: 1px solid #ffeeccd9;
+    border-top-color: #fff6e1;
+    border-bottom-color: #b9987f;
     border-radius: .52rem;
-    background: radial-gradient(ellipse 110% 64% at 20% -10%, #fff4db24, transparent 75%),
-        linear-gradient(155deg, var(--sky) 20%, var(--horizon) 100%);
+    background: radial-gradient(ellipse 110% 64% at 20% -10%, #fff9ed45, transparent 75%),
+        linear-gradient(165deg, var(--sky) 8%, var(--horizon) 100%);
     box-shadow: 0 3px 0 #100f20, 0 7px 10px #090b1680, inset 0 1px #fff7e344, inset 0 -2px #08091455;
     font-family: Nunito, system-ui, sans-serif;
     font-weight: 900;
@@ -95,17 +95,22 @@ section { padding: 1.2rem 0; border-top: 1px solid #f9d9bd26; }
     border-radius: .43rem;
 }
 .number, .corner { position: relative; z-index: 1; line-height: 1; }
-.number { top: -2px; font-size: var(--number); letter-spacing: -.045em; text-shadow: 0 1px 1px #080a16cc; }
+.number { transform: translateY(-34%); font-size: var(--number); letter-spacing: -.045em; text-shadow: 0 1px #fff7e173; }
 .card--wide .number { letter-spacing: -.065em; }
 .minus { margin-right: .055em; }
 .corner { position: absolute; font-size: var(--corner); }
 .corner--top { top: 7%; left: 9%; }
 .corner--bottom { bottom: 4%; right: 7%; transform: rotate(180deg); }
-.scene { position: absolute; inset: auto 0 8%; width: 100%; height: 47%; color: var(--card-accent); opacity: .78; }
-.scene--sun { bottom: 3%; }
-.scene--eclipse { inset: auto 0 7%; height: 55%; opacity: .92; }
-.special { position: relative; width: 55%; height: auto; color: var(--card-accent); }
+.scene { position: absolute; inset: auto 0 7%; width: 100%; height: 40%; color: #292042; }
+.scene--sun { bottom: 6%; height: 37%; }
+.scene--constellation { color: #69501b; }
+.card--action {
+    background: radial-gradient(ellipse 120% 78% at 18% -12%, #c0e0ff42, transparent 78%),
+        linear-gradient(165deg, var(--sky), var(--horizon));
+}
+.special { position: relative; width: 62%; height: auto; color: var(--card-accent); }
 .card--back {
+    border-color: #bdab9f;
     background: radial-gradient(ellipse at 50% 68%, #91709545, transparent 68%),
         linear-gradient(155deg, var(--sky), var(--horizon));
 }
@@ -116,7 +121,7 @@ section { padding: 1.2rem 0; border-top: 1px solid #f9d9bd26; }
 .back-emblem { width: 47%; height: auto; color: #f5cfa1; }
 .card--selected { outline: 1px solid #fde7ae; outline-offset: 3px; transform: translateY(-2px); box-shadow: 0 0 17px #f6cd7460; }
 .card--target { outline: 2px dashed var(--card-accent); outline-offset: 3px; }
-.card--disabled { filter: saturate(.48); opacity: .62; }
+.card--disabled { filter: saturate(.32); opacity: .48; }
 .definitions { position: absolute; width: 0; height: 0; overflow: hidden; }
 @media (max-width: 36rem) {
     main { padding-top: 1.5rem; }
@@ -229,6 +234,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <feColorMatrix type="matrix" values=".367322 .860646 -.227968 0 0 .280085 .672501 .047413 0 0 -.011820 .042940 .968881 0 0 0 0 0 1 0"/>
         </filter>
         <path id="star" d="M0-5 Q.8-.8 5 0 Q.8.8 0 5 Q-.8.8-5 0 Q-.8-.8 0-5Z" fill="currentColor"/>
+        <clipPath id="above-horizon">
+            <rect width="64" height="27"/>
+        </clipPath>
         <g id="swap" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3.5 10a8.7 8.7 0 0 1 15-3.8l1.2 1.2m-.1-4v4.2h-4.3M20.5 14a8.7 8.7 0 0 1-15 3.8l-1.2-1.2m.1 4v-4.2h4.3"/>
         </g>
@@ -241,11 +249,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <path d="M10 9a2 2 0 1 1 3.4 1.45c-.8.7-1.4 1.05-1.4 2.35"/>
             <circle cx="12" cy="15.8" r=".72" fill="currentColor" stroke="none"/>
         </g>
-        <g id="hole" stroke="currentColor" stroke-width="1.45" stroke-linecap="round">
-            <path d="M3.1 14.8c-1.8-2.6 2.5-6.4 7.4-8.4 4.9-2 9.8-1.5 10.8.6" fill="none" opacity=".65"/>
-            <circle cx="12" cy="12" r="6.1" fill="#070a1b"/>
-            <path d="M21 9.8c0 2.4-3.8 6-8.8 8.1-5 2.1-9.2 1.5-9.7-.8" fill="none"/>
-            <path d="M6 13.2a6.1 6.1 0 0 1 7.6-7.1" fill="none" stroke="#e7daff"/>
+        <g id="hole" fill="none" stroke-linecap="round">
+            <path d="M2 9C5 4 10 3 15 5c4 2 5 7 2 10M22 15c-3 5-8 6-13 4-4-2-5-7-2-10"
+                stroke="#e19a7c" stroke-width="1.3"/>
+            <path d="M3 15c1 3 3 5 6 6m12-12c-1-3-3-5-6-6" stroke="currentColor" stroke-width="1.15" opacity=".85"/>
+            <circle cx="12" cy="12" r="5.35" fill="#080914" stroke="#f6ad77" stroke-width="1.4"/>
+            <path d="M7 10.2a5.35 5.35 0 0 1 7-3.25" stroke="#fff1bf" stroke-width="1.35"/>
         </g>
         <g id="evening-star">
             <circle cx="16" cy="16" r="12" fill="none" stroke="currentColor" stroke-opacity=".32" stroke-width=".75"/>
@@ -288,27 +297,27 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 </main>
 <script>
 const palettes = {
-    "-2": ["#26315d", "#181c37", "#c7c9f3"],
-    "-1": ["#304367", "#212d4b", "#c2d5f3"],
-    0: ["#36556c", "#233d51", "#bde5e9"],
-    1: ["#3b5d69", "#29444d", "#bce7df"],
-    2: ["#416363", "#30484a", "#c1e6d9"],
-    3: ["#4d675e", "#3a4b45", "#cbe7c7"],
-    4: ["#5a6958", "#444d3e", "#d9e8be"],
-    5: ["#676a53", "#504d3a", "#ebe4b4"],
-    6: ["#73674b", "#5a4835", "#f0d8a8"],
-    7: ["#7d6244", "#634330", "#f6cc9c"],
-    8: ["#86583d", "#6b3b2c", "#fbc192"],
-    9: ["#8b4e3b", "#713229", "#ffad87"],
-    10: ["#884538", "#722c2a", "#ffa18a"],
-    11: ["#813939", "#6d2730", "#ff958e"],
-    12: ["#732e38", "#5a2030", "#f9929a"],
-    "-10": ["#463665", "#211733", "#f4cb89"],
-    20: ["#3c2038", "#211527", "#f78479"],
-    S: ["#2a395d", "#171d36", "#9bdcdb"],
-    C: ["#2d3b59", "#181e38", "#ded7f6"],
-    CH: ["#2b3652", "#191b31", "#f3cf98"],
-    H: ["#2b2d52", "#14192e", "#b9a8e5"],
+    "-2": ["#c5cfff", "#8796e0", "#bbc8ff"],
+    "-1": ["#a9ddff", "#57abe4", "#a4deff"],
+    0: ["#a0f1f1", "#50c5ce", "#97ecf4"],
+    1: ["#b0f4d6", "#63cfaa", "#a3efcd"],
+    2: ["#c9f1b3", "#86c667", "#b9eb9e"],
+    3: ["#e5f09e", "#b9ca51", "#e4ed9a"],
+    4: ["#fff3b3", "#e9c85f", "#ffed9e"],
+    5: ["#ffe093", "#efa443", "#ffd977"],
+    6: ["#ffd3a5", "#f5894f", "#ffc690"],
+    7: ["#ffbba5", "#ee7061", "#ffad92"],
+    8: ["#ffced0", "#ec8298", "#ffb6cd"],
+    9: ["#f9b6dc", "#df68a1", "#f6a9de"],
+    10: ["#e7c2f8", "#ab79cb", "#e8bbfa"],
+    11: ["#f8a9ce", "#ca6198", "#f3a3cc"],
+    12: ["#ffada4", "#ce646a", "#ff998f"],
+    "-10": ["#d6b9f8", "#9b72c4", "#e6c6ff"],
+    20: ["#ffb6ac", "#db7475", "#ffada3"],
+    S: ["#627fa7", "#243555", "#c0fff0"],
+    C: ["#697fa7", "#273556", "#f2eaff"],
+    CH: ["#637a9e", "#263451", "#ffdc9c"],
+    H: ["#596e98", "#202d51", "#ddcdfa"],
     back: ["#18233e", "#412947", "#f5cfa1"],
 };
 const actions = {
@@ -329,25 +338,25 @@ function scene(value) {
         const stars = [[8,15],[16,10],[23,14],[29,7],[36,12],[43,8],[52,15],[57,9],[63,16],[49,21]];
         return icon(
             `<polyline points="${stars.map(point => point.join(",")).join(" ")}" fill="none" stroke="currentColor" stroke-width=".6" opacity=".65"/>` +
-            stars.map(([x, y]) => `<use href="#star" transform="translate(${x} ${y}) scale(.39)"/>`).join(""),
-            "0 0 70 25", "scene"
+            stars.map(([x, y]) => `<use href="#star" transform="translate(${x} ${y}) scale(.54)"/>`).join(""),
+            "0 0 70 25", "scene scene--constellation"
         );
     }
     if (value === 20) {
-        return icon('<circle cx="35" cy="15" r="11" fill="currentColor" opacity=".2"/><circle cx="35" cy="15" r="8" fill="#14101b" stroke="currentColor" stroke-width="1.35"/><path d="M28 11a8 8 0 0 1 11-3" fill="none" stroke="#ffd0a6" stroke-linecap="round"/>', "0 0 70 30", "scene scene--eclipse");
+        return icon('<circle cx="35" cy="15" r="12" fill="#a32e44" opacity=".55"/><circle cx="35" cy="15" r="8.5" fill="#1a1120" stroke="#ffab84" stroke-width="1.6"/><path d="M27.5 11a8.5 8.5 0 0 1 11-4" fill="none" stroke="#fff0c9" stroke-linecap="round" stroke-width="1.2"/>', "0 0 70 30", "scene");
     }
     if (value < 0) {
-        const stars = value === -2 ? '<use href="#star" x="27" y="18"/><use href="#star" x="44" y="15"/>' : '<use href="#star" x="35" y="17"/>';
+        const stars = value === -2 ? '<use href="#star" transform="translate(25 16) scale(1.28)"/><use href="#star" transform="translate(44 12) scale(1.28)"/>' : '<use href="#star" transform="translate(35 15) scale(1.5)"/>';
         return icon(stars, "0 0 70 25", "scene");
     }
     if (value === 0) {
-        return icon('<path d="M36 9a7.5 7.5 0 1 0 6 11 7.2 7.2 0 0 1-6-11Z" fill="currentColor"/>', "0 0 70 25", "scene");
+        return icon('<path d="M39 3a10 10 0 1 0 6 15 9.4 9.4 0 0 1-6-15Z" fill="currentColor"/>', "0 0 70 25", "scene");
     }
-    const height = 6 + (value - 1) * 1.15;
+    const height = 9.6 + (value - 1) * 1.43;
     return icon(
-        `<circle cx="51" cy="${height}" r="4.25" fill="currentColor"/>
-        <path d="M13 22h35m-29 4h24" fill="none" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" opacity=".8"/>`,
-        "0 0 70 28", "scene scene--sun"
+        `<circle cx="32" cy="${height}" r="8.2" fill="#fff2bc" stroke="currentColor" stroke-width="1.7" clip-path="url(#above-horizon)"/>
+        <path d="M18 27h28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`,
+        "0 0 64 30", "scene scene--sun"
     );
 }
 
@@ -362,7 +371,7 @@ function card(value, size, state = "") {
         : `${scene(value)}<span class="corner corner--top" aria-hidden="true">${number}</span>
             <span class="number" aria-hidden="true">${number}</span>
             <span class="corner corner--bottom" aria-hidden="true">${number}</span>`;
-    return `<div class="card card--${size}${back ? " card--back" : ""}${value === -10 ? " card--wide" : ""}${state ? " card--" + state : ""}"
+    return `<div class="card card--${size}${back ? " card--back" : ""}${action ? " card--action" : ""}${value === -10 ? " card--wide" : ""}${state ? " card--" + state : ""}"
         style="--sky:${sky};--horizon:${horizon};--card-accent:${accent}"
         role="img" aria-label="${label}">${face}</div>`;
 }
@@ -376,9 +385,9 @@ function pair(value) {
 document.querySelector("#values").innerHTML = values.map(pair).join("");
 document.querySelector("#specials").innerHTML = specials.map(pair).join("");
 document.querySelector("#hand").innerHTML = [
-    "back", -2, 3, "back",
-    9, "back", "C", 1,
-    "back", 0, 12, "back",
+    "back", -2, "H", "back",
+    2, 3, 4, "back",
+    6, 7, 8, "back",
 ].map(value => `<div class="slot">${card(value, "md")}</div>`).join("");
 document.querySelector("#states").innerHTML = [
     [4, "selected", "Sélectionnée"],
