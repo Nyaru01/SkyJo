@@ -33,7 +33,7 @@ section { padding: 1.2rem 0; border-top: 1px solid #f9d9bd26; }
 .pairs { display: grid; grid-template-columns: repeat(auto-fit, minmax(3.55rem, max-content)); gap: .65rem .7rem; }
 .pair { display: grid; align-content: start; justify-items: center; gap: .35rem; min-width: 0; }
 .pair figcaption { font-size: .72rem; text-align: center; }
-.examples { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 1.5rem; }
+.examples { display: flex; flex-wrap: wrap; gap: 1.5rem clamp(2rem, 6vw, 5rem); }
 .examples h2 { margin-bottom: .7rem; }
 .table {
     width: fit-content;
@@ -50,15 +50,17 @@ section { padding: 1.2rem 0; border-top: 1px solid #f9d9bd26; }
 .slot { padding: .18rem; border: 1px solid #ffffff09; border-radius: .65rem; background: #030a153d; box-shadow: inset 0 2px 5px #0003; }
 #states { display: flex; align-items: start; justify-content: space-between; gap: .6rem; }
 #states figure { display: grid; justify-items: center; gap: .75rem; }
-.simulation p { margin: .45rem 0 .8rem; }
+.simulation-heading { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem 1rem; margin-bottom: .9rem; }
+.filter-control { display: inline-flex; align-items: center; gap: .5rem; color: #d6c4ba; font-size: .875rem; cursor: pointer; }
+.filter-control input { width: 1rem; height: 1rem; margin: 0; accent-color: #f5cfa1; }
 .simulation .pairs { gap: .4rem; grid-template-columns: repeat(auto-fit, minmax(clamp(2.25rem, 7vw, 3.25rem), max-content)); }
-.simulation .card { filter: url(#deuteranopia); }
+.simulation:has(input:checked) .card { filter: url(#deuteranopia); }
 .card {
     --ink: #fff3df;
     --w: clamp(2.7rem, 7.5vw, 3.8rem);
     --h: clamp(3.6rem, 10vh, 4.8rem);
     --number: clamp(1.5rem, 4vw, 2.1rem);
-    --corner: .55rem;
+    --corner: .62rem;
     position: relative;
     isolation: isolate;
     width: var(--w);
@@ -66,10 +68,13 @@ section { padding: 1.2rem 0; border-top: 1px solid #f9d9bd26; }
     display: grid;
     place-items: center;
     color: var(--ink);
-    border: 1px solid #f9dbb7b3;
+    border: 1px solid #f9dbb7a8;
+    border-top-color: #ffe8c9e6;
+    border-bottom-color: #a98a79;
     border-radius: .52rem;
-    background: linear-gradient(155deg, var(--sky), var(--horizon));
-    box-shadow: 0 3px 0 #101222, 0 7px 10px #090b1680, inset 0 1px #fff7e36b, inset 0 -2px #08091445;
+    background: radial-gradient(ellipse 110% 64% at 20% -10%, #fff4db24, transparent 75%),
+        linear-gradient(155deg, var(--sky) 20%, var(--horizon) 100%);
+    box-shadow: 0 3px 0 #100f20, 0 7px 10px #090b1680, inset 0 1px #fff7e344, inset 0 -2px #08091455;
     font-family: Nunito, system-ui, sans-serif;
     font-weight: 900;
     font-variant-numeric: tabular-nums;
@@ -79,31 +84,34 @@ section { padding: 1.2rem 0; border-top: 1px solid #f9d9bd26; }
     position: absolute;
     inset: 2px;
     border-radius: .37rem;
-    background: radial-gradient(ellipse 80% 44% at 37% 0%, #fff4db24, transparent);
+    box-shadow: inset 0 1px 0 #fff4db1f;
     pointer-events: none;
 }
 .card--xs {
     --w: clamp(2.25rem, 7vw, 3.25rem);
     --h: clamp(2.25rem, 7.5vh, 3.375rem);
     --number: clamp(.95rem, 2.8vw, 1.4rem);
-    --corner: .38rem;
+    --corner: .46rem;
     border-radius: .43rem;
 }
 .number, .corner { position: relative; z-index: 1; line-height: 1; }
-.number { top: -2px; font-size: var(--number); letter-spacing: -.065em; text-shadow: 0 1px 1px #080a16b3; }
+.number { top: -2px; font-size: var(--number); letter-spacing: -.045em; text-shadow: 0 1px 1px #080a16cc; }
+.card--wide .number { letter-spacing: -.065em; }
 .minus { margin-right: .055em; }
 .corner { position: absolute; font-size: var(--corner); }
-.corner--top { top: 8%; left: 10%; }
-.corner--bottom { bottom: 5%; right: 8%; transform: rotate(180deg); }
+.corner--top { top: 7%; left: 9%; }
+.corner--bottom { bottom: 4%; right: 7%; transform: rotate(180deg); }
 .scene { position: absolute; inset: auto 0 8%; width: 100%; height: 47%; color: var(--card-accent); opacity: .78; }
 .scene--sun { bottom: 3%; }
 .scene--eclipse { inset: auto 0 7%; height: 55%; opacity: .92; }
 .special { position: relative; width: 55%; height: auto; color: var(--card-accent); }
-.card--back { background: linear-gradient(155deg, #18233e, #412947); }
+.card--back {
+    background: radial-gradient(ellipse at 50% 68%, #91709545, transparent 68%),
+        linear-gradient(155deg, var(--sky), var(--horizon));
+}
 .card--back::before {
-    inset: 5px;
-    border: 1px solid #f9dbb74a;
-    background: radial-gradient(ellipse, #b68fc530, transparent 67%);
+    inset: 4px;
+    border: 1px solid #f9dbb755;
 }
 .back-emblem { width: 47%; height: auto; color: #f5cfa1; }
 .card--selected { outline: 1px solid #fde7ae; outline-offset: 3px; transform: translateY(-2px); box-shadow: 0 0 17px #f6cd7460; }
@@ -112,7 +120,7 @@ section { padding: 1.2rem 0; border-top: 1px solid #f9d9bd26; }
 .definitions { position: absolute; width: 0; height: 0; overflow: hidden; }
 @media (max-width: 36rem) {
     main { padding-top: 1.5rem; }
-    .pairs { grid-template-columns: repeat(auto-fit, minmax(2.8rem, 1fr)); gap: .65rem .3rem; }
+    .pairs { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem .3rem; }
     #values { grid-template-columns: repeat(5, minmax(0, 1fr)); }
     .simulation .pairs { grid-template-columns: repeat(auto-fit, minmax(2.25rem, 1fr)); gap: .5rem .3rem; }
 }
@@ -222,21 +230,22 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         </filter>
         <path id="star" d="M0-5 Q.8-.8 5 0 Q.8.8 0 5 Q-.8.8-5 0 Q-.8-.8 0-5Z" fill="currentColor"/>
         <g id="swap" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 9h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/>
+            <path d="M3.5 10a8.7 8.7 0 0 1 15-3.8l1.2 1.2m-.1-4v4.2h-4.3M20.5 14a8.7 8.7 0 0 1-15 3.8l-1.2-1.2m.1 4v-4.2h4.3"/>
         </g>
         <g id="clean" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round">
             <path d="M10.5 3q1.8 7.2 8.5 8.5-6.7 1.3-8.5 8.5Q8.7 12.8 2 11.5 8.7 10.2 10.5 3Z"/>
             <path d="M19 3v5m-2.5-2.5h5m-2 10.5v4m-2-2h4"/>
         </g>
         <g id="chest" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 12V9q0-4 4-4h10q4 0 4 4v10H3v-7h18"/>
-            <path d="M10.6 8a1.5 1.5 0 1 1 2.7 1c-.7.8-1.3 1-1.3 2"/>
-            <circle cx="12" cy="15.4" r=".65" fill="currentColor" stroke="none"/>
+            <path d="M3 12V8q0-3 4-3h10q4 0 4 3v4M3 12v7h18v-7M3 12h5m8 0h5"/>
+            <path d="M10 9a2 2 0 1 1 3.4 1.45c-.8.7-1.4 1.05-1.4 2.35"/>
+            <circle cx="12" cy="15.8" r=".72" fill="currentColor" stroke="none"/>
         </g>
-        <g id="hole" stroke="currentColor" stroke-width="1.45">
-            <circle cx="12" cy="12" r="5.9" fill="#0a1022"/>
-            <ellipse cx="12" cy="12" rx="11" ry="3.25" transform="rotate(-33 12 12)" fill="none"/>
-            <circle cx="19.9" cy="6.7" r="1.35" fill="currentColor" stroke="none"/>
+        <g id="hole" stroke="currentColor" stroke-width="1.45" stroke-linecap="round">
+            <path d="M3.1 14.8c-1.8-2.6 2.5-6.4 7.4-8.4 4.9-2 9.8-1.5 10.8.6" fill="none" opacity=".65"/>
+            <circle cx="12" cy="12" r="6.1" fill="#070a1b"/>
+            <path d="M21 9.8c0 2.4-3.8 6-8.8 8.1-5 2.1-9.2 1.5-9.7-.8" fill="none"/>
+            <path d="M6 13.2a6.1 6.1 0 0 1 7.6-7.1" fill="none" stroke="#e7daff"/>
         </g>
         <g id="evening-star">
             <circle cx="16" cy="16" r="12" fill="none" stroke="currentColor" stroke-opacity=".32" stroke-width=".75"/>
@@ -249,7 +258,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 <main>
     <header>
         <h1>Les cartes de Vesper</h1>
-        <p>Du premier ciel étoilé aux dernières braises du couchant.</p>
     </header>
     <section aria-labelledby="range-title">
         <h2 id="range-title">La gamme</h2>
@@ -271,8 +279,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         </div>
     </section>
     <section class="simulation" aria-labelledby="simulation-title">
-        <h2 id="simulation-title">Simulation de deutéranopie</h2>
-        <p>Valeurs courantes et cartes spéciales en xs, avec le filtre à 100 %.</p>
+        <div class="simulation-heading">
+            <h2 id="simulation-title">Lecture des cartes en xs</h2>
+            <label class="filter-control"><input type="checkbox" checked autocomplete="off"> Simuler la deutéranopie à 100 %</label>
+        </div>
         <div id="simulation" class="pairs"></div>
     </section>
 </main>
@@ -335,8 +345,8 @@ function scene(value) {
     }
     const height = 6 + (value - 1) * 1.15;
     return icon(
-        `<circle cx="51" cy="${height}" r="4.15" fill="currentColor"/>
-        <path d="M12 21h46m-38 4h30" fill="none" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" opacity=".8"/>`,
+        `<circle cx="51" cy="${height}" r="4.25" fill="currentColor"/>
+        <path d="M13 22h35m-29 4h24" fill="none" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" opacity=".8"/>`,
         "0 0 70 28", "scene scene--sun"
     );
 }
@@ -352,7 +362,7 @@ function card(value, size, state = "") {
         : `${scene(value)}<span class="corner corner--top" aria-hidden="true">${number}</span>
             <span class="number" aria-hidden="true">${number}</span>
             <span class="corner corner--bottom" aria-hidden="true">${number}</span>`;
-    return `<div class="card card--${size}${back ? " card--back" : ""}${state ? " card--" + state : ""}"
+    return `<div class="card card--${size}${back ? " card--back" : ""}${value === -10 ? " card--wide" : ""}${state ? " card--" + state : ""}"
         style="--sky:${sky};--horizon:${horizon};--card-accent:${accent}"
         role="img" aria-label="${label}">${face}</div>`;
 }
