@@ -2,13 +2,12 @@ import { useId, useLayoutEffect, useRef } from 'react';
 import { ArrowLeft, ArrowUpRight, Check, Play, BookOpen } from 'lucide-react';
 import { TourmentIcon, FuryIcon } from './ModeIcons';
 import { AI_DIFFICULTY } from '../../lib/skyjoAI';
-import RobotAvatar from './RobotAvatar';
 import IslandSpin from './IslandSpin';
 import '../../styles/AISetup.css';
 
 const MODES = [
-    { id: AI_DIFFICULTY.BONUS, title: 'Tourment', description: 'Osez les cartes spéciales', icon: TourmentIcon, theme: 'coral', line: 'Prêt à jouer avec le feu ?', detail: 'Cartes spéciales et bonus de colonnes : découvrez une autre façon de jouer.', rules: 'tourment' },
-    { id: AI_DIFFICULTY.FURY, title: 'Fury', description: 'Détruisez le jeu adverse', icon: FuryIcon, theme: 'ember', line: 'Je vais tout casser.', detail: '12 cartes de sabotage cachées dans la pioche : séisme, malédiction, tornade… Trois au plus par manche.', rules: 'fury' },
+    { id: AI_DIFFICULTY.BONUS, title: 'Tourment', description: 'Osez les cartes spéciales', icon: TourmentIcon, theme: 'coral', detail: 'Cartes spéciales et bonus de colonnes : découvrez une autre façon de jouer.', rules: 'tourment' },
+    { id: AI_DIFFICULTY.FURY, title: 'Fury', description: 'Détruisez le jeu adverse', icon: FuryIcon, theme: 'ember', detail: '12 cartes de sabotage cachées dans la pioche : séisme, malédiction, tornade… Trois au plus par manche.', rules: 'fury' },
 ];
 
 export default function AISetupScreen({ difficulty, onDifficultyChange, onStart, onBack, onRules }) {
@@ -33,12 +32,26 @@ export default function AISetupScreen({ difficulty, onDifficultyChange, onStart,
 
         <section className="ai-rival" aria-label="Votre adversaire IA">
             <div className={`ai-rival-stage ai-rival-stage--${mode.id}`}>
-                <div className="ai-rival-grid" aria-hidden="true" />
-                <div className="ai-rival-orbit" aria-hidden="true" />
-                <div className="ai-rival-platform" aria-hidden="true" />
-                <IslandSpin />
-                <div className="ai-rival-sea" aria-hidden="true" />
-                <RobotAvatar size="hero" difficulty={mode.id} rival className="ai-rival-avatar" />
+                <div className="ai-rival-landscapes" aria-hidden="true">
+                    {MODES.map(({ id }) => <div
+                        key={id}
+                        className={`ai-rival-landscape ai-rival-landscape--${id}`}
+                        data-active={id === mode.id}
+                    >
+                        <div className="ai-rival-horizon" />
+                        <IslandSpin active={id === mode.id} />
+                        <div className="ai-rival-mist" />
+                        <div className="ai-rival-particles" />
+                        <div className="ai-rival-foreground" />
+                    </div>)}
+                </div>
+                <div className="ai-rival-flight" role="img" aria-label={`Robot du mode ${mode.title}`}>
+                    <div className="ai-rival-hover">
+                        <div className="ai-rival-thruster" />
+                        <img src="/rival/tourment-robot.webp" alt="" draggable={false} />
+                        <img src="/rival/fury-robot.webp" alt="" draggable={false} />
+                    </div>
+                </div>
             </div>
         </section>
 
