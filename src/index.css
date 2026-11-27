@@ -1232,3 +1232,10 @@ body,
     -webkit-backdrop-filter: none;
   }
 }
+
+/* Intro : logo Nyaru Studio puis vidéo Vesper, enchaînés en fondu (1 s), puis fondu sur l'accueil */
+.studio-intro-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; transition: opacity 1s ease-in-out; }
+/* Vidéo entière (contain) : les téléphones plus allongés que la vidéo rognaient les côtés du titre.
+   Les bandes haut/bas reprennent la couleur des bords de la vidéo, sans couture visible. */
+.vesper-intro { position: absolute; inset: 0; background: linear-gradient(to bottom, #192039 0 50%, #9a7375 50% 100%); transition: opacity 1s ease-in-out; }
+.vesper-intro video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
