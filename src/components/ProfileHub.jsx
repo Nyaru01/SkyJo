@@ -7,7 +7,7 @@ export default function ProfileHub({ onNavigate }) {
     const profile = useGameStore(state => state.userProfile);
     return <main className="profile-hub">
         <header className="profile-hub-heading">
-            <img src={getAvatarPath(profile.avatarId || profile.emoji) || '/avatars/cat.png'} alt="" width="64" height="64" />
+            <img src={getAvatarPath(profile.avatarId || profile.emoji)} alt="" width="64" height="64" />
             <div><p className="mobile-eyebrow">VOTRE ESPACE</p><h1>{profile.name || 'Votre profil'}</h1><p>Progression, parties et préférences.</p></div>
         </header>
         <section className="mobile-panel" aria-label="Votre carrière"><ExperienceBar /></section>

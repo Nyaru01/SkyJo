@@ -19,7 +19,7 @@ function PodiumPlayer({ user, rank, currentUserId }) {
                 {SPARKS.map(([x, y, d], i) => <i key={i} className="social-podium-spark" style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${d}s` }} aria-hidden="true" />)}
                 <span className="social-podium-crown" aria-hidden="true"><Crown size={22} strokeWidth={1.8} /></span>
             </>}
-            <div className="career-frame"><img src={getAvatarPath(user.avatar_id) || '/avatars/cat.png'} alt="" width="88" height="88" /></div>
+            <div className="career-frame"><img src={getAvatarPath(user.avatar_id)} alt="" width="88" height="88" /></div>
         </div>
         <p className="social-podium-name" title={user.name}>{user.name}</p>
         {isMe && <span className="social-leaderboard-me">Vous</span>}
@@ -50,7 +50,7 @@ export default function Leaderboard({ data = [], currentUserId }) {
                     const isMe = String(user.id) === String(currentUserId);
                     return <div key={user.id} className={`social-ranking-row ${isMe ? 'social-ranking-row--me' : ''}`}>
                         <span className="social-ranking-position">{index+4}</span>
-                        <img src={getAvatarPath(user.avatar_id) || '/avatars/cat.png'} alt="" width="40" height="40" />
+                        <img src={getAvatarPath(user.avatar_id)} alt="" width="40" height="40" />
                         <div className="social-ranking-person"><p>{user.name}{isMe && <span className="social-leaderboard-me">Vous</span>}</p><span>{user.vibe_id || ''}</span></div>
                         <div className="social-ranking-career"><CareerBadge level={user.level || 1} /><span><b>{user.xp || 0}</b> XP</span></div>
                     </div>;

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { Settings, Trophy, Sparkles, History, Undo2, BarChart3, Play, LogOut, CheckCircle2, Users, HelpCircle, X, ArrowLeft, Palette, Check, Lock, Swords } from 'lucide-react';
-import { getAvatarPath } from '../lib/avatars';
+import { getAvatarPath, handleAvatarError } from '../lib/avatars';
 import '../styles/Invitation.css';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useGameStore, selectPlayers, selectRounds, selectThreshold, selectGameStatus } from '../store/gameStore';
@@ -818,7 +818,7 @@ export default function Dashboard() {
                         initial={{ opacity: 0, y: 40, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 24, scale: 0.97 }}
                         transition={{ type: 'spring', stiffness: 320, damping: 26 }}>
                         <span className="invite-avatar">
-                            <img src={getAvatarPath(gameInvitation.fromAvatar)} alt="" onError={(e) => { e.target.src = '/avatars/cat.png'; }} />
+                            <img src={getAvatarPath(gameInvitation.fromAvatar)} alt="" onError={handleAvatarError} />
                             <i aria-hidden="true"><Swords size={12} /></i>
                         </span>
                         <span className="invite-copy">
