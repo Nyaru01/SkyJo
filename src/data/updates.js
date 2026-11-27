@@ -181,8 +181,8 @@ export const UPDATES = [
         id: 11,
         version: "2.0.0",
         date: "28 Janv. 2026",
-        title: "Skyjo V2 : Le Grand Lancement",
-        description: "L'expérience Skyjo ultime est là. Mode social, persistance Cloud et design ultra-premium.",
+        title: "Vesper V2 : Le Grand Lancement",
+        description: "L'expérience Vesper ultime est là. Mode social, persistance Cloud et design ultra-premium.",
         isNew: false,
         type: "major",
         changes: [

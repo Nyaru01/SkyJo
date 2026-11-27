@@ -810,7 +810,7 @@ app.get('*', (req, res) => {
             'Expires': '0'
         }
     }, (err) => {
-        if (err) res.status(200).send('<h1>SkyJo Server Running</h1>');
+        if (err) res.status(200).send('<h1>Vesper Server Running</h1>');
     });
 });
 

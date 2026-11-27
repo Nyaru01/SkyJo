@@ -40,6 +40,8 @@ export const useGameStore = create(
             // Initial clean state
             players: [],
             threshold: 100,
+            // Feuille de score : pénalité de fin facultative (score doublé pour celui qui clôt la manche sans avoir le plus petit score)
+            finisherPenalty: false,
             rounds: [],
             gameStatus: 'SETUP',
             gameHistory: [], // Array of archived finished games
@@ -62,7 +64,7 @@ export const useGameStore = create(
             isRehydrated: false, // Flag to track when store is ready
             profileLoadedFromBackend: false, // Prevent early sync from overwriting DB
             cardSkin: 'classic', // classic, papyrus
-            background: '/Wallpapers/bg-skyjo.png', // Default background
+            background: '/Wallpapers/bg-vesper.png', // Default background
             isAdminOpen: false, // Global admin status
             adminAuthToken: null, // Admin session token
             musicShuffleTrigger: 0, // Increment to trigger track shuffle
@@ -398,7 +400,7 @@ export const useGameStore = create(
 
             triggerMusicShuffle: () => set(state => ({ musicShuffleTrigger: state.musicShuffleTrigger + 1 })),
 
-            setConfiguration: (playerData, threshold) => {
+            setConfiguration: (playerData, threshold, finisherPenalty = false) => {
                 const players = playerData.map((p, index) => ({
                     id: `p${Date.now()}-${index}`,
                     name: p.name || `Player ${index + 1}`,
@@ -408,20 +410,21 @@ export const useGameStore = create(
                 set({
                     players,
                     threshold: Number(threshold) || 100,
+                    finisherPenalty: !!finisherPenalty,
                     rounds: [],
                     gameStatus: 'PLAYING'
                 });
             },
 
             addRound: (rawScores, finisherId) => {
-                const { rounds, players, threshold } = get();
+                const { rounds, players, threshold, finisherPenalty } = get();
 
-                const isStrictlyLowest = checkStrictlyLowest(finisherId, rawScores);
+                const isStrictlyLowest = finisherPenalty ? checkStrictlyLowest(finisherId, rawScores) : true;
 
                 const finalScores = {};
                 players.forEach(p => {
                     const raw = rawScores[p.id];
-                    const isFinisher = p.id === finisherId;
+                    const isFinisher = finisherPenalty && p.id === finisherId;
                     finalScores[p.id] = calculateRoundScore(raw, isFinisher, isStrictlyLowest);
                 });
 
@@ -429,7 +432,7 @@ export const useGameStore = create(
                     id: `r${Date.now()}`,
                     rawScores,
                     scores: finalScores,
-                    finisherId,
+                    finisherId: finisherPenalty ? finisherId : null,
                     isStrictlyLowest
                 };
 
@@ -621,7 +624,7 @@ export const useGameStore = create(
         }),
         {
             name: 'skyjo-storage',
-            version: 10,
+            version: 11,
             migrate: (persistedState, version) => {
                 // ... migration
                 if (version < 5) {
@@ -633,7 +636,7 @@ export const useGameStore = create(
                 if (version < 6) {
                     persistedState = {
                         ...persistedState,
-                        background: '/Wallpapers/bg-skyjo.png'
+                        background: '/Wallpapers/bg-vesper.png'
                     };
                 }
                 if (version < 8) {
@@ -647,6 +650,14 @@ export const useGameStore = create(
                         ...persistedState,
                         weeklyChallengeId: null,
                         hasSeenWeeklyChallengeAnnouncementV4: false
+                    };
+                }
+                if (version < 11) {
+                    // Fond « Original » renommé ; une feuille de score déjà commencée garde la pénalité de fin.
+                    persistedState = {
+                        ...persistedState,
+                        background: persistedState.background === '/Wallpapers/bg-skyjo.png' ? '/Wallpapers/bg-vesper.png' : persistedState.background,
+                        finisherPenalty: persistedState.finisherPenalty ?? true,
                     };
                 }
                 if (version < 10) {
@@ -707,6 +718,7 @@ export const useGameStore = create(
 export const selectPlayers = (state) => state.players;
 export const selectRounds = (state) => state.rounds;
 export const selectThreshold = (state) => state.threshold;
+export const selectFinisherPenalty = (state) => state.finisherPenalty;
 export const selectGameStatus = (state) => state.gameStatus;
 export const selectGameHistory = (state) => state.gameHistory;
 export const selectLastDailyWinDate = (state) => state.lastDailyWinDate;

@@ -1,7 +1,7 @@
 # Vesper
 
-Jeu de cartes inspiré du Skyjo, en application web installable (PWA) : contre l'IA, en ligne entre amis, avec des modes
-spéciaux (Tourment, Fury), une carrière, des défis et un classement. Anciennement « Skyjo Score ».
+Vesper : jeu de cartes en application web installable (PWA) : contre l'IA, en ligne entre amis, avec des modes
+spéciaux (Tourment, Fury), une carrière, des défis et un classement.
 
 - Production : https://skyjo-scoring-production.up.railway.app
 - Dépôt : https://github.com/Nyaru01/SkyJo (branche `master`, **public**)
@@ -20,7 +20,6 @@ Vue d'ensemble de l'architecture (navigateur, serveur Railway, services externes
 | [docs/AI_LOGIC.md](docs/AI_LOGIC.md) | Stratégies de l'IA |
 | [docs/security_plan.md](docs/security_plan.md) | Audit de sécurité et plan d'action |
 | [docs/vibrations.md](docs/vibrations.md) | Retours haptiques |
-| `docs/reference/` | Règles officielles du Skyjo (texte et PDF) |
 | `docs/archive/` | Anciens rapports, notes et candidats de logo (historique, plus maintenu) |
 
 ## Démarrer en local

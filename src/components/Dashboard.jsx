@@ -52,7 +52,7 @@ const pageTransition = {
 };
 
 const WALLPAPERS = [
-    { id: 'skyjo', name: 'Original', url: '/Wallpapers/bg-skyjo.png', color: 'bg-emerald-500' },
+    { id: 'vesper', name: 'Original', url: '/Wallpapers/bg-vesper.png', color: 'bg-emerald-500' },
     { id: 'eau', name: 'Eau Calme', url: '/Wallpapers/Eau.png', color: 'bg-cyan-600' },
     { id: 'mystique', name: 'Mystique', url: '/Wallpapers/Mystique.png', color: 'bg-purple-900' },
     { id: 'noir', name: 'Noir premium', url: '/Wallpapers/Noir premium.png', color: 'bg-slate-900' },
@@ -151,7 +151,7 @@ export default function Dashboard() {
     useEffect(() => {
         const selectedWallpaper = WALLPAPERS.find(wallpaper => wallpaper.url === background);
         if (selectedWallpaper?.level && playerLevel < selectedWallpaper.level) {
-            setBackground('/Wallpapers/bg-skyjo.png');
+            setBackground('/Wallpapers/bg-vesper.png');
         }
     }, [background, playerLevel, setBackground]);
 
@@ -180,7 +180,7 @@ export default function Dashboard() {
     const isMenuLobby = !isVirtualGameActive && !(effectiveTab === 'home' && gameStatus === 'SETUP');
     // Table de jeu : habillage ciblé (cartes intactes) ; ciel pastel si le fond « Original » est choisi
     const themeClass = isVirtualGameActive
-        ? ` game-lobby${background === '/Wallpapers/bg-skyjo.png' ? ' game-lobby--sky' : ''}`
+        ? ` game-lobby${background === '/Wallpapers/bg-vesper.png' ? ' game-lobby--sky' : ''}`
         : isMenuLobby ? ' menu-lobby' : '';
     // Les fenêtres (portails) prennent aussi le thème pastel dans toute l'application
     useEffect(() => {

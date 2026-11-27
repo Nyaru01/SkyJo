@@ -10,7 +10,7 @@ const CRITICAL_IMAGES = [
     '/card-backs/gold.svg',
     '/card-backs/galaxy.svg',
     '/card-snow.png',
-    '/Wallpapers/bg-skyjo.png',
+    '/Wallpapers/bg-vesper.png',
     '/Wallpapers/Eau.png',
     '/Wallpapers/Mystique.png',
     '/Wallpapers/Noir premium.png',

@@ -1,6 +1,6 @@
-# 🤖 Intelligence Artificielle Skyjo (Brain V2)
+# 🤖 Intelligence Artificielle de Vesper (Brain V2)
 
-Ce document détaille l'architecture et les stratégies de l'IA Skyjo "Brain V2", un moteur de décision probabiliste et tactique.
+Ce document détaille l'architecture et les stratégies de l'IA de Vesper "Brain V2", un moteur de décision probabiliste et tactique.
 
 ---
 

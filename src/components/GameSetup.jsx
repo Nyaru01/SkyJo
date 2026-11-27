@@ -19,12 +19,16 @@ import '../styles/HomeLobby.css';
 
 /* global __APP_VERSION__ */
 export default function GameSetup({ onNavigate, onVirtualAction, onOpenTutorial, showGuide = false, allowAutoNews = true, onWhatsNewVisibilityChange }) {
-    const [mode, setMode] = useState('virtual');
+    // La feuille de score (parties réelles) a été retirée : l'accueil est toujours en mode virtuel.
+    const mode = 'virtual';
     const [players, setPlayers] = useState([{ name: '', avatarId: 'frog', draftId: 0 }]);
     const nextDraftId = useRef(1);
     const [openAvatarSelector, setOpenAvatarSelector] = useState(null);
     const [showPseudoModal, setShowPseudoModal] = useState(false);
     const [pendingQuickStart, setPendingQuickStart] = useState(false);
+    // Feuille de score : règles de la table, retenues d'une partie à l'autre
+    const [scoreLimit, setScoreLimit] = useState(() => { try { return Number(localStorage.getItem('vesper_score_limit')) || 100; } catch { return 100; } });
+    const [finisherPenalty, setFinisherPenalty] = useState(() => { try { return localStorage.getItem('vesper_finisher_penalty') === '1'; } catch { return false; } });
     const setConfiguration = useGameStore(state => state.setConfiguration);
     const updateUserProfile = useGameStore(state => state.updateUserProfile);
     const hasNotification = useSocialStore(state => state.socialNotification);
@@ -46,7 +50,8 @@ export default function GameSetup({ onNavigate, onVirtualAction, onOpenTutorial,
     const validName = name => !!name.trim() && name.trim().toLowerCase() !== 'joueur';
     const startReal = (draft = players) => {
         playStart();
-        setConfiguration(draft.map(({ name, avatarId }) => ({ name: name.trim(), avatarId })), 100);
+        try { localStorage.setItem('vesper_score_limit', String(scoreLimit)); localStorage.setItem('vesper_finisher_penalty', finisherPenalty ? '1' : '0'); } catch { /* stockage indisponible */ }
+        setConfiguration(draft.map(({ name, avatarId }) => ({ name: name.trim(), avatarId })), scoreLimit, finisherPenalty);
     };
     const handleStart = () => {
         if (players.some(player => !validName(player.name))) {
@@ -83,16 +88,27 @@ export default function GameSetup({ onNavigate, onVirtualAction, onOpenTutorial,
                 <button type="button" aria-label="Paramètres" onClick={() => onNavigate?.('settings')}><Settings size={21} aria-hidden="true"/></button>
             </div>
         </header>
-        <div className="lobby-mode-switch" role="group" aria-label="Mode de jeu">
-            <button type="button" aria-pressed={mode === 'real'} onClick={() => { playClick(); setMode('real'); }}><Users size={20} aria-hidden="true"/><span>Édition réelle</span></button>
-            <button type="button" aria-pressed={mode === 'virtual'} onClick={() => { playClick(); setMode('virtual'); }}><Gamepad2 size={22} aria-hidden="true"/><span>Virtuel</span></button>
-        </div>
         <section className="lobby-hero" aria-labelledby="lobby-mode-title">
-            <div className="lobby-hero-copy"><h2 id="lobby-mode-title" className={mode === 'virtual' ? 'sr-only' : undefined}>{mode === 'virtual' ? 'Vesper' : 'Vos cartes, nos calculs.'}</h2>{mode === 'real' && <p>Jusqu’à 8 joueurs, partie en 100 points.</p>}</div>
+            <div className="lobby-hero-copy"><h2 id="lobby-mode-title" className={mode === 'virtual' ? 'sr-only' : undefined}>{mode === 'virtual' ? 'Vesper' : 'Vos cartes, nos calculs.'}</h2>{mode === 'real' && <p>Pour n’importe quel jeu de cartes à points. Jusqu’à 8 joueurs.</p>}</div>
             <HomeWorldScene compact={mode === 'real'}/>
         </section>
         <AnimatePresence mode="wait" initial={false}><Motion.div key={mode} className="lobby-mode-content" initial={reducedMotion ? false : { opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 0 }} transition={{ duration: reducedMotion ? 0 : .14 }}>
             {mode === 'virtual' ? <HomeVirtualActions onAction={handleVirtualAction}/> : <HomePlayerList players={players} onNameChange={(index, name) => changePlayer(index, { name })} onAvatar={setOpenAvatarSelector} onAdd={addPlayer} onRemove={index => { if (players.length > 2) setPlayers(previous => previous.filter((_, i) => i !== index)); }}/>}
+            {mode === 'real' && <section className="lobby-players lobby-rules" aria-label="Règles de la table">
+                <div className="lobby-section-heading"><h3>Règles de la table</h3></div>
+                <div className="lobby-rule-row">
+                    <span>Fin de partie à</span>
+                    <div className="lobby-segment" role="group" aria-label="Seuil de fin de partie">
+                        {[50, 100, 150, 200].map(v => <button key={v} type="button" aria-pressed={scoreLimit === v} onClick={() => { playClick(); setScoreLimit(v); }}>{v}</button>)}
+                    </div>
+                </div>
+                <label className="lobby-rule-toggle">
+                    <input type="checkbox" checked={finisherPenalty} onChange={e => { playClick(); setFinisherPenalty(e.target.checked); }}/>
+                    <span className="lobby-switch" aria-hidden="true"/>
+                    <span><strong>Pénalité de fin</strong><small>Le joueur qui clôt la manche voit ses points doublés s’il n’a pas le plus petit score.</small></span>
+                </label>
+                <p className="lobby-rule-note">Le plus petit total gagne.</p>
+            </section>}
             {mode === 'virtual'
                 ? null
                 : <>

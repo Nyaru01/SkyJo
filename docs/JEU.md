@@ -1,7 +1,6 @@
 # Vesper — fonctionnement du jeu
 
-Ce document décrit le jeu tel qu'il est codé aujourd'hui (v3.16.x). Les règles de base sont celles du Skyjo
-(texte officiel dans `docs/reference/`) ; Vesper y ajoute des modes, une IA, une progression et des défis.
+Ce document décrit le jeu tel qu'il est codé aujourd'hui (v3.16.x) : règles de base, modes, IA, progression et défis.
 
 ## 1. Règles de base
 
@@ -35,10 +34,11 @@ Avant le premier duel, le jeu demande un pseudo (il apparaît au classement).
 Salons entre amis, synchronisés par Socket.io. Modes : classique, `bonus` (Tourment) et `fury`.
 Le **serveur arbitre** toutes les actions (il applique le même moteur que le jeu solo) ; détails dans [SERVEUR.md](SERVEUR.md).
 
-### Édition réelle
+### Feuille de score
 
-Mode « calculateur » pour une vraie partie de Skyjo autour d'une table : on saisit les scores de chaque manche
-(`src/components/ScoreInput.jsx`, `RoundHistory.jsx`).
+Calculateur pour n'importe quel jeu de cartes à points joué autour d'une table : on saisit les scores de chaque manche,
+la partie s'arrête au seuil choisi (100 par défaut), le plus petit total gagne. Option : pénalité de fin (le score de
+celui qui clôt la manche est doublé s'il n'a pas strictement le plus petit score). (`src/components/ScoreInput.jsx`, `RoundHistory.jsx`).
 
 ## 3. Mode Fury (`src/lib/furyEngine.js`)
 

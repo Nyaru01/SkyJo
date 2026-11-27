@@ -1,6 +1,6 @@
-# Audit de Sécurité et Plan d'Action - SkyJo
+# Audit de Sécurité et Plan d'Action - Vesper
 
-Ce document centralise l'audit de sécurité réalisé sur le projet SkyJo ainsi que le plan d'action pour corriger les failles identifiées.
+Ce document centralise l'audit de sécurité réalisé sur le projet Vesper ainsi que le plan d'action pour corriger les failles identifiées.
 
 ---
 

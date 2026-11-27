@@ -11,7 +11,7 @@ import '../styles/Guide.css';
 export const CURRENT_NEWS_VERSION = 17;
 
 const HIGHLIGHTS = [
-    { icon: Sparkle, title: 'Skyjo devient Vesper', text: 'Un nouveau nom, celui de l’étoile du soir, et une nouvelle icône. Vos parties, votre niveau et vos amis ne changent pas.' },
+    { icon: Sparkle, title: 'Bienvenue dans Vesper', text: 'Un nouveau nom, celui de l’étoile du soir, et une nouvelle icône. Vos parties, votre niveau et vos amis ne changent pas.' },
     { icon: FuryIcon, title: 'Mode Fury', text: 'Des cartes de sabotage cachées dans la pioche, contre l’IA et maintenant en ligne entre amis.' },
     { icon: BarChart3, title: 'Les statistiques font peau neuve', text: 'Taux de victoire, temps de jeu, derniers scores et parties récentes : votre parcours en un coup d’œil.' },
     { icon: Snowflake, title: 'Prochaine saison à venir', text: 'La Nuit du solstice ouvre le 21 décembre : un nouveau défi, et l’île passe sous la neige.' },

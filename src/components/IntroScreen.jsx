@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 // Elle se termine en fondu sur l'accueil (géré par le fondu de sortie de l'intro).
 function VesperIntro({ active, onDone }) {
     const videoRef = useRef(null);
+    const bgRef = useRef(null);
     const done = useRef(false);
     const finish = () => { if (done.current) return; done.current = true; onDone(); };
     useEffect(() => {
@@ -13,11 +14,17 @@ function VesperIntro({ active, onDone }) {
         // Avec le son si le navigateur l'autorise, sinon en muet.
         v.muted = false;
         v.play().catch(() => { v.muted = true; v.play().catch(finish); });
+        bgRef.current?.play().catch(() => {});
     }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
     return <div className="vesper-intro" style={{ opacity: active ? 1 : 0 }}>
+        {/* Copie floutée et agrandie en fond : elle remplit le haut et le bas de l'écran avec les vraies couleurs
+            de la vidéo, à chaque instant (au lieu de bandes de couleur fixe qui se voyaient). */}
+        <video ref={bgRef} className="vesper-intro-bg" src="/vesper-intro.mp4" muted playsInline preload="auto" aria-hidden="true" />
         <video ref={videoRef} src="/vesper-intro.mp4" playsInline preload="auto" aria-label="Introduction Vesper"
             onTimeUpdate={e => {
                 const v = e.currentTarget;
+                const bg = bgRef.current;
+                if (bg && Math.abs(bg.currentTime - v.currentTime) > 0.3) bg.currentTime = v.currentTime;
                 // On quitte un peu avant la fin : le fondu de sortie (1 s) couvre la dernière seconde.
                 if (Number.isFinite(v.duration) && v.currentTime >= v.duration - 1.1) finish();
             }}

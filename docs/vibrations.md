@@ -1,4 +1,4 @@
-# Vibrations dans Skyjo Score
+# Vibrations dans Vesper
 
 ## Support
 
@@ -7,7 +7,7 @@
 
 ## Implémentation
 
-Skyjo utilise l'API standard `Navigator.vibrate()` pour le retour haptique.
+Vesper utilise l'API standard `Navigator.vibrate()` pour le retour haptique.
 
 ### Usage de base
 

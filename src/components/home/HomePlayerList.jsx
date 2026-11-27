@@ -4,7 +4,7 @@ import { getAvatarPath } from '../../lib/avatars';
 
 export default function HomePlayerList({ players, onNameChange, onAvatar, onAdd, onRemove }) {
     const reduced = useReducedMotion();
-    return <section className="lobby-players" aria-label="Joueurs de la partie réelle">
+    return <section className="lobby-players" aria-label="Joueurs de la feuille de score">
         <div className="lobby-section-heading"><h3>Votre table</h3><span>{players.length} / 8 joueurs</span></div>
         <div className="lobby-player-list"><AnimatePresence initial={false}>{players.map((player, index) => <Motion.div className="lobby-player" key={player.draftId}
             initial={reduced ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: reduced ? 0 : .16 }}>

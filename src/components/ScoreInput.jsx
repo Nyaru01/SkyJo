@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { cn } from '../lib/utils';
 import { useFeedback } from '../hooks/useFeedback';
 import { getAvatarPath } from '../lib/avatars';
+import { useGameStore, selectFinisherPenalty } from '../store/gameStore';
 
 export default function ScoreInput({ players, onSave, onCancel: _onCancel, isEmbedded = false, rounds = [] }) {
     const { playSuccess, playError } = useFeedback();
@@ -13,6 +14,8 @@ export default function ScoreInput({ players, onSave, onCancel: _onCancel, isEmb
         players.reduce((acc, p) => ({ ...acc, [p.id]: '' }), {})
     );
     const [finisher, setFinisher] = useState(null);
+    // Sans pénalité de fin, inutile de dire qui a clôt la manche
+    const finisherPenalty = useGameStore(selectFinisherPenalty);
     const [error, setError] = useState('');
 
     const handleScoreChange = (pid, value) => {
@@ -20,7 +23,7 @@ export default function ScoreInput({ players, onSave, onCancel: _onCancel, isEmb
     };
 
     const handleSubmit = () => {
-        if (!finisher) {
+        if (finisherPenalty && !finisher) {
             setError('Veuillez sélectionner le joueur qui a fini la manche.');
             playError();
             return;
@@ -52,7 +55,7 @@ export default function ScoreInput({ players, onSave, onCancel: _onCancel, isEmb
                         Fin de manche
                     </CardTitle>
                     <p className="text-center text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">
-                        Entrez les scores des cartes restantes
+                        Entrez les points de chaque joueur
                     </p>
                 </CardHeader>
             )}
@@ -66,12 +69,12 @@ export default function ScoreInput({ players, onSave, onCancel: _onCancel, isEmb
                         </div>
                         <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight">Manche gagnée</span>
                     </div>
-                    <div className="flex items-center gap-2 group/legend">
+                    {finisherPenalty && <div className="flex items-center gap-2 group/legend">
                         <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 group-hover/legend:scale-110 transition-transform">
                             <Zap className="h-3 w-3 text-blue-500" fill="currentColor" fillOpacity={0.2} />
                         </div>
                         <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight">Manche finie</span>
-                    </div>
+                    </div>}
                 </div>
 
                 {error && (
@@ -98,7 +101,7 @@ export default function ScoreInput({ players, onSave, onCancel: _onCancel, isEmb
                                         : "bg-white/40 dark:bg-slate-700/40 border-white/20 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/60"
                                 )}
                                 style={{ animationDelay: `${index * 80}ms` }}
-                                onClick={() => setFinisher(p.id)}
+                                onClick={finisherPenalty ? () => setFinisher(p.id) : undefined}
                             >
                                 <div className="flex items-center gap-4">
                                     {/* Left Side: Avatar & Identity */}

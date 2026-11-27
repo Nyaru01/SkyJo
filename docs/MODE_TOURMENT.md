@@ -1,6 +1,6 @@
 # 🌪️ Mode Tourment - Règles du Jeu
 
-Bienvenue dans le **Mode Tourment**, la variante la plus extrême et stratégique de Skyjo ! 
+Bienvenue dans le **Mode Tourment**, la variante la plus extrême et stratégique de Vesper ! 
 Ce mode ajoute **24 cartes spéciales** au deck original, introduisant de nouvelles mécaniques impitoyables et des retournements de situation spectaculaires.
 
 ---

@@ -87,7 +87,7 @@ export const CAREER_REWARDS = {
     30: {
         type: 'ultime',
         content: '👼',
-        name: 'Archange du SkyJo',
+        name: 'Archange de Vesper',
         description: 'Élu par les cieux pour régner sur les cartes. La défausse est son sanctuaire.',
         rarity: 'éternel'
     },
@@ -97,10 +97,10 @@ export const CAREER_REWARDS = {
     34: { type: 'generic', content: '🏛️', name: 'Gardien du Temple', description: 'Personne ne touche à votre colonne de -2 sans votre permission.', rarity: 'divine' },
     35: { type: 'emoji', content: '🌌', name: 'Nébuleuse d\'Argent', description: 'Les points brillent avant de disparaître pour toujours.', rarity: 'divine' },
     36: { type: 'generic', content: '🧠', name: 'Cerveau Galactique', description: 'Vos calculs mentaux dépassent la vitesse de la lumière.', rarity: 'divine' },
-    37: { type: 'emoji', content: '🧬', name: 'Alchimiste du SkyJo', description: 'Transformez le plomb (un 12) en or (un -2).', rarity: 'divine' },
+    37: { type: 'emoji', content: '🧬', name: 'Alchimiste de Vesper', description: 'Transformez le plomb (un 12) en or (un -2).', rarity: 'divine' },
     38: { type: 'generic', content: '🔱', name: 'Poséidon de la Pioche', description: 'Vous maîtrisez les vagues de cartes avec autorité.', rarity: 'éternel' },
     39: { type: 'emoji', content: '⏳', name: 'Maître du Temps', description: 'Vous finissez toujours la partie au moment exact où ça fait mal.', rarity: 'éternel' },
-    40: { type: 'ultime', content: '🌌', name: 'L\'Origine du Jeu', description: 'Vous ne jouez plus au SkyJo. Vous ÊTES le SkyJo.', rarity: 'transcendant' },
+    40: { type: 'ultime', content: '🌌', name: 'L\'Origine du Jeu', description: 'Vous ne jouez plus à Vesper. Vous ÊTES Vesper.', rarity: 'transcendant' },
     41: { type: 'generic', content: '🌟', name: 'Explorateur du Zénith', description: 'Le ciel n\'est plus une limite pour votre talent.', rarity: 'legendary' },
     42: { type: 'generic', content: '✨', name: 'Vagabond Stellaire', description: 'Votre intuition brille comme une étoile lointaine.', rarity: 'legendary' },
     43: { type: 'generic', content: '🌠', name: 'Maître de la Probabilité', description: 'Le hasard commence à obéir à vos désirs.', rarity: 'legendary' },
