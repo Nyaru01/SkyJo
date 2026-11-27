@@ -26,7 +26,7 @@ export default defineConfig({
         '*.jpg',
         '*.svg',
         'card-backs/*.svg', // Dos de cartes (famille SVG)
-        'avatars/*.png', // Avatars
+        'avatars/*.webp', // Avatars
         'rival/*.webp', // Île au loin du duel IA (hors ligne)
         'Sounds/*.mp3',  // Game sounds
         'Music/*.mp3',   // Background music

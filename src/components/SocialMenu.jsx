@@ -5,7 +5,7 @@ import { useGameStore } from '../store/gameStore';
 import { useSocialStore } from '../store/socialStore';
 import { Button } from './ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
-import { AVATARS } from '../lib/avatars';
+import { getAvatarPath } from '../lib/avatars';
 import AvatarSelector from './AvatarSelector';
 import { useFeedback } from '../hooks/useFeedback';
 import Leaderboard from './Leaderboard';
@@ -102,10 +102,6 @@ export default function SocialDashboard(props) {
         navigator.clipboard.writeText(userProfile.vibeId);
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
-    };
-
-    const getAvatarPath = (id) => {
-        return AVATARS.find(a => a.id === id)?.path || '/avatars/cat.png';
     };
 
     const [restoreAccountData, setRestoreAccountData] = useState(null);

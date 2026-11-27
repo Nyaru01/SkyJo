@@ -4,7 +4,7 @@ import { Send, X, Smile, Loader2, ArrowLeft } from 'lucide-react';
 import { useSocialStore } from '../store/socialStore';
 import { useGameStore } from '../store/gameStore';
 import { Button } from './ui/Button';
-import { AVATARS } from '../lib/avatars';
+import { getAvatarPath } from '../lib/avatars';
 import { cn } from '../lib/utils';
 
 export default function ChatPopup({ friend, onClose }) {
@@ -48,10 +48,6 @@ export default function ChatPopup({ friend, onClose }) {
                 setTyping(friend.id, false);
             }, 2000);
         }
-    };
-
-    const getAvatarPath = (id) => {
-        return AVATARS.find(a => a.id === id)?.path || '/avatars/cat.png';
     };
 
     const formatTime = (ts) => {

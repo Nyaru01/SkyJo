@@ -245,7 +245,7 @@ const PlayerHand = memo(function PlayerHand({
                             <div className="flex items-center gap-2 min-w-0">
                                 <div className="w-4 h-4 rounded-full overflow-hidden border border-white/20 shrink-0">
                                     <img
-                                        src={getAvatarPath(player.avatarId || player.emoji) || '/avatars/cat.png'}
+                                        src={getAvatarPath(player.avatarId || player.emoji)}
                                         alt=""
                                         className="w-full h-full object-cover"
                                     />
