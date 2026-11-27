@@ -1234,8 +1234,18 @@ body,
 }
 
 /* Le noir couvre aussi les marges du cadre. Vesper apparaît une fois le logo effacé. */
-.studio-intro-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; transition: opacity .42s ease-in; }
-.studio-intro-video { display: block; width: 100%; height: 100%; padding: clamp(12px, 3.5vmin, 24px); object-fit: contain; }
+.studio-intro-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #000; transition: opacity .42s ease-in; }
+.studio-intro-bg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  filter: blur(7px) brightness(.82); transform: scale(1.035); pointer-events: none;
+}
+.studio-intro-video {
+  position: relative; display: block; max-width: 100%; max-height: 100%;
+  width: auto; height: auto; object-fit: contain;
+  mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent),
+    linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+  mask-composite: intersect;
+}
 /* Vidéo entière (contain) : les téléphones plus allongés que la vidéo rognaient les côtés du titre.
    Le haut et le bas sont remplis par une copie floutée de la vidéo, sans couture visible. */
 .vesper-intro { position: absolute; inset: 0; overflow: hidden; background: #2a2440; transition: opacity .54s ease-out .42s; }
