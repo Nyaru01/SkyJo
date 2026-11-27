@@ -25,13 +25,13 @@ const VALUE_STYLES = {
     6: ['#ffd3a5', '#f5894f', '#ffc690', 'sun', 'M4 25Q17 31 27 27Q42 14 53 19L60 21'],
     7: ['#ffbba5', '#ee7061', '#ffad92', 'sun', 'M4 26L14 24L20 27H33L39 23V18H52V23L60 26'],
     8: ['#ffced0', '#ec8298', '#ffb6cd', 'sun', 'M4 28Q13 18 20 28Q29 19 36 28Q44 19 51 27L60 25'],
-    9: ['#f9b6dc', '#df68a1', '#f6a9de', 'sun', 'M4 28H11L16 18L21 28H39L47 22L52 12L60 26'],
-    10: ['#e7c2f8', '#ab79cb', '#e8bbfa', 'sun', 'M4 19L11 16L19 22L20 29H44L46 22L55 17L60 20'],
-    11: ['#f8a9ce', '#ca6198', '#f3a3cc', 'sun', 'M4 25L12 25L18 29L27 29L32 24L40 27L46 20L53 24L60 19'],
-    12: ['#ffada4', '#ce646a', '#ff998f', 'sun', 'M4 27H22L28 24L32 23L37 24L42 27H60'],
-    13: ['#f8bf92', '#e67b68', '#ffb887', 'curse'],
+    9: ['#f986aa', '#e85e91', '#ff9dba', 'sun', 'M4 28H11L16 18L21 28H39L47 22L52 12L60 26'],
+    10: ['#ff9a70', '#ee654f', '#ffa085', 'sun', 'M4 19L11 16L19 22L20 29H44L46 22L55 17L60 20'],
+    11: ['#ab3555', '#66152f', '#ff809c', 'sun', 'M4 25L12 25L18 29L27 29L32 24L40 27L46 20L53 24L60 19'],
+    12: ['#b43728', '#781719', '#ff8a6a', 'sun', 'M4 27H22L28 24L32 23L37 24L42 27H60'],
+    13: ['#ffa750', '#f17640', '#ffc17f', 'curse'],
     '-10': ['#d0c2fc', '#9273c9', '#e6c6ff', 'constellation'],
-    20: ['#ffd0bb', '#df736a', '#ffada3', 'eclipse'],
+    20: ['#80283c', '#391526', '#ff9b7d', 'eclipse'],
     S: ['#517e94', '#183d56', '#c0fff0', 'exchange'],
     C: ['#776ea7', '#332956', '#f2eaff', 'joker'],
     CH: ['#71758c', '#30344a', '#ffdc9c', 'chest'],
@@ -80,7 +80,7 @@ function CardSky({ value, motif, horizonProfile, horizonId }) {
                 <defs><clipPath id={horizonId}><path d={`${horizonProfile} V-6H4Z`} /></clipPath></defs>
                 <g clipPath={`url(#${horizonId})`}>
                     <circle cx="32" cy={sunHeight} r="11.5" fill="#fff4d2" opacity=".55" />
-                    <circle cx="32" cy={sunHeight} r="7.8" fill="#fff2bc" stroke="currentColor" strokeWidth="1.45" />
+                    <circle cx="32" cy={sunHeight} r="7.8" fill="var(--vesper-sun, #fff2bc)" stroke="currentColor" strokeWidth="1.45" />
                 </g>
                 <path d={`${horizonProfile} V35H4Z`} fill="currentColor" opacity=".20" />
                 <path d={horizonProfile} fill="none" stroke="currentColor" strokeOpacity=".84" strokeWidth="1.55" strokeLinecap="round" strokeLinejoin="round" />
@@ -91,7 +91,7 @@ function CardSky({ value, motif, horizonProfile, horizonId }) {
         return (
             <svg className="vesper-card-sky vesper-card-sky--eclipse" viewBox="0 0 70 32" aria-hidden="true">
                 <circle cx="35" cy="16" r="13.2" fill="#9b3749" opacity=".42" />
-                <path d="M18 16h-7m41 0h7M22 7l-5-3m31 3 5-3M23 25l-6 4m30-4 6 4" fill="none" stroke="#723447" strokeWidth="1.15" strokeLinecap="round" />
+                <path d="M18 16h-7m41 0h7M22 7l-5-3m31 3 5-3M23 25l-6 4m30-4 6 4" fill="none" stroke="#ff9b74" strokeWidth="1.15" strokeLinecap="round" />
                 <circle cx="35" cy="16" r="10.1" fill="#1d1424" stroke="#ffe5a5" strokeWidth="1.6" />
                 <path d="M25 15a10 10 0 0 1 14-8" fill="none" stroke="#fff8df" strokeLinecap="round" strokeWidth="1.45" />
             </svg>
@@ -202,6 +202,8 @@ const SkyjoCard = memo(function SkyjoCard({
         : card.color === 'gold' ? 'CH' : card.color === 'black' ? 'H' : null;
     const [sky, horizon, accent, motif, horizonProfile] = value === null ? VALUE_STYLES[0] : VALUE_STYLES[value];
     const actionMark = ACTION_MARKS[motif];
+    const numericValue = Number(value);
+    const darkEnamel = numericValue === 11 || numericValue === 12 || numericValue === 20;
     const isCurse = motif === 'curse';
     const displayValue = isCurse ? '+13' : String(value ?? rawValue ?? '—').replace(/^-/, '−');
     const classicBack = cardSkin === 'classic';
@@ -267,7 +269,9 @@ const SkyjoCard = memo(function SkyjoCard({
                     className={cn(
                         "skyjo-card-face vesper-card-face absolute inset-0 backface-hidden overflow-hidden",
                         actionMark && "vesper-card-face--action",
-                        (Number(value) === -10 || isCurse) && "vesper-card-face--wide",
+                        numericValue >= 9 && "vesper-card-face--hot",
+                        darkEnamel && "vesper-card-face--dark",
+                        (numericValue === -10 || isCurse) && "vesper-card-face--wide",
                     )}
                 >
                     {actionMark ? (

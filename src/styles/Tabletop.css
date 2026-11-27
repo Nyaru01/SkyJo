@@ -56,6 +56,24 @@
     border-color: #eed8af78;
     border-bottom-color: #bc9a7747;
 }
+.vesper-card-face--hot {
+    --vesper-sun: #ffd087;
+    border-color: #ffa683;
+    border-top-color: #ffdbb2;
+    border-bottom-color: #8f3a36;
+    background: radial-gradient(ellipse 96% 48% at 17% 0%, #ffe4aa28, transparent 75%),
+        radial-gradient(ellipse 90% 38% at 70% 105%, #47102138, transparent 90%),
+        linear-gradient(154deg, var(--vesper-sky) 6%, var(--vesper-horizon) 100%);
+    box-shadow: 0 2px 0 #412029, 0 5px 10px #170b1680,
+        inset 0 1px #ffd6948c, inset 0 -2px #50183355;
+}
+.vesper-card-face--hot::before { border-color: #ffd4925c; border-bottom-color: #6f263f60; }
+.vesper-card-face--dark {
+    --vesper-sun: #f29454;
+    color: #fff2de;
+}
+.vesper-card-face--dark .vesper-card-value { text-shadow: 0 1px #52172b, 0 2px 3px #310c23c0; }
+.vesper-card-face--dark .vesper-card-sky { color: #ffb28d; }
 .vesper-card-value, .vesper-card-corner { z-index: 1; line-height: 1; }
 .vesper-card-value {
     transform: translateY(-34%);
