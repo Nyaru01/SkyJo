@@ -70,7 +70,7 @@ export function FuryRail({ part, me, opponent, opponentName, canPlay, selected, 
     const [hint, status] = finalRound ? ['Dernier tour', 'Dernier tour : plus de Fury jouable']
         : exhausted ? [FURY_USES_PER_ROUND + '/' + FURY_USES_PER_ROUND + ' jouées',
             FURY_USES_PER_ROUND + ' Fury jouées. Les attaques seront de nouveau disponibles à la prochaine manche.' + (shielded ? ' Votre Bouclier reste actif.' : '')]
-        : reserve.length === 0 ? ['Piochez', 'Les Fury sont cachées dans la pioche : piochez pour en gagner']
+        : reserve.length === 0 ? [null, 'Réserve vide. Les cartes Fury se trouvent dans la pioche.']
         : attacks === 0 ? ['Protégé', 'Votre Bouclier bloquera tout seul la prochaine attaque']
         : ready ? ['Touchez', `Touchez une Fury à la place de piocher (encore ${left} cette manche)`]
         : ['Votre tour', `Jouables au début de votre tour (encore ${left} cette manche)`];
@@ -86,7 +86,7 @@ export function FuryRail({ part, me, opponent, opponentName, canPlay, selected, 
                 </button>)}</Slots>
         </div>
         <Uses left={left} />
-        <span className={'fury-rail-hint' + (exhausted && !finalRound ? ' fury-rail-hint--exhausted' : '')}>{hint}</span>
+        {hint && <span className={'fury-rail-hint' + (exhausted && !finalRound ? ' fury-rail-hint--exhausted' : '')}>{hint}</span>}
     </aside>;
 }
 
@@ -171,7 +171,11 @@ export function FuryEffects({ lastFury, lastGain, myIndex, players }) {
     return <>
         {shown?.targets.map((target, index) => createPortal(
             <span className={'fury-impact fury-impact--' + type + ' fury-card--' + type}
-                style={{ '--impact-delay': (index * 45) + 'ms' }} aria-hidden="true" />,
+                style={{ '--impact-delay': (index * 75) + 'ms' }} aria-hidden="true">
+                {index === Math.floor(shown.targets.length / 2) && (
+                    <span className="fury-impact__seal"><FuryMark type={type} size={18} /></span>
+                )}
+            </span>,
             target, event.at + '-' + index,
         ))}
         <span className="sr-only" role="status" aria-atomic="true">
@@ -222,7 +226,7 @@ const FURY_RULES_SUMMARIES = {
     fog: 'Recache 2 cartes adverses.',
     tornado: 'Mélange les cartes adverses.',
     freeze: 'Gèle une colonne adverse 2 tours.',
-    shield: 'Bloque d’office la prochaine Fury, puis disparaît.',
+    shield: 'Bloque la prochaine Fury. Un seul par joueur.',
 };
 
 // Cartes de réserve et cartes détaillées utilisent le même sceau.

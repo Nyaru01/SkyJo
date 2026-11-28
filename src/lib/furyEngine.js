@@ -60,8 +60,31 @@ const replacePlayer = (state, index, player) => {
     return { ...state, players };
 };
 
+export const hasShield = fury => Boolean(fury && (fury.shield || fury.reserve?.some(c => c.furyType === 'shield')));
+
+export function normalizeFuryShields(state) {
+    if (!state?.isFuryMode) return state;
+    const extras = [];
+    const players = state.players.map(player => {
+        const fury = player.fury;
+        if (!fury?.reserve?.length) return player;
+        let shielded = Boolean(fury.shield);
+        const reserve = fury.reserve.filter(card => {
+            if (card.furyType !== 'shield') return true;
+            if (shielded) {
+                extras.push(card);
+                return false;
+            }
+            shielded = true;
+            return true;
+        });
+        return reserve.length === fury.reserve.length ? player : { ...player, fury: { ...fury, reserve } };
+    });
+    return extras.length ? { ...state, players, drawPile: [...extras, ...state.drawPile] } : state;
+}
+
 // Avant une pioche normale : la Fury du dessus de la pioche va dans la réserve du joueur (une seule par pioche).
-// Réserve pleine : elle retourne sous la pioche. D'autres Fury collées dessous sont remélangées plus bas.
+// Réserve pleine ou Bouclier déjà présent : la carte retourne sous la pioche.
 export function collectFuryFromPile(state) {
     if (!state.isFuryMode) return { state, gained: [] };
     let drawPile = [...state.drawPile];
@@ -72,17 +95,26 @@ export function collectFuryFromPile(state) {
     const card = drawPile.pop();
     const gained = [];
     const buried = [];
-    if (fury.reserve.length < FURY_RESERVE_MAX) { fury.reserve.push(card); gained.push(card); } else buried.push(card);
+    const duplicateShield = card.furyType === 'shield' && hasShield(fury);
+    if (!duplicateShield && fury.reserve.length < FURY_RESERVE_MAX) {
+        fury.reserve.push(card);
+        gained.push(card);
+    } else {
+        buried.push(card);
+    }
     // Piocher une Fury, c'est avoir choisi de piocher : plus de Fury jouable avant la fin de ce tour.
     fury.collectedThisTurn = true;
     const extra = [];
     while (drawPile.length && drawPile[drawPile.length - 1].specialType === 'F') extra.push(drawPile.pop());
+    let discardPile = state.discardPile;
+    if (drawPile.length === 0 && (buried.length || extra.length) && discardPile.length > 1) {
+        drawPile = shuffleDeck(discardPile.slice(0, -1));
+        discardPile = discardPile.slice(-1);
+    }
     extra.forEach(f => drawPile.splice(Math.floor(Math.random() * Math.max(1, drawPile.length - 6)), 0, f));
     drawPile = [...buried, ...drawPile];
-    return { state: replacePlayer({ ...state, drawPile }, index, { ...player, fury }), gained };
+    return { state: replacePlayer({ ...state, drawPile, discardPile }, index, { ...player, fury }), gained };
 }
-
-export const hasShield = fury => Boolean(fury && (fury.shield || fury.reserve?.some(c => c.furyType === 'shield')));
 
 // Au dernier tour, plus de Fury : recacher les cartes du joueur qui a tout retourné terminerait la manche
 // avec des cartes cachées, sans qu'on comprenne pourquoi.
@@ -160,7 +192,9 @@ export function playFury(state, reserveIndex, targetIndex, target = null) {
     const type = card.furyType;
     if (type === 'shield') throw new Error('Le Bouclier se déclenche tout seul quand on vous attaque.');
     const reserve = player.fury.reserve.filter((_, i) => i !== reserveIndex);
-    let next = replacePlayer(state, me, { ...player, fury: { ...player.fury, reserve, used: player.fury.used + 1, shield: type === 'shield' ? true : player.fury.shield } });
+    let next = normalizeFuryShields(replacePlayer(state, me, {
+        ...player, fury: { ...player.fury, reserve, used: player.fury.used + 1 },
+    }));
     let result = { type, by: me, targetIndex: type === 'shield' ? me : targetIndex, blocked: false, cards: [] };
 
     if (type !== 'shield') {

@@ -1,4 +1,4 @@
-import { initializeFuryGame, collectFuryFromPile, playFury, decideFuryAction } from '../lib/furyEngine';
+import { initializeFuryGame, collectFuryFromPile, playFury, decideFuryAction, normalizeFuryShields } from '../lib/furyEngine';
 import { getActiveWeeklyChallenge, getGameChallenge, WINTER, hasChallengeObjective, hasBestRoundScore } from '../lib/weeklyChallenge';
 import { setSeasonalPreview } from '../lib/seasonalPreview';
 let previewSnapshot = null;
@@ -1285,7 +1285,8 @@ export const useVirtualGameStore = create(
         }),
         {
             name: 'skyjo-virtual-storage',
-            version: 1,
+            version: 2,
+            migrate: saved => ({ ...saved, gameState: normalizeFuryShields(saved?.gameState ?? null) }),
             partialize: (current) => {
                 const state = previewSnapshot || current;
                 return ({
