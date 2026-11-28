@@ -322,7 +322,7 @@ body.fury-mode .skyjo-action-area > .flex.justify-center.px-4 { padding-left: 64
 .fury-rail-uses { display: flex; gap: 4px; }
 .fury-rail-uses i { width: 6px; height: 6px; border-radius: 50%; background: #ffffff1f; }
 .fury-rail-uses i.is-on { background: #ff8a55; box-shadow: 0 0 6px #ff8a55aa; }
-.fury-rail-hint { font-size: 8.5px; font-weight: 700; text-align: center; line-height: 1.1; color: #c9a596; }
+.fury-rail-hint { min-block-size: 1lh; font-size: 8.5px; font-weight: 700; text-align: center; line-height: 1.1; color: #c9a596; }
 .fury-rail--me.is-ready { box-shadow: inset 0 0 0 1.5px #ff9a6a, 0 0 18px #ff6a3a55, 0 10px 22px -12px #000c; animation: fury-rail-ready 1.8s ease-in-out infinite; }
 .fury-rail--me.is-ready .fury-rail-hint { color: #ffcbb0; }
 .fury-rail-hint.fury-rail-hint--exhausted { color: #ffcc9f; white-space: nowrap; font-weight: 800; letter-spacing: -.025em; }
@@ -399,7 +399,19 @@ body.fury-mode .fury-rail .fury-card--mini, body.fury-mode .fury-rail-card { wid
     border: 1px solid var(--fury-edge);
     box-shadow: 0 0 10px color-mix(in srgb, var(--fc) 65%, transparent), inset 0 0 9px color-mix(in srgb, var(--fc) 55%, transparent);
     pointer-events: none;
-    animation: fury-impact-fade 1.05s ease-out var(--impact-delay, 0ms) both;
+    animation: fury-impact-fade var(--impact-duration, 1.2s) ease-out var(--impact-delay, 0ms) both;
+}
+.fury-impact__seal {
+    position: absolute; top: 5%; right: 5%; z-index: 1;
+    display: grid; place-items: center;
+    width: clamp(12px, 34%, 23px); aspect-ratio: 1; border-radius: 7px;
+    background: #171522e6; border: 1px solid var(--fury-edge); color: var(--fury-edge);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--fc) 60%, transparent);
+    animation: fury-seal-in .38s cubic-bezier(.2,.85,.3,1) var(--impact-delay, 0ms) both;
+}
+.fury-impact__seal svg { width: 74%; height: 74%; }
+.fury-impact:is(.fury-impact--shield, .fury-impact--tornado) .fury-impact__seal {
+    top: auto; right: 8px; bottom: 8px; width: 28px;
 }
 .fury-impact::before,
 .fury-impact::after { position: absolute; content: ''; pointer-events: none; }
@@ -409,12 +421,23 @@ body.fury-mode .fury-rail .fury-card--mini, body.fury-mode .fury-rail-card { wid
     transform-origin: left center;
     animation: fury-fissure .45s cubic-bezier(.16, 1, .3, 1) var(--impact-delay, 0ms) both;
 }
+.fury-impact--curse { --impact-duration: 1.4s; }
 .fury-impact--curse::before {
-    inset: 0; background: radial-gradient(ellipse at 100% 0, #f1557166, transparent 45%), radial-gradient(ellipse at 0 100%, #f1557166, transparent 45%);
+    inset: 0; background: radial-gradient(ellipse at 100% 0, #f1557180, transparent 50%), radial-gradient(ellipse at 0 100%, #f1557166, transparent 45%);
+}
+.fury-impact--curse::after {
+    inset: 7%; border: 1px solid #f98d9f99; border-radius: 8px;
+    animation: fury-curse-bind .85s ease-out both;
 }
 .fury-impact--fog::before {
-    inset: 0; background: repeating-linear-gradient(173deg, transparent 0 22%, #e4dff059 34%, transparent 55%);
-    animation: fury-impact-drift .95s ease-out both;
+    inset: -15% -25%;
+    background: radial-gradient(ellipse at 25% 60%, #ded5ed9c, transparent 34%), radial-gradient(ellipse at 66% 39%, #e8dff37a, transparent 40%);
+    animation: fury-impact-drift 1.05s ease-out var(--impact-delay, 0ms) both;
+}
+.fury-impact--freeze { --impact-duration: 1.35s; }
+.fury-impact--freeze::after {
+    inset: 3px; border-block-end: 2px solid #e3f8ff; border-inline-end: 1px solid #a4e6ff; border-radius: 8px;
+    animation: fury-frost .7s ease-out var(--impact-delay, 0ms) both;
 }
 .fury-impact--freeze::before {
     animation: fury-frost .6s ease-out var(--impact-delay, 0ms) both;
@@ -425,12 +448,15 @@ body.fury-mode .fury-rail .fury-card--mini, body.fury-mode .fury-rail-card { wid
     inset: 24% 12%; border: 1px solid #d2fff9b3; border-block-width: 3px; border-radius: 50%;
     animation: fury-impact-sweep 1s ease-out both;
 }
-.fury-impact--tornado::after { inset: 17% 5%; border-block-width: 1px; }
+.fury-impact--tornado::after { inset: 17% 5%; border-block-width: 1px; animation-delay: .13s; }
+.fury-impact--tornado { --impact-duration: 1.45s; }
 .fury-impact--shield { border-width: 2px; box-shadow: 0 0 15px #9fcab688, inset 0 0 22px #9fcab666, inset 0 0 0 3px #9fcab633; }
 .fury-impact--shield::before {
     inset: 3px; border: 1px solid #e0ffefba; border-radius: inherit;
     animation: fury-shield-ripple .8s ease-out both;
 }
+@keyframes fury-seal-in { from { transform: scale(.72); opacity: 0; } }
+@keyframes fury-curse-bind { from { opacity: 0; transform: scale(1.15); } to { opacity: .8; transform: scale(1); } }
 @keyframes fury-fissure { from { transform: scaleX(.15); } to { transform: scaleX(1); } }
 @keyframes fury-frost { from { opacity: 0; filter: blur(2px); } to { opacity: 1; filter: blur(0); } }
 @keyframes fury-shield-ripple { from { transform: scale(.8); opacity: 1; } to { transform: scale(1); opacity: 0; } }
@@ -440,4 +466,5 @@ body.fury-mode .fury-rail .fury-card--mini, body.fury-mode .fury-rail-card { wid
 @media (prefers-reduced-motion: reduce) {
     .fury-impact { animation: none; opacity: .75; }
     .fury-impact::before, .fury-impact::after { display: none; }
+    .fury-impact__seal { animation: none; }
 }
