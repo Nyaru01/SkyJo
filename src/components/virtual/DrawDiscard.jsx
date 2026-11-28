@@ -1,8 +1,9 @@
-import { memo, useState, useEffect, useRef } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SkyjoCard from './SkyjoCard';
 import { cn } from '../../lib/utils';
 import DiscardHistoryOverlay from './DiscardHistoryOverlay';
+import { useDiscardHistory } from '../../hooks/useDiscardHistory';
 
 /**
  * Draw and Discard Piles Component
@@ -26,9 +27,10 @@ const DrawDiscard = memo(function DrawDiscard({
     const [showNewDiscardGlow, setShowNewDiscardGlow] = useState(false);
     const [discardKey, setDiscardKey] = useState(0);
 
-    // Track Long Press for History Overlay
-    const [showHistory, setShowHistory] = useState(false);
-    const longPressTimerRef = useRef(null);
+    const { showHistory, closeHistory, pressHandlers } = useDiscardHistory(
+        discardHistory.length,
+        canDiscardDrawn ? onDiscardDrawnCard : canTakeDiscard ? onDiscardClick : undefined,
+    );
 
     // Trigger animation when lastDiscardedCard changes
     useEffect(() => {
@@ -42,34 +44,12 @@ const DrawDiscard = memo(function DrawDiscard({
         }
     }, [lastDiscardedCard]);
 
-    // Long Press Handlers
-    const handlePointerDown = () => {
-        if (!discardTop) return;
-        longPressTimerRef.current = setTimeout(() => {
-            setShowHistory(true);
-        }, 500); // 500ms long press
-    };
-
-    const handlePointerUp = () => {
-        if (longPressTimerRef.current) {
-            clearTimeout(longPressTimerRef.current);
-            longPressTimerRef.current = null;
-        }
-    };
-
-    const handlePointerLeave = () => {
-        if (longPressTimerRef.current) {
-            clearTimeout(longPressTimerRef.current);
-            longPressTimerRef.current = null;
-        }
-    };
-
     return (
         <div className="flex items-center justify-center gap-2 sm:gap-6 py-1.5 sm:py-3 relative">
             <DiscardHistoryOverlay
                 isVisible={showHistory}
                 cards={discardHistory}
-                onClose={() => setShowHistory(false)}
+                onClose={closeHistory}
             />
 
             {/* Draw Pile - 3D Stacked Effect */}
@@ -177,10 +157,7 @@ const DrawDiscard = memo(function DrawDiscard({
             {/* Discard Pile */}
             <div className="flex flex-col items-center gap-2">
                 <motion.button
-                    onClick={canDiscardDrawn ? onDiscardDrawnCard : onDiscardClick}
-                    onPointerDown={handlePointerDown}
-                    onPointerUp={handlePointerUp}
-                    onPointerLeave={handlePointerLeave}
+                    {...pressHandlers}
                     disabled={!canTakeDiscard && !canDiscardDrawn && discardHistory.length === 0}
                     className={cn(
                         "relative",

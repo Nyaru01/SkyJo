@@ -1,4 +1,4 @@
-import { memo, useState, useRef, useCallback } from 'react';
+import { memo } from 'react';
 import { motion as Motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -6,6 +6,7 @@ import SkyjoCard from './SkyjoCard';
 import { useGameStore } from '../../store/gameStore';
 import { getCardSkinPath } from '../../lib/skinUtils';
 import DiscardHistoryOverlay from './DiscardHistoryOverlay';
+import { useDiscardHistory } from '../../hooks/useDiscardHistory';
 
 // Simple haptic feedback for pile touches
 const triggerHaptic = (duration = 50) => {
@@ -43,34 +44,11 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
     // Permet l'affichage pour Normal, Difficile ET H
     const showDiscardPreview = discardTop && !hasDrawnCard;
 
-    // Long-press state for discard history
-    const [showHistory, setShowHistory] = useState(false);
-    const longPressTimer = useRef(null);
-    const LONG_PRESS_DURATION = 400; // ms
-
-    // Long-press handlers
-    const handleDiscardPointerDown = useCallback(() => {
-        longPressTimer.current = setTimeout(() => {
-            triggerHaptic(30); // Short haptic on trigger
-            setShowHistory(true);
-        }, LONG_PRESS_DURATION);
-    }, []);
-
-    const handleDiscardPointerUp = useCallback(() => {
-        if (longPressTimer.current) {
-            clearTimeout(longPressTimer.current);
-            longPressTimer.current = null;
-        }
-        setShowHistory(false);
-    }, []);
-
-    const handleDiscardPointerLeave = useCallback(() => {
-        if (longPressTimer.current) {
-            clearTimeout(longPressTimer.current);
-            longPressTimer.current = null;
-        }
-        // Don't hide if already showing (user might have moved finger slightly)
-    }, []);
+    const { showHistory, openHistory, closeHistory, pressHandlers } = useDiscardHistory(
+        discardPile.length,
+        canInteract ? () => { triggerHaptic(); (onDiscardAction || onClick)?.(); } : undefined,
+        () => triggerHaptic(30),
+    );
 
     // Determine button state
     const isDrawPhase = turnPhase === 'DRAW';
@@ -255,11 +233,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                         WebkitTouchCallout: 'none',
                                         touchAction: 'manipulation',
                                     }}
-                                    onClick={canInteract ? () => { triggerHaptic(); (onDiscardAction || onClick)?.(); } : undefined}
-                                    onPointerDown={handleDiscardPointerDown}
-                                    onPointerUp={handleDiscardPointerUp}
-                                    onPointerLeave={handleDiscardPointerLeave}
-                                    onPointerCancel={handleDiscardPointerUp}
+                                    {...pressHandlers}
                                     whileHover={canInteract ? { scale: 1.1, rotate: 5 } : undefined}
                                     whileTap={canInteract ? { scale: 0.95 } : undefined}
                                     animate={activeActionSource === 'discard-pile' ? { scale: [1, 1.1, 1] } : {}}
@@ -272,9 +246,9 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                 <div className="skyjo-empty-pile w-full h-full rounded-lg border-2 border-dashed border-slate-700/50 flex items-center justify-center" />
                             )}
                         </div>
-                        <span aria-label={`${discardPileCount} cartes dans la défausse`} className="skyjo-pile-count text-[11px] font-black text-white/90 bg-slate-900/60 px-2 py-0.5 rounded-md border border-white/10 backdrop-blur-sm min-w-[20px] text-center shadow-lg uppercase tracking-widest">
+                        <button type="button" onClick={openHistory} disabled={!discardPile.length} aria-haspopup="dialog" aria-label={`Consulter la défausse, ${discardPileCount} carte${discardPileCount === 1 ? '' : 's'}`} className="skyjo-discard-history-trigger skyjo-pile-count text-[11px] font-black text-white/90 bg-slate-900/60 px-2 py-0.5 rounded-md border border-white/10 backdrop-blur-sm min-w-[20px] text-center shadow-lg uppercase tracking-widest">
                             {discardPileCount}
-                        </span>
+                        </button>
                     </div>
                 </div>
 
@@ -298,10 +272,10 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
             </div >
 
             {/* Discard History Overlay */}
-            < DiscardHistoryOverlay
+            <DiscardHistoryOverlay
                 cards={discardPile}
                 isVisible={showHistory}
-                onClose={handleDiscardPointerUp}
+                onClose={closeHistory}
             />
         </>
     );
