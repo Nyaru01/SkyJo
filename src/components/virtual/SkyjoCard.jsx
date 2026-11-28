@@ -290,7 +290,7 @@ const SkyjoCard = memo(function SkyjoCard({
                     )}
 
                     {/* Lock overlay */}
-                    {isLocked && (
+                    {isLocked && !isFrozen && (
                         <div className={cn(
                             "absolute z-20",
                             isCurse ? "vesper-card-curse-lock" : "inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[1px]",
@@ -329,11 +329,13 @@ const SkyjoCard = memo(function SkyjoCard({
                         alt=""
                         className={cn("w-full h-full", classicBack ? "object-fill" : "object-cover")}
                     />
-                    {isFrozen && <span className="absolute inset-0 grid place-items-center bg-slate-950/35">
-                        <Lock className="size-5 text-sky-200 drop-shadow-sm" aria-hidden="true" />
-                    </span>}
                 </div>
             </Motion.div>
+            {isFrozen && (
+                <span className={cn('vesper-card-freeze', isRevealed && 'vesper-card-freeze--face')} aria-hidden="true">
+                    <span className="vesper-card-freeze-lock"><Lock /></span>
+                </span>
+            )}
         </Motion.div>
     );
 });
