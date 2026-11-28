@@ -3,6 +3,8 @@ import { motion as Motion, useIsPresent, useReducedMotion } from 'framer-motion'
 
 const HOME_FADE_SECONDS = 1.55;
 const HOME_PREPARE_AT_SECONDS = 2;
+const STUDIO_OUTRO_MS = 320;
+const VESPER_FADE_IN_SECONDS = .55;
 const STUDIO_VIDEO = '/nyaru-studio-intro-v2.mp4';
 
 function syncVideoBackground(video, background) {
@@ -72,6 +74,7 @@ function StudioBackdrop({ videoRef, active }) {
 }
 
 function VesperIntro({ active, reduceMotion, onPrepareHome, onDone }) {
+    const [hasStarted, setHasStarted] = useState(false);
     const videoRef = useRef(null);
     const bgRef = useRef(null);
     const done = useRef(false);
@@ -80,25 +83,41 @@ function VesperIntro({ active, reduceMotion, onPrepareHome, onDone }) {
     useEffect(() => {
         const v = videoRef.current;
         if (!active || !v) return;
-        // Avec le son si le navigateur l'autorise, sinon en muet.
+        const background = bgRef.current;
+        let audioFrame;
+        let cancelled = false;
+        const fadeAudioIn = () => {
+            if (cancelled || done.current || reduceMotion) return;
+            const progress = Math.min(v.currentTime / VESPER_FADE_IN_SECONDS, 1);
+            v.volume = progress * progress * (3 - 2 * progress);
+            if (progress < 1) audioFrame = requestAnimationFrame(fadeAudioIn);
+        };
+        v.volume = reduceMotion ? 1 : 0;
         v.muted = false;
-        v.play().catch(() => {
-            if (done.current) return;
+        v.play().then(fadeAudioIn, () => {
+            if (cancelled || done.current) return;
             v.muted = true;
-            v.play().catch(finish);
+            v.play().then(fadeAudioIn, () => { if (!cancelled) finish(); });
         });
-        bgRef.current?.play().catch(() => {});
-    }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
+        background?.play().catch(() => {});
+        return () => {
+            cancelled = true;
+            cancelAnimationFrame(audioFrame);
+            v.pause();
+            background?.pause();
+        };
+    }, [active, reduceMotion]); // eslint-disable-line react-hooks/exhaustive-deps
     const skip = () => {
         finish();
         videoRef.current?.pause();
         bgRef.current?.pause();
     };
-    return <div className="vesper-intro" style={{ opacity: active ? 1 : 0 }} aria-hidden={!active}>
+    return <div className="vesper-intro" style={{ opacity: active && hasStarted ? 1 : 0 }} aria-hidden={!active || !hasStarted}>
         {/* Copie floutée et agrandie en fond : elle remplit le haut et le bas de l'écran avec les vraies couleurs
             de la vidéo, à chaque instant (au lieu de bandes de couleur fixe qui se voyaient). */}
         <video ref={bgRef} className="vesper-intro-bg" src="/vesper-intro.mp4" muted playsInline preload="auto" aria-hidden="true" />
         <video ref={videoRef} src="/vesper-intro.mp4" playsInline preload="auto" aria-label="Introduction Vesper"
+            onPlaying={() => setHasStarted(true)}
             onTimeUpdate={e => {
                 const v = e.currentTarget;
                 syncVideoBackground(v, bgRef.current);
@@ -116,7 +135,7 @@ function VesperIntro({ active, reduceMotion, onPrepareHome, onDone }) {
             }}
             onEnded={finish}
             onError={active ? finish : undefined} />
-        {active && <button type="button" className="vesper-intro-skip" onClick={skip}>Passer la vidéo</button>}
+        {active && hasStarted && <button type="button" className="vesper-intro-skip" onClick={skip}>Passer la vidéo</button>}
     </div>;
 }
 
@@ -132,8 +151,14 @@ export function IntroScreen({ onPrepareHome, onComplete }) {
     const finishIntro = useCallback(() => {
         if (completed.current) return;
         completed.current = true;
-        setPhase('vesper');
+        setPhase('bridge');
     }, []);
+
+    useEffect(() => {
+        if (phase !== 'bridge') return;
+        const handoff = setTimeout(() => setPhase('vesper'), reduceMotion ? 0 : STUDIO_OUTRO_MS);
+        return () => clearTimeout(handoff);
+    }, [phase, reduceMotion]);
 
     const playStudioWithSound = useCallback(async () => {
         const video = studioVideo.current;
@@ -178,7 +203,8 @@ export function IntroScreen({ onPrepareHome, onComplete }) {
             exit={{ opacity: 0 }}
             transition={{ duration: reduceMotion ? 0 : HOME_FADE_SECONDS, ease: [0.42, 0, 0.22, 1] }}
             data-leaving={isPresent ? undefined : ''}
-            className="studio-intro fixed inset-0 z-[99999] flex items-center justify-center bg-black overflow-hidden"
+            className="studio-intro fixed inset-0 z-[99999] flex items-center justify-center overflow-hidden"
+            style={{ '--studio-outro-duration': `${STUDIO_OUTRO_MS}ms` }}
         >
             <VesperIntro active={phase === 'vesper'} reduceMotion={reduceMotion} onPrepareHome={onPrepareHome} onDone={onComplete} />
             <div className="studio-intro-layer" style={{ opacity: phase === 'studio' ? 1 : 0 }}>
