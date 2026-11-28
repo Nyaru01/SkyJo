@@ -42,8 +42,13 @@ export default function CardAnimationLayer({ pendingAnimation, onClear }) {
                 });
             } else {
                 // Fallback if elements not found: just complete immediately
-                onComplete?.();
-                onClear();
+                try {
+                    onComplete?.();
+                } catch (error) {
+                    console.error('[ANIMATION] Coup non appliqué :', error);
+                } finally {
+                    onClear();
+                }
             }
         }
     }, [pendingAnimation, onClear]);
@@ -52,11 +57,16 @@ export default function CardAnimationLayer({ pendingAnimation, onClear }) {
     const handleAnimationComplete = () => {
         if (doneRef.current) return;
         doneRef.current = true;
-        if (animationState?.onComplete) {
-            animationState.onComplete();
+        // Le coup est appliqué dans onComplete : même s'il échoue, l'animation doit être libérée,
+        // sinon pendingAnimation reste posé et l'IA ne rejoue plus.
+        try {
+            animationState?.onComplete?.();
+        } catch (error) {
+            console.error('[ANIMATION] Coup non appliqué :', error);
+        } finally {
+            setAnimationState(null);
+            onClear();
         }
-        setAnimationState(null);
-        onClear();
     };
     // Filet de sécurité : si l'animation est interrompue (appli en arrière-plan, mises à jour rapprochées),
     // la carte volante ne doit jamais rester figée sur le plateau ni bloquer l'état de la partie.

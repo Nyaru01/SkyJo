@@ -855,8 +855,11 @@ const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = nu
             if (hasMatch && !isFull && !hasNegative) {
                 // We found a column to group in!
                 // Prioritize hidden cards, then worst revealed cards (that aren't the match)
-                const targetIdx = colIndices.find(idx => hand[idx] && !hand[idx].isRevealed) ||
-                    colIndices.find(idx => hand[idx] && hand[idx].isRevealed && (hand[idx].value !== cardValue && hand[idx].specialType !== 'C') && Number(hand[idx].value) > (cardValue === 'C' ? 0 : Number(cardValue)));
+                // Une carte verrouillée (Crâne, Gel, Malédiction) ne peut pas être remplacée.
+                // `??` et non `||` : l'index 0 est une cible valide.
+                const free = idx => hand[idx] && !(hand[idx].lockCount > 0);
+                const targetIdx = colIndices.find(idx => free(idx) && !hand[idx].isRevealed) ??
+                    colIndices.find(idx => free(idx) && hand[idx].isRevealed && (hand[idx].value !== cardValue && hand[idx].specialType !== 'C') && Number(hand[idx].value) > (cardValue === 'C' ? 0 : Number(cardValue)));
 
                 if (targetIdx !== undefined) {
                     aiLog(difficulty, `Grouping matching values (including Joker): placing ${cardValue} in column ${col} (at index ${targetIdx})`);
@@ -1823,9 +1826,52 @@ export const planAITurn = (gameState, difficulty = AI_DIFFICULTY.NORMAL) => {
  * quand on est nettement derrière — le score serait doublé. On sacrifie plutôt sa pire carte visible,
  * si le coût reste raisonnable. S'applique à tous les niveaux.
  */
-export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) => {
+export const decideCardAction = (gameState, difficulty = AI_DIFFICULTY.NORMAL) => (
+    ensureLegalCardAction(gameState, decideCardActionWithEndGuard(gameState, difficulty))
+);
+
+/**
+ * Dernier filet : ramène la décision à un coup que le moteur accepte. Un coup refusé lève une exception
+ * pendant l'animation du tour de l'IA, et la partie se fige.
+ */
+export const ensureLegalCardAction = (gameState, decision) => {
+    const drawnCard = gameState.drawnCard;
+    if (!drawnCard || !decision) return decision;
+    const hand = gameState.players[gameState.currentPlayerIndex].hand;
+    const isFrozen = c => Boolean(gameState.isFuryMode && c.isFrozen);
+    const canReplace = i => Boolean(hand[i]) && !(hand[i].lockCount > 0);
+    const canReveal = i => Boolean(hand[i]) && !hand[i].isRevealed && (!(hand[i].lockCount > 0) || isFrozen(hand[i]));
+    const indices = hand.map((_, i) => i);
+    const firstReveal = () => indices.find(canReveal);
+
+    // Échange (et Trou noir) : jamais posé dans la grille, toujours joué comme action.
+    if (drawnCard.specialType === 'S' || drawnCard.specialType === 'H') {
+        if (decision.action !== 'REPLACE') return decision;
+        return { action: 'DISCARD_AND_REVEAL', cardIndex: firstReveal() ?? 0 };
+    }
+
+    const mustReplace = gameState.turnPhase === 'MUST_REPLACE' || (gameState.isBonusMode && Number(drawnCard.value) === 20);
+    if (decision.action === 'REPLACE' && canReplace(decision.cardIndex)) return decision;
+    if (decision.action !== 'REPLACE' && !mustReplace && canReveal(decision.cardIndex)) return decision;
+
+    if (!mustReplace) {
+        const reveal = firstReveal();
+        if (reveal !== undefined) return { action: 'DISCARD_AND_REVEAL', cardIndex: reveal };
+    }
+    // Remplacer la pire carte visible libre, sinon une carte cachée libre.
+    const value = Number(drawnCard.value);
+    const revealed = indices.filter(i => canReplace(i) && hand[i].isRevealed);
+    const worst = revealed.reduce((a, b) => (a === undefined || Number(hand[b].value) > Number(hand[a].value) ? b : a), undefined);
+    const hidden = indices.find(i => canReplace(i) && !hand[i].isRevealed);
+    const target = worst !== undefined && (Number(hand[worst].value) > value || hidden === undefined) ? worst : (hidden ?? worst);
+    return target === undefined ? decision : { action: 'REPLACE', cardIndex: target };
+};
+
+const decideCardActionWithEndGuard = (gameState, difficulty = AI_DIFFICULTY.NORMAL) => {
     const decision = decideCardActionBase(gameState, difficulty);
     if (gameState.phase !== 'PLAYING' || !gameState.drawnCard) return decision;
+    // Une carte Échange ne se pose jamais : le garde-fou ne doit pas la transformer en remplacement.
+    if (gameState.drawnCard.specialType === 'S' || gameState.drawnCard.specialType === 'H') return decision;
     const me = gameState.players[gameState.currentPlayerIndex];
     const hand = me.hand;
     const hidden = hand.map((c, i) => (c && !c.isRevealed ? i : -1)).filter(i => i >= 0);

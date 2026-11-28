@@ -36,10 +36,26 @@ import {
     chooseInitialCardsToReveal,
     decideDrawSource,
     decideCardAction,
+    ensureLegalCardAction,
     decideSwapAction,
     resetOpponentMemory,
     observeOpponentTurn,
 } from '../lib/skyjoAI';
+
+// Coup de secours de l'IA si le moteur refuse le coup prévu : sans lui, l'exception
+// survient pendant l'animation et la partie reste figée.
+const applyAIFallbackMove = (state, error) => {
+    console.warn('[AI] Coup refusé, coup de secours :', error?.message);
+    try {
+        const fallback = ensureLegalCardAction(state, { action: 'REPLACE', cardIndex: -1 });
+        if (fallback.action === 'REPLACE') return replaceCard(state, fallback.cardIndex);
+        if (state.drawnCard?.specialType === 'S') return playActionCard(state);
+        return discardAndReveal(state, fallback.cardIndex);
+    } catch (fallbackError) {
+        console.warn('[AI] Coup de secours impossible, carte défaussée :', fallbackError?.message);
+        return { ...state, discardPile: [...state.discardPile, { ...state.drawnCard, isRevealed: true }], drawnCard: null, turnPhase: 'DRAW' };
+    }
+};
 
 /**
  * Utility to handle game end transitions (revealing chests, revealing all cards)
@@ -502,7 +518,12 @@ export const useVirtualGameStore = create(
                                     onComplete: () => {
                                         // 3. Commit
                                         const old = get().gameState.players[get().gameState.currentPlayerIndex].hand[decision.cardIndex];
-                                        let ns = replaceCard(get().gameState, decision.cardIndex);
+                                        let ns;
+                                        try {
+                                            ns = replaceCard(get().gameState, decision.cardIndex);
+                                        } catch (error) {
+                                            ns = applyAIFallbackMove(get().gameState, error);
+                                        }
                                         // Résumé du coup de l'IA, affiché au joueur au début de son tour.
                                         ns = { ...ns, aiLastMove: { kind: 'replace', card: drawnCard.value, old: old?.value, oldHidden: !old?.isRevealed, at: Date.now() } };
                                         ns = endTurn(ns);
@@ -554,7 +575,11 @@ export const useVirtualGameStore = create(
                                             // Optional: notify about action
                                         } else {
                                             const flipped = get().gameState.players[get().gameState.currentPlayerIndex].hand[decision.cardIndex];
-                                            ns = discardAndReveal(get().gameState, decision.cardIndex);
+                                            try {
+                                                ns = discardAndReveal(get().gameState, decision.cardIndex);
+                                            } catch (error) {
+                                                ns = applyAIFallbackMove(get().gameState, error);
+                                            }
                                             ns = { ...ns, aiLastMove: { kind: 'discard', card: drawnCard.value, revealed: flipped?.value, at: Date.now() } };
                                         }
 
