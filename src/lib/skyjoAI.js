@@ -1879,11 +1879,16 @@ const decideCardActionWithEndGuard = (gameState, difficulty = AI_DIFFICULTY.NORM
     if (hidden.length !== 1 || !target || target.isRevealed) return decision;
     const drawn = Number(gameState.drawnCard.value);
     if (!Number.isFinite(drawn)) return decision;
-    const value = c => (c ? (c.isRevealed ? Number(c.value) || 0 : 5) : 0);
-    // Score estimé si la manche se termine maintenant
-    const myEnd = hand.reduce((t, c, i) => t + (i === decision.cardIndex ? (decision.action === 'REPLACE' ? drawn : value({ ...c, isRevealed: true }) ) : value(c)), 0);
     const others = gameState.players.filter((_, i) => i !== gameState.currentPlayerIndex);
-    const bestOpp = Math.min(...others.map(p => p.hand.reduce((t, c) => t + value(c), 0)));
+    // Une carte cachée vaut l'espérance de la pioche : l'IA ne connaît pas sa propre carte cachée.
+    const hiddenEV = getProbabilisticAverageValue(gameState);
+    const value = c => (c ? (c.isRevealed ? Number(c.value) || 0 : hiddenEV) : 0);
+    // Tourment, Difficile et Fury : chaque colonne nettoyée retire 3 points au décompte.
+    const columnBonus = gameState.isBonusMode || gameState.isHardcoreMode || gameState.isFuryMode;
+    const handScore = p => p.hand.reduce((t, c) => t + value(c), 0) - (columnBonus ? 3 * (p.columnsCleared || 0) : 0);
+    // Score estimé si la manche se termine maintenant
+    const myEnd = handScore(me) - value(target) + (decision.action === 'REPLACE' ? drawn : hiddenEV);
+    const bestOpp = Math.min(...others.map(handScore));
     if (myEnd <= bestOpp + 3) return decision;
     // Poser un 10, 11 ou 12 visible pour gagner un tour se voit et ne paie pas : l'IA finit alors la manche.
     // (Sinon elle empilait 8 → 10 → 11 → 12 sur la même case, tour après tour.)

@@ -30,3 +30,26 @@ test("l'IA remplace son 12 visible plutôt qu'un 2 pour amorcer une paire de 0",
         assert.deepEqual(decideCardAction(state, 'hard'), { action: 'REPLACE', cardIndex: 4 }, turnPhase);
     }
 });
+
+// Position remontée par un joueur (Tourment) : l'IA remplaçait son 1 par un 6 pour ne pas finir,
+// alors que ses deux colonnes nettoyées (−6) la mettaient devant.
+const tourmentState = (me, aiColumns) => ({
+    phase: 'PLAYING', turnPhase: 'REPLACE_OR_DISCARD', currentPlayerIndex: 1, isBonusMode: true, drawnCard: H(6),
+    drawPile: Array.from({ length: 80 }, () => H(5, false)), discardPile: [H(3)],
+    players: [{ id: 'human-1', hand: me, columnsCleared: 0 }, { id: 'ai-1', columnsCleared: aiColumns,
+        hand: [null, null, null, null, null, null, H(2), H(2), H(9, false), H(1), H(-1), H(0)] }],
+});
+
+test("fin de manche : l'IA finit la manche quand ses colonnes nettoyées la mettent devant", () => {
+    const me = [H(0), H(2), H(0), H(0), H(-1), H(5, false), H(-2), H(-1), H(0), H(0), H(0), H(2)];
+    const decision = decideCardAction(tourmentState(me, 2), 'bonus');
+    assert.deepEqual(decision, { action: 'DISCARD_AND_REVEAL', cardIndex: 8 });
+});
+
+test("fin de manche : les colonnes nettoyées comptent dans l'estimation (−3 chacune)", () => {
+    // Adversaire à −6 visibles + 2 cartes cachées (≈ 4) ; IA à 4 visibles + 1 cachée (≈ 9), mais −6 de colonnes.
+    const me = [H(-2), H(-2), H(5, false), H(-1), H(-1), H(5, false), H(0), H(0), H(0), H(0), H(0), H(0)];
+    assert.equal(decideCardAction(tourmentState(me, 2), 'bonus').action, 'DISCARD_AND_REVEAL');
+    // Sans les colonnes, l'IA est nettement derrière : elle garde la manche ouverte.
+    assert.equal(decideCardAction(tourmentState(me, 0), 'bonus').action, 'REPLACE');
+});
