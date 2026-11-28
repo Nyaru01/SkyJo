@@ -1,0 +1,161 @@
+.online-start {
+    --start-accent: #f1cdaf;
+    --start-glow: #aa748d;
+    position: fixed;
+    z-index: 190;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: max(12px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));
+    overflow: hidden;
+    color: #fff2df;
+    isolation: isolate;
+    background:
+        radial-gradient(ellipse at 50% 42%, color-mix(in srgb, var(--start-glow) 35%, transparent), transparent 54%),
+        linear-gradient(160deg, #131423, #20192b 63%, #111422);
+}
+
+.online-start--fury {
+    --start-accent: #ffb18d;
+    --start-glow: #bf6348;
+}
+
+.online-start__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(12px, 2.5dvh, 24px);
+    width: min(100%, 440px);
+}
+
+.online-start__mode {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    border: 1px solid color-mix(in srgb, var(--start-accent) 38%, transparent);
+    border-radius: 999px;
+    background: #17131f9c;
+    color: var(--start-accent);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.online-start__dial {
+    position: relative;
+    display: grid;
+    place-items: center;
+    isolation: isolate;
+    width: min(64vw, 32dvh, 250px);
+    aspect-ratio: 1;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    color: #fff0db;
+}
+
+.online-start__rings {
+    position: absolute;
+    inset: 4%;
+    z-index: -1;
+    border: 1px solid color-mix(in srgb, var(--start-accent) 50%, transparent);
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff1d511, transparent 67%);
+    box-shadow: 0 0 0 11px #fff0d70e, 0 0 52px -17px var(--start-accent), inset 0 0 48px #fff0d70b;
+}
+
+.online-start__rings::before,
+.online-start__rings::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--start-accent);
+    box-shadow: 0 0 12px 2px var(--start-accent);
+    transform: translate(-50%, -50%);
+}
+
+.online-start__rings::before { left: 0; }
+.online-start__rings::after { left: 100%; }
+
+.online-start__number,
+.online-start__go {
+    display: block;
+    font-weight: 600;
+    line-height: 1;
+    text-shadow: 0 4px 24px #0d0a15a6;
+    animation: online-start-beat .34s cubic-bezier(.2,.8,.25,1) both;
+}
+
+.online-start__number { font-size: clamp(40px, min(27vw, 17dvh), 138px); }
+.online-start__go { font-size: clamp(23px, min(11vw, 8dvh), 58px); white-space: nowrap; }
+
+.online-start__progress { display: flex; gap: 5px; width: min(126px, 40vw); }
+
+.online-start__progress span {
+    flex: 1;
+    height: 3px;
+    border-radius: 99px;
+    background: #fff0d730;
+    overflow: hidden;
+}
+
+.online-start__progress span::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--start-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+}
+
+.online-start__progress [data-state='current']::after { animation: online-start-progress 1s linear forwards; }
+.online-start__progress [data-state='done']::after { transform: scaleX(1); }
+
+.online-start__players {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.online-start__players li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    max-width: calc(50% - 4px);
+    padding: 4px 10px 4px 4px;
+    border: 1px solid #ffebd527;
+    border-radius: 999px;
+    background: #141423cc;
+    color: #efe0d1;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.online-start__players--group li { max-width: calc(25% - 6px); padding-inline-end: 6px; gap: 4px; }
+.online-start__players span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.online-start__players img { width: 31px; height: 31px; flex: 0 0 auto; border-radius: 50%; object-fit: cover; }
+.online-start__players--group img { width: 22px; height: 22px; }
+
+@keyframes online-start-beat {
+    from { opacity: .3; transform: translateY(7px) scale(.92); }
+}
+@keyframes online-start-progress {
+    to { transform: scaleX(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .online-start__number,
+    .online-start__go,
+    .online-start__progress [data-state='current']::after { animation: none; }
+    .online-start__progress [data-state='current']::after { transform: scaleX(1); opacity: .6; }
+}
