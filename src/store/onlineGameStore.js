@@ -14,6 +14,8 @@ export const socket = io(SOCKET_URL, {
 
 // Track if listeners have been set up
 let listenersInitialized = false;
+let redirectionInterval;
+const inactiveRedirection = { active: false, timer: 5, reason: '' };
 
 export const useOnlineGameStore = create((set, get) => ({
     // Connection State
@@ -43,7 +45,7 @@ export const useOnlineGameStore = create((set, get) => ({
     isPaused: false, // Online game pause state
 
     // Redirection State (when host leaves)
-    redirectionState: { active: false, timer: 5, reason: '' },
+    redirectionState: inactiveRedirection,
 
     // UI Local State
     selectedCardIndex: null,
@@ -336,28 +338,17 @@ export const useOnlineGameStore = create((set, get) => ({
             });
 
             socket.on('game_cancelled', ({ reason }) => {
-                console.log('[Socket] Game cancelled:', reason);
+                if (!get().roomCode || get().redirectionState.active) return;
 
-                // Set error to trigger HostLeftOverlay (if host left)
-                // We DO NOT clear roomCode/onlineStarted yet to allow the Overlay to show
+                // Garder le code du salon le temps d’afficher le message aux joueurs restants.
                 set({
                     gameStarted: false,
                     gameState: null,
-                    // roomCode: null, // REMOVED: Keep roomCode for overlay
-                    // players: [],    // REMOVED: Keep players for context
+                    activeState: null,
                     isHost: false,
-                    error: reason,     // Trigger Overlay
-                    lastNotification: {
-                        type: 'error',
-                        message: reason,
-                        timestamp: Date.now()
-                    },
-                    // onlineStarted: false, // REMOVED: Keep True so VirtualGame stays mounted
-                    activeState: null
+                    error: reason,
+                    lastNotification: null,
                 });
-
-                // Start countdown to cleanup for ALL cancellation reasons
-                // This ensures the HostLeftOverlay is visible for 5 seconds before unmounting
                 get().startRedirection(reason);
             });
 
@@ -509,6 +500,7 @@ export const useOnlineGameStore = create((set, get) => ({
     },
 
     leaveRoom: () => {
+        clearInterval(redirectionInterval);
         const { roomCode } = get();
         if (roomCode) {
             console.log('[Store] Leaving room:', roomCode);
@@ -523,7 +515,9 @@ export const useOnlineGameStore = create((set, get) => ({
             onlineStarted: false,
             activeState: null,
             error: null,
-            gameMode: null
+            gameMode: null,
+            lastNotification: null,
+            redirectionState: inactiveRedirection,
         });
     },
 
@@ -591,12 +585,12 @@ export const useOnlineGameStore = create((set, get) => ({
 
     startRedirection: (reason) => {
         set({ redirectionState: { active: true, timer: 5, reason } });
-        const interval = setInterval(() => {
+        redirectionInterval = setInterval(() => {
             const currentTimer = get().redirectionState.timer;
             if (currentTimer <= 1) {
-                clearInterval(interval);
+                clearInterval(redirectionInterval);
                 get().disconnect();
-                set({ redirectionState: { active: false, timer: 5, reason: '' } });
+                set({ redirectionState: inactiveRedirection });
             } else {
                 set({ redirectionState: { ...get().redirectionState, timer: currentTimer - 1 } });
             }

@@ -1719,6 +1719,7 @@ export default function VirtualGame({ screen: controlledScreen, defaultScreen = 
                             </motion.div>
                         )}
                     </AnimatePresence>
+                    {onlineRedirection.active && <HostLeftOverlay onBackToMenu={onBackToMenu} />}
                 </div>
             );
         }
