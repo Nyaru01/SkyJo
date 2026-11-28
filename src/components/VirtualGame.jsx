@@ -362,7 +362,9 @@ export default function VirtualGame({ screen: controlledScreen, defaultScreen = 
     // Removed local notification state
     const [hasPlayedVictory, setHasPlayedVictory] = useState(false);
     const [showRulesModal, setShowRulesModal] = useState(false);
-    const [showDrawDiscardPopup, setShowDrawDiscardPopup] = useState(false);
+    const [drawDiscardPopup, setDrawDiscardPopup] = useState(null);
+    const showDrawDiscardPopup = drawDiscardPopup === 'choose'
+        || (drawDiscardPopup === 'drawn' && !!activeGameState?.drawnCard);
     const [isNextRoundPending, setIsNextRoundPending] = useState(false);
     const [showBonusTutorial, setShowBonusTutorial] = useState(false);
     const [lobbyCountdown, setLobbyCountdown] = useState(null); // null, 3, 2, 1, 'GO'
@@ -388,6 +390,13 @@ export default function VirtualGame({ screen: controlledScreen, defaultScreen = 
             setIsActionPending(false);
         }
     }, [activeGameState, lastAction]);
+
+    // Une pioche rejetée ou expirée ne doit pas ouvrir la fenêtre au prochain tour.
+    useEffect(() => {
+        if (drawDiscardPopup === 'drawn' && !activeGameState?.drawnCard && !isActionPending) {
+            setDrawDiscardPopup(null);
+        }
+    }, [drawDiscardPopup, activeGameState?.drawnCard, isActionPending]);
 
     // Reset chestsRevealed when round starts or phase resets
     useEffect(() => {
@@ -1292,7 +1301,7 @@ export default function VirtualGame({ screen: controlledScreen, defaultScreen = 
             }
             setInitialReveals({});
             setChestsRevealed(false);
-            setShowDrawDiscardPopup(false);
+            setDrawDiscardPopup(null);
             setScreen('game');
             playStartGame();
         };
@@ -2481,30 +2490,28 @@ export default function VirtualGame({ screen: controlledScreen, defaultScreen = 
                     >
                         <div style={{ width: '100%', maxWidth: '340px' }}>
                             <DrawDiscardTrigger
-                                onClick={() => setShowDrawDiscardPopup(true)} // Default open
+                                onClick={() => setDrawDiscardPopup(activeGameState.drawnCard ? 'drawn' : 'choose')}
                                 drawnCardSource={activeDrawnCardSource}
                                 drawnCardInPopup={showDrawDiscardPopup}
                                 onDrawAction={() => {
-                                    // Direct draw action
-                                    if (activeGameState.turnPhase === 'DRAW') {
-                                        if (isOnlineMode) {
-                                            emitGameAction('draw_pile');
-                                        } else {
-                                            drawFromDrawPile();
-                                        }
-                                        setShowDrawDiscardPopup(true);
+                                    if (activeGameState.turnPhase !== 'DRAW' || isActionPending) return;
+                                    if (isOnlineMode) {
+                                        setIsActionPending(true);
+                                        emitGameAction('draw_pile');
+                                    } else {
+                                        drawFromDrawPile();
                                     }
+                                    setDrawDiscardPopup('drawn');
                                 }}
                                 onDiscardAction={() => {
-                                    // Direct discard take action
-                                    if (activeGameState.turnPhase === 'DRAW') {
-                                        if (isOnlineMode) {
-                                            emitGameAction('draw_discard');
-                                        } else {
-                                            takeFromDiscard();
-                                        }
-                                        setShowDrawDiscardPopup(true);
+                                    if (activeGameState.turnPhase !== 'DRAW' || isActionPending) return;
+                                    if (isOnlineMode) {
+                                        setIsActionPending(true);
+                                        emitGameAction('draw_discard');
+                                    } else {
+                                        takeFromDiscard();
                                     }
+                                    setDrawDiscardPopup('drawn');
                                 }}
                                 discardTop={discardTop}
                                 discardPile={activeGameState.discardPile}
@@ -2686,7 +2693,7 @@ export default function VirtualGame({ screen: controlledScreen, defaultScreen = 
                             useOnlineGameStore.getState().undoTakeFromDiscard();
                         }
                     }
-                    setShowDrawDiscardPopup(false);
+                    setDrawDiscardPopup(null);
                 }}
                 drawPileCount={activeGameState.drawPile.length}
                 discardPileCount={activeGameState.discardPile.length}
@@ -2721,7 +2728,7 @@ export default function VirtualGame({ screen: controlledScreen, defaultScreen = 
                 onConfirmPlacement={() => {
                     // Just close popup - we are in 'MUST_REPLACE' or 'REPLACE_OR_DISCARD'
                     // and user wants to place on grid
-                    setShowDrawDiscardPopup(false);
+                    setDrawDiscardPopup(null);
                 }}
                 onDiscardDrawnCard={() => {
                     if (effectiveIsBonusMode && activeGameState?.drawnCard?.value === 20) {
@@ -2738,7 +2745,7 @@ export default function VirtualGame({ screen: controlledScreen, defaultScreen = 
                     } else {
                         useVirtualGameStore.getState().discardDrawnCard();
                     }
-                    setShowDrawDiscardPopup(false);
+                    setDrawDiscardPopup(null);
                 }}
                 onUseAction={() => {
                     playCardPlace();
@@ -2760,7 +2767,7 @@ export default function VirtualGame({ screen: controlledScreen, defaultScreen = 
                         }
                         setInstruction("Sélectionnez une de VOS cartes à échanger");
                     }
-                    setShowDrawDiscardPopup(false);
+                    setDrawDiscardPopup(null);
                 }}
                 isLoading={isActionPending}
             />
