@@ -1777,7 +1777,12 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                         <i className="ol-online-dot" aria-hidden="true" />
                     </button>
                     <div className="ol-profile-main">
-                        <label className="ol-label" htmlFor="ol-pseudo">Votre pseudo</label>
+                        <div className="ol-profile-top">
+                            <label className="ol-label" htmlFor="ol-pseudo">Votre pseudo</label>
+                            <button type="button" className="ol-skyid" onClick={() => { if (userProfile?.vibeId) { navigator.clipboard?.writeText(userProfile.vibeId); toast.success('ID copié'); } }} aria-label={`Copier mon ID ${userProfile?.vibeId || ''}`}>
+                                <small>ID</small><b>{userProfile?.vibeId || '—'}</b><Copy size={12} aria-hidden="true" />
+                            </button>
+                        </div>
                         <input id="ol-pseudo" className="ol-pseudo" placeholder="Pseudo" value={myPseudo} required
                             onChange={(e) => {
                                 const val = e.target.value;
@@ -1786,9 +1791,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                             }} />
                         <span className="ol-ready"><i aria-hidden="true" />Prêt à jouer</span>
                     </div>
-                    <button type="button" className="ol-skyid" onClick={() => { if (userProfile?.vibeId) { navigator.clipboard?.writeText(userProfile.vibeId); toast.success('Vesper ID copié'); } }} aria-label={`Copier mon Vesper ID ${userProfile?.vibeId || ''}`}>
-                        <small>Vesper ID</small><b>{userProfile?.vibeId || '—'}</b><Copy size={12} aria-hidden="true" />
-                    </button>
                 </section>
 
                 {/* Créer / rejoindre */}

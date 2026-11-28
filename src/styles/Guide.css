@@ -8,8 +8,8 @@
 }
 .skyjo-guide-backdrop { position: absolute; inset: 0; background: #0d0f19cc; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .skyjo-guide-panel {
-    position: relative; width: 100%; max-width: 420px; max-height: 100%; overflow-y: auto;
-    display: flex; flex-direction: column;
+    position: relative; width: 100%; max-width: 420px; height: min(36rem, 100%); overflow: hidden;
+    display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto;
     border-radius: 22px; border: 1px solid #ffffff1a;
     background: radial-gradient(ellipse 90% 45% at 50% 0%, #3a3d58 0%, transparent 70%), linear-gradient(180deg, #262a3d, #1c1f2e);
     box-shadow: 0 30px 60px -20px #000000cc;
@@ -30,10 +30,12 @@
 .skyjo-guide-progress i.is-done { background: #ece4d6; }
 
 /* Corps */
-.skyjo-guide-body { display: flex; flex-direction: column; align-items: center; padding: 22px 24px 8px; min-height: 330px; text-align: center; }
+.skyjo-guide-content { min-height: 0; }
+.skyjo-guide-body { display: flex; flex-direction: column; align-items: center; height: 100%; overflow-y: auto; padding: 22px 24px 8px; text-align: center; }
+.skyjo-guide-body > * { flex-shrink: 0; }
 .skyjo-guide-body h2 { margin: 0 0 8px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; font-weight: 500; line-height: 1.1; color: #f6f0e7; }
 .skyjo-guide-body > p { margin: 0; max-width: 32ch; font-size: 14.5px; line-height: 1.55; color: #c9c2d0; }
-.skyjo-guide-visual { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; padding: 18px 0 6px; }
+.skyjo-guide-visual { flex: 1 0 auto; display: flex; align-items: center; justify-content: center; width: 100%; padding: 18px 0 6px; }
 
 /* Pied */
 .skyjo-guide-footer { display: flex; gap: 10px; padding: 12px 20px 20px; }
@@ -49,11 +51,11 @@
 .guide-panel { background: #ffffff0a; border: 1px solid #ffffff14; border-radius: 14px; }
 .guide-cards { display: flex; gap: 18px; }
 .guide-card-col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.guide-card-col span { font-size: 12px; color: #aaa3b4; }
+.guide-card-col > span { font-size: 12px; color: #aaa3b4; }
 .guide-grid { display: grid; grid-template-columns: repeat(4, auto); gap: 8px; }
 .guide-column { display: flex; flex-direction: column; align-items: center; }
 .guide-column-card { margin: 3px 0; }
-.guide-column span { margin-top: 16px; font-size: 13px; color: #b9d2c3; }
+.guide-column > span { margin-top: 16px; font-size: 13px; color: #b9d2c3; }
 .guide-history { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 16px 22px; }
 .guide-hint { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #c9c2d0; }
 .guide-fan { display: flex; }
@@ -79,7 +81,7 @@
 .guide-steps li { position: relative; padding: 10px 12px 10px 42px; font-size: 13px; line-height: 1.45; color: #ddd6cc; counter-increment: guide; }
 .guide-steps li::before { content: counter(guide); position: absolute; left: 12px; top: 10px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #ffffff14; font-size: 11px; font-weight: 600; color: #ece4d6; }
 
-@media (max-height: 700px) { .skyjo-guide-body { min-height: 0; padding-top: 14px; } .skyjo-guide-body h2 { font-size: 26px; } }
+@media (max-height: 700px) { .skyjo-guide-body { padding-top: 14px; } .skyjo-guide-body h2 { font-size: 26px; } }
 @media (prefers-reduced-motion: reduce) { .skyjo-guide-btn, .skyjo-guide-progress i { transition: none; } }
 
 /* Fenêtre du pseudo : même crépuscule que le guide */

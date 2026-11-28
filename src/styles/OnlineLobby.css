@@ -16,12 +16,13 @@
 .ol-avatar-edit { position: absolute; left: -4px; bottom: -4px; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 9px; color: #24273a; background: #ece4d6; box-shadow: 0 4px 8px -4px #000a; }
 .ol-online-dot { position: absolute; top: -3px; right: -3px; width: 14px; height: 14px; border-radius: 50%; background: #8fc2a8; box-shadow: 0 0 0 3px #2a293e, 0 0 10px #8fc2a8aa; }
 .ol-profile-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ol-profile-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 3px 8px; }
 .ol-pseudo { width: 100%; padding: 2px 0 4px; border: 0; border-bottom: 1.5px solid #ffffff26; border-radius: 0; background: transparent; color: #fbf6ee; font-size: 19px; font-weight: 700; outline: none; transition: border-color .2s; }
 .ol-pseudo:focus { border-bottom-color: #e3cfa8; }
 .ol-pseudo::placeholder { color: #6f6a80; }
 .ol-ready { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 11.5px; color: #b8d8c6; }
 .ol-ready i { width: 6px; height: 6px; border-radius: 50%; background: #8fc2a8; }
-.ol-skyid { position: absolute; top: 12px; right: 12px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 999px; font-size: 10.5px; color: #d8d2df; background: #ffffff0d; box-shadow: inset 0 0 0 1px #ffffff1a; }
+.ol-skyid { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 999px; font-size: 10.5px; white-space: nowrap; color: #d8d2df; background: #ffffff0d; box-shadow: inset 0 0 0 1px #ffffff1a; }
 .ol-skyid small { font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: #a9a3b8; }
 .ol-skyid b { font-family: ui-monospace, Menlo, monospace; font-weight: 700; letter-spacing: .04em; }
 /* Créer / rejoindre */

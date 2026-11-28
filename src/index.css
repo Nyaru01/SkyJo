@@ -1233,8 +1233,9 @@ body,
   }
 }
 
-/* Le noir couvre aussi les marges du cadre. Vesper apparaît une fois le logo effacé. */
-.studio-intro-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #000; transition: opacity .42s ease-in; }
+/* Le ciel indigo prend le relais pendant que l'image suivante se prépare. */
+.studio-intro { background: radial-gradient(ellipse at 50% 72%, #232137, #0a1021 74%); }
+.studio-intro-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #000; transition: opacity var(--studio-outro-duration) ease-in; }
 .studio-intro-bg {
   position: absolute; inset: 0; width: 100%; height: 100%;
   filter: blur(7px) brightness(.82); transform: scale(1.035); pointer-events: none;
@@ -1246,20 +1247,20 @@ body,
     linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
   mask-composite: intersect;
 }
-.studio-intro-sound {
-  position: absolute; bottom: max(16px, calc(env(safe-area-inset-bottom) + 8px)); left: 50%;
-  transform: translateX(-50%); min-height: 44px; padding: 0 16px; border-radius: 999px;
-  color: #eaf4ff; background: #111827de; border: 1px solid #b4d8ff73;
-  font-size: .875rem; font-weight: 600; white-space: nowrap;
-}
-.studio-intro-sound:focus-visible { outline: 2px solid #b4d8ff; outline-offset: 3px; }
 /* Vidéo entière (contain) : les téléphones plus allongés que la vidéo rognaient les côtés du titre.
    Le haut et le bas sont remplis par une copie floutée de la vidéo, sans couture visible. */
-.vesper-intro { position: absolute; inset: 0; overflow: hidden; background: #2a2440; transition: opacity .54s ease-out .42s; }
+.vesper-intro { position: absolute; inset: 0; overflow: hidden; background: #181a30; transition: opacity .48s ease-out; }
 .vesper-intro video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 /* Bords haut/bas de la vidéo fondus dans le fond flou (la vidéo 9:16 fait 177,78vw de haut) */
 .vesper-intro video:not(.vesper-intro-bg) { -webkit-mask-image: linear-gradient(to bottom, transparent calc(50% - 88.89vw), #000 calc(50% - 88.89vw + 70px), #000 calc(50% + 88.89vw - 70px), transparent calc(50% + 88.89vw)); mask-image: linear-gradient(to bottom, transparent calc(50% - 88.89vw), #000 calc(50% - 88.89vw + 70px), #000 calc(50% + 88.89vw - 70px), transparent calc(50% + 88.89vw)); }
 .vesper-intro video.vesper-intro-bg { object-fit: cover; filter: blur(18px); transform: scale(1.06); }
+.vesper-intro-skip {
+  position: absolute; z-index: 1; right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom)); min-height: 44px; padding: 0 12px;
+  border-radius: 999px; background: #1412259c; color: #f4edf9;
+  font-size: .75rem; font-weight: 600;
+}
+.vesper-intro-skip:focus-visible { outline: 2px solid #f4edf9; outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
   .studio-intro-layer, .vesper-intro { transition: none; }
 }
