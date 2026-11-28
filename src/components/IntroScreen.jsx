@@ -3,7 +3,7 @@ import { motion as Motion, useIsPresent, useReducedMotion } from 'framer-motion'
 
 const HOME_FADE_SECONDS = 1.55;
 const HOME_PREPARE_AT_SECONDS = 2;
-const STUDIO_VIDEO = '/nyaru-studio-intro.mp4';
+const STUDIO_VIDEO = '/nyaru-studio-intro-v2.mp4';
 
 function syncVideoBackground(video, background) {
     if (background?.readyState >= 1 && Math.abs(background.currentTime - video.currentTime) > 0.3) {
@@ -82,10 +82,19 @@ function VesperIntro({ active, reduceMotion, onPrepareHome, onDone }) {
         if (!active || !v) return;
         // Avec le son si le navigateur l'autorise, sinon en muet.
         v.muted = false;
-        v.play().catch(() => { v.muted = true; v.play().catch(finish); });
+        v.play().catch(() => {
+            if (done.current) return;
+            v.muted = true;
+            v.play().catch(finish);
+        });
         bgRef.current?.play().catch(() => {});
     }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
-    return <div className="vesper-intro" style={{ opacity: active ? 1 : 0 }}>
+    const skip = () => {
+        finish();
+        videoRef.current?.pause();
+        bgRef.current?.pause();
+    };
+    return <div className="vesper-intro" style={{ opacity: active ? 1 : 0 }} aria-hidden={!active}>
         {/* Copie floutée et agrandie en fond : elle remplit le haut et le bas de l'écran avec les vraies couleurs
             de la vidéo, à chaque instant (au lieu de bandes de couleur fixe qui se voyaient). */}
         <video ref={bgRef} className="vesper-intro-bg" src="/vesper-intro.mp4" muted playsInline preload="auto" aria-hidden="true" />
@@ -107,6 +116,7 @@ function VesperIntro({ active, reduceMotion, onPrepareHome, onDone }) {
             }}
             onEnded={finish}
             onError={active ? finish : undefined} />
+        {active && <button type="button" className="vesper-intro-skip" onClick={skip}>Passer la vidéo</button>}
     </div>;
 }
 

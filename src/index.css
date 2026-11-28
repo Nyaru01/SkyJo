@@ -1260,6 +1260,13 @@ body,
 /* Bords haut/bas de la vidéo fondus dans le fond flou (la vidéo 9:16 fait 177,78vw de haut) */
 .vesper-intro video:not(.vesper-intro-bg) { -webkit-mask-image: linear-gradient(to bottom, transparent calc(50% - 88.89vw), #000 calc(50% - 88.89vw + 70px), #000 calc(50% + 88.89vw - 70px), transparent calc(50% + 88.89vw)); mask-image: linear-gradient(to bottom, transparent calc(50% - 88.89vw), #000 calc(50% - 88.89vw + 70px), #000 calc(50% + 88.89vw - 70px), transparent calc(50% + 88.89vw)); }
 .vesper-intro video.vesper-intro-bg { object-fit: cover; filter: blur(18px); transform: scale(1.06); }
+.vesper-intro-skip {
+  position: absolute; z-index: 1; right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom)); min-height: 44px; padding: 0 12px;
+  border-radius: 999px; background: #1412259c; color: #f4edf9;
+  font-size: .75rem; font-weight: 600;
+}
+.vesper-intro-skip:focus-visible { outline: 2px solid #f4edf9; outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
   .studio-intro-layer, .vesper-intro { transition: none; }
 }

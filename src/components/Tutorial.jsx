@@ -182,15 +182,17 @@ export default function Tutorial({ isOpen, onClose }) {
                         <div className="skyjo-guide-progress" aria-hidden="true">
                             {STEPS.map((_, i) => <i key={i} className={i <= currentStep ? 'is-done' : ''} />)}
                         </div>
-                        <AnimatePresence mode="wait" initial={false}>
-                            <Motion.div key={currentStep} className="skyjo-guide-body"
-                                initial={reduced ? false : { opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }}
-                                transition={{ duration: reduced ? 0 : 0.2 }}>
-                                <h2 id="guide-title">{step.title}</h2>
-                                <p>{step.description}</p>
-                                <div className="skyjo-guide-visual">{step.content}</div>
-                            </Motion.div>
-                        </AnimatePresence>
+                        <div className="skyjo-guide-content">
+                            <AnimatePresence mode="wait" initial={false}>
+                                <Motion.div key={currentStep} className="skyjo-guide-body"
+                                    initial={reduced ? false : { opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }}
+                                    transition={{ duration: reduced ? 0 : 0.2 }}>
+                                    <h2 id="guide-title">{step.title}</h2>
+                                    <p>{step.description}</p>
+                                    <div className="skyjo-guide-visual">{step.content}</div>
+                                </Motion.div>
+                            </AnimatePresence>
+                        </div>
                         <footer className="skyjo-guide-footer">
                             {currentStep > 0 && <button type="button" className="skyjo-guide-btn skyjo-guide-btn--ghost" onClick={handleBack}><ChevronLeft size={18} aria-hidden="true" />Retour</button>}
                             <button type="button" className="skyjo-guide-btn skyjo-guide-btn--primary" onClick={handleNext}>
