@@ -92,12 +92,14 @@ function VesperIntro({ active, reduceMotion, onPrepareHome, onDone }) {
             v.volume = progress * progress * (3 - 2 * progress);
             if (progress < 1) audioFrame = requestAnimationFrame(fadeAudioIn);
         };
-        v.volume = reduceMotion ? 1 : 0;
+        // Laisser un volume audible pendant la tentative : certains navigateurs
+        // autorisent un volume nul, puis suspendent la vidéo si on le remonte.
+        v.volume = 1;
         v.muted = false;
         v.play().then(fadeAudioIn, () => {
             if (cancelled || done.current) return;
             v.muted = true;
-            v.play().then(fadeAudioIn, () => { if (!cancelled) finish(); });
+            v.play().catch(() => { if (!cancelled) finish(); });
         });
         background?.play().catch(() => {});
         return () => {
@@ -112,31 +114,33 @@ function VesperIntro({ active, reduceMotion, onPrepareHome, onDone }) {
         videoRef.current?.pause();
         bgRef.current?.pause();
     };
-    return <div className="vesper-intro" style={{ opacity: active && hasStarted ? 1 : 0 }} aria-hidden={!active || !hasStarted}>
-        {/* Copie floutée et agrandie en fond : elle remplit le haut et le bas de l'écran avec les vraies couleurs
-            de la vidéo, à chaque instant (au lieu de bandes de couleur fixe qui se voyaient). */}
-        <video ref={bgRef} className="vesper-intro-bg" src="/vesper-intro.mp4" muted playsInline preload="auto" aria-hidden="true" />
-        <video ref={videoRef} src="/vesper-intro.mp4" playsInline preload="auto" aria-label="Introduction Vesper"
-            onPlaying={() => setHasStarted(true)}
-            onTimeUpdate={e => {
-                const v = e.currentTarget;
-                syncVideoBackground(v, bgRef.current);
-                if (!active || !Number.isFinite(v.duration)) return;
-                if (!prepared.current && v.currentTime >= HOME_PREPARE_AT_SECONDS) {
-                    prepared.current = true;
-                    onPrepareHome();
-                }
-                const remaining = Math.max(0, v.duration - v.currentTime);
-                if (remaining <= HOME_FADE_SECONDS) {
-                    const gain = remaining / HOME_FADE_SECONDS;
-                    v.volume = gain * gain;
-                    if (!reduceMotion) finish();
-                }
-            }}
-            onEnded={finish}
-            onError={active ? finish : undefined} />
-        {active && hasStarted && <button type="button" className="vesper-intro-skip" onClick={skip}>Passer la vidéo</button>}
-    </div>;
+    return <>
+        <div className="vesper-intro" style={{ opacity: active && hasStarted ? 1 : 0 }} aria-hidden={!active || !hasStarted}>
+            {/* Copie floutée et agrandie en fond : elle remplit le haut et le bas de l'écran avec les vraies couleurs
+                de la vidéo, à chaque instant (au lieu de bandes de couleur fixe qui se voyaient). */}
+            <video ref={bgRef} className="vesper-intro-bg" src="/vesper-intro.mp4" muted playsInline preload="auto" aria-hidden="true" />
+            <video ref={videoRef} src="/vesper-intro.mp4" playsInline preload="auto" aria-label="Introduction Vesper"
+                onPlaying={() => setHasStarted(true)}
+                onTimeUpdate={e => {
+                    const v = e.currentTarget;
+                    syncVideoBackground(v, bgRef.current);
+                    if (!active || !Number.isFinite(v.duration)) return;
+                    if (!prepared.current && v.currentTime >= HOME_PREPARE_AT_SECONDS) {
+                        prepared.current = true;
+                        onPrepareHome();
+                    }
+                    const remaining = Math.max(0, v.duration - v.currentTime);
+                    if (remaining <= HOME_FADE_SECONDS) {
+                        const gain = remaining / HOME_FADE_SECONDS;
+                        if (!v.muted) v.volume = gain * gain;
+                        if (!reduceMotion) finish();
+                    }
+                }}
+                onEnded={finish}
+                onError={active ? finish : undefined} />
+        </div>
+        {active && <button type="button" className="vesper-intro-skip" onClick={skip}>Passer la vidéo</button>}
+    </>;
 }
 
 export function IntroScreen({ onPrepareHome, onComplete }) {

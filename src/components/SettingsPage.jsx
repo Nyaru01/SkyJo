@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Volume2, VolumeX, Music, Music2, Trash2, MessageSquare, ExternalLink, AlertTriangle, Smartphone, Settings, HelpCircle, Sparkles, RefreshCw, Palette, Image as ImageIcon, ChevronRight, X, Check } from 'lucide-react';
-import Tutorial from './Tutorial';
+import { Volume2, VolumeX, Music, Music2, Trash2, MessageSquare, ExternalLink, AlertTriangle, Smartphone, Settings, Sparkles, RefreshCw, Palette, Image as ImageIcon, ChevronRight, X, Check } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Button } from './ui/Button';
 import { useGameStore } from '../store/gameStore';
@@ -10,7 +9,8 @@ import { Bell, BellOff } from 'lucide-react';
 import { FeedbackModal } from './FeedbackModal';
 import { AboutSection } from './AboutSection';
 import BonusTutorial from './BonusTutorial';
-import { Swords } from 'lucide-react';
+import { FuryRulesModal } from './virtual/FuryUI';
+import { FuryIcon, TourmentIcon } from './virtual/ModeIcons';
 
 export default function SettingsPage({ onViewChangelog }) {
     const soundEnabled = useGameStore(state => state.soundEnabled);
@@ -24,8 +24,7 @@ export default function SettingsPage({ onViewChangelog }) {
     const setBackground = useGameStore(state => state.setBackground);
 
     const [showConfirmReset, setShowConfirmReset] = useState(false);
-    const [isTutorialOpen, setIsTutorialOpen] = useState(false);
-    const [isBonusTutorialOpen, setIsBonusTutorialOpen] = useState(false);
+    const [rules, setRules] = useState(null);
     const isWallpaperModalOpen = useGameStore(state => state.isWallpaperModalOpen);
     const setIsWallpaperModalOpen = useGameStore(state => state.setIsWallpaperModalOpen);
 
@@ -249,35 +248,37 @@ export default function SettingsPage({ onViewChangelog }) {
                         </button>
 
                         <button
-                            onClick={() => setIsTutorialOpen(true)}
-                            className="flex flex-col items-center justify-center p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 active:scale-95 transition-all gap-2 group"
-                        >
-                            <div className="p-2 rounded-lg bg-sky-500/20 text-sky-400 group-hover:scale-110 transition-transform">
-                                <HelpCircle className="w-5 h-5" />
-                            </div>
-                            <span className="font-bold text-slate-300 text-sm">Règles de base</span>
-                        </button>
-
-                        <button
-                            onClick={() => setIsBonusTutorialOpen(true)}
+                            type="button"
+                            onClick={() => setRules('tourment')}
                             className="flex flex-col items-center justify-center p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 active:scale-95 transition-all gap-2 group"
                         >
                             <div className="p-2 rounded-lg bg-rose-500/20 text-rose-400 group-hover:scale-110 transition-transform">
-                                <Swords className="w-5 h-5" />
+                                <TourmentIcon className="w-5 h-5" />
                             </div>
                             <span className="font-bold text-slate-300 text-sm">Règles Tourment</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => setRules('fury')}
+                            className="flex flex-col items-center justify-center p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 active:scale-95 transition-all gap-2 group"
+                        >
+                            <div className="p-2 rounded-lg bg-amber-500/20 text-amber-300 group-hover:scale-110 transition-transform">
+                                <FuryIcon className="w-5 h-5" />
+                            </div>
+                            <span className="font-bold text-slate-300 text-sm">Règles Fury</span>
                         </button>
                     </div>
                 </CardContent>
             </Card>
 
-            <Tutorial
-                isOpen={isTutorialOpen}
-                onClose={() => setIsTutorialOpen(false)}
-            />
             <BonusTutorial
-                isOpen={isBonusTutorialOpen}
-                onClose={() => setIsBonusTutorialOpen(false)}
+                isOpen={rules === 'tourment'}
+                onClose={() => setRules(null)}
+            />
+            <FuryRulesModal
+                open={rules === 'fury'}
+                onClose={() => setRules(null)}
             />
 
             {/* Data Management */}
