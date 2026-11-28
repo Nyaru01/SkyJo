@@ -53,8 +53,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
     // Determine button state
     const isDrawPhase = turnPhase === 'DRAW';
     // À votre tour de piocher, les deux piles parlent d'elles-mêmes : pas de bouton « Piochez ou prenez la défausse ».
-    // On garde le bouton pour « L’IA réfléchit » et le dernier tour.
-    const hideDrawLabel = isDrawPhase && canInteract && !/dernier tour/i.test(instructionText || '');
+    const hideDrawLabel = isDrawPhase && canInteract;
 
     return (
         <>
@@ -135,7 +134,7 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                     canInteract
                                         ? (instructionText && turnPhase === 'MUST_REVEAL' ? "cursor-default bg-indigo-600/80 backdrop-blur-md border border-indigo-400/50" : "cursor-pointer bg-slate-800/80 backdrop-blur-md hover:bg-slate-700/80 border border-emerald-500/50")
                                         : "cursor-not-allowed bg-slate-800/40 backdrop-blur-sm opacity-60 border border-slate-700/30",
-                                    !canInteract && !instructionText?.includes('DERNIER TOUR') && 'skyjo-draw-button--waiting'
+                                    !canInteract && 'skyjo-draw-button--waiting'
                                 )}
                                 style={{
                                     boxShadow: canInteract
@@ -180,11 +179,9 @@ const DrawDiscardTrigger = memo(function DrawDiscardTrigger({
                                 <div className="flex items-center justify-center relative z-20 mx-2">
                                     <span className={cn(
                                         "font-black text-white uppercase tracking-[0.2em] whitespace-nowrap drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]",
-                                        (instructionText?.includes('DERNIER TOUR') || isAIThinking) ? "text-[11px] animate-pulse" : (instructionText ? "text-[11px]" : "text-[11px]")
+                                        isAIThinking ? "text-[11px] animate-pulse" : "text-[11px]"
                                     )}>
-                                        {instructionText?.includes('DERNIER TOUR')
-                                            ? instructionText
-                                            : (isDrawPhase && canInteract ? 'Piochez ou prenez la défausse' : (isAIThinking ? 'L’IA réfléchit' : (instructionText || 'Piocher')))}
+                                        {isAIThinking ? 'L’IA réfléchit' : (instructionText || 'Piocher')}
                                     </span>
                                     {!canInteract && isAIThinking && (
                                         <span className="skyjo-thinking-dots" aria-hidden="true"><i /><i /><i /></span>

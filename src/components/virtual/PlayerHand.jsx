@@ -16,6 +16,7 @@ const PlayerHand = memo(function PlayerHand({
     isCurrentPlayer = false,
     isLocalPlayer = false,
     isOpponent = false,
+    turnLabel,
     isOnlineOpponent = false, // True if this is an online opponent (show real name, not "BOT")
     selectedCardIndex,
     pendingRevealIndices = [], // Cards currently selected during initial reveal (for visual flip)
@@ -280,7 +281,7 @@ const PlayerHand = memo(function PlayerHand({
                                     </div>
                                 )}
                                 {isCurrentPlayer && (
-                                    <span className="skyjo-turn-label"><span className="skyjo-turn-indicator" aria-hidden="true" />{!isOpponent ? "À vous de jouer" : "Son tour"}</span>
+                                    <span className={cn("skyjo-turn-label", turnLabel && "skyjo-turn-label--final")}><span className="skyjo-turn-indicator" aria-hidden="true" />{turnLabel || (!isOpponent ? "À vous de jouer" : "Son tour")}</span>
                                 )}
                             </div>
                         )}
