@@ -461,6 +461,8 @@ const getHiddenCardIndices = (hand) => {
         .filter(idx => idx !== -1);
 };
 
+const getReplaceableHiddenCardIndices = hand => getHiddenCardIndices(hand).filter(i => !(hand[i].lockCount > 0));
+
 /**
  * Get indices of revealed cards in a hand
  */
@@ -712,7 +714,7 @@ const wouldHelpOpponent = (gameState, cardValue, difficulty = AI_DIFFICULTY.NORM
  */
 const findBestReplacementPosition = (hand, cardValue, difficulty, gameState = null) => {
     const revealedIndices = getRevealedCardIndices(hand);
-    const hiddenIndices = getHiddenCardIndices(hand);
+    const hiddenIndices = getReplaceableHiddenCardIndices(hand);
     const highest = findHighestRevealedCard(hand);
 
     // Risk adjustment: if losing badly, be more aggressive. If winning, be more conservative.
@@ -1342,7 +1344,7 @@ const decideCardActionBase = (gameState, difficulty = AI_DIFFICULTY.NORMAL) => {
 
         // Fallback: Pick the absolute worst card to replace with a 20
         const highestRev = findHighestRevealedCard(hand);
-        const hiddenIndices = getHiddenCardIndices(hand);
+        const hiddenIndices = getReplaceableHiddenCardIndices(hand);
 
         // 1. If we have a revealed card >= 10, replace it (it's trash anyway)
         if (highestRev.index !== -1 && highestRev.value >= 10) {
@@ -1379,7 +1381,7 @@ const decideCardActionBase = (gameState, difficulty = AI_DIFFICULTY.NORMAL) => {
             }
             // Priority 2: Replace a hidden card (gamble) — but ONLY if our drawn card isn't terrible
             else {
-                const hiddenIndices = getHiddenCardIndices(hand);
+                const hiddenIndices = getReplaceableHiddenCardIndices(hand);
                 if (hiddenIndices.length > 0) {
                     // BUG FIX: Don't gamble with a terrible card (> 8) on a hidden slot
                     // unless we have no other choice
@@ -1421,7 +1423,7 @@ const decideCardActionBase = (gameState, difficulty = AI_DIFFICULTY.NORMAL) => {
             const highest = findHighestRevealedCard(hand);
             const finalReplaceIdx = replaceIndex !== -1 ? replaceIndex : (
                 highest.index !== -1 ? highest.index : (
-                    getHiddenCardIndices(hand).length > 0 ? getHiddenCardIndices(hand)[0] : 0
+                    getReplaceableHiddenCardIndices(hand)[0] ?? 0
                 )
             );
             return { action: 'REPLACE', cardIndex: finalReplaceIdx };

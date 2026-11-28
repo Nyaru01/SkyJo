@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { discardAndReveal, endTurn, replaceCard } from './skyjoEngine.js';
+import { AI_DIFFICULTY, decideCardAction } from './skyjoAI.js';
 import { initializeFuryGame, collectFuryFromPile, playFury, canPlayFury, decideFuryAction, furyTargets, FURY_USES_PER_ROUND } from './furyEngine.js';
 
 const players = [{ id: 'me', name: 'Moi' }, { id: 'ai', name: 'IA' }];
@@ -54,9 +56,47 @@ test('Bouclier : la prochaine attaque est bloquée', () => {
     assert.equal(state.players[1].hand.map(c => c.id).join(), before);
 });
 
-test('Gel : seules les cartes révélées de la colonne sont bloquées', () => {
-    const { state } = playFury(ready(['freeze']), 0, 1, 1);
-    [3, 4, 5].forEach(i => assert.ok(state.players[1].hand[i].lockCount >= 1));
+test('Gel : les trois cartes de la colonne restent irremplaçables pendant deux tours', () => {
+    const game = ready(['freeze']);
+    const hidden = { ...game.players[1].hand[9], isRevealed: false };
+    game.players[1].hand[9] = hidden;
+    const { state, result } = playFury(game, 0, 1, 3);
+    assert.deepEqual(result.cards, [9, 10, 11]);
+    assert.equal(state.players[1].hand[9].isRevealed, false);
+    assert.equal(state.players[1].hand[8].lockCount || 0, 0);
+    for (const index of result.cards) assert.equal(state.players[1].hand[index].lockCount, 2);
+
+    const drawnCard = { id: 'drawn-1', value: 1 };
+    assert.throws(() => replaceCard({ ...state, drawnCard }, 9), /verrouillée/);
+    let later = endTurn(endTurn(state));
+    assert.equal(later.players[1].hand[9].lockCount, 1);
+    assert.throws(() => replaceCard({ ...later, drawnCard }, 9), /verrouillée/);
+    later = endTurn(endTurn(later));
+    assert.equal(later.players[1].hand[9].lockCount, 0);
+    assert.equal(replaceCard({ ...later, drawnCard }, 9).players[1].hand[9].value, 1);
+
+    const revealed = discardAndReveal({ ...state, drawnCard }, 9);
+    assert.equal(revealed.players[1].hand[9].id, hidden.id);
+    assert.equal(revealed.players[1].hand[9].lockCount, 2);
+    assert.equal(revealed.players[1].hand[9].isRevealed, true);
+});
+
+test('IA Fury : placer un 1 évite une case cachée gelée', () => {
+    const g = ready(['freeze']);
+    g.players[1].hand = g.players[1].hand.map((card, i) => ({ ...card, value: i === 9 ? 3 : -2, isRevealed: i !== 9 }));
+    const { state } = playFury(g, 0, 1, 3);
+    const placing = { ...state, drawnCard: { id: 'drawn-1', value: 1 }, turnPhase: 'MUST_REPLACE' };
+    const decision = decideCardAction(placing, AI_DIFFICULTY.FURY);
+    assert.equal(decision.action, 'REPLACE');
+    assert.ok(decision.cardIndex < 9);
+    assert.doesNotThrow(() => replaceCard(placing, decision.cardIndex));
+});
+
+test('Gel : il reste une carte remplaçable après le coup', () => {
+    const game = ready(['freeze']);
+    game.players[1].hand = game.players[1].hand.map((card, i) => i < 9 ? null : card);
+    assert.deepEqual(furyTargets(game, 'freeze', 1), []);
+    assert.throws(() => playFury(game, 0, 1, 3), /Aucune cible/);
 });
 
 test('limite de 3 Fury par manche', () => {

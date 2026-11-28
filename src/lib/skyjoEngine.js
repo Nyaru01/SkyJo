@@ -454,8 +454,9 @@ export const discardAndReveal = (gameState, cardIndex) => {
         throw new Error("Impossible de défausser le Crâne Maudit (20) ! Vous devez l'échanger.");
     }
 
-    // RULE: Cannot reveal a locked card
-    if (player.hand[cardIndex] && player.hand[cardIndex].lockCount > 0) {
+    // Le Gel interdit de remplacer une carte. La retourner reste possible.
+    const cardToReveal = player.hand[cardIndex];
+    if (cardToReveal?.lockCount > 0 && !(gameState.isFuryMode && cardToReveal.isFrozen)) {
         throw new Error('Cette carte est verrouillée !');
     }
 

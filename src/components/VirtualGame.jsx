@@ -1068,6 +1068,13 @@ function VirtualGameScreen({ screen, setScreen, onBackToMenu }) {
         // Only allow clicking on own board for regular phases
         if (targetPlayerIndex !== activeState.currentPlayerIndex) return;
 
+        const targetCard = activeState.players[targetPlayerIndex]?.hand?.[cardIndex];
+        if (targetCard?.isFrozen && targetCard.lockCount > 0
+            && (activeState.turnPhase === 'REPLACE_OR_DISCARD' || activeState.turnPhase === 'MUST_REPLACE')) {
+            toast.error('Cette carte est gelée', { id: 'fury-frozen-card' });
+            return;
+        }
+
         // In online mode, we just emit actions
         if (isOnline) {
             // Une seule action à la fois : l'état du serveur n'arrive qu'après l'animation (~0,6 s),
