@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { X, Flame } from 'lucide-react';
+import { ArrowRight, X, Flame } from 'lucide-react';
 import { FURY_TYPES, FURY_USES_PER_ROUND, FURY_RESERVE_MAX, FURY_ORDER as FURY_ORDER_UI, hasShield } from '../../lib/furyEngine';
 import '../../styles/Fury.css';
 
@@ -162,6 +162,8 @@ export function FuryEffects({ lastFury, lastGain, myIndex, players }) {
     const event = shown?.event;
     const type = event?.blocked ? 'shield' : event?.type;
     const gainType = gain?.cards[0]?.furyType;
+    const title = event && (event.blocked ? 'Attaque bloquée' : FURY_TYPES[event.type].title);
+    const result = event && furyResult(event);
 
     return <>
         {shown?.targets.map((target, index) => createPortal(
@@ -169,16 +171,24 @@ export function FuryEffects({ lastFury, lastGain, myIndex, players }) {
                 style={{ '--impact-delay': (index * 45) + 'ms' }} aria-hidden="true" />,
             target, event.at + '-' + index,
         ))}
-        <AnimatePresence>
-            {event && <Motion.div key={event.at} className={'fury-play fury-card--' + type} role="status"
+        <span className="sr-only" role="status" aria-atomic="true">
+            {event && (name(event.by) + (event.by === myIndex ? ' jouez ' : ' joue ') + FURY_TYPES[event.type].title
+                + (event.by !== event.targetIndex ? ' sur ' + name(event.targetIndex) : '') + '. ' + result)}
+        </span>
+        <AnimatePresence mode="wait">
+            {event && <Motion.div key={event.at} className={'fury-play fury-card--' + type} aria-hidden="true"
                 initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }} transition={{ duration: reduce ? 0 : .2 }}>
                 <span className="fury-play__icon"><FuryMark type={type} size={25} /></span>
                 <div className="fury-play__copy">
-                    <small>{name(event.by)} {event.by === myIndex ? 'jouez' : 'joue'}</small>
-                    <strong>{event.blocked ? 'Attaque bloquée' : FURY_TYPES[event.type].title}</strong>
-                    <span>{furyResult(event)}</span>
+                    <small className="fury-play__route">
+                        <span>{name(event.by)}</span>
+                        {event.by !== event.targetIndex && <><ArrowRight size={11} /><span>{name(event.targetIndex)}</span></>}
+                    </small>
+                    <strong>{title}</strong>
+                    <span>{result}</span>
                 </div>
+                {!reduce && <span className="fury-play__timer" style={{ animationDuration: NOTICE_MS + 'ms' }} />}
             </Motion.div>}
         </AnimatePresence>
         <AnimatePresence>
