@@ -86,7 +86,7 @@ export function FuryRail({ part, me, opponent, opponentName, canPlay, selected, 
                 </button>)}</Slots>
         </div>
         <Uses left={left} />
-        <span className={'fury-rail-hint' + (exhausted && !finalRound ? ' fury-rail-hint--exhausted' : '')} aria-hidden={!hint}>{hint}</span>
+        {hint && <span className={'fury-rail-hint' + (exhausted && !finalRound ? ' fury-rail-hint--exhausted' : '')}>{hint}</span>}
     </aside>;
 }
 
