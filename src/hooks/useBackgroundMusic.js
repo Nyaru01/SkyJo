@@ -18,7 +18,9 @@ const PLAYLIST = [
     '/Music/Down the Kuma.mp3',
     '/Music/Dosi & Aisake.mp3',
     '/Music/springs.mp3',
-    '/Music/shuffling-cards-01-86984.mp3'
+    '/Music/shuffling-cards-01-86984.mp3',
+    '/Music/chill-music-smeraldelion-playing-game-563720.mp3',
+    '/Music/rubyzephyr-neon-orbit-491257.mp3'
 ];
 
 /**

@@ -164,6 +164,13 @@ export default function Dashboard({ introCovered = false }) {
     // 🔥 Tab effective : force 'virtual' pendant toute la session en ligne uniquement
     // Pour le jeu local, on laisse l'utilisateur naviguer vers home/menu pour pouvoir choisir "Reprendre"
     const effectiveTab = isInOnlineSession ? 'virtual' : activeTab;
+    // Une partie resynchronisée peut arriver avant que le joueur ouvre le menu Jouer.
+    let effectiveVirtualScreen = virtualScreen;
+    if (isGameInProgress && virtualScreen !== 'lobby') {
+        effectiveVirtualScreen = 'game';
+    } else if (isInLobby && virtualScreen === 'menu') {
+        effectiveVirtualScreen = 'lobby';
+    }
 
     // OLD local state and sync effects removed to prevent loops
 
@@ -174,7 +181,7 @@ export default function Dashboard({ introCovered = false }) {
     // const isManualGameActive = gameStatus === 'PLAYING' && (effectiveTab === 'game' || effectiveTab === 'home');
     // const isVirtualGameActive = effectiveTab === 'virtual' && (!!virtualGameState || onlineGameStarted);
     const isSeasonalPreview = useVirtualGameStore(state => !!state.gameState?.isSeasonalPreview);
-    const isVirtualGameActive = isSeasonalPreview || effectiveTab === 'virtual' && virtualScreen === 'game' && (!!virtualGameState || onlineGameStarted);
+    const isVirtualGameActive = isSeasonalPreview || effectiveTab === 'virtual' && effectiveVirtualScreen === 'game' && (!!virtualGameState || onlineGameStarted);
     // Menus habillés avec le thème pastel de l'accueil (purement visuel, cf. styles/MenuLobby.css)
     // Tous les écrans hors table et hors accueil (déjà stylé par HomeLobby.css)
     const isMenuLobby = !isVirtualGameActive && !(effectiveTab === 'home' && gameStatus === 'SETUP');
@@ -364,7 +371,7 @@ export default function Dashboard({ introCovered = false }) {
     const leadingPlayer = playerTotals[0];
 
     const renderContent = () => {
-        if (isSeasonalPreview) return <VirtualGame key="seasonal-preview" initialScreen="game" onBackToMenu={() => useVirtualGameStore.getState().exitSeasonalPreview()} />;
+        if (isSeasonalPreview) return <VirtualGame key="seasonal-preview" defaultScreen="game" onBackToMenu={() => useVirtualGameStore.getState().exitSeasonalPreview()} />;
         if (!isRehydrated) return null;
 
         switch (effectiveTab) {
@@ -509,7 +516,7 @@ export default function Dashboard({ introCovered = false }) {
             case 'virtual':
                 // On affiche le menu si on n'est pas dans un écran spécifique (lobby/setup) et qu'aucune partie en ligne n'a commencé
                 // On ne vérifie plus !virtualGameState ici pour permettre d'accéder au bouton "Reprendre" dans GameMenu
-                if (!onlineGameStarted && virtualScreen === 'menu') {
+                if (effectiveVirtualScreen === 'menu') {
                     return (
                         <Motion.div
                             key="game-menu"
@@ -559,7 +566,7 @@ export default function Dashboard({ introCovered = false }) {
                             </div>
                         )}
                         <VirtualGame
-                            initialScreen={virtualScreen}
+                            screen={effectiveVirtualScreen}
                             onScreenChange={setVirtualScreen}
                             onBackToMenu={handleBackToMenu}
                         />

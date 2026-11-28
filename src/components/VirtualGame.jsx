@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
 import { describeAiMove } from '../lib/aiMoveText';
-import { useState, useCallback, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Users, ArrowLeft, RotateCcw, RefreshCw, Trophy, Info, HelpCircle, Sparkles, CheckCircle, BookOpen, X, Bot, Lock, Image as ImageIcon, Palette, Copy, Share2, Wifi, Globe, Plus, ChevronRight, WifiOff, Music, Music2, Leaf, Swords, Skull, Gem, SkipForward, Pause, PlayCircle, Star, Zap, Award, QrCode, Flame } from 'lucide-react';
 import { Button } from './ui/Button';
@@ -18,6 +18,7 @@ import DrawDiscardTrigger from './virtual/DrawDiscardTrigger';
 import CardAnimationLayer from './virtual/CardAnimationLayer';
 import SkyjoCard from './virtual/SkyjoCard';
 import HostLeftOverlay from './virtual/HostLeftOverlay';
+import OnlineStartCountdown from './virtual/OnlineStartCountdown';
 import ChestRevelationOverlay from './virtual/ChestRevelationOverlay';
 import RoundResultsPlayers from './virtual/RoundResultsPlayers';
 import AISetupScreen from './virtual/AISetupScreen';
@@ -67,7 +68,22 @@ const PLAYER_COLORS = ['🐱', '🐶', '🦊', '🐻', '🐼', '🦁', '🐸', '
  * Virtual Vesper Game Component
  * Main component for playing virtual Vesper locally
  */
-export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onScreenChange }) {
+export default function VirtualGame({ screen: controlledScreen, defaultScreen = 'menu', onBackToMenu, onScreenChange }) {
+    const [localScreen, setLocalScreen] = useState(defaultScreen);
+    const screen = controlledScreen ?? localScreen;
+    const setScreen = onScreenChange ?? setLocalScreen;
+    const isStarting = useOnlineGameStore(state => screen === 'lobby' && state.gameStarted && !!state.gameState);
+    const openTable = useCallback(() => setScreen('game'), [setScreen]);
+
+    return (
+        <>
+            <VirtualGameScreen screen={screen} setScreen={setScreen} onBackToMenu={onBackToMenu} />
+            <OnlineStartCountdown active={isStarting} onComplete={openTable} />
+        </>
+    );
+}
+
+function VirtualGameScreen({ screen, setScreen, onBackToMenu }) {
     // 1. Data Stores
     const userProfile = useGameStore(state => state.userProfile);
     const updateUserProfile = useGameStore(state => state.updateUserProfile);
@@ -86,8 +102,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     const fetchOnlinePlayers = useSocialStore(s => s.fetchOnlinePlayers);
 
     // 2. Local State
-    const [screen, setScreen] = useState(initialScreen); // menu, setup, game, scores
-    useLayoutEffect(() => { onScreenChange?.(screen); }, [screen, onScreenChange]);
     const [chestsRevealed, setChestsRevealed] = useState(false);
     const [showExitConfirm, setShowExitConfirm] = useState(false);
     const [players, setPlayers] = useState([
@@ -335,19 +349,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
         };
     }, []);
 
-    console.log(`[VG] Rendering... screen=${screen}, initialScreen=${initialScreen}`);
-
-    // Sync screen with initialScreen prop ONLY if not currently in an active game
-    useEffect(() => {
-        if (initialScreen && initialScreen !== screen) {
-            // Respect the parent's requested screen if it's a menu or setup screen,
-            // or if we are not currently in an active game.
-            if (initialScreen !== 'game' || (!onlineGameStarted && !gameState)) {
-                setScreen(initialScreen);
-            }
-        }
-    }, [initialScreen]);
-
     // Sync showing game state for Music Player
     useEffect(() => {
         setShowingGame(screen === 'game' || screen === 'scores');
@@ -374,15 +375,17 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     // Removed local notification state
     const [hasPlayedVictory, setHasPlayedVictory] = useState(false);
     const [showRulesModal, setShowRulesModal] = useState(false);
-    const [showDrawDiscardPopup, setShowDrawDiscardPopup] = useState(false);
+    const [drawDiscardPopup, setDrawDiscardPopup] = useState(null);
+    const showDrawDiscardPopup = drawDiscardPopup === 'choose'
+        || (drawDiscardPopup === 'drawn' && !!activeGameState?.drawnCard);
     const [isNextRoundPending, setIsNextRoundPending] = useState(false);
     const [showBonusTutorial, setShowBonusTutorial] = useState(false);
-    const [lobbyCountdown, setLobbyCountdown] = useState(null); // null, 3, 2, 1, 'GO'
 
     // Reset pending state when new round starts (phase becomes INITIAL_REVEAL)
     useEffect(() => {
         if (onlineGameState?.phase === 'INITIAL_REVEAL') {
             setIsNextRoundPending(false);
+            setInitialReveals({});
         }
     }, [onlineGameState?.phase]);
 
@@ -400,6 +403,13 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
             setIsActionPending(false);
         }
     }, [activeGameState, lastAction]);
+
+    // Une pioche rejetée ou expirée ne doit pas ouvrir la fenêtre au prochain tour.
+    useEffect(() => {
+        if (drawDiscardPopup === 'drawn' && !activeGameState?.drawnCard && !isActionPending) {
+            setDrawDiscardPopup(null);
+        }
+    }, [drawDiscardPopup, activeGameState?.drawnCard, isActionPending]);
 
     // Reset chestsRevealed when round starts or phase resets
     useEffect(() => {
@@ -435,7 +445,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
         playCardFlip,
         playCardDraw,
         playCardPlace,
-        playStart,
         playStartGame,
         playSocialInvite
     } = useFeedback();
@@ -542,65 +551,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
             playerAvatarId: userProfile.avatarId
         }));
     }, [userProfile.name, userProfile.avatarId]);
-
-    // 🔥 EFFET AMÉLIORÉ : Auto-navigation for online games
-    useEffect(() => {
-        // Only run auto-nav logic if we are IN ONLINE MODE (or trying to join one)
-        // If initialScreen is not lobby, we assume it's a local/AI game flow
-        if (initialScreen !== 'lobby') return;
-
-        const hasActiveState = !!activeGameState && Object.keys(activeGameState).length > 0;
-        const gameIsStarted = !!onlineGameStarted;
-
-        console.log('[VG] Auto-nav check:', {
-            onlineGameStarted,
-            hasActiveState,
-            gameIsStarted,
-            currentScreen: screen,
-            roomId: onlineRoomCode
-        });
-
-        // Transition lobby → game when the game starts (WITH PREMIUM COUNTDOWN)
-        if (onlineGameStarted && (screen === 'lobby' || screen === 'setup' || screen === 'menu')) {
-            if (lobbyCountdown === null) {
-                console.log("[VG] ⏱ Starting Premium Countdown!");
-                setLobbyCountdown(3);
-                playStart(); // Play start sound
-
-                const timer = setInterval(() => {
-                    setLobbyCountdown(prev => {
-                        if (prev === 3) return 2;
-                        if (prev === 2) return 1;
-                        if (prev === 1) return 'GO';
-                        if (prev === 'GO') {
-                            clearInterval(timer);
-                            setScreen('game');
-                            setInitialReveals({});
-                            setLobbyCountdown(null);
-                            return null;
-                        }
-                        return prev;
-                    });
-                }, 1000);
-            }
-        }
-
-        // Return to lobby ONLY if we are not in an active session anymore
-        if (!onlineGameStarted && !onlineRoomCode && screen === 'game' && !onlineError) {
-            console.log("[VG] ⬅️ Session lost, returning to menu");
-            setScreen('menu');
-        }
-    }, [onlineGameStarted, screen, onlineRoomCode, onlineError]); // Removed initialScreen check
-
-    useEffect(() => {
-        console.log(`[VG] Rendering... screen=${screen}, isOnline=${isOnlineMode}, hasState=${!!activeGameState}`);
-        // Avoid staying on game screen if state is lost unexpectedly
-        // Check if there is an error pending (e.g., Host Left), if so, DON'T redirect yet, let overlay show
-        if (initialScreen === 'lobby' && screen === 'game' && !activeGameState && !onlineGameStarted && !gameState && !onlineError) {
-            console.warn("[VG] Game screen active but no state found! Redirecting to menu.");
-            setScreen('menu');
-        }
-    }, [screen, activeGameState, onlineGameStarted, gameState, initialScreen]);
 
     useEffect(() => {
         if (virtualLastNotification) {
@@ -744,7 +694,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
             setScreen('menu');
             if (onBackToMenu) onBackToMenu();
         }
-    }, [onlineGameStarted, onlineIsGameOver, onlineRoomCode, screen, gameState, onlineError, onBackToMenu]);
+    }, [onlineGameStarted, onlineIsGameOver, onlineRoomCode, screen, gameState, onlineError, onBackToMenu, setScreen]);
 
     // Handle Visibility Change for Auto-Pause (AI Games only)
     useEffect(() => {
@@ -1337,7 +1287,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
             }
             setInitialReveals({});
             setChestsRevealed(false);
-            setShowDrawDiscardPopup(false);
+            setDrawDiscardPopup(null);
             setScreen('game');
             playStartGame();
         };
@@ -1542,7 +1492,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
 
         if (isRoomJoined) {
             return (
-                <div className="max-w-md mx-auto p-4 space-y-6 animate-in fade-in pt-6">
+                <div className="max-w-md mx-auto p-4 space-y-6 animate-in fade-in pt-6" inert={onlineGameStarted}>
                     {/* Lobby Header */}
                     <div className="relative flex items-center justify-center py-4 mb-2">
                         <Button
@@ -1724,37 +1674,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                         onClose={() => setShowBonusRules(false)}
                     />
 
-                    {/* Premium Countdown Overlay */}
-                    <AnimatePresence>
-                        {lobbyCountdown !== null && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="fixed inset-0 z-[300] flex items-center justify-center bg-slate-950/40 backdrop-blur-sm pointer-events-none"
-                            >
-                                <motion.div
-                                    key={lobbyCountdown}
-                                    initial={{ scale: 0.5, opacity: 0, y: 20 }}
-                                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                                    exit={{ scale: 1.5, opacity: 0, y: -20 }}
-                                    transition={{ type: "spring", damping: 12, stiffness: 200 }}
-                                    className="relative"
-                                >
-                                    <span className={cn(
-                                        "text-8xl font-black italic tracking-tighter px-8 drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] bg-clip-text text-transparent bg-gradient-to-b",
-                                        lobbyCountdown === 'GO' ? "from-emerald-400 to-teal-600" : "from-white to-slate-400"
-                                    )}>
-                                        {lobbyCountdown}
-                                    </span>
-                                    <div className={cn(
-                                        "absolute inset-0 blur-3xl -z-10 opacity-30",
-                                        lobbyCountdown === 'GO' ? "bg-emerald-500" : "bg-blue-500"
-                                    )} />
-                                </motion.div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    {onlineRedirection.active && <HostLeftOverlay onBackToMenu={onBackToMenu} />}
                 </div>
             );
         }
@@ -1863,37 +1783,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                     </ul>}
                 </section>
 
-                {/* Premium Countdown Overlay */}
-                <AnimatePresence>
-                    {lobbyCountdown !== null && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-[300] flex items-center justify-center bg-slate-950/40 backdrop-blur-sm pointer-events-none"
-                        >
-                            <motion.div
-                                key={lobbyCountdown}
-                                initial={{ scale: 0.5, opacity: 0, y: 20 }}
-                                animate={{ scale: 1, opacity: 1, y: 0 }}
-                                exit={{ scale: 1.5, opacity: 0, y: -20 }}
-                                transition={{ type: "spring", damping: 12, stiffness: 200 }}
-                                className="relative"
-                            >
-                                <span className={cn(
-                                    "text-8xl font-black italic tracking-tighter px-8 drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] bg-clip-text text-transparent bg-gradient-to-b",
-                                    lobbyCountdown === 'GO' ? "from-emerald-400 to-teal-600" : "from-white to-slate-400"
-                                )}>
-                                    {lobbyCountdown}
-                                </span>
-                                <div className={cn(
-                                    "absolute inset-0 blur-3xl -z-10 opacity-30",
-                                    lobbyCountdown === 'GO' ? "bg-emerald-500" : "bg-blue-500"
-                                )} />
-                            </motion.div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
             </main>
         );
     }
@@ -2526,30 +2415,28 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                     >
                         <div style={{ width: '100%', maxWidth: '340px' }}>
                             <DrawDiscardTrigger
-                                onClick={() => setShowDrawDiscardPopup(true)} // Default open
+                                onClick={() => setDrawDiscardPopup(activeGameState.drawnCard ? 'drawn' : 'choose')}
                                 drawnCardSource={activeDrawnCardSource}
                                 drawnCardInPopup={showDrawDiscardPopup}
                                 onDrawAction={() => {
-                                    // Direct draw action
-                                    if (activeGameState.turnPhase === 'DRAW') {
-                                        if (isOnlineMode) {
-                                            emitGameAction('draw_pile');
-                                        } else {
-                                            drawFromDrawPile();
-                                        }
-                                        setShowDrawDiscardPopup(true);
+                                    if (activeGameState.turnPhase !== 'DRAW' || isActionPending) return;
+                                    if (isOnlineMode) {
+                                        setIsActionPending(true);
+                                        emitGameAction('draw_pile');
+                                    } else {
+                                        drawFromDrawPile();
                                     }
+                                    setDrawDiscardPopup('drawn');
                                 }}
                                 onDiscardAction={() => {
-                                    // Direct discard take action
-                                    if (activeGameState.turnPhase === 'DRAW') {
-                                        if (isOnlineMode) {
-                                            emitGameAction('draw_discard');
-                                        } else {
-                                            takeFromDiscard();
-                                        }
-                                        setShowDrawDiscardPopup(true);
+                                    if (activeGameState.turnPhase !== 'DRAW' || isActionPending) return;
+                                    if (isOnlineMode) {
+                                        setIsActionPending(true);
+                                        emitGameAction('draw_discard');
+                                    } else {
+                                        takeFromDiscard();
                                     }
+                                    setDrawDiscardPopup('drawn');
                                 }}
                                 discardTop={discardTop}
                                 discardPile={activeGameState.discardPile}
@@ -2731,7 +2618,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                             useOnlineGameStore.getState().undoTakeFromDiscard();
                         }
                     }
-                    setShowDrawDiscardPopup(false);
+                    setDrawDiscardPopup(null);
                 }}
                 drawPileCount={activeGameState.drawPile.length}
                 discardPileCount={activeGameState.discardPile.length}
@@ -2766,7 +2653,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                 onConfirmPlacement={() => {
                     // Just close popup - we are in 'MUST_REPLACE' or 'REPLACE_OR_DISCARD'
                     // and user wants to place on grid
-                    setShowDrawDiscardPopup(false);
+                    setDrawDiscardPopup(null);
                 }}
                 onDiscardDrawnCard={() => {
                     if (effectiveIsBonusMode && activeGameState?.drawnCard?.value === 20) {
@@ -2783,7 +2670,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                     } else {
                         useVirtualGameStore.getState().discardDrawnCard();
                     }
-                    setShowDrawDiscardPopup(false);
+                    setDrawDiscardPopup(null);
                 }}
                 onUseAction={() => {
                     playCardPlace();
@@ -2805,7 +2692,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                         }
                         setInstruction("Sélectionnez une de VOS cartes à échanger");
                     }
-                    setShowDrawDiscardPopup(false);
+                    setDrawDiscardPopup(null);
                 }}
                 isLoading={isActionPending}
             />
@@ -2891,7 +2778,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
                 onClose={() => setShowBonusRules(false)}
             />
 
-            {/* Premium Countdown Overlay */}
             <HostLeftOverlay onBackToMenu={onBackToMenu} />
         </div>
     );

@@ -763,8 +763,8 @@ io.on('connection', (socket) => {
     };
 
     socket.on('leave_room', (roomCode) => {
-        handlePlayerLeft(socket, roomCode);
         socket.leave(roomCode?.toUpperCase());
+        handlePlayerLeft(socket, roomCode);
     });
 
     socket.on('disconnect', () => {
