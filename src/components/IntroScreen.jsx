@@ -122,10 +122,10 @@ function VesperIntro({ active, reduceMotion, onPrepareHome, onDone }) {
 
 export function IntroScreen({ onPrepareHome, onComplete }) {
     const [phase, setPhase] = useState('studio');
-    const [studioAudioBlocked, setStudioAudioBlocked] = useState(false);
     const completed = useRef(false);
     const studioVideo = useRef(null);
     const audioAttempt = useRef(0);
+    const studioNeedsGesture = useRef(false);
     const reduceMotion = useReducedMotion();
     const isPresent = useIsPresent();
 
@@ -139,15 +139,15 @@ export function IntroScreen({ onPrepareHome, onComplete }) {
         const video = studioVideo.current;
         if (!video || completed.current) return;
         const attempt = ++audioAttempt.current;
+        studioNeedsGesture.current = false;
         video.muted = false;
         try {
             await video.play();
-            if (attempt === audioAttempt.current) setStudioAudioBlocked(false);
         } catch {
             if (attempt !== audioAttempt.current || completed.current) return;
             // Si le navigateur impose un geste, l'intro démarre en muet et peut être réactivée.
             video.muted = true;
-            setStudioAudioBlocked(true);
+            studioNeedsGesture.current = true;
             video.play().catch(() => {
                 if (attempt === audioAttempt.current) finishIntro();
             });
@@ -156,9 +156,16 @@ export function IntroScreen({ onPrepareHome, onComplete }) {
 
     useEffect(() => {
         const video = studioVideo.current;
+        const resumeAudio = () => {
+            if (studioNeedsGesture.current) playStudioWithSound();
+        };
         const playbackFrame = requestAnimationFrame(playStudioWithSound);
+        window.addEventListener('pointerup', resumeAudio);
+        window.addEventListener('keydown', resumeAudio);
         return () => {
             cancelAnimationFrame(playbackFrame);
+            window.removeEventListener('pointerup', resumeAudio);
+            window.removeEventListener('keydown', resumeAudio);
             audioAttempt.current += 1;
             video?.pause();
         };
@@ -184,11 +191,6 @@ export function IntroScreen({ onPrepareHome, onComplete }) {
                     onEnded={finishIntro}
                     onError={finishIntro}
                 />
-                {phase === 'studio' && studioAudioBlocked && (
-                    <button type="button" className="studio-intro-sound" onClick={playStudioWithSound}>
-                        Activer le son
-                    </button>
-                )}
             </div>
         </Motion.div>
     );

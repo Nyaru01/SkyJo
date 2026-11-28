@@ -1246,13 +1246,6 @@ body,
     linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
   mask-composite: intersect;
 }
-.studio-intro-sound {
-  position: absolute; bottom: max(16px, calc(env(safe-area-inset-bottom) + 8px)); left: 50%;
-  transform: translateX(-50%); min-height: 44px; padding: 0 16px; border-radius: 999px;
-  color: #eaf4ff; background: #111827de; border: 1px solid #b4d8ff73;
-  font-size: .875rem; font-weight: 600; white-space: nowrap;
-}
-.studio-intro-sound:focus-visible { outline: 2px solid #b4d8ff; outline-offset: 3px; }
 /* Vidéo entière (contain) : les téléphones plus allongés que la vidéo rognaient les côtés du titre.
    Le haut et le bas sont remplis par une copie floutée de la vidéo, sans couture visible. */
 .vesper-intro { position: absolute; inset: 0; overflow: hidden; background: #2a2440; transition: opacity .54s ease-out .42s; }
