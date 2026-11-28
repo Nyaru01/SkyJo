@@ -207,6 +207,8 @@ const SkyjoCard = memo(function SkyjoCard({
     const isCurse = motif === 'curse';
     const displayValue = isCurse ? '+13' : String(value ?? rawValue ?? '—').replace(/^-/, '−');
     const classicBack = cardSkin === 'classic';
+    const isFrozen = isLocked && card.isFrozen;
+    const lockLabel = isFrozen ? ', gelée' : isLocked ? ', verrouillée' : '';
 
     return (
         <Motion.div
@@ -231,7 +233,7 @@ const SkyjoCard = memo(function SkyjoCard({
             onClick={isClickable ? () => { triggerHaptic(); onClick?.(); } : undefined}
             role={isClickable ? 'button' : 'img'}
             tabIndex={isClickable ? 0 : undefined}
-            aria-label={isRevealed ? `Carte ${displayValue}${isLocked ? ', verrouillée' : ''}` : 'Carte face cachée'}
+            aria-label={(isRevealed ? 'Carte ' + displayValue : 'Carte face cachée') + lockLabel}
             aria-pressed={isClickable ? isSelected : undefined}
             onKeyDown={isClickable ? (event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
@@ -327,6 +329,9 @@ const SkyjoCard = memo(function SkyjoCard({
                         alt=""
                         className={cn("w-full h-full", classicBack ? "object-fill" : "object-cover")}
                     />
+                    {isFrozen && <span className="absolute inset-0 grid place-items-center bg-slate-950/35">
+                        <Lock className="size-5 text-sky-200 drop-shadow-sm" aria-hidden="true" />
+                    </span>}
                 </div>
             </Motion.div>
         </Motion.div>

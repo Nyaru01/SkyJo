@@ -96,7 +96,10 @@ export function canPlayFury(state, playerIndex) {
 export function furyTargets(state, type, targetIndex) {
     const hand = state.players[targetIndex].hand;
     if (type === 'quake') return [0, 1, 2, 3].filter(col => columnIndices(col).some(i => hand[i]));
-    if (type === 'freeze') return [0, 1, 2, 3].filter(col => columnIndices(col).some(i => hand[i] && hand[i].isRevealed));
+    if (type === 'freeze') return [0, 1, 2, 3].filter(col =>
+        columnIndices(col).some(i => hand[i]?.isRevealed)
+        && hand.some((card, i) => Math.floor(i / 3) !== col && card && !(card.lockCount > 0))
+    );
     // Malédiction : seulement sur une carte déjà révélée. Sur une carte cachée, le +13 visible pourrait
     // retourner la dernière carte de l'adversaire et terminer la manche à sa place.
     if (type === 'curse') return hand.map((c, i) => (c && c.isRevealed && !(c.lockCount > 0) && !c.isCursed ? i : -1)).filter(i => i >= 0);
@@ -141,7 +144,7 @@ function applyEffect(state, type, targetIndex, target) {
         const col = target ?? furyTargets(state, 'freeze', targetIndex)[0];
         detail.column = col;
         columnIndices(col).forEach(i => {
-            if (hand[i] && hand[i].isRevealed) { hand[i] = { ...hand[i], lockCount: Math.max(hand[i].lockCount || 0, 2), isFrozen: true }; detail.cards.push(i); }
+            if (hand[i]) { hand[i] = { ...hand[i], lockCount: Math.max(hand[i].lockCount || 0, 2), isFrozen: true }; detail.cards.push(i); }
         });
     }
     return { state: replacePlayer({ ...state, drawPile }, targetIndex, { ...victim, hand }), detail };

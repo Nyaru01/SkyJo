@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom';
 import { describeAiMove } from '../lib/aiMoveText';
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Users, ArrowLeft, RotateCcw, RefreshCw, Trophy, Info, HelpCircle, Sparkles, CheckCircle, BookOpen, X, Bot, Lock, Image as ImageIcon, Palette, Copy, Share2, Wifi, Globe, Plus, ChevronRight, WifiOff, Music, Music2, Leaf, Swords, Skull, Gem, SkipForward, Pause, PlayCircle, Star, Zap, Award, QrCode, Flame } from 'lucide-react';
+import { Play, Users, ArrowLeft, Flag, RotateCcw, RefreshCw, Trophy, Info, HelpCircle, Sparkles, CheckCircle, BookOpen, X, Bot, Lock, Image as ImageIcon, Palette, Copy, Share2, Wifi, Globe, Plus, ChevronRight, WifiOff, Music, Music2, Leaf, Swords, Skull, Gem, SkipForward, Pause, PlayCircle, Star, Zap, Award, QrCode, Flame } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Input } from './ui/Input';
@@ -62,7 +62,24 @@ import { PremiumTiltButton } from './ui/PremiumTiltButton';
 const PLAYER_EMOJIS = ['🐱', '🐶', '🦊', '🐻', '🐼', '🦁', '🐸', '🐵', '🦄', '🐲'];
 const PLAYER_COLORS = ['🐱', '🐶', '🦊', '🐻', '🐼', '🦁', '🐸', '🐵']; // Backward compat for local
 
-// ChestRevelationOverlay moved to ./virtual/ChestRevelationOverlay.jsx
+function FinalTurnNotice({ finishingName, finishedByMe, myTurn }) {
+    const [visible, setVisible] = useState(true);
+    useEffect(() => {
+        const timer = setTimeout(() => setVisible(false), 2600);
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (!visible) return null;
+    return <div className="skyjo-final-notice" role="status">
+        <span className="skyjo-final-notice__icon"><Flag size={19} aria-hidden="true" /></span>
+        <div>
+            <strong>{myTurn ? 'Votre dernier tour' : 'Dernier tour'}</strong>
+            <p>{finishedByMe
+                ? 'Vous avez retourné votre dernière carte.'
+                : finishingName + ' a retourné sa dernière carte.'}</p>
+        </div>
+    </div>;
+}
 
 /**
  * Virtual Vesper Game Component
@@ -296,6 +313,9 @@ function VirtualGameScreen({ screen, setScreen, onBackToMenu }) {
     const opponentIndex = myPlayerIndex === 0 ? 1 : 0;
     const currentPlayer = activeGameState?.players?.[activeGameState?.currentPlayerIndex];
     const isInitialReveal = activeGameState?.phase === 'INITIAL_REVEAL';
+    const isFinalRound = activeGameState?.phase === 'FINAL_ROUND';
+    const finishingPlayerIndex = activeGameState?.finishingPlayerIndex;
+    const finishingName = activeGameState?.players[finishingPlayerIndex]?.name;
     const isFinished = activeGameState?.phase === 'FINISHED' || (activeGameState?.phase === 'REVEALING_CHESTS' && chestsRevealed);
     // Temps de jeu : compté par tranches de 15 s quand une partie est affichée à l'écran.
     const isPlayingNow = screen === 'game' && !!activeGameState && !isFinished && !isGameOverState;
@@ -1067,6 +1087,13 @@ function VirtualGameScreen({ screen, setScreen, onBackToMenu }) {
 
         // Only allow clicking on own board for regular phases
         if (targetPlayerIndex !== activeState.currentPlayerIndex) return;
+
+        const targetCard = activeState.players[targetPlayerIndex]?.hand?.[cardIndex];
+        if (targetCard?.isFrozen && targetCard.lockCount > 0
+            && (activeState.turnPhase === 'REPLACE_OR_DISCARD' || activeState.turnPhase === 'MUST_REPLACE')) {
+            toast.error('Cette carte est gelée', { id: 'fury-frozen-card' });
+            return;
+        }
 
         // In online mode, we just emit actions
         if (isOnline) {
@@ -2326,6 +2353,7 @@ function VirtualGameScreen({ screen, setScreen, onBackToMenu }) {
                         eliminatedCards={activeGameState.lastEliminatedCards}
                         isCurrentPlayer={!isInitialReveal && activeGameState.currentPlayerIndex === opponentIndex}
                         isOpponent={true}
+                        turnLabel={isFinalRound ? 'Dernier tour' : undefined}
                         isOnlineOpponent={isOnlineMode} // Show real name for online opponents
                         selectedCardIndex={null}
                         canInteract={activeGameState.turnPhase === 'SPECIAL_ACTION_SWAP' || Boolean(furyActiveType)} // Allow clicking opponent cards during swap
@@ -2337,6 +2365,10 @@ function VirtualGameScreen({ screen, setScreen, onBackToMenu }) {
 
             {/* MIDDLE ACTION AREA - Centered between hands */}
             <div className="skyjo-action-area flex-1 flex flex-col justify-center items-center relative z-40 my-2">
+                {isFinalRound && <FinalTurnNotice key={activeRoundNumber}
+                    finishingName={finishingName === 'IA' ? 'L’IA' : finishingName || 'Un joueur'}
+                    finishedByMe={finishingPlayerIndex === myPlayerIndex}
+                    myTurn={activeGameState.currentPlayerIndex === myPlayerIndex} />}
                 {isFinished && !resultsReady && createPortal(<div className="round-end-veil" role="status">
                     <div className="round-end-reason">
                         <strong>Fin de la manche</strong>
@@ -2454,11 +2486,7 @@ function VirtualGameScreen({ screen, setScreen, onBackToMenu }) {
                                 }
                                 isDrawing={!!(onlineGameStarted ? onlinePendingAnimation?.sourceId : virtualPendingAnimation?.sourceId)}
                                 instructionText={
-                                    activeGameState.phase === 'FINAL_ROUND'
-                                        ? (activeGameState.finishingPlayerIndex === myPlayerIndex
-                                            ? 'Dernier tour : vous avez tout retourné'
-                                            : `Dernier tour : ${activeGameState.players[activeGameState.finishingPlayerIndex]?.name || 'un joueur'} a tout retourné`)
-                                        : (isInitialReveal ? `Retournez chacun 2 cartes ${selectedForReveal.length > 0 ? `(${selectedForReveal.length}/2)` : ''}` :
+                                    (isInitialReveal ? `Retournez chacun 2 cartes ${selectedForReveal.length > 0 ? `(${selectedForReveal.length}/2)` : ''}` :
                                             // Only show action instructions when it's the human player's turn (virtual mode only)
                                             // Pas votre tour : « Tour de l'IA » / « Tour de Claude » (en ligne), jamais vos consignes à vous.
                                             activeGameState.currentPlayerIndex !== myPlayerIndex
@@ -2477,7 +2505,7 @@ function VirtualGameScreen({ screen, setScreen, onBackToMenu }) {
                         </div>
                     </div>
                 )}
-                {furyOn && !isInitialReveal && <FuryRail part="me" me={activeGameState.players[myPlayerIndex]} canPlay={furyCanPlay} finalRound={activeGameState.phase === 'FINAL_ROUND'} selected={furyActiveType ? furySelect : null} onSelect={i => setFurySelect(prev => (prev === i ? null : i))} />}
+                {furyOn && !isInitialReveal && <FuryRail part="me" me={activeGameState.players[myPlayerIndex]} canPlay={furyCanPlay} finalRound={isFinalRound} selected={furyActiveType ? furySelect : null} onSelect={i => setFurySelect(prev => (prev === i ? null : i))} />}
             </div>
 
             {/* Instruction Banner - BELOW the PIOCHER button */}
@@ -2495,6 +2523,7 @@ function VirtualGameScreen({ screen, setScreen, onBackToMenu }) {
                         eliminatedCards={activeGameState.lastEliminatedCards}
                         isCurrentPlayer={!isInitialReveal && activeGameState.currentPlayerIndex === myPlayerIndex}
                         isOpponent={false}
+                        turnLabel={isFinalRound ? 'Votre dernier tour' : undefined}
                         selectedCardIndex={null}
                         pendingRevealIndices={isInitialReveal ? (initialReveals[`player-${myPlayerIndex}`] || []) : []}
                         canInteract={

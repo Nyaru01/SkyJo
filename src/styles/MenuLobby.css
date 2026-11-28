@@ -1513,7 +1513,7 @@ html body.lobby-theme .game-lobby .skyjo-pile-zone::before {
         var(--tray-grain),
         radial-gradient(ellipse at 50% 0%, #ffffff14, transparent 70%),
         linear-gradient(180deg, #2c2f45, #212436) !important;
-    background-size: auto, 160px 160px, auto, auto !important;
+    background-size: auto, auto, auto, auto, 160px 160px, auto, auto !important;
     border: 1px solid #ffffff17;
 }
 /* Consigne sous la pioche (« Jouez dans votre grille… ») : verre nuit */
