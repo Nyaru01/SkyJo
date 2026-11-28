@@ -103,6 +103,26 @@
 .vesper-card-curse-lock > div { display: grid; place-items: center; width: 100%; height: 100%; }
 .vesper-card-curse-lock svg { width: 69%; height: 69%; stroke-width: 2.5; }
 
+.vesper-card-freeze {
+    position: absolute; inset: 1px; z-index: 4; border-radius: 9px;
+    border: 2px solid #b7edff;
+    background: #081c3870;
+    box-shadow: inset 0 0 10px #85dcff91, 0 0 7px #80d5ff73;
+    pointer-events: none;
+}
+.vesper-card-freeze-lock {
+    position: absolute; left: 50%; top: 50%; translate: -50% -50%;
+    display: grid; place-items: center;
+    width: min(93%, 42px); aspect-ratio: 1; border-radius: 50%;
+    color: #f1fcff; background: #10263f;
+    border: 1px solid #a8eaff;
+    box-shadow: 0 0 0 2px #0a192db3, 0 0 9px #78cfff9c;
+}
+.vesper-card-freeze-lock svg { width: 87%; height: 87%; stroke-width: 2.7; }
+.vesper-card-freeze--face { background: transparent; }
+.vesper-card-freeze--face .vesper-card-freeze-lock { top: 69%; width: min(62%, 31px); }
+.vesper-card-freeze--face .vesper-card-freeze-lock svg { width: 74%; height: 74%; }
+
 .skyjo-card-slot { background: #030a153d; border: 1px solid #ffffff09; box-shadow: inset 0 2px 5px #0003; }
 .skyjo-hand {
     --turn-accent: #7ee7cc;
