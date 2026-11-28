@@ -64,14 +64,17 @@ export function FuryRail({ part, me, opponent, opponentName, canPlay, selected, 
     const reserve = me?.fury?.reserve || [];
     const left = Math.max(0, FURY_USES_PER_ROUND - (me?.fury?.used || 0));
     const attacks = reserve.filter(c => c.furyType !== 'shield').length;
-    const ready = canPlay && attacks > 0 && left > 0 && !finalRound;
-    const [hint, status] = reserve.length === 0 ? ['Piochez', 'Les Fury sont cachées dans la pioche : piochez pour en gagner']
-        : finalRound ? ['Dernier tour', 'Dernier tour : plus de Fury jouable']
+    const exhausted = left === 0;
+    const shielded = hasShield(me?.fury);
+    const ready = canPlay && attacks > 0 && !exhausted && !finalRound;
+    const [hint, status] = finalRound ? ['Dernier tour', 'Dernier tour : plus de Fury jouable']
+        : exhausted ? [FURY_USES_PER_ROUND + '/' + FURY_USES_PER_ROUND + ' jouées',
+            FURY_USES_PER_ROUND + ' Fury jouées. Les attaques seront de nouveau disponibles à la prochaine manche.' + (shielded ? ' Votre Bouclier reste actif.' : '')]
+        : reserve.length === 0 ? ['Piochez', 'Les Fury sont cachées dans la pioche : piochez pour en gagner']
         : attacks === 0 ? ['Protégé', 'Votre Bouclier bloquera tout seul la prochaine attaque']
-        : left <= 0 ? ['Limite', `Limite atteinte : ${FURY_USES_PER_ROUND} Fury jouées cette manche`]
         : ready ? ['Touchez', `Touchez une Fury à la place de piocher (encore ${left} cette manche)`]
         : ['Votre tour', `Jouables au début de votre tour (encore ${left} cette manche)`];
-    return <aside className={`fury-rail fury-rail--me${ready ? ' is-ready' : ''}${hasShield(me?.fury) ? ' is-shielded' : ''}`} aria-label={`Vos cartes Fury. ${status}`} title={status}>
+    return <aside className={`fury-rail fury-rail--me${ready ? ' is-ready' : ''}${shielded ? ' is-shielded' : ''}`} aria-label={`Vos cartes Fury. ${status}`} title={status}>
         <span className="fury-rail-label"><small>Fury</small>Vous</span>
         <div className="fury-rail-slots">
             <Slots count={reserve.length}>{reserve.map((card, i) => card.furyType === 'shield'
@@ -83,7 +86,7 @@ export function FuryRail({ part, me, opponent, opponentName, canPlay, selected, 
                 </button>)}</Slots>
         </div>
         <Uses left={left} />
-        <span className="fury-rail-hint">{hint}</span>
+        <span className={'fury-rail-hint' + (exhausted && !finalRound ? ' fury-rail-hint--exhausted' : '')}>{hint}</span>
     </aside>;
 }
 

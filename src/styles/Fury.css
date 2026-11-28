@@ -325,6 +325,7 @@ body.fury-mode .skyjo-action-area > .flex.justify-center.px-4 { padding-left: 64
 .fury-rail-hint { font-size: 8.5px; font-weight: 700; text-align: center; line-height: 1.1; color: #c9a596; }
 .fury-rail--me.is-ready { box-shadow: inset 0 0 0 1.5px #ff9a6a, 0 0 18px #ff6a3a55, 0 10px 22px -12px #000c; animation: fury-rail-ready 1.8s ease-in-out infinite; }
 .fury-rail--me.is-ready .fury-rail-hint { color: #ffcbb0; }
+.fury-rail-hint.fury-rail-hint--exhausted { color: #ffcc9f; white-space: nowrap; font-weight: 800; letter-spacing: -.025em; }
 @keyframes fury-rail-ready { 50% { box-shadow: inset 0 0 0 1.5px #ffb08a, 0 0 26px #ff6a3a88, 0 10px 22px -12px #000c; } }
 .fury-rail.is-shielded { box-shadow: inset 0 0 0 1.5px #9fcab6aa, 0 0 16px #9fcab633, 0 10px 22px -12px #000c; }
 .fury-rail .fury-chip-card.is-selected { transform: translateX(-4px) scale(1.06); }
