@@ -2350,7 +2350,7 @@ function VirtualGameScreen({ screen, setScreen, onBackToMenu }) {
                     <FuryRulesModal open={!hasSeenFuryIntro || furyRulesOpen} first={!hasSeenFuryIntro}
                         onClose={() => { setHasSeenFuryIntro(true); setFuryRulesOpen(false); }} />
                     <FuryEffects lastFury={activeGameState.lastFury} lastGain={activeGameState.lastFuryGain} myIndex={myPlayerIndex}
-                        names={activeGameState.players.map((p, i) => (i === myPlayerIndex ? 'Vous' : p.name))} />
+                        players={activeGameState.players} />
                 </>}
                 {furyOn && !isInitialReveal && <FuryRail part="opponent" opponent={activeGameState.players[opponentIndex]} opponentName={activeGameState.players[opponentIndex]?.name} />}
                 {/* Échange de l'IA : les deux cartes échangées, au centre */}

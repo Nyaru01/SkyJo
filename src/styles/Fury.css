@@ -61,26 +61,18 @@ html body.lobby-theme.fury-mode .game-lobby .skyjo-hand.skyjo-hand::after { bord
 body:has(.fury-target) .skyjo-hand--opponent { box-shadow: 0 0 0 2px #ff7a45, 0 0 28px #ff5a2a66 !important; }
 
 /* Onomatopées */
-.fury-fx-layer { position: fixed; inset: 0; z-index: 660; pointer-events: none; display: grid; place-items: center; }
-.fury-boom { position: relative; width: 230px; height: 172px; display: grid; place-items: center; filter: drop-shadow(0 16px 20px #000000b3); }
-.fury-boom svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.fury-boom polygon { fill: #ffcf4a; stroke: #1b1316; stroke-width: 4; stroke-linejoin: round; }
-.fury-boom--curse polygon { fill: #b53a4a; }
-.fury-boom--fog polygon { fill: #c9c4d6; }
-.fury-boom--tornado polygon { fill: #8fd0c4; }
-.fury-boom--freeze polygon { fill: #a9d4f0; }
-.fury-boom--shield polygon { fill: #9fcab6; }
-.fury-boom-word { position: relative; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 900; font-size: 38px; letter-spacing: -.02em; color: #1b1316; transform: rotate(-7deg); text-shadow: 0 3px 0 #ffffff99; }
-.fury-boom--curse .fury-boom-word { color: #fff1e8; text-shadow: 0 3px 0 #00000066; }
-.fury-boom-caption { position: absolute; bottom: -10px; padding: 3px 10px; border-radius: 999px; background: #1b1316; color: #ffd9c4; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
 .fury-gain {
-    position: absolute; top: calc(50% + 120px); display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px;
-    background: #22161af2; border: 1px solid #ff7a4566; color: #ffd9c4; font-size: 13px; font-weight: 700; box-shadow: 0 12px 24px -12px #000;
+    position: absolute; top: 50%; left: 50%; translate: -50% -50%; z-index: 46;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    width: max-content; max-width: min(58%, 260px); padding: 7px 12px; border-radius: 12px;
+    color: #fff3e7; font-size: 13px; font-weight: 750; line-height: 1.2; text-align: center;
+    background: linear-gradient(160deg, color-mix(in srgb, var(--fc) 20%, #242034), #171625);
+    border: 1px solid color-mix(in srgb, var(--fc) 55%, transparent);
+    box-shadow: 0 8px 20px #08070d9c; pointer-events: none;
 }
-.fury-gain svg { color: #ff8a55; }
-.fury-shake { animation: fury-shake .55s cubic-bezier(.36, .07, .19, .97) both; }
-@keyframes fury-shake { 10%, 90% { transform: translate(-2px, 0); } 20%, 80% { transform: translate(4px, 1px); } 30%, 50%, 70% { transform: translate(-7px, -1px); } 40%, 60% { transform: translate(7px, 1px); } }
-@media (prefers-reduced-motion: reduce) { .fury-embers { display: none; } .fury-shake { animation: none; } }
+.fury-gain svg { flex: none; color: color-mix(in srgb, var(--fc) 72%, #fff8e8); }
+.fury-gain span { overflow-wrap: anywhere; min-width: 0; }
+@media (prefers-reduced-motion: reduce) { .fury-embers { display: none; } }
 /* Fury : la réserve prend de la place, les cartes se réduisent d'autant (toujours sans défilement) */
 body.fury-mode .skyjo-game-container { --skyjo-card-h: clamp(2.5rem, calc((100dvh - 470px) / 7), 4.2rem); }
 /* Ciblage : au centre de la dalle (comme l'échange), la pioche s'efface derrière */
@@ -154,8 +146,6 @@ body.fury-mode .skyjo-game-container { --skyjo-card-h: clamp(2.8rem, calc((100dv
 .fury-card--mini .fury-card-emblem { width: 26px; height: 26px; }
 .fury-rail { margin-top: 6px; }
 .fury-opponent { margin-bottom: 4px; }
-/* Annonce des Fury piochées : en haut, sous la barre, pour ne rien cacher */
-.fury-gain { top: calc(78px + env(safe-area-inset-top, 0px)); }
 /* v3.5.2 — cartes plus grandes : la ligne adverse se pose sur le haut de la dalle (entre « Pioche » et « Défausse »),
    la réserve est plus basse, et les cartes s'élargissent (les plateaux ont de la place en largeur). */
 body.fury-mode .fury-opponent { position: relative; z-index: 3; margin: 0 0 -17px; translate: 0 12px; font-size: 10.5px; gap: 4px; pointer-events: none; }
@@ -254,9 +244,6 @@ body.fury-mode .skyjo-badge-aside .fury-opponent { margin: 0 !important; width: 
 .fury-card--full .fury-card-corner { top: 6px; left: 7px; }
 .fury-reveal-cards .fury-card--full .fury-card-emblem { width: 58px; height: 58px; margin: 12px 0 8px; }
 .fury-reveal-cards .fury-card--full .fury-card-title { font-size: 18px; letter-spacing: .03em; }
-/* Annonce d'une Fury adverse */
-.fury-announce-effect { max-width: 300px; margin: 0; padding: 10px 14px; border-radius: 12px; text-align: center; font-size: 14.5px; line-height: 1.4; font-weight: 600; color: #fff1e8; background: #00000059; border: 1px solid #ff8a5566; }
-.fury-announce-effect.is-blocked { border-color: #9fcab699; color: #dff3ea; }
 /* Titres : taille calée sur la largeur de la carte pour ne jamais déborder */
 .fury-card--full { container-type: inline-size; }
 .fury-card--full .fury-card-title { font-size: min(15px, 11.5cqi); letter-spacing: .03em; max-width: 100%; }
@@ -304,36 +291,6 @@ body.fury-mode .skyjo-badge-aside .fury-opponent { margin: 0 !important; width: 
     .fury-rules > .skyjo-pause-resume { align-self: end; }
 }
 
-/* ===== Annonce d'une Fury adverse v2 : scène teintée par la carte + effet three.js ===== */
-.fury-fx3d { position: absolute; inset: 0; pointer-events: none; }
-.fury-fx3d canvas { display: block; width: 100% !important; height: 100% !important; }
-.fury-board-fx { position: fixed; z-index: 661; pointer-events: none; }
-.fury-announce { position: fixed; inset: 0; z-index: 9000; display: grid; place-items: center; padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom)); overflow: hidden;
-    background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--fc) 34%, #1a0d10) 0%, #0e080bf5 58%, #060305fa 100%); }
-.fury-announce::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 55%, #000000b3 100%); }
-.fury-announce-fx { z-index: 0; }
-.fury-announce-body { position: relative; z-index: 1; width: 100%; max-width: 340px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
-.fury-announce-kicker { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
-    color: color-mix(in srgb, var(--fc) 70%, #fff); background: #0000004d; border: 1px solid color-mix(in srgb, var(--fc) 45%, transparent); }
-.fury-announce-word { margin: 0; font-family: system-ui, sans-serif; font-size: 46px; line-height: 1; font-weight: 900; font-style: italic; letter-spacing: -.02em; color: #fff;
-    -webkit-text-stroke: 1.5px color-mix(in srgb, var(--fc) 60%, #000); text-shadow: 0 0 24px color-mix(in srgb, var(--fc) 85%, transparent), 0 4px 0 color-mix(in srgb, var(--fc2, #3a2226) 90%, #000); }
-.fury-announce-stage { position: relative; width: 168px; perspective: 700px; animation: fury-announce-float 3.2s ease-in-out .8s infinite; }
-.fury-announce-stage::before { content: ''; position: absolute; inset: -30% -40%; z-index: -1; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--fc) 55%, transparent), transparent 65%); filter: blur(8px); }
-@keyframes fury-announce-float { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-7px) rotate(1deg); } }
-.fury-announce-stage .fury-card--full { width: 168px; min-height: 214px; gap: 8px; box-shadow: 0 0 0 2px var(--fc), 0 0 44px color-mix(in srgb, var(--fc) 65%, transparent), 0 22px 40px -14px #000; }
-.fury-announce-stage .fury-card--full .fury-card-emblem { width: 62px; height: 62px; margin: 14px 0 8px; }
-.fury-announce-stage .fury-card--full .fury-card-emblem svg { width: 32px; height: 32px; }
-.fury-announce-stage .fury-card--full .fury-card-title { font-size: min(20px, 12cqi); }
-.fury-announce-stage .fury-card--full .fury-card-text { font-size: 12.5px; }
-.fury-announce .fury-announce-effect { width: 100%; max-width: none; display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; text-align: left; border-radius: 16px;
-    background: linear-gradient(180deg, #1d1216e6, #120b0ee6); border: 1px solid color-mix(in srgb, var(--fc) 40%, transparent); box-shadow: 0 12px 30px -12px #000, inset 0 1px 0 #ffffff14; backdrop-filter: blur(6px); }
-.fury-announce .fury-announce-effect p { margin: 0; font-size: 15px; line-height: 1.4; font-weight: 600; color: #fff1e8; }
-.fury-announce-target { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--fc) 75%, #fff); }
-.fury-announce-ok { width: 100%; max-width: 260px; margin-top: 2px; background: linear-gradient(180deg, color-mix(in srgb, var(--fc) 55%, #fff), var(--fc)); color: #1a0d10; box-shadow: 0 0 0 1px #ffffff55 inset, 0 10px 26px -8px color-mix(in srgb, var(--fc) 80%, transparent); }
-@media (max-height: 680px) { .fury-announce-word { font-size: 36px; } .fury-announce-stage, .fury-announce-stage .fury-card--full { width: 140px; } .fury-announce-stage .fury-card--full { min-height: 178px; } }
-@media (prefers-reduced-motion: reduce) { .fury-announce-stage { animation: none; } }
-/* L'annonce est dans un calque qui laisse passer les touches : elle doit les capter pour que « Compris » fonctionne */
-.fury-announce { pointer-events: auto; }
 /* Bouclier : passif, toujours affiché « prêt » */
 .fury-chip-card--passive { display: inline-block; cursor: help; }
 .fury-chip-card--passive .fury-card { box-shadow: 0 0 0 1.5px #9fcab6, 0 0 14px #9fcab666; }
@@ -359,9 +316,8 @@ body.fury-mode .skyjo-action-area > .flex.justify-center.px-4 { padding-left: 64
 .fury-rail-card, .fury-slot-empty { display: block; width: 46px; height: 42px; padding: 0; border-radius: 9px; }
 .fury-slot-empty { border: 1.5px dashed #ff8a5540; background: #ffffff06; }
 .fury-rail .fury-card--mini { width: 46px; height: 42px; gap: 2px; border-radius: 9px; }
-.fury-rail .fury-card--mini .fury-card-emblem { width: 20px; height: 20px; }
-.fury-rail .fury-card--mini .fury-card-emblem svg { width: 12px; height: 12px; }
-.fury-rail .fury-card--mini .fury-card-title { font-size: 7.5px; max-width: 42px; }
+.fury-rail .fury-card--mini .fury-card-emblem { width: 26px; height: 26px; }
+.fury-rail .fury-card--mini .fury-card-emblem svg { width: 22px; height: 22px; stroke-width: 1.85; }
 .fury-rail .fury-card--mini .fury-card-corner { display: none; }
 .fury-rail-uses { display: flex; gap: 4px; }
 .fury-rail-uses i { width: 6px; height: 6px; border-radius: 50%; background: #ffffff1f; }
@@ -376,25 +332,9 @@ body.fury-mode .skyjo-action-area > .flex.justify-center.px-4 { padding-left: 64
 .fury-rail { gap: 4px; padding: 7px 4px 6px; }
 .fury-rail-slots { gap: 4px; }
 .fury-rail-card, .fury-slot-empty, .fury-rail .fury-card--mini { height: 36px; }
-.fury-rail .fury-card--mini .fury-card-emblem { width: 18px; height: 18px; }
 
 body.fury-mode .skyjo-draw-button span { white-space: normal; text-align: center; }
 body.fury-mode .fury-rail .fury-card--mini, body.fury-mode .fury-rail-card { width: 38px; height: 32px; }
-/* ===== Fury reçue : bandeau compact posé sur la zone Pioche / Défausse (top calculé en JS ; 50 % sinon) (remplace la grande annonce avec « Compris ») ===== */
-.fury-notice { position: absolute; top: 50%; left: 50%; translate: -50% -50%; z-index: 9000; pointer-events: auto;
-    width: min(calc(100vw - 48px), 340px); display: flex; align-items: center; gap: 12px; padding: 10px 14px 12px 10px; overflow: hidden;
-    border: 1px solid color-mix(in srgb, var(--fc) 50%, transparent); border-radius: 16px; text-align: left; font: inherit; color: #fff1e8; cursor: pointer;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--fc) 22%, #1d1216) 0%, #120b0ef2 100%);
-    box-shadow: 0 16px 34px -14px #000, 0 0 26px -8px color-mix(in srgb, var(--fc) 70%, transparent), inset 0 1px 0 #ffffff14; backdrop-filter: blur(8px); }
-.fury-notice-card { flex: none; }
-.fury-notice-card .fury-card--mini { width: 52px; height: 58px; }
-.fury-notice-copy { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.fury-notice-kicker { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--fc) 70%, #fff); }
-.fury-notice-text { font-size: 13.5px; line-height: 1.35; font-weight: 600; }
-.fury-notice-where { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #e8cfc3b3; }
-.fury-notice-timer { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; transform-origin: left; background: var(--fc); opacity: .8; animation: fury-notice-timer linear forwards; }
-@keyframes fury-notice-timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
-.fury-notice:focus-visible { outline: 2px solid #ffd2b8; outline-offset: 3px; }
 /* ===== Pioche avec Fury : une seule fenêtre, la Fury (vers la réserve) à côté de la carte à jouer ===== */
 .draw-with-fury { gap: 18px !important; }
 .draw-fury, .draw-main { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
@@ -426,3 +366,77 @@ body.fury-mode .fury-rail .fury-card--mini, body.fury-mode .fury-rail-card { wid
 .fury-target.fury-target .fury-target-cancel:active { transform: scale(.92); }
 .fury-target.fury-target .fury-target-play { position: relative; order: 0; flex: 0 0 auto; width: 100%; min-height: 48px; margin-top: 2px; color: #1a1014;
     background: linear-gradient(160deg, color-mix(in srgb, var(--fc) 70%, #fff), var(--fc)); box-shadow: inset 0 1px 0 #ffffff80, 0 10px 22px -10px color-mix(in srgb, var(--fc) 80%, transparent); }
+
+/* Le bandeau et les repères restent hors du flux du plateau. */
+.fury-play {
+    --fury-accent: color-mix(in srgb, var(--fc) 75%, #fff3dd);
+    position: absolute; top: 50%; left: 50%; translate: -50% -50%; z-index: 48;
+    width: max-content; max-width: min(calc(100% - 108px), 276px);
+    display: flex; align-items: center; gap: 10px; overflow: hidden;
+    padding: 8px 11px 10px 8px; border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--fc) 65%, transparent);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--fc) 17%, #292437), #151624 85%);
+    color: #fff4e8; box-shadow: 0 10px 26px #08070dba, inset 0 1px #ffffff18; pointer-events: none;
+}
+.fury-play__icon {
+    display: grid; place-items: center; flex: 0 0 39px; aspect-ratio: 1; border-radius: 10px;
+    color: var(--fury-accent); background: color-mix(in srgb, var(--fc) 17%, #151622);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fc) 45%, transparent);
+}
+.fury-play__copy { display: grid; gap: 2px; min-width: 0; }
+.fury-play__route { display: flex; align-items: center; gap: 5px; min-width: 0; color: var(--fury-accent); font-size: 9px; line-height: 1.1; font-weight: 750; letter-spacing: .07em; text-transform: uppercase; }
+.fury-play__route span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fury-play__route svg { flex: none; }
+.fury-play__timer { position: absolute; inset: auto 0 0; height: 2px; background: var(--fury-accent); opacity: .75; transform-origin: left; animation: fury-play-expire linear both; }
+@keyframes fury-play-expire { to { transform: scaleX(0); } }
+.fury-play__copy strong { font: 600 21px/.95 'Cormorant Garamond', Georgia, serif; }
+.fury-play__copy > span { color: #ede0dc; font-size: 11px; line-height: 1.2; overflow-wrap: anywhere; }
+
+.fury-impact {
+    --fury-edge: color-mix(in srgb, var(--fc) 74%, #fff9ed);
+    position: absolute; inset: 0; z-index: 5; overflow: hidden; border-radius: 11px;
+    border: 1px solid var(--fury-edge);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--fc) 65%, transparent), inset 0 0 9px color-mix(in srgb, var(--fc) 55%, transparent);
+    pointer-events: none;
+    animation: fury-impact-fade 1.05s ease-out var(--impact-delay, 0ms) both;
+}
+.fury-impact::before,
+.fury-impact::after { position: absolute; content: ''; pointer-events: none; }
+.fury-impact--quake::before {
+    inset: 54% 0 4%; background: var(--fury-edge);
+    clip-path: polygon(0 52%, 21% 36%, 37% 47%, 48% 14%, 56% 58%, 72% 35%, 100% 52%, 72% 44%, 55% 70%, 47% 29%, 39% 56%, 21% 43%, 0 59%);
+    transform-origin: left center;
+    animation: fury-fissure .45s cubic-bezier(.16, 1, .3, 1) var(--impact-delay, 0ms) both;
+}
+.fury-impact--curse::before {
+    inset: 0; background: radial-gradient(ellipse at 100% 0, #f1557166, transparent 45%), radial-gradient(ellipse at 0 100%, #f1557166, transparent 45%);
+}
+.fury-impact--fog::before {
+    inset: 0; background: repeating-linear-gradient(173deg, transparent 0 22%, #e4dff059 34%, transparent 55%);
+    animation: fury-impact-drift .95s ease-out both;
+}
+.fury-impact--freeze::before {
+    animation: fury-frost .6s ease-out var(--impact-delay, 0ms) both;
+    inset: 0; background: linear-gradient(135deg, #d9f4ffb0 0 8%, #8cd3ffc0 8% 10%, transparent 10% 17%, #d9f4ff80 17% 19%, transparent 19% 72%, #b0e7ff80 72% 74%, transparent 74% 88%, #e8faffb0 88%);
+}
+.fury-impact--tornado::before,
+.fury-impact--tornado::after {
+    inset: 24% 12%; border: 1px solid #d2fff9b3; border-block-width: 3px; border-radius: 50%;
+    animation: fury-impact-sweep 1s ease-out both;
+}
+.fury-impact--tornado::after { inset: 17% 5%; border-block-width: 1px; }
+.fury-impact--shield { border-width: 2px; box-shadow: 0 0 15px #9fcab688, inset 0 0 22px #9fcab666, inset 0 0 0 3px #9fcab633; }
+.fury-impact--shield::before {
+    inset: 3px; border: 1px solid #e0ffefba; border-radius: inherit;
+    animation: fury-shield-ripple .8s ease-out both;
+}
+@keyframes fury-fissure { from { transform: scaleX(.15); } to { transform: scaleX(1); } }
+@keyframes fury-frost { from { opacity: 0; filter: blur(2px); } to { opacity: 1; filter: blur(0); } }
+@keyframes fury-shield-ripple { from { transform: scale(.8); opacity: 1; } to { transform: scale(1); opacity: 0; } }
+@keyframes fury-impact-fade { 0% { opacity: 0; } 15%, 42% { opacity: .95; } 100% { opacity: 0; } }
+@keyframes fury-impact-drift { from { translate: -18% 18%; } to { translate: 20% -17%; } }
+@keyframes fury-impact-sweep { from { transform: rotate(-30deg) scale(.75); } to { transform: rotate(10deg) scale(1.1); } }
+@media (prefers-reduced-motion: reduce) {
+    .fury-impact { animation: none; opacity: .75; }
+    .fury-impact::before, .fury-impact::after { display: none; }
+}

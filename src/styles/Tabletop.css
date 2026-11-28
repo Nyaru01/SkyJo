@@ -356,13 +356,13 @@ html body .tourment-goal .tourment-goal-title { color: #fbf6ee !important; font-
 .swap-reveal-side small { font-size: 11.5px; color: #b3acbd; white-space: nowrap; }
 .swap-reveal-arrow { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #c6b4e61f; color: #d9ccf0; box-shadow: inset 0 0 0 1px #c6b4e633; }
 /* Table de jeu : pas de sélection de texte ni de menu « rechercher » à l'appui long */
-.skyjo-game-container, .skyjo-game-container *, .fury-rail, .fury-opponent, .skyjo-banner, .swap-reveal, .draw-bubble-layer, .fury-fx-layer {
+.skyjo-game-container, .skyjo-game-container *, .fury-rail, .fury-opponent, .skyjo-banner, .swap-reveal, .draw-bubble-layer {
     -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
 .skyjo-game-container input, .skyjo-game-container textarea { -webkit-user-select: text; user-select: text; }
 /* Carte piochée : la dalle garde sa hauteur (l'étiquette « Pris dans… » se pose en bas, entre les compteurs),
    sinon la zone centrale grandit et recouvre les plateaux. */
-.skyjo-pile-wrap > .skyjo-card-source-wrap { position: absolute; left: 50%; bottom: 1px; translate: -50% 0; z-index: 20; pointer-events: none; }
+.skyjo-pile-wrap > .skyjo-card-source-wrap { position: absolute; left: 50%; bottom: 1px; translate: -50% 0; width: max-content; max-width: 100%; z-index: 20; pointer-events: none; }
 .skyjo-pile-wrap .skyjo-card-source { font-size: 10px !important; padding: 3px 10px !important; letter-spacing: .04em !important; }
 .skyjo-pile-wrap:has(> .skyjo-card-source-wrap) .skyjo-pile-zone > :not(.skyjo-pile-group) { translate: 0 -13px; }
 /* Barre du haut en partie, plus fine : plus de place pour les plateaux */

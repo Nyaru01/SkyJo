@@ -1579,9 +1579,6 @@ body.fury-mode .skyjo-action-area > .flex.justify-center.px-4 { padding-left: 54
 .fury-rail { width: 44px; padding: 6px 3px 5px; border-radius: 13px; }
 .fury-rail--opp { left: 5px; } .fury-rail--me { right: 5px; }
 .fury-rail-card, .fury-slot-empty, .fury-rail .fury-card--mini { width: 38px; height: 32px; border-radius: 8px; }
-.fury-rail .fury-card--mini .fury-card-emblem { width: 16px; height: 16px; }
-.fury-rail .fury-card--mini .fury-card-emblem svg { width: 10px; height: 10px; }
-.fury-rail .fury-card--mini .fury-card-title { font-size: 6.5px; max-width: 34px; }
 .fury-rail-label { font-size: 9.5px; } .fury-rail-label small { font-size: 7px; letter-spacing: .1em; }
 .fury-rail-hint { font-size: 7.5px; }
 .fury-rail-uses i { width: 5px; height: 5px; }
@@ -1600,4 +1597,11 @@ html body.fury-mode .skyjo-draw-button { height: auto !important; min-height: 52
     html body.fury-mode .game-lobby .skyjo-pile-zone .skyjo-draw-button { gap: 0; padding-inline: 4px !important; }
     html body.fury-mode .game-lobby .skyjo-pile-zone .skyjo-draw-button > .mx-2 { margin-inline: 0; }
     html body.fury-mode .game-lobby .skyjo-pile-zone div:has(> .skyjo-turn-cue) { min-width: 0; }
+}
+
+@media (max-width: 365px) {
+    /* Sous les compteurs Fury, la pastille garde sa ligne sans les masquer. */
+    html body.fury-mode .game-lobby .skyjo-pile-wrap:has(> .skyjo-card-source-wrap) .skyjo-pile-zone {
+        padding-bottom: 28px;
+    }
 }

@@ -298,6 +298,7 @@ const PlayerHand = memo(function PlayerHand({
                     justifyItems: 'center',
                 }}
                 className="skyjo-deal"
+                id={`fury-board-${player.id}`}
                 ref={dealGridRef}
             >
                 {scanning && <span className={cn('skyjo-scan', isOpponent ? 'skyjo-scan--up' : 'skyjo-scan--down')} aria-hidden="true">
