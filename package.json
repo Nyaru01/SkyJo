@@ -1,7 +1,7 @@
 {
   "name": "skyjo-score-app",
   "private": true,
-  "version": "3.16.35",
+  "version": "3.16.36",
   "type": "module",
   "scripts": {
     "test": "node --test src/lib/*.test.js server/*.test.js",
