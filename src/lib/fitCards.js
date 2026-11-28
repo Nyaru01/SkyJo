@@ -16,20 +16,17 @@ function fit(el) {
     // sinon on croit avoir de la place, on réécrit la taille et toute la table est recalculée en pleine animation.
     let h = card.offsetHeight;
     for (let pass = 0; pass < 3; pass++) {
-        const box = area.getBoundingClientRect();
         let top = Infinity, bottom = -Infinity, rails = 0;
         for (const child of area.children) {
             // Rails Fury (absolus, sur les côtés) : la zone doit au moins les contenir.
-            if (child.classList.contains('fury-rail')) { rails = Math.max(rails, child.getBoundingClientRect().height); continue; }
-            if (getComputedStyle(child).position === 'absolute') continue;
-            const r = child.getBoundingClientRect();
-            if (!r.height) continue;
-            top = Math.min(top, r.top);
-            bottom = Math.max(bottom, r.bottom);
+            if (child.classList.contains('fury-rail')) { rails = Math.max(rails, child.offsetHeight); continue; }
+            if (getComputedStyle(child).position === 'absolute' || !child.offsetHeight) continue;
+            top = Math.min(top, child.offsetTop);
+            bottom = Math.max(bottom, child.offsetTop + child.offsetHeight);
         }
         if (top === Infinity) return;
         // Place libre dans la zone centrale, moins ce qui dépasse du conteneur.
-        const slack = box.height - Math.max(bottom - top, rails + 4 - 2 * RAIL_OVERFLOW) - 4 - Math.max(0, el.scrollHeight - el.clientHeight);
+        const slack = area.clientHeight - Math.max(bottom - top, rails + 4 - 2 * RAIL_OVERFLOW) - 4 - Math.max(0, el.scrollHeight - el.clientHeight);
         if (Math.abs(slack) < 6) return;
         const next = Math.max(MIN_H, Math.min(MAX_H, h + slack / rows));
         // Écart de moins de 2 px : on ne touche à rien (chaque retouche recalcule toute la table).
@@ -49,10 +46,19 @@ export function fitCardsRef(el) {
     const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => fit(el)); };
     const timers = [0, 300, 1200].map(ms => setTimeout(schedule, ms));
     const resize = new ResizeObserver(schedule);
-    resize.observe(el);
-    // Un élément qui apparaît ou disparaît au centre (réserve Fury, bandeau de ciblage…) : on réajuste.
-    const mutations = new MutationObserver(schedule);
     const area = el.querySelector('.skyjo-action-area');
+    const observeCenter = () => {
+        resize.disconnect();
+        resize.observe(el);
+        for (const child of area?.children ?? []) {
+            if (child.classList.contains('fury-rail') || getComputedStyle(child).position !== 'absolute') {
+                resize.observe(child);
+            }
+        }
+    };
+    observeCenter();
+    // Les consignes peuvent changer de hauteur sans remplacer le panneau (dernier tour, résumé de l’IA).
+    const mutations = new MutationObserver(() => { observeCenter(); schedule(); });
     if (area) mutations.observe(area, { childList: true });
     return () => { timers.forEach(clearTimeout); cancelAnimationFrame(frame); resize.disconnect(); mutations.disconnect(); };
 }

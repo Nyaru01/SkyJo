@@ -227,7 +227,9 @@
     overflow: clip !important;
     overflow-clip-margin: 40px;
 }
-.skyjo-game-container .skyjo-action-area { min-height: 0; }
+/* Les badges sont hors du flux. Les plateaux et la zone centrale gardent leur hauteur réelle. */
+.skyjo-game-container > .skyjo-board-in { flex-shrink: 0; }
+.skyjo-game-container .skyjo-action-area { min-height: min-content; }
 
 /* Fenêtre de pause : crépuscule, comme le guide */
 .skyjo-pause { position: fixed; inset: 0; z-index: 500; display: grid; place-items: center; padding: 16px; background: #0f111bcc; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }

@@ -1587,3 +1587,17 @@ body.fury-mode .skyjo-action-area > .flex.justify-center.px-4 { padding-left: 54
 .fury-rail-uses i { width: 5px; height: 5px; }
 html body.lobby-theme.fury-mode :is(.menu-lobby, .game-lobby) .skyjo-draw-button span[class][class] { font-size: 13.5px !important; line-height: 1.15 !important; word-break: normal !important; overflow-wrap: normal !important; hyphens: none !important; }
 html body.fury-mode .skyjo-draw-button { height: auto !important; min-height: 52px; padding: 6px 8px !important; }
+
+/* Sur les téléphones étroits, laisser la place à la consigne entre les deux piles Fury. */
+@media (max-width: 390px) {
+    html body.fury-mode .game-lobby .skyjo-pile-zone {
+        grid-template-columns: 44px minmax(0, 1fr) 44px;
+        gap: 5px;
+        padding: 25px 7px 8px;
+    }
+    html body.fury-mode .game-lobby .skyjo-pile-group { width: 44px; }
+    html body.lobby-theme.fury-mode .game-lobby .skyjo-pile-zone .skyjo-pile-group .skyjo-pile-label { font-size: 11px !important; }
+    html body.fury-mode .game-lobby .skyjo-pile-zone .skyjo-draw-button { gap: 0; padding-inline: 4px !important; }
+    html body.fury-mode .game-lobby .skyjo-pile-zone .skyjo-draw-button > .mx-2 { margin-inline: 0; }
+    html body.fury-mode .game-lobby .skyjo-pile-zone div:has(> .skyjo-turn-cue) { min-width: 0; }
+}
