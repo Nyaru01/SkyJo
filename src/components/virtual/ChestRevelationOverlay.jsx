@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion as Motion } from 'framer-motion';
-import { HelpCircle, Trophy, ChevronRight, Gem, Skull } from 'lucide-react';
+import { HelpCircle, Trophy, ChevronRight } from 'lucide-react';
 import { useFeedback } from '../../hooks/useFeedback';
 import { getChestRevelations } from '../../lib/chestRevelation';
 import '../../styles/ChestRevelation.css';
@@ -24,7 +24,6 @@ function ChestReveal({ chest, index, total, onNext }) {
         return () => { clearTimeout(flip); clearTimeout(reveal); };
     }, [chest.result]);
     const treasure = chest.result < 0;
-    const Icon = treasure ? Gem : Skull;
     const ready = phase === 'revealed';
     const next = () => {
         if (!ready || advanced.current) return;
@@ -47,14 +46,9 @@ function ChestReveal({ chest, index, total, onNext }) {
                             <img src="/card-chest.png" alt="Carte Mystère" />
                         </div>
                         <div className="chest-reveal-result" aria-hidden={!ready}>
-                            <div className="chest-reveal-art" />
-                            <div className="chest-reveal-art-shade" />
-                            <span className="chest-reveal-rarity">✦ MYSTÈRE ✦</span>
-                            <span className="chest-reveal-corner" aria-hidden="true">{treasure ? '−15' : '+15'}</span>
-                            <div className="chest-reveal-emblem"><Icon strokeWidth={1.5} /></div>
+                            <div className="chest-reveal-art" aria-hidden="true" />
                             <span className="chest-reveal-title">{treasure ? 'TRÉSOR' : 'PIÈGE'}</span>
                             <strong>{treasure ? '−15' : '+15'}</strong>
-                            <span className="chest-reveal-points">POINTS</span>
                             <div className="chest-reveal-rule" />
                             <p>{treasure ? '15 points en moins · Avantage' : '15 points en plus · Pénalité'}</p>
                         </div>
