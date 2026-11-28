@@ -376,7 +376,7 @@ export const useVirtualGameStore = create(
                     const currentPlayer = gameState.players[currentPlayerIndex];
 
                     if (turnPhase === 'DRAW') {
-                        // Fury : jouer une carte de sabotage, ou ranger les Fury du dessus de la pioche.
+                        // Une Fury déjà en réserve peut remplacer l’action de pioche.
                         if (gameState.isFuryMode) {
                             const action = decideFuryAction(gameState, currentPlayerIndex);
                             if (action) {
@@ -385,11 +385,6 @@ export const useVirtualGameStore = create(
                                     set({ gameState: { ...state, aiLastMove: null }, isAIThinking: false, drawnCardSource: null });
                                     return;
                                 } catch (error) { console.warn('[FURY] IA', error); }
-                            }
-                            const { state: collected, gained } = collectFuryFromPile(gameState);
-                            if (gained.length) {
-                                set({ gameState: { ...collected, lastFuryGain: { cards: gained, by: currentPlayerIndex, at: Date.now() } }, isAIThinking: false });
-                                return;
                             }
                         }
                         // Step 1: Decide where to draw from
@@ -445,7 +440,15 @@ export const useVirtualGameStore = create(
                             executeDrawWithAnimation(
                                 'deck-pile',
                                 null, // Unknown card for animation (face down)
-                                () => drawFromPile(get().gameState)
+                                () => {
+                                    const { state: collected, gained } = collectFuryFromPile(get().gameState);
+                                    const drawn = drawFromPile(collected);
+                                    if (!gained.length) return drawn;
+                                    return {
+                                        ...drawn,
+                                        lastFuryGain: { cards: gained, by: currentPlayerIndex, at: Date.now(), drawnId: drawn.drawnCard?.id },
+                                    };
+                                }
                             );
                         }
 
