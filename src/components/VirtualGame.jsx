@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
 import { describeAiMove } from '../lib/aiMoveText';
-import { useState, useCallback, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Users, ArrowLeft, RotateCcw, RefreshCw, Trophy, Info, HelpCircle, Sparkles, CheckCircle, BookOpen, X, Bot, Lock, Image as ImageIcon, Palette, Copy, Share2, Wifi, Globe, Plus, ChevronRight, WifiOff, Music, Music2, Leaf, Swords, Skull, Gem, SkipForward, Pause, PlayCircle, Star, Zap, Award, QrCode, Flame } from 'lucide-react';
 import { Button } from './ui/Button';
@@ -67,7 +67,7 @@ const PLAYER_COLORS = ['🐱', '🐶', '🦊', '🐻', '🐼', '🦁', '🐸', '
  * Virtual Vesper Game Component
  * Main component for playing virtual Vesper locally
  */
-export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onScreenChange }) {
+export default function VirtualGame({ screen: controlledScreen, defaultScreen = 'menu', onBackToMenu, onScreenChange }) {
     // 1. Data Stores
     const userProfile = useGameStore(state => state.userProfile);
     const updateUserProfile = useGameStore(state => state.updateUserProfile);
@@ -86,8 +86,9 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
     const fetchOnlinePlayers = useSocialStore(s => s.fetchOnlinePlayers);
 
     // 2. Local State
-    const [screen, setScreen] = useState(initialScreen); // menu, setup, game, scores
-    useLayoutEffect(() => { onScreenChange?.(screen); }, [screen, onScreenChange]);
+    const [localScreen, setLocalScreen] = useState(defaultScreen);
+    const screen = controlledScreen ?? localScreen;
+    const setScreen = onScreenChange ?? setLocalScreen;
     const [chestsRevealed, setChestsRevealed] = useState(false);
     const [showExitConfirm, setShowExitConfirm] = useState(false);
     const [players, setPlayers] = useState([
@@ -335,19 +336,6 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
         };
     }, []);
 
-    console.log(`[VG] Rendering... screen=${screen}, initialScreen=${initialScreen}`);
-
-    // Sync screen with initialScreen prop ONLY if not currently in an active game
-    useEffect(() => {
-        if (initialScreen && initialScreen !== screen) {
-            // Respect the parent's requested screen if it's a menu or setup screen,
-            // or if we are not currently in an active game.
-            if (initialScreen !== 'game' || (!onlineGameStarted && !gameState)) {
-                setScreen(initialScreen);
-            }
-        }
-    }, [initialScreen]);
-
     // Sync showing game state for Music Player
     useEffect(() => {
         setShowingGame(screen === 'game' || screen === 'scores');
@@ -543,64 +531,31 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
         }));
     }, [userProfile.name, userProfile.avatarId]);
 
-    // 🔥 EFFET AMÉLIORÉ : Auto-navigation for online games
+    // Le compte à rebours accompagne le lancement depuis le salon.
+    const hasOnlineGameState = !!onlineGameState;
     useEffect(() => {
-        // Only run auto-nav logic if we are IN ONLINE MODE (or trying to join one)
-        // If initialScreen is not lobby, we assume it's a local/AI game flow
-        if (initialScreen !== 'lobby') return;
+        if (screen !== 'lobby' || !onlineGameStarted || !hasOnlineGameState) {
+            setLobbyCountdown(null);
+            return;
+        }
 
-        const hasActiveState = !!activeGameState && Object.keys(activeGameState).length > 0;
-        const gameIsStarted = !!onlineGameStarted;
+        let remaining = 3;
+        setLobbyCountdown(remaining);
+        playStart();
 
-        console.log('[VG] Auto-nav check:', {
-            onlineGameStarted,
-            hasActiveState,
-            gameIsStarted,
-            currentScreen: screen,
-            roomId: onlineRoomCode
-        });
-
-        // Transition lobby → game when the game starts (WITH PREMIUM COUNTDOWN)
-        if (onlineGameStarted && (screen === 'lobby' || screen === 'setup' || screen === 'menu')) {
-            if (lobbyCountdown === null) {
-                console.log("[VG] ⏱ Starting Premium Countdown!");
-                setLobbyCountdown(3);
-                playStart(); // Play start sound
-
-                const timer = setInterval(() => {
-                    setLobbyCountdown(prev => {
-                        if (prev === 3) return 2;
-                        if (prev === 2) return 1;
-                        if (prev === 1) return 'GO';
-                        if (prev === 'GO') {
-                            clearInterval(timer);
-                            setScreen('game');
-                            setInitialReveals({});
-                            setLobbyCountdown(null);
-                            return null;
-                        }
-                        return prev;
-                    });
-                }, 1000);
+        const timer = setInterval(() => {
+            remaining -= 1;
+            if (remaining >= 0) {
+                setLobbyCountdown(remaining || 'GO');
+                return;
             }
-        }
+            clearInterval(timer);
+            setInitialReveals({});
+            setScreen('game');
+        }, 1000);
 
-        // Return to lobby ONLY if we are not in an active session anymore
-        if (!onlineGameStarted && !onlineRoomCode && screen === 'game' && !onlineError) {
-            console.log("[VG] ⬅️ Session lost, returning to menu");
-            setScreen('menu');
-        }
-    }, [onlineGameStarted, screen, onlineRoomCode, onlineError]); // Removed initialScreen check
-
-    useEffect(() => {
-        console.log(`[VG] Rendering... screen=${screen}, isOnline=${isOnlineMode}, hasState=${!!activeGameState}`);
-        // Avoid staying on game screen if state is lost unexpectedly
-        // Check if there is an error pending (e.g., Host Left), if so, DON'T redirect yet, let overlay show
-        if (initialScreen === 'lobby' && screen === 'game' && !activeGameState && !onlineGameStarted && !gameState && !onlineError) {
-            console.warn("[VG] Game screen active but no state found! Redirecting to menu.");
-            setScreen('menu');
-        }
-    }, [screen, activeGameState, onlineGameStarted, gameState, initialScreen]);
+        return () => clearInterval(timer);
+    }, [screen, onlineGameStarted, hasOnlineGameState, playStart, setScreen]);
 
     useEffect(() => {
         if (virtualLastNotification) {
@@ -744,7 +699,7 @@ export default function VirtualGame({ initialScreen = 'menu', onBackToMenu, onSc
             setScreen('menu');
             if (onBackToMenu) onBackToMenu();
         }
-    }, [onlineGameStarted, onlineIsGameOver, onlineRoomCode, screen, gameState, onlineError, onBackToMenu]);
+    }, [onlineGameStarted, onlineIsGameOver, onlineRoomCode, screen, gameState, onlineError, onBackToMenu, setScreen]);
 
     // Handle Visibility Change for Auto-Pause (AI Games only)
     useEffect(() => {
