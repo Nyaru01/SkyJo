@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { discardAndReveal, endTurn, replaceCard } from './skyjoEngine.js';
+import { discardAndReveal, drawFromPile, endTurn, replaceCard } from './skyjoEngine.js';
 import { AI_DIFFICULTY, decideCardAction } from './skyjoAI.js';
-import { initializeFuryGame, collectFuryFromPile, playFury, canPlayFury, decideFuryAction, furyTargets, FURY_USES_PER_ROUND } from './furyEngine.js';
+import { initializeFuryGame, collectFuryFromPile, playFury, canPlayFury, normalizeFuryShields, decideFuryAction, furyTargets, FURY_USES_PER_ROUND } from './furyEngine.js';
 
 const players = [{ id: 'me', name: 'Moi' }, { id: 'ai', name: 'IA' }];
 function ready(furyTypes = ['quake']) {
@@ -28,6 +28,59 @@ test('une Fury piochée va dans la réserve', () => {
     assert.equal(gained.length, 1);
     assert.equal(state.players[0].fury.reserve.length, 1);
     assert.notEqual(state.drawPile[state.drawPile.length - 1].specialType, 'F');
+});
+
+test('chaque joueur peut garder un seul Bouclier et le doublon repart sous la pioche', () => {
+    const game = ready([]);
+    const first = { id: 'shield-1', specialType: 'F', furyType: 'shield' };
+    const second = { ...first, id: 'shield-2' };
+    const normal = { id: 'normal', value: 4 };
+    const collected = collectFuryFromPile({ ...game, drawPile: [normal, first] });
+    assert.deepEqual(collected.gained, [first]);
+
+    const duplicate = collectFuryFromPile({ ...collected.state, drawPile: [normal, second] });
+    assert.deepEqual(duplicate.gained, []);
+    assert.deepEqual(duplicate.state.players[0].fury.reserve, [first]);
+    assert.deepEqual(duplicate.state.drawPile, [second, normal]);
+    assert.equal(drawFromPile(duplicate.state).drawnCard.id, normal.id);
+
+    const opponent = collectFuryFromPile({ ...duplicate.state, currentPlayerIndex: 1, drawPile: [normal, second] });
+    assert.deepEqual(opponent.state.players[0].fury.reserve, [first]);
+    assert.deepEqual(opponent.state.players[1].fury.reserve, [second]);
+});
+
+test('un Bouclier actif empêche le cumul même à la fin de la pioche', () => {
+    const game = ready([]);
+    game.players[0].fury.shield = true;
+    const shield = { id: 'shield', specialType: 'F', furyType: 'shield' };
+    const normal = { id: 'normal', value: 4 };
+    const top = { id: 'discard', value: 12 };
+    const { state, gained } = collectFuryFromPile({ ...game, drawPile: [shield], discardPile: [normal, top] });
+    assert.deepEqual(gained, []);
+    assert.deepEqual(state.players[0].fury.reserve, []);
+    assert.deepEqual(state.discardPile, [top]);
+    assert.equal(drawFromPile(state).drawnCard.id, normal.id);
+    assert.deepEqual(drawFromPile(state).drawPile, [shield]);
+});
+
+test('une ancienne réserve en double ne bloque qu’une attaque', () => {
+    const game = ready(['quake']);
+    const first = { id: 'shield-1', specialType: 'F', furyType: 'shield' };
+    const second = { ...first, id: 'shield-2' };
+    const fog = { id: 'fog', specialType: 'F', furyType: 'fog' };
+    game.players[1].fury.reserve = [first, fog, second];
+    const normalized = normalizeFuryShields(game);
+    assert.deepEqual(normalized.players[1].fury.reserve, [first, fog]);
+    assert.strictEqual(normalizeFuryShields(normalized), normalized);
+    assert.deepEqual(game.players[1].fury.reserve, [first, fog, second]);
+
+    const { state, result } = playFury(game, 0, 1, 0);
+    assert.equal(result.blocked, true);
+    assert.deepEqual(state.players[1].fury.reserve, [fog]);
+    assert.equal(state.drawPile[0], second);
+
+    const next = collectFuryFromPile({ ...state, drawPile: [{ id: 'normal', value: 4 }, second] });
+    assert.deepEqual(next.gained, [second]);
 });
 
 test('Séisme : la colonne visée est remplacée par des cartes cachées et le tour passe', () => {

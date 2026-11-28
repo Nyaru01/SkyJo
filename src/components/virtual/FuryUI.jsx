@@ -226,7 +226,7 @@ const FURY_RULES_SUMMARIES = {
     fog: 'Recache 2 cartes adverses.',
     tornado: 'Mélange les cartes adverses.',
     freeze: 'Gèle une colonne adverse 2 tours.',
-    shield: 'Bloque d’office la prochaine Fury, puis disparaît.',
+    shield: 'Bloque la prochaine Fury. Un seul par joueur.',
 };
 
 // Cartes de réserve et cartes détaillées utilisent le même sceau.

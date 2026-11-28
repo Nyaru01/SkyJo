@@ -51,7 +51,7 @@ Six cartes de sabotage, **2 exemplaires de chaque** (12 cartes), cachées dans l
 | Brouillard | Recache 2 cartes adverses |
 | Tornade | Mélange les cartes adverses |
 | Gel | Gèle une colonne adverse 2 tours (impossible d'y remplacer une carte) |
-| Bouclier | Ne se joue pas : gardé en réserve, il bloque tout seul la prochaine Fury reçue |
+| Bouclier | Un seul par joueur. Il bloque la prochaine Fury reçue. Un doublon pioché retourne sous la pioche. |
 
 Règles :
 - Les Fury sont réparties dans les **48 cartes du dessus** de la pioche (`FURY_SPREAD_DEPTH`) : environ 2 à 3 Fury
