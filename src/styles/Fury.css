@@ -372,32 +372,34 @@ body.fury-mode .fury-rail .fury-card--mini, body.fury-mode .fury-rail-card { wid
 .fury-play {
     --fury-accent: color-mix(in srgb, var(--fc) 75%, #fff3dd);
     position: absolute; top: 50%; left: 50%; translate: -50% -50%; z-index: 48;
-    width: max-content; max-width: min(calc(100% - 108px), 276px);
-    display: flex; align-items: center; gap: 10px; overflow: hidden;
-    padding: 8px 11px 10px 8px; border-radius: 14px;
-    border: 1px solid color-mix(in srgb, var(--fc) 65%, transparent);
-    background: linear-gradient(145deg, color-mix(in srgb, var(--fc) 17%, #292437), #151624 85%);
-    color: #fff4e8; box-shadow: 0 10px 26px #08070dba, inset 0 1px #ffffff18; pointer-events: none;
+    width: max-content; min-width: min(218px, calc(100% - 104px)); max-width: min(calc(100% - 104px), 284px);
+    display: flex; align-items: center; gap: clamp(8px, 2.7vw, 13px); overflow: hidden;
+    padding: 11px 12px 13px 10px; border-radius: 17px;
+    border: 1px solid color-mix(in srgb, var(--fury-accent) 72%, #161321);
+    background: radial-gradient(ellipse at 8% 0%, color-mix(in srgb, var(--fc) 37%, transparent), transparent 73%), linear-gradient(145deg, #262136, #11121e 85%);
+    color: #fff4e8; box-shadow: 0 14px 28px #08070dd0, 0 0 23px color-mix(in srgb, var(--fc) 45%, transparent), inset 0 1px #fff5; pointer-events: none;
 }
 .fury-play__icon {
-    display: grid; place-items: center; flex: 0 0 39px; aspect-ratio: 1; border-radius: 10px;
-    color: var(--fury-accent); background: color-mix(in srgb, var(--fc) 17%, #151622);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fc) 45%, transparent);
+    display: grid; place-items: center; flex: 0 0 clamp(38px, 12vw, 49px); aspect-ratio: 1; border-radius: 13px;
+    color: #fff5e8;
+    background: radial-gradient(circle at 40% 25%, color-mix(in srgb, var(--fc) 53%, #33243e), #181522 82%);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--fc) 35%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--fury-accent) 52%, transparent);
 }
+.fury-play__icon svg { filter: drop-shadow(0 0 5px var(--fc)); }
 .fury-play__copy { display: grid; gap: 2px; min-width: 0; }
-.fury-play__route { display: flex; align-items: center; gap: 5px; min-width: 0; color: var(--fury-accent); font-size: 9px; line-height: 1.1; font-weight: 750; letter-spacing: .07em; text-transform: uppercase; }
+.fury-play__route { display: flex; align-items: center; gap: 5px; min-width: 0; color: var(--fury-accent); font-size: 10px; line-height: 1.1; font-weight: 750; letter-spacing: .07em; text-transform: uppercase; }
 .fury-play__route span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fury-play__route svg { flex: none; }
 .fury-play__timer { position: absolute; inset: auto 0 0; height: 2px; background: var(--fury-accent); opacity: .75; transform-origin: left; animation: fury-play-expire linear both; }
 @keyframes fury-play-expire { to { transform: scaleX(0); } }
-.fury-play__copy strong { font: 600 21px/.95 'Cormorant Garamond', Georgia, serif; }
-.fury-play__copy > span { color: #ede0dc; font-size: 11px; line-height: 1.2; overflow-wrap: anywhere; }
+.fury-play__copy strong { font: 700 clamp(23px, 7vw, 32px)/.94 'Cormorant Garamond', Georgia, serif; text-shadow: 0 0 16px color-mix(in srgb, var(--fc) 32%, transparent); }
+.fury-play__copy > span { color: #ede0dc; font-size: 11px; line-height: 1.25; overflow-wrap: anywhere; }
 
 .fury-impact {
     --fury-edge: color-mix(in srgb, var(--fc) 74%, #fff9ed);
     position: absolute; inset: 0; z-index: 5; overflow: hidden; border-radius: 11px;
-    border: 1px solid var(--fury-edge);
-    box-shadow: 0 0 10px color-mix(in srgb, var(--fc) 65%, transparent), inset 0 0 9px color-mix(in srgb, var(--fc) 55%, transparent);
+    border: 2px solid var(--fury-edge);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--fc) 80%, transparent), inset 0 0 15px color-mix(in srgb, var(--fc) 63%, transparent);
     pointer-events: none;
     animation: fury-impact-fade var(--impact-duration, 1.2s) ease-out var(--impact-delay, 0ms) both;
 }
@@ -460,10 +462,113 @@ body.fury-mode .fury-rail .fury-card--mini, body.fury-mode .fury-rail-card { wid
 @keyframes fury-fissure { from { transform: scaleX(.15); } to { transform: scaleX(1); } }
 @keyframes fury-frost { from { opacity: 0; filter: blur(2px); } to { opacity: 1; filter: blur(0); } }
 @keyframes fury-shield-ripple { from { transform: scale(.8); opacity: 1; } to { transform: scale(1); opacity: 0; } }
-@keyframes fury-impact-fade { 0% { opacity: 0; } 15%, 42% { opacity: .95; } 100% { opacity: 0; } }
+@keyframes fury-impact-fade { 0% { opacity: 0; } 11%, 49% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes fury-impact-drift { from { translate: -18% 18%; } to { translate: 20% -17%; } }
 @keyframes fury-impact-sweep { from { transform: rotate(-30deg) scale(.75); } to { transform: rotate(10deg) scale(1.1); } }
+
+.fury-scene {
+    --impact-x: 50%; --impact-y: 50%;
+    --impact-light: color-mix(in srgb, var(--fc) 48%, #fff5e7);
+    --spark-size: clamp(69px, 24vw, 114px);
+    position: absolute; inset: -3px; z-index: 6; overflow: hidden;
+    border-radius: 13px; pointer-events: none;
+}
+.fury-scene__wash {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at var(--impact-x) var(--impact-y), color-mix(in srgb, var(--fc) 49%, transparent), transparent 62%);
+    box-shadow: inset 0 0 38px color-mix(in srgb, var(--fc) 30%, transparent);
+    animation: fury-scene-wash .95s ease-out both;
+}
+.fury-scene__shape, .fury-scene__echo, .fury-scene__core, .fury-scene__ray {
+    position: absolute; left: var(--impact-x); top: var(--impact-y); translate: -50% -50%;
+}
+.fury-scene__core {
+    width: 67px; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%;
+    color: #fff8ee; box-shadow: inset 0 0 19px var(--fc), 0 0 22px var(--fc);
+    border: 1px solid var(--impact-light);
+    background: radial-gradient(circle, #181321f2 20%, color-mix(in srgb, var(--fc) 45%, #181321) 78%);
+    animation: fury-scene-core .97s cubic-bezier(.16, .75, .22, 1) both;
+}
+.fury-scene__core svg { filter: drop-shadow(0 0 5px var(--fc)); }
+.fury-scene__ray { width: 0; height: 0; transform: rotate(var(--spark-angle)); }
+.fury-scene__ray i {
+    position: absolute; left: 0; top: -1px; width: 12px; height: 2px; border-radius: 2px;
+    background: var(--impact-light); box-shadow: 0 0 6px var(--fc);
+    animation: fury-scene-spark .82s ease-out var(--spark-delay) both;
+}
+
+/* Séisme : une fracture suit la colonne avant que l’onde et les braises se dispersent. */
+.fury-scene--quake .fury-scene__shape {
+    width: 66px; height: 105%; background: var(--impact-light);
+    clip-path: polygon(56% 0, 67% 18%, 40% 34%, 61% 49%, 43% 65%, 65% 82%, 54% 100%, 47% 82%, 27% 65%, 50% 49%, 23% 34%, 56% 17%);
+    animation: fury-scene-crack .92s ease-out both;
+}
+.fury-scene--quake .fury-scene__echo {
+    width: 180px; aspect-ratio: 1; border: 3px solid var(--impact-light); border-radius: 50%;
+    box-shadow: 0 0 17px var(--fc), inset 0 0 15px var(--fc);
+    animation: fury-scene-ring .95s ease-out .05s both;
+}
+
+/* Malédiction : deux sceaux tournent en sens inverse et se referment sur le +13. */
+.fury-scene--curse .fury-scene__shape, .fury-scene--curse .fury-scene__echo {
+    width: 104px; aspect-ratio: 1; border: 2px solid var(--impact-light);
+    border-radius: 16px; box-shadow: 0 0 18px var(--fc), inset 0 0 18px var(--fc);
+    animation: fury-scene-bind 1.06s ease-out both;
+}
+.fury-scene--curse .fury-scene__echo { --bind-start: -58deg; --bind-end: -10deg; width: 92px; border-style: dashed; }
+.fury-scene--curse .fury-scene__ray i { width: 6px; height: 6px; border-radius: 1px; }
+
+/* Brouillard : deux nappes traversent les cartes qui viennent d’être recachées. */
+.fury-scene--fog .fury-scene__shape, .fury-scene--fog .fury-scene__echo {
+    width: 102%; height: 72%;
+    background: radial-gradient(ellipse at 20% 58%, #f0eaffaf, transparent 51%), radial-gradient(ellipse at 72% 45%, #d9ccffcb, transparent 53%);
+    mask-image: radial-gradient(ellipse, #000 38%, transparent 72%);
+    animation: fury-scene-mist 1.22s ease-out both;
+}
+.fury-scene--fog .fury-scene__echo { --mist-opacity: .66; scale: -1 1; top: calc(var(--impact-y) + 17%); animation-delay: .1s; }
+.fury-scene--fog .fury-scene__ray i { width: 4px; height: 4px; }
+
+/* Tornade : le vortex balaie toute la grille. */
+.fury-scene--tornado .fury-scene__shape, .fury-scene--tornado .fury-scene__echo {
+    width: 88%; height: 70%; border-radius: 50%;
+    border: 2px solid #d9fff040; border-inline-width: 5px; border-inline-color: var(--impact-light);
+    box-shadow: 0 0 16px var(--fc), inset 0 0 13px var(--fc);
+    animation: fury-scene-vortex 1.18s cubic-bezier(.18,.7,.2,1) both;
+}
+.fury-scene--tornado .fury-scene__echo { width: 66%; height: 57%; animation-delay: .12s; }
+.fury-scene--tornado .fury-scene__ray i { width: 19px; height: 1px; }
+
+/* Gel : des arêtes cristallines poussent sur la colonne verrouillée. */
+.fury-scene--freeze .fury-scene__shape, .fury-scene--freeze .fury-scene__echo {
+    width: 22%; height: 100%; border-radius: 11px;
+    background: repeating-linear-gradient(127deg, transparent 0 18px, #b9eaff 19px, #e1f9ff98 20px, transparent 22px 37px), linear-gradient(90deg, #b9edffb8, #91ccff12 30%, #91ccff12 70%, #b9edffb8);
+    box-shadow: inset 0 0 16px #e8f9ff8c, 0 0 23px #94dfffad;
+    animation: fury-scene-ice 1.15s ease-out both;
+}
+.fury-scene--freeze .fury-scene__echo { --ice-opacity: .46; width: 34%; rotate: -5deg; animation-delay: .08s; }
+.fury-scene--freeze .fury-scene__ray i { width: 10px; height: 4px; clip-path: polygon(0 50%, 52% 0, 100% 50%, 52% 100%); }
+
+/* Bouclier : la grille prend une bordure lumineuse et renvoie deux ondes. */
+.fury-scene--shield .fury-scene__wash { box-shadow: inset 0 0 0 2px var(--impact-light), inset 0 0 38px #9bffd4a6; border-radius: inherit; }
+.fury-scene--shield .fury-scene__shape, .fury-scene--shield .fury-scene__echo {
+    width: 91%; height: 86%; border: 2px solid var(--impact-light); border-radius: 48%;
+    box-shadow: 0 0 14px var(--fc), inset 0 0 16px var(--fc);
+    animation: fury-scene-ring 1.04s ease-out both;
+}
+.fury-scene--shield .fury-scene__echo { animation-delay: .16s; }
+
+@keyframes fury-scene-wash { 0%, 100% { opacity: 0; } 19% { opacity: .92; } 52% { opacity: .46; } }
+@keyframes fury-scene-core { 0% { opacity: 0; transform: scale(.5); } 24% { opacity: 1; transform: scale(1.04); } 50% { opacity: .9; } 100% { opacity: 0; transform: scale(.91); } }
+@keyframes fury-scene-spark { 0% { opacity: 0; transform: translateX(8px) scale(.45); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateX(calc(var(--spark-size) * var(--spark-range))) scale(.6); } }
+@keyframes fury-scene-ring { 0% { opacity: 0; transform: scale(.27); } 25% { opacity: 1; } 100% { opacity: 0; transform: scale(1.2); } }
+@keyframes fury-scene-crack { 0% { opacity: 0; transform: scaleY(.14); } 32% { opacity: 1; transform: scaleY(1); } 100% { opacity: 0; } }
+@keyframes fury-scene-bind { 0% { opacity: 0; transform: rotate(var(--bind-start, 58deg)) scale(1.4); } 31% { opacity: 1; } 65% { transform: rotate(var(--bind-end, 10deg)) scale(.82); } 100% { opacity: 0; } }
+@keyframes fury-scene-mist { 0% { opacity: 0; transform: translateX(-48%) scale(.62); } 34% { opacity: var(--mist-opacity, .92); } 100% { opacity: 0; transform: translateX(47%) scale(1.16); } }
+@keyframes fury-scene-vortex { 0% { opacity: 0; transform: rotate(-55deg) scale(.35); } 28% { opacity: 1; } 100% { opacity: 0; transform: rotate(142deg) scale(1.12); } }
+@keyframes fury-scene-ice { 0% { opacity: 0; transform: scaleY(.07); } 32%, 49% { opacity: var(--ice-opacity, .92); transform: scaleY(1); } 100% { opacity: 0; } }
+
 @media (prefers-reduced-motion: reduce) {
+    .fury-scene { display: none; }
     .fury-impact { animation: none; opacity: .75; }
     .fury-impact::before, .fury-impact::after { display: none; }
     .fury-impact__seal { animation: none; }

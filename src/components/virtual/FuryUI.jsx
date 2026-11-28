@@ -122,13 +122,36 @@ function furyResult(event) {
     return 'La prochaine attaque est bloquée';
 }
 
-function getImpactTargets(event, playerId) {
-    if (playerId == null) return [];
-    if (event.blocked || event.type === 'shield' || event.type === 'tornado') {
-        const board = document.getElementById('fury-board-' + playerId);
-        return board ? [board] : [];
-    }
-    return event.cards.map(index => document.getElementById('card-' + playerId + '-' + index)).filter(Boolean);
+const IMPACT_SPARKS = Array.from({ length: 16 }, (_, i) => ({
+    '--spark-angle': `${i * 22.5 + (i % 3) * 5}deg`,
+    '--spark-range': .62 + (i % 5) * .14,
+    '--spark-delay': `${(i % 4) * 22}ms`,
+}));
+
+function getImpactScene(event, playerId) {
+    const board = playerId == null ? null : document.getElementById('fury-board-' + playerId);
+    if (!board) return { board, targets: [] };
+    const wholeBoard = event.blocked || event.type === 'shield' || event.type === 'tornado';
+    const targets = wholeBoard ? [board] : event.cards.map(index => document.getElementById('card-' + playerId + '-' + index)).filter(Boolean);
+    const center = targets[Math.floor(targets.length / 2)];
+    const frame = board.getBoundingClientRect();
+    const focus = center?.getBoundingClientRect();
+    const centerY = event.type === 'quake' || event.type === 'freeze';
+    const position = focus && frame.width && frame.height ? {
+        '--impact-x': `${100 * (focus.left + focus.width / 2 - frame.left) / frame.width}%`,
+        '--impact-y': centerY ? '50%' : `${100 * (focus.top + focus.height / 2 - frame.top) / frame.height}%`,
+    } : undefined;
+    return { board, targets, position };
+}
+
+function FuryImpactScene({ type, position }) {
+    return <span className={`fury-scene fury-scene--${type} fury-card--${type}`} style={position} aria-hidden="true">
+        <span className="fury-scene__wash" />
+        <span className="fury-scene__shape" />
+        <span className="fury-scene__echo" />
+        <span className="fury-scene__core"><FuryMark type={type} size={44} /></span>
+        {IMPACT_SPARKS.map((style, index) => <span className="fury-scene__ray" key={index} style={style}><i /></span>)}
+    </span>;
 }
 
 export function FuryEffects({ lastFury, lastGain, myIndex, players }) {
@@ -146,7 +169,7 @@ export function FuryEffects({ lastFury, lastGain, myIndex, players }) {
     useEffect(() => {
         if (!furyEvent?.at || furyEvent.at === past.fury) return undefined;
         const enter = setTimeout(() => {
-            setShown({ event: furyEvent, targets: getImpactTargets(furyEvent, targetPlayerId) });
+            setShown({ event: furyEvent, ...getImpactScene(furyEvent, targetPlayerId) });
             if (furyEvent.targetIndex === myIndex && furyEvent.type !== 'shield') navigator.vibrate?.([40, 30, 60]);
         }, 0);
         const leave = setTimeout(() => setShown(null), NOTICE_MS);
@@ -169,6 +192,7 @@ export function FuryEffects({ lastFury, lastGain, myIndex, players }) {
     const result = event && furyResult(event);
 
     return <>
+        {shown?.board && !reduce && createPortal(<FuryImpactScene type={type} position={shown.position} />, shown.board, event.at + '-scene')}
         {shown?.targets.map((target, index) => createPortal(
             <span className={'fury-impact fury-impact--' + type + ' fury-card--' + type}
                 style={{ '--impact-delay': (index * 75) + 'ms' }} aria-hidden="true">
@@ -184,9 +208,9 @@ export function FuryEffects({ lastFury, lastGain, myIndex, players }) {
         </span>
         <AnimatePresence mode="wait">
             {event && <Motion.div key={event.at} className={'fury-play fury-card--' + type} aria-hidden="true"
-                initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }} transition={{ duration: reduce ? 0 : .2 }}>
-                <span className="fury-play__icon"><FuryMark type={type} size={25} /></span>
+                initial={reduce ? false : { opacity: 0, y: 10, scale: .9 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0 }} transition={{ duration: reduce ? 0 : .26, ease: [.2, .8, .2, 1] }}>
+                <span className="fury-play__icon"><FuryMark type={type} size={29} /></span>
                 <div className="fury-play__copy">
                     <small className="fury-play__route">
                         <span>{name(event.by)}</span>
