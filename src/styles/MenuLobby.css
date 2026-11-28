@@ -1601,3 +1601,10 @@ html body.fury-mode .skyjo-draw-button { height: auto !important; min-height: 52
     html body.fury-mode .game-lobby .skyjo-pile-zone .skyjo-draw-button > .mx-2 { margin-inline: 0; }
     html body.fury-mode .game-lobby .skyjo-pile-zone div:has(> .skyjo-turn-cue) { min-width: 0; }
 }
+
+@media (max-width: 365px) {
+    /* Sous les compteurs Fury, la pastille garde sa ligne sans les masquer. */
+    html body.fury-mode .game-lobby .skyjo-pile-wrap:has(> .skyjo-card-source-wrap) .skyjo-pile-zone {
+        padding-bottom: 28px;
+    }
+}
